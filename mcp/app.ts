@@ -153,8 +153,11 @@ export async function runApp(argv: string[], { ui: uiOverride, stop }: { ui?: st
         '  key-reveal escrow and answer anchor on; each receipt links its EscrowCreate / EscrowFinish / anchor on testnet.xrpl.org')
     } else lines.push(options.testnet ? '  settlement is SIMULATED: no ledger transactions' : '  settlement is SIMULATED; add --testnet for real XRPL Testnet transactions')
     lines.push(`  caps: per-prompt budget set in the UI (max ${money(BUDGET.maxMinor)}) · wallet daily cap ${money(dailyMinor)}${setup?.testnet && config.WALLET_DAILY_CAP_MINOR === undefined ? ' (app Testnet default; WALLET_DAILY_CAP_MINOR overrides)' : ''}`,
-      `  SDK: createClient({ baseUrl: '${engineUrl}', token: readFileSync('${tokenFile}', 'utf8').trim() })   // from '@researchagent/sdk'`,
-      '  verify: await client.verify(await client.receipts(runId), { testnet: true })',
+      `  Engine baseUrl: ${engineUrl}`,
+      `  Token file: ${tokenFile} (private; read it from your client, never print the token)`,
+      `  SDK caps: ${money(Number(config.MCP_MAX_BUDGET_MINOR ?? 0))} per ask · ${money(Number(config.MCP_DAILY_CAP_MINOR ?? 0))} daily (set MCP_MAX_BUDGET_MINOR / MCP_DAILY_CAP_MINOR before app start)`,
+      '  Ask + export + verify: https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs/sdk.md',
+      `  Verification: ${setup?.testnet ? 'use { onlineLedger: true } for read-only settlement and anchor checks' : 'use offline verification (default); SIMULATED receipts are not ledger proof'}`,
       `  ready in ${seconds} s · Ctrl-C to stop`)
     console.log(lines.join('\n'))
     if (options.open) openBrowser(url)

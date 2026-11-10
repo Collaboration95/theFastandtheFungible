@@ -16,7 +16,7 @@ app: ## native Mac app, offline fixture default; desktop settings Cmd+,
 	node desktop/build.mjs
 	node node_modules/electron/cli.js desktop/dist
 
-dmg: ## build Apple Silicon DMG; auto-sign and notarise when Developer ID is available
+dmg: ## build Apple Silicon DMG; unsigned by default; see desktop/SIGNING.md for explicit signing/notarisation
 	node desktop/download.mjs
 	node desktop/build.mjs --dmg
 

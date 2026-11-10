@@ -116,32 +116,11 @@ No MCP client? One command starts the app on real Testnet (also **release v1.0.2
 npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz app --testnet
 ```
 
+Platform guidance: zero-clone `npx` lines work in macOS/Linux shells and Windows PowerShell. Clone commands using `make`, `export`, `$PWD` or `cp` require a POSIX shell and Make (Windows: WSL). The DMG and Keychain steps are macOS-only. [PowerShell, Linux and prerequisites](docs/running.md#platforms-and-prerequisites).
+
 Clone/build alternatives and usage:
 
-**TypeScript SDK** ([docs](docs/sdk.md)). `make release-artifacts` builds `dist/release/` and tests each file in a clean consumer, then:
-
-```sh
-npm i ./dist/release/researchagent-sdk-1.0.2.tgz   # exports createClient from @researchagent/sdk
-```
-```ts
-import { createClient } from '@researchagent/sdk'
-const client = createClient({ baseUrl: process.env.RA_URL, token: process.env.RA_API_TOKEN })
-const run = await client.ask('What did the Kestrel–TSMC deal do to margins?', { budget: 2, idempotencyKey: 'q-1' })
-console.log(run.answer, run.citations, run.receipts)
-```
-
-**Python SDK** ([docs](docs/sdk-python.md)). Python 3.10+, no runtime dependencies:
-
-```sh
-pip install "git+https://github.com/Collaboration95/theFastandtheFungible#subdirectory=packages/sdk-python"
-python -m researchagent verify receipts.json --json   # offline, no Node, no network
-```
-```python
-from researchagent import Client
-client = Client('http://127.0.0.1:8788', token='YOUR_TOKEN')   # use the engine's RA_API_TOKEN
-task = client.ask('What changed?', budget=2, idempotency_key='q-1')
-print(task.result()['answer'])
-```
+**TypeScript and Python SDKs.** Follow the complete two-terminal **start engine → connect → ask → verify** quickstarts: [TypeScript/Node](docs/sdk.md#start-engine--connect--ask--verify) · [Python](docs/sdk-python.md#start-engine--connect--ask--verify). They start from an empty folder, set operator caps, read the private token file and export/verify receipts. Use the printed **engine** URL, not the UI port. Python requires ≥3.10; the engine and TS SDK require Node ≥22.13.
 
 **MCP** ([docs](docs/mcp.md)). Seven tools: `search_expertise`, `ask_expert`, `get_run`, `pause_spending`, `wallet_status`, `verify_answer`, `hire`.
 
@@ -157,7 +136,7 @@ claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=
 
 The command explicitly authorizes up to S$2 per question and S$5 per UTC day in fixture mode (simulated payments). Without those operator settings the caps stay zero. [HTTP from the Mac app](docs/mcp.md#app-hosted-streamable-http) gives each agent its own revocable allowance. For Claude Desktop, `ResearchAgent.mcpb` is attached to each [release](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.2); [Codex config and all clients](docs/mcp.md).
 
-**Mac app** ([guide](desktop/README.md)). Download the unsigned DMG: [Apple Silicon](https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/ResearchAgent-1.0.2-arm64.dmg) or [Intel](https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/ResearchAgent-1.0.2-x64.dmg). Drag into Applications, then Finder → right-click → Open (or Privacy & Security → Open Anyway); see [signing notes](desktop/SIGNING.md). It starts offline with simulated payments, keeps keys in the macOS Keychain, and shows a recovery screen instead of crashing.
+**Mac app** ([guide](desktop/README.md)). Download the unsigned DMG: [Apple Silicon](https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/ResearchAgent-1.0.2-arm64.dmg) or [Intel](https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/ResearchAgent-1.0.2-x64.dmg). Drag into Applications, then System Settings → Privacy & Security → Open Anyway; see [signing notes](desktop/SIGNING.md). It starts offline with simulated payments, keeps keys in the macOS Keychain, and shows a recovery screen instead of crashing.
 
 **Browser replay.** The [`/demo/`](https://collaboration95.github.io/theFastandtheFungible/demo/) page autoplays the key-reveal UC3: Recorded on XRPL Testnet · no real value, with a key published on the ledger, a broken promise, a writer-signed refund and a second key reveal. Tabs also replay the plain-payment UC3 and the writer no-show cancellation; simulated UC1–UC3 remain available. Fixture models and fictional writers. No backend, no keys.
 
@@ -167,7 +146,17 @@ The command explicitly authorizes up to S$2 per question and S$5 per UTC day in 
 cp -R examples/writer-starter my-notes && npm run publish:site -- ./my-notes --rail simulated
 ```
 
-On Testnet, one command makes a writer live in about a minute: a faucet wallet (key saved at mode 0600, never printed), a Testnet writer Credential, and key-reveal escrow. `npm run publish:site -- ./my-notes --testnet`. The zero-clone form, `npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz publish ./writer-starter --testnet`, is a GitHub release asset · not yet on npm/PyPI/MCP Registry. It prints `Writer live · address r… · CredentialCreate tx ↗ · first sale will appear as EscrowFinish`.
+On Testnet, one command makes a writer live in about a minute: a faucet wallet (key saved at mode 0600, never printed), a Testnet writer Credential, and key-reveal escrow. `npm run publish:site -- ./my-notes --testnet`. The zero-clone sequence creates the folder before publishing (macOS/Linux/PowerShell):
+
+<!-- BEGIN generated:writer-install -->
+```sh
+npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz init my-notes
+npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz publish ./my-notes --testnet
+```
+<!-- END generated:writer-install -->
+
+Replace the generated SYNTHETIC templates with your notes before claiming a real writer. Keep the publisher running; it prints its local URL and Testnet credential link.
+
 
 Verify an exported answer on its own ledger evidence (Export ⋯ → Download receipts.json): after the `pip install` above, `researchagent verify receipts.json --ledger` needs no Node and prints `PASS testnet N/N (read-only, s.altnet)`, `PASS audit anchor` with the ledger number, and `RESULT PASS`. A refunded key reveal passes only when a validated writer refund exists. A simulated export prints `SKIP audit anchor: simulated run (no ledger)`; an export that claims an anchor, or a Testnet run without one, fails. Checkout equivalent: `npm run verify:answer -- receipts.json --ledger`.
 

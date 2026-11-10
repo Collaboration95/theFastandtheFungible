@@ -44,6 +44,7 @@ def main():
                     if testnet
                     else []
                 ),
+                *(["Identity/origin SKIPs limit attribution; payment and passage checks are separate. PASS does not verify writer identity."] if any(c["status"] == "SKIP" and c["check"] in ("writer credentials", "historical origin") for c in result["checks"]) else []),
                 "RESULT " + ("PASS" if result["ok"] else "FAIL"),
             ]
         )

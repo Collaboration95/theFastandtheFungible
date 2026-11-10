@@ -11,8 +11,8 @@ export type { PresentedRun } from './present.js'
 export type { ErrorCode } from '../shared/contracts/errors.js'
 import { ErrorEnvelopeSchema, type ErrorCode } from '../shared/contracts/errors.js'
 export class ResearchAgentError extends Error {
-  constructor(readonly code: ErrorCode, readonly status?: number, readonly retryable = false, readonly runId?: string) {
-    super(`ResearchAgent: ${code}`)
+  constructor(readonly code: ErrorCode, readonly status?: number, readonly retryable = false, readonly runId?: string, message?: string) {
+    super(message ?? `ResearchAgent: ${code}`)
     this.name = 'ResearchAgentError'
   }
 }
@@ -48,7 +48,7 @@ export type AskTask = Promise<AskResult> & { events: AsyncIterable<TraceEvent> }
 /** Policy owns admission and spending. Direct x402 requires separate explicit operator authority. */
 export function createClient(options: ClientOptions) {
   let endpoint: URL
-  try { endpoint = new URL(options.baseUrl) } catch { throw new ResearchAgentError('invalid') }
+  try { endpoint = new URL(options.baseUrl) } catch { throw new ResearchAgentError('invalid', undefined, false, undefined, 'ResearchAgent: set baseUrl (RA_URL) to the engine URL printed by app; see docs/sdk.md quickstart.') }
   if (endpoint.username || endpoint.password || endpoint.search || endpoint.hash || (endpoint.protocol !== 'https:' && !(endpoint.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(endpoint.hostname)))) throw new ResearchAgentError('invalid')
   const transport = options.fetch ?? globalThis.fetch
   const token = options.token ?? (typeof process !== 'undefined' ? process.env.RA_API_TOKEN : undefined)

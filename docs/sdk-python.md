@@ -7,27 +7,71 @@ pip install https://github.com/Collaboration95/theFastandtheFungible/releases/do
 ```
 
 
-Python 3.10+, typed src-layout package, no runtime dependencies. Clone/build alternative:
+## Start engine → connect → ask → verify
+
+<!-- BEGIN generated:sdk-quickstart -->
+Start in an empty folder. Requires Node ≥22.13 (including for the Python engine); Python ≥3.10 for the Python client. Terminal 1, macOS/Linux:
 
 ```sh
-pip install "git+https://github.com/Collaboration95/theFastandtheFungible#subdirectory=packages/sdk-python"
-export RA_URL=http://127.0.0.1:10488 # OFFSET=1700 backend
-python examples/python/ask.py
+export MCP_MAX_BUDGET_MINOR=200 MCP_DAILY_CAP_MINOR=500
 ```
 
-Set RA_API_TOKEN to the operator or scoped agent token. Client(base_url, token)
-uses bearer authentication and refuses redirects. Never put tokens in URLs.
-See examples/python/tool.py for a framework-independent LangChain-style callable.
+Terminal 1, Windows PowerShell:
+
+```powershell
+$env:MCP_MAX_BUDGET_MINOR="200"; $env:MCP_DAILY_CAP_MINOR="500"
+```
+
+Then, in the same terminal on any platform:
+
+```sh
+npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz app --port 6400
+```
+
+Keep it running. This uses fixture models, fictional writers and SIMULATED payments (no real value). Caps authorize up to S$2 per ask and S$5 gross per UTC day. For XRPL Testnet append `--testnet`; for TEST-SGD (stand-in for RLUSD, no real value) also append `--iou`. Cold IOU setup can take about two minutes. Use another port if 6400 is busy.
+
+The UI port (6400 here) is **not** the engine port. Copy the printed engine baseUrl and token-file path for Terminal 2. The token is read from its private file; never paste it into source or a URL.
+
+Terminal 2, create an isolated environment:
+
+```sh
+python3 -m venv .venv
+.venv/bin/python -m pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-1.0.2-py3-none-any.whl
+```
+
+Windows PowerShell equivalent:
+
+```powershell
+py -3 -m venv .venv
+.venv/Scripts/python.exe -m pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-1.0.2-py3-none-any.whl
+```
+
+Save this as `ask.py`:
 
 ```python
+import json
+import sys
+from pathlib import Path
 from researchagent import Client
-client = Client('http://127.0.0.1:10488', token='your-token')
-task = client.ask('What changed?', budget=2, idempotency_key='intent-1')
-for event in task.events:
-    print(event['type'], event['label'])
-result = task.result()
-print(result['answer'], result['citations'], result['receipts'], result['clamped'])
+if len(sys.argv) != 3:
+    raise SystemExit('Usage: python ask.py ENGINE_URL TOKEN_FILE (copy both from app output)')
+client = Client(sys.argv[1], token=Path(sys.argv[2]).read_text().strip())
+run = client.ask("What's the analyst outlook on Kestrel Semiconductor's latest deal with TSMC (pricing & margins)?", budget=2, idempotency_key='quickstart-python-1').result()
+print(run['answer'], run['labels'], run['citations'])
+receipts = client.receipts(run['run_id'])
+Path('receipts.json').write_text(json.dumps(receipts, indent=2))
+verified = client.verify(receipts)
+print(verified)
+if not verified['ok']:
+    raise SystemExit(1)
 ```
+
+Run `.venv/bin/python ask.py "ENGINE_URL" "TOKEN_FILE"` (PowerShell: `.venv/Scripts/python.exe ask.py "ENGINE_URL" "TOKEN_FILE"`), replacing both quoted values with the app output.
+
+Success means an answer with mode labels/citations, a local `receipts.json`, and verification `ok: true` (Python: `True`). Verification above is offline. For read-only Testnet settlement **and anchor** checks use TS `{ onlineLedger: true }` or Python `python -m researchagent verify receipts.json --ledger` with the installed interpreter. Simulated evidence has no ledger proof; SKIP preserves that boundary. Reuse the same idempotency key after an uncertain response; read the retained run rather than buying again.
+<!-- END generated:sdk-quickstart -->
+
+The wheel has no runtime dependencies. Checkout-only `examples/python/` files require a clone; they are not installed into the consumer folder. Client(base_url, token) uses bearer authentication and refuses redirects. Never put tokens in URLs.
 
 ask admits exactly once and returns a synchronous AskTask. Iterate .events for
 ordered, deduplicated durable events via read-only polling, including provisional
@@ -53,7 +97,7 @@ Response bodies and low-level errors are not echoed.
 Python. See **Verify receipts without Node** below. Explicitly supplying
 `repo_dir='/path/to/checkout'` selects the legacy Node wrapper, which also accepts
 PDF exports and requires Node and `npm ci`; invocation failures raise
-VerificationError. There is no engine verify endpoint. Self-contained hashes
+VerificationError. The Python verifier is independent; the engine also exposes `/api/verify` for HTTP callers. Self-contained hashes
 do not prove independent authenticity.
 
 Tests use the real local engine with synthetic providers, simulated settlement,
@@ -129,7 +173,7 @@ assert result['ok']
 ```
 
 `Client.verify(export)` also uses Python by default. Supplying `repo_dir=...`
-explicitly retains the old Node wrapper. The verifier does not contact Testnet;
+explicitly retains the old Node wrapper. Default offline verification does not contact Testnet;
 ledger checks are labelled SKIP. An independent audit head detects rewritten
 chains; a self-contained export alone cannot. Structural contribution evidence
 does not certify semantic truth. See [receipt spec](receipt-spec.md) and

@@ -70,7 +70,10 @@ export function parseMarkdown(text: string, slug: string, id: string, publishedA
 
 export async function markdownCorpus(folder: string, slug: string, name: string, options: { relax?: boolean } = {}): Promise<WriterCorpus> {
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length > 64) throw new Error('Writer slug: use at most 64 lowercase letters, numbers and hyphens. Example: --slug my-notes')
-  const entries = await readdir(folder, { withFileTypes: true })
+  const entries = await readdir(folder, { withFileTypes: true }).catch(error => {
+    if (['ENOENT', 'ENOTDIR'].includes((error as NodeJS.ErrnoException).code ?? '')) throw new Error('Notes folder not found. Run init my-notes, then publish ./my-notes --testnet (in a clone: npm run publish:init -- my-notes).')
+    throw error
+  })
   const files = entries.filter(e => e.isFile() && e.name.endsWith('.md')).sort((a, b) => a.name.localeCompare(b.name))
   if (!files.length) throw new Error('folder: no .md articles found. Example: init my-notes, then publish my-notes --testnet')
   const results = await Promise.allSettled(files.map(async file => {
