@@ -332,7 +332,13 @@ describe('startup script wiring', () => {
     const detect = startup.slice(startup.indexOf('boot_run=1'), startup.indexOf(': >/run/researchagent-startup.seen') + ': >/run/researchagent-startup.seen'.length)
     const dir = resources().tempDir('ra-ar-seen-')
     const script = detect.replaceAll('/run/researchagent-startup.seen', join(dir, 'seen'))
-    const bootRun = () => execFileSync('bash', ['-c', `set -euo pipefail\n${script}\necho $boot_run`], { encoding: 'utf8' }).trim()
+    // Read the result from a file, not stdout, and give the child a minimal environment: the answer must not
+    // depend on whatever the surrounding runner exports.
+    const out = join(dir, 'boot_run')
+    const bootRun = () => {
+      execFileSync('/bin/bash', ['-c', `set -euo pipefail\n${script}\nprintf '%s' "$boot_run" >'${out}'`], { env: { PATH: '/usr/bin:/bin' }, stdio: 'ignore' })
+      return readFileSync(out, 'utf8')
+    }
     expect(bootRun()).toBe('1')
     expect(bootRun()).toBe('0')
     expect(bootRun()).toBe('0')
