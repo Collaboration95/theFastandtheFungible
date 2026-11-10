@@ -30,25 +30,36 @@ export function meteredFetch(transport: (url: string, init: RequestInit) => Prom
     const sse = response.headers.get('content-type')?.includes('text/event-stream')
     let text = '', valid = true, usage: { prompt_tokens?: number; completion_tokens?: number; input_tokens?: number; output_tokens?: number } | undefined
     const decoder = new TextDecoder()
+    let completed = false
+    const complete = () => {
+      if (completed) return
+      completed = true
+      const i=usage?.prompt_tokens??usage?.input_tokens, o=usage?.completion_tokens??usage?.output_tokens
+      if(i!==undefined && o!==undefined) context.limits.completeAttempt(attempt,i,o,Math.ceil(i*inputRate+o*outputRate))
+    }
     const consume = (line: string) => {
       if (!line.startsWith('data:')) return
+      // The provider's end-of-stream marker: usage is final here. Streaming readers stop and cancel at it, so the
+      // TransformStream's flush never runs for them; settling only in flush kept every streamed call at its worst case.
+      if (line.slice(5).trim() === '[DONE]') { complete(); return }
       try { const value = JSON.parse(line.slice(5)) as { usage?: typeof usage }; if(value.usage) usage=value.usage } catch { /* content is validated by the existing provider */ }
     }
     return new Response(response.body.pipeThrough(new TransformStream<Uint8Array,Uint8Array>({
       transform(chunk,controller) {
+        if (valid) {
+          text += decoder.decode(chunk,{stream:true})
+          if(text.length>1048576) {valid=false;text=''}
+          else if(sse) {const lines=text.split('\n');text=lines.pop()!;for(const line of lines) consume(line)}
+        }
+        // Parse before handing the bytes on, so the usage is recorded before the reader can see [DONE] and cancel.
         controller.enqueue(chunk)
-        if (!valid) return
-        text += decoder.decode(chunk,{stream:true})
-        if(text.length>1048576) {valid=false;text='';return}
-        if(sse) {const lines=text.split('\n');text=lines.pop()!;for(const line of lines) consume(line)}
       },
       flush() {
         if (!valid) return
         text += decoder.decode()
         if(sse) consume(text)
         else {try { const payload=JSON.parse(text) as {usage?:typeof usage;result?:{usage?:typeof usage}};usage=payload.usage??payload.result?.usage } catch {return} }
-        const i=usage?.prompt_tokens??usage?.input_tokens, o=usage?.completion_tokens??usage?.output_tokens
-        if(i!==undefined && o!==undefined) context.limits.completeAttempt(attempt,i,o,Math.ceil(i*inputRate+o*outputRate))
+        complete()
       },
     })),{status:response.status,statusText:response.statusText,headers:response.headers})
   }

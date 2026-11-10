@@ -17,6 +17,11 @@ export type DemoStatus = {
   links: { repo: string; deck: string; video: string; progress: string; replay: string };
   csrfToken?: string; queue?: { runId: string; position: number | null; expiresAt: string }[]
 }
+const REPO = 'https://github.com/Collaboration95/theFastandtheFungible', PAGES = 'https://collaboration95.github.io/theFastandtheFungible'
+/** The environment indicator's model words. A fixture decision model is a substitution (hard gate 5): it is named here,
+ * not only inside Show work, because it decides every purchase on this demo. */
+export const modelsLabel = (research: boolean, decisions: boolean) => !research ? 'fixture models'
+  : decisions ? 'live research and purchase decisions · per-answer fallback labelled' : 'live research · fixture purchase decisions · per-answer fallback labelled'
 const keyOf = (value: unknown) => z.string().regex(/^[a-zA-Z0-9_-]{1,128}$/).parse(value)
 const questionOf = (value: unknown) => {
   const question = z.string().trim().min(1).max(LIMITS.questionChars).parse(value)
@@ -32,8 +37,8 @@ export function hostedRouter(context: ApiContext, config: Config, limits: Hosted
     const remaining = limits.remaining(principal)
     const state = ended ? 'ended' : c.admissionsPaused || c.spendingPaused ? 'paused' : !(await ready()) || !remaining.questions || !remaining.minor ? 'degraded' : queue.busy ? 'busy' : 'ready'
     return { state, questionCapMinor: limits.questionMinor, capabilities: { ask: (state === 'ready' || state === 'busy') && queue.canQueue, scope: state === 'ready', history: true, receipts: true, pdf: false, settings: false, faultControls: false }, remaining,
-      labels: { models: isLlmConfigured() ? 'live research configured · per-answer fallback labelled' : 'fixture models', rail: context.payer ? 'Shared XRPL Testnet demo · no real value' : 'SIMULATED · no real value' },
-      links: { repo: 'https://github.com/Collaboration95/theFastandtheFungible', deck: config.HOSTED_DECK_URL || '', video: config.HOSTED_VIDEO_URL || '', progress: config.HOSTED_PROGRESS_URL || '', replay: config.HOSTED_REPLAY_URL || 'https://collaboration95.github.io/theFastandtheFungible/demo/' } }
+      labels: { models: modelsLabel(isLlmConfigured(), !context.labels.decision.startsWith('fixture')), rail: context.payer ? 'Shared XRPL Testnet demo · no real value' : 'SIMULATED · no real value' },
+      links: { repo: REPO, deck: config.HOSTED_DECK_URL || `${REPO}/blob/main/docs/submission/ResearchAgent-SFF-deck.pdf`, video: config.HOSTED_VIDEO_URL || '', progress: config.HOSTED_PROGRESS_URL || `${PAGES}/progress/`, replay: config.HOSTED_REPLAY_URL || `${PAGES}/demo/` } }
   }
   router.get('/livez', (_req,res) => res.json({ status: 'ok' }))
   router.get('/startupz', async (_req,res) => { const ok=await initialized(); res.status(ok?200:503).json({status:ok?'ok':'paused'}) })

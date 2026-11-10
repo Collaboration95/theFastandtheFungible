@@ -9,6 +9,7 @@ import Sidebar, { NAV_WIDTH, NavToggle } from './components/Sidebar'
 import EnvIndicator, { EnvNote } from './components/EnvIndicator'
 import { environmentSeen, markEnvironmentSeen } from './environment'
 import { environmentLabel } from '../shared/presentation'
+import { runSettled } from '../shared/anchor-status'
 import HostedEnv from './components/hosted/HostedEnv'
 import { HostedComposerNote, HostedFooter, HostedIntro, HostedWaiting } from './components/hosted/HostedHome'
 import HostedRunNotice from './components/hosted/HostedRunNotice'
@@ -154,14 +155,18 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
     return () => { cancelled = true }
   }, [boot])
   const runId = run?.runId
+  // A finished run with final payments and its ledger anchor gets nothing more: it is read in full, with no live stream,
+  // and a live stream closes once the run settles. Behind the hosted proxies a closed tab's stream stayed open on the
+  // server and counted against the visitor (H5).
+  const settled = !!run && runSettled(run)
   useEffect(() => {
-    if (!runId) return
+    if (!runId || settled) return
     let phaseSeen = ''
     return streamRun(runId, { onSnapshot: value => {
       // The hosted allowance and queue move with the run; re-read them when its phase changes.
       if (boot && value.phase + value.stopped !== phaseSeen) { phaseSeen = value.phase + value.stopped; void refreshDemo() }
       setRun(value); setError(current => current === 'Connection lost. Reconnecting…' ? '' : current) }, onEvent: () => {}, onError: () => setError('Connection lost. Reconnecting…') })
-  }, [runId, boot, refreshDemo])
+  }, [runId, settled, boot, refreshDemo])
 
   // Stage pacing: reveal one trace event at a time, holding each for its dwell.
   const events = run ? runEvents(run) : []
@@ -495,7 +500,8 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
         {shown.labels.research.startsWith('fixture') && !!health.labels && !health.labels.research.startsWith('fixture') && <Notice tone="warn">Written from offline extracts: the model was unavailable.</Notice>}
         {shown.labels.plan?.startsWith('fixture') && !!health.labels && !health.labels.research.startsWith('fixture') && <Notice tone="warn">Planned with offline rules: the planner was unavailable.</Notice>}
         {shown.labels.decision.startsWith('fixture') && !!health.labels && !health.labels.decision.startsWith('fixture') && <Notice tone="warn">Decided by offline rules: the decision model was unavailable.</Notice>}
-        {shown.labels.search?.startsWith('keyword') && !!health.labels && !health.labels.research.startsWith('fixture') && <Notice tone="warn">Keyword search only: embeddings were unavailable.</Notice>}
+        {/* The hosted demo searches by keyword by design: its environment indicator says so once, not a warning on every answer. */}
+        {!hosted && shown.labels.search?.startsWith('keyword') && !!health.labels && !health.labels.research.startsWith('fixture') && <Notice tone="warn">Keyword search only: embeddings were unavailable.</Notice>}
         {shown.intents.filter(i => i.status === 'REFUNDED').map(i => <Notice key={i.intentId}>{candidateOf(shown, i)?.publisher ?? 'The writer'}’s article didn’t contain what it promised, so it was refunded and not used.</Notice>)}
         {banner}
         {!compare && <Sources run={shown} onOpen={candidate => setPassage({ candidate })} />}

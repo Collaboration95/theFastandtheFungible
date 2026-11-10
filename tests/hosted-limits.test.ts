@@ -101,3 +101,47 @@ it('releases only provider-proven usage and proven unspent terminal principal, p
   expect(limits.forRun(run.runId)?.minor).toBe(0)
   expect(a.hostedState(db=>db.prepare('SELECT model_envelope FROM hosted_holds').get()!.model_envelope)).toBe(3)
 })
+
+it('settles a streamed attempt at the provider’s [DONE] marker, though the reader cancels before the stream ends (H5)',async()=>{
+  const {limits,a}=setup();vi.stubEnv('HOSTED','1')
+  const h=limits.reserve('a','k','q','1.1.1.1',0,'submit',{})
+  const encoder=new TextEncoder()
+  // DeepSeek-style SSE: content, a final usage frame, [DONE]; the socket closes later.
+  const transport=async()=>new Response(new ReadableStream({async start(controller){
+    controller.enqueue(encoder.encode('data: {"choices":[{"delta":{"content":"{}"}}],"usage":null}\n\ndata: {"choices":[],"usage":{"prompt_tokens":40,"completion_tokens":7}}\n\ndata: [DONE]\n\n'))
+    await new Promise(resolve=>setTimeout(resolve,20));controller.close()
+  }}),{headers:{'Content-Type':'text/event-stream'}})
+  // Read like server/agents/llm.ts: stop at [DONE], then cancel the reader.
+  const call=()=>hostedExecution.run({limits,holdId:h.id,principal:'a'},async()=>{
+    const reader=(await meteredFetch(transport,'research')('https://provider.test',{body:JSON.stringify({model:'test',max_tokens:3000})})).body!.getReader()
+    const decoder=new TextDecoder();let pending='',finished=false
+    while(!finished){const {value,done}=await reader.read();pending+=decoder.decode(value,{stream:!done});const lines=pending.split('\n');pending=lines.pop()??'';finished=lines.some(line=>line.trim()==='data: [DONE]')||done}
+    await reader.cancel()
+  })
+  // Before the fix every call kept its 3,000-token worst case, so the third call hit question_token_cap and the answer fell back to offline extracts.
+  for(let i=0;i<4;i++) await call()
+  const rows=a.hostedState(db=>db.prepare('SELECT reserved,input_tokens,output_tokens FROM hosted_attempts').all())
+  expect(rows).toEqual(Array(4).fill({reserved:47,input_tokens:40,output_tokens:7}))
+})
+
+it('a new question replaces the visitor’s own unstarted plan or chat reply instead of waiting 90 seconds (H5)',()=>{
+  const {limits,a}=setup()
+  // A finished scope (a plan the visitor cancelled, or a chat reply) is a draft with a cached scope result.
+  const chat=limits.reserve('a','chat','hi','1.1.1.1',200,'scope',{question:'hi'})
+  limits.update(chat.id,{scope_result:JSON.stringify({chat:{reply:'Hello'}}),state:'draft'})
+  const next=limits.reserve('a','next','q','1.1.1.1',200,'scope',{question:'q'})
+  expect(next.state).toBe('draft')
+  const old=a.hostedState(db=>db.prepare('SELECT state,minor,gross_open FROM hosted_holds WHERE id=?').get(chat.id))
+  expect(old).toEqual({state:'expired',minor:0,gross_open:0})
+  // The replaced question still counts; its money does not.
+  expect(limits.remaining('a')).toEqual({questions:3,minor:800})
+  // A scope still in progress (no result yet) keeps the one-question-at-a-time rule.
+  expect(()=>limits.reserve('a','third','q3','1.1.1.1',200,'scope',{question:'q3'})).toThrow('session_busy')
+})
+
+it('names a fixture decision model in the environment label (H5: the live chip said "live models")',async()=>{
+  const {modelsLabel}=await import('../server/hosted/routes.js')
+  expect(modelsLabel(true,false)).toBe('live research · fixture purchase decisions · per-answer fallback labelled')
+  expect(modelsLabel(true,true)).toBe('live research and purchase decisions · per-answer fallback labelled')
+  expect(modelsLabel(false,false)).toBe('fixture models')
+})

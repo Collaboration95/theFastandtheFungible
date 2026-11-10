@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { Mark } from '../format'
 import Icon from './Icon'
+import { useHosted } from '../hosted'
 
 /** One exchange: the user's message, then the reply once it arrives (none while waiting, or while a plan card is open). */
 export interface ChatMessage { id: number; question: string; reply?: string; label?: string; error?: string }
@@ -20,6 +21,7 @@ const modelName = (label = 'model') => /^fixture\b/.test(label) ? 'Demo reply' :
  */
 export default function ChatThread({ messages, onSend, busy = false, above }: ChatThreadProps) {
   const id = useId()
+  const hosted = !!useHosted()
   const [text, setText] = useState('')
   const end = useRef<HTMLDivElement>(null)
   const box = useRef<HTMLTextAreaElement>(null)
@@ -61,7 +63,7 @@ export default function ChatThread({ messages, onSend, busy = false, above }: Ch
           <Icon name="send" />
         </button>
       </form>
-      <p className="ra-chat-note">Questions about companies or markets go to Home, where they get a budget.</p>
+      <p className="ra-chat-note">{hosted ? 'Research questions go to Home, where they get a budget.' : 'Questions about companies or markets go to Home, where they get a budget.'}</p>
     </div>
   </main>
 }

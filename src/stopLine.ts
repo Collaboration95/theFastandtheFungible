@@ -5,7 +5,8 @@ import { isTerminal } from './stage'
 type Line = { tone: 'ok' | 'pending' | 'bad'; text: string }
 /** What one purchase means after Stop. Only recorded states earn a final word; anything unsettled says it is still being checked. */
 export function stopLine(run: RunSnapshot, intent: PurchaseIntent): Line {
-  const name = candidateOf(run, intent)?.publisher ?? 'the writer', amount = money(intent.amountMinor)
+  // The publisher field carries provenance after its name ("… · team-authored · real content · Testnet"); the payment row shows the name alone, and so does this line (H5).
+  const name = candidateOf(run, intent)?.publisher.split(' · ')[0] || 'the writer', amount = money(intent.amountMinor)
   const testnet = run.labels.settlement.startsWith('XRPL'), ledger = testnet ? 'the XRPL Testnet ledger' : 'the simulated ledger'
   const escrow = intent.escrow?.mode === 'key-reveal' ? intent.escrow.state : undefined
   if (intent.status === 'REFUNDED') return { tone: 'ok', text: `${name}: refunded ${money(intent.refund?.amountMinor ?? 0)}, confirmed on ${ledger}.` }

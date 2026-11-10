@@ -47,16 +47,16 @@ export function HostedState({ hosted, state }: { hosted: Hosted; state: HomeStat
 /** Under the composer: what this question may use, and what happens to it. */
 export function HostedComposerNote({ hosted, state }: { hosted: Hosted; state: HomeState }) {
   return <p className="ra-hnote">
-    {state === 'busy' ? <span className="ra-hbusy">Another visitor’s question is running; yours starts as soon as it’s free.</span> : <span>{allowanceText(hosted.status)} · test funds only</span>}
+    {state === 'busy' ? <span className="ra-hbusy">The demo is finishing another question; yours starts as soon as it’s free.</span> : <span>{allowanceText(hosted.status)} · test funds only</span>}
     <span>Questions go to our model providers and are kept for 24 hours. Don’t enter personal or confidential information.</span>
   </p>
 }
 
-/** Shown in place of the composer while another visitor's run holds the shared demo. */
+/** Shown in place of the composer while another run holds the shared demo: someone else's, or the visitor's own last answer still anchoring (H5). */
 export function HostedWaiting({ onCancel }: { onCancel: () => void }) {
   return <section className="ra-hwait" role="status" aria-label="Waiting for a turn">
     <span className="ra-spin" aria-hidden="true" />
-    <div><h2>Waiting for a turn on the shared demo</h2><p>Another visitor’s question is running. Yours starts automatically when it’s free; nothing is reserved or spent until then.</p></div>
+    <div><h2>Waiting for a turn on the shared demo</h2><p>The demo answers one question at a time and is still finishing the previous one, which can be your own while its record is written to the ledger. Yours starts automatically; nothing is reserved or spent until then.</p></div>
     <button type="button" className="ra-btn" onClick={onCancel}>Cancel</button>
   </section>
 }

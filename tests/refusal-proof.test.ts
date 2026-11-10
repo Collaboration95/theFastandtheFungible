@@ -115,6 +115,7 @@ it('only a finished, unpaid, unanswered, anchored decline can be shared, and say
   expect(code({ phase: 'READ_FREE' })).toBe('not_finished')
   expect(code({ phase: 'STOPPED' })).toBe('not_finished')
   expect(code({ spentMinor: 30 })).toBe('purchased')
+  expect(code({ budgetMinor: 0 })).toBe('no_budget') // a Free question had nothing to refuse (H5)
   expect(code({ receipts: uc2.receipts.length ? uc2.receipts : [{ receiptId: 'r' } as never] })).toBe('purchased')
   expect(code({ answers: uc2.answers })).toBe('answered')
   expect(code({ labels: { ...base.labels, settlement: 'SIMULATED SGD · no real funds' } })).toBe('simulated')

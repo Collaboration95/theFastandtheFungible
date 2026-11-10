@@ -17,3 +17,16 @@ export function anchorProgress(events: readonly Labelled[]): { kind: 'failed' | 
   }
   return undefined
 }
+
+/** Intent states that no background job will change again (the same set the hosted gateway settles holds on). */
+const FINAL_INTENTS = new Set(['SKIPPED', 'FAILED_NOT_SETTLED', 'VERIFIED', 'REFUNDED', 'CHALLENGE_REJECTED', 'CHALLENGE_REFUSED'])
+type Settling = { phase: string; stopped?: boolean; intents: readonly { status: string }[]; ledgerAnchor?: unknown; events: readonly Labelled[] }
+/**
+ * A finished run whose payments are final and whose answer anchor is recorded (or has failed for good): nothing more
+ * will arrive, so it needs no live stream. Without an anchor rail the anchor never comes, so such runs keep streaming.
+ */
+export function runSettled(run: Settling): boolean {
+  return (run.stopped === true || ['DONE', 'FAILED', 'STOPPED'].includes(run.phase))
+    && run.intents.every(intent => FINAL_INTENTS.has(intent.status))
+    && (!!run.ledgerAnchor || anchorProgress(run.events)?.kind === 'failed')
+}

@@ -28,14 +28,17 @@ export const canAsk = (state: HomeState) => state === 'ready' || state === 'busy
 /** The single environment indicator (hard gate 5). The server's labels decide fixture vs live and Testnet vs simulated. */
 export function environment(status: HostedDemoStatus, connection?: Hosted['connection']) {
   const testnet = /testnet/i.test(status.labels.rail) && !/simulat/i.test(status.labels.rail)
-  const fixture = /fixture|unavailable/i.test(status.labels.models)
+  // Everything offline, or (11 Nov) live answers with the fixture decision model choosing what to buy.
+  const fixture = /^fixture models|unavailable/i.test(status.labels.models)
+  const ruleBuying = !fixture && /fixture purchase decisions/i.test(status.labels.models)
+  const models = fixture ? 'fixture models' : ruleBuying ? 'live answers, rule-based buying' : 'live models'
   const place = testnet ? 'Shared XRPL Testnet demo' : 'Shared demo · simulated payments'
   // The phone chip is the same chip, shortened: the same two facts (which rail, no real value), never a second name.
   const kind = testnet ? 'Testnet demo' : 'Simulated'
   const state = status.state === 'ended' ? 'ended' : connection === 'offline' ? 'offline' : status.state === 'paused' ? 'paused' : undefined
   return {
-    testnet, fixture, state,
-    full: `${place} · ${state ?? (fixture ? 'fixture models' : 'live models')} · no real value`,
+    testnet, fixture, ruleBuying, state,
+    full: `${place} · ${state ?? models} · no real value`,
     short: `${kind} · ${state ?? 'no real value'}`,
     tone: state ? 'off' : status.state === 'degraded' ? 'warn' : 'live',
   } as const
@@ -54,8 +57,8 @@ export function refusal(error: unknown): Refusal {
     ? { kind: 'message', text: 'You’re offline. Your question is still here; ask again when you’re back online.' }
     : { kind: 'message', text: 'The demo server didn’t answer. Your question is still here; try again in a moment.' }
   switch (error.code) {
-    case 'busy': case 'queue_full': return { kind: 'wait', text: 'Another visitor’s question is running on the shared demo.' }
-    case 'session_busy': return { kind: 'message', text: 'One question at a time. Your previous question is still being held; it’s released within 90 seconds of a cancelled plan, or when its run ends.' }
+    case 'busy': case 'queue_full': return { kind: 'wait', text: 'The shared demo is finishing another question.' }
+    case 'session_busy': return { kind: 'message', text: 'One question at a time. Your previous question is still running; ask again when it finishes.' }
     case 'allowance_exhausted': return { kind: 'state', text: 'You’ve used today’s questions on the shared demo.' }
     case 'paused': case 'spending_paused': case 'ended': case 'demo_unavailable': return { kind: 'state', text: '' }
     case 'start_rate': return { kind: 'message', text: 'Several questions started from your network in the last minute. Try again in a minute.' }

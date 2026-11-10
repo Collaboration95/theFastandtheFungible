@@ -161,3 +161,24 @@ it('serves public writer HTML and metadata without premium bytes through the rea
     expect(response.text).not.toContain('privateKey');expect(response.text).not.toContain('secret')
   }
 })
+
+it('H5: a settled run answers 204, a visitor’s newest stream replaces the oldest, and status names the fixture buyer and fills public links',async()=>{
+  const {url,a,seed,store}=await setup()
+  /** Opens an SSE request and reports its status and whether the server ended it. */
+  const open=(id:string)=>new Promise<{status:number; ended:Promise<void>; req:import('node:http').ClientRequest}>((resolve,reject)=>{
+    const req=http(`${url}/runs/${id}/events`,{headers:{Host:'demo.example',Cookie:a.Cookie}},res=>{const ended=new Promise<void>(done=>{res.on('end',done);res.on('close',done)});res.resume();resolve({status:res.statusCode!,ended,req})})
+    req.on('error',reject);req.end();cleanup.push(()=>req.destroy())
+  })
+  // Live: an unanchored run still has a ledger record coming, so it streams.
+  const live=seed(a,'live')
+  const first=await open(live), second=await open(live), third=await open(live)
+  expect([first.status,second.status,third.status]).toEqual([200,200,200])
+  await first.ended // closed tabs behind the proxies used to hold this slot, so the third stream got 429 stream_limit
+  // Settled: payments final and the anchor recorded. EventSource stops on 204 and the client reads the run once.
+  const settled=seed(a,'settled')
+  store.updateRun(settled,{ledgerAnchor:{version:'anchor-v1',network:'xrpl:1',head:'a'.repeat(64),runIdHash:'b'.repeat(64),account:'rNY14qvMuBi6CqU4wPbWaS5nztPLCxJTFn',txHash:'C'.repeat(64),ledgerIndex:1,feeDrops:'12'}})
+  expect((await wire(`${url}/runs/${settled}/events`,'GET',{Cookie:a.Cookie})).status).toBe(204)
+  const status=(await wire(url+'/api/demo/status','GET',{Cookie:a.Cookie})).json<{labels:{models:string};links:Record<string,string>}>()
+  expect(status.labels.models).toBe('fixture models')
+  expect(status.links).toMatchObject({deck:expect.stringMatching(/^https:\/\/github\.com\/.+deck\.pdf$/),progress:expect.stringMatching(/\/progress\/$/),replay:expect.stringMatching(/\/demo\/$/)})
+})

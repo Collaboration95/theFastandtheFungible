@@ -58,7 +58,10 @@ export class HostedLimits {
       requireAdmissions(this.config, this.now())
       if (!Number.isSafeInteger(minor) || minor < 0 || minor > this.questionMinor) throw new HostedError(400, 'invalid_budget')
       const now = this.now(), day = new Date(now).toISOString().slice(0, 10), ipKey = this.ipKey(ip)
-      const tally = (where: string, ...params: (string | number)[]) => db.prepare(`SELECT count(*) AS n, coalesce(sum(minor),0) AS minor FROM hosted_holds WHERE ${where}`).get(...params)!
+      // A new question replaces this visitor's own finished-but-unstarted plan or chat reply: they cancelled it or moved
+      // on, and waiting 90 seconds for it to expire only blocked them. Its question still counts; it holds no money now.
+      db.prepare("UPDATE hosted_holds SET state='expired',minor=0,gross_open=0,model_envelope=model_used WHERE principal=? AND run_id IS NULL AND state='draft' AND scope_result IS NOT NULL AND submit_digest IS NULL").run(principal)
+      const tally =(where: string, ...params: (string | number)[]) => db.prepare(`SELECT count(*) AS n, coalesce(sum(minor),0) AS minor FROM hosted_holds WHERE ${where}`).get(...params)!
       const check = (v: ReturnType<typeof tally>, questions: number, cap: number) => { if (Number(v.n) >= questions || Number(v.minor) + minor > cap) throw new HostedError(429, 'allowance_exhausted') }
       check(tally('principal=? AND day=?', principal, day), LIMITS.sessionQuestions, LIMITS.sessionMinor)
       check(tally("ip IN (?,?) AND (day=? OR gross_open=1)", ipKey, this.ipKey(ip,now-86400000), day), LIMITS.ipQuestions, LIMITS.ipMinor)
