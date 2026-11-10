@@ -10,8 +10,12 @@ describe('hosted operator boundaries',()=>{
   try {
    writeFileSync(join(dir,'gcloud'),'#!/bin/sh\nexit 99\n',{mode:0o700})
    const args=['deploy','--project','ra-ho-test','--billing-account','000000-000000-000000','--manifest',join(dir,'manifest.json'),'--notification-channel','projects/ops/notificationChannels/123']
-   const output=run('docker/hosted/ops.mjs',args,{PATH:dir+':'+process.env.PATH,DEEPSEEK_API_KEY:'sentinel-private-value',XRPL_PAYER_SEED:'sentinel-private-seed'})
+   const output=run('docker/hosted/ops.mjs',args,{PATH:dir+':'+process.env.PATH,DEEPSEEK_API_KEY:'sentinel-private-value',XRPL_PAYER_SEED:'sentinel-private-seed',XRPL_PUBLISHER_THE_FAB_FLOOR_SEED:'sentinel-private-writer'})
    expect(output).toContain("'compute' 'instances' 'create'")
+   // A writer seed named by data/writers and by the environment is one secret, created once.
+   const created=[...output.matchAll(/'secrets' 'create' '([^']+)'/g)].map(m=>m[1])
+   expect(created.filter(s=>s.startsWith('ra-xrpl-publisher-the-fab-floor-seed-'))).toHaveLength(1)
+   expect(new Set(created).size).toBe(created.length)
    expect(output).toContain('--machine-type=e2-standard-2')
    expect(output).toContain('--resource-policies=ra-daily')
    expect(output).toContain('--source-ranges=10.77.0.0/24')
