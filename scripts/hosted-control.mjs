@@ -18,6 +18,7 @@ if(o.local) {
   let control=existsSync(path)?JSON.parse(readFileSync(path,'utf8')):undefined
   if(!control && action!=='init') throw Error('Control missing: initialize paused first')
   control ||= {admissionsPaused:true,spendingPaused:true,reasonCode:'prelaunch',expiresAt:'2026-11-19T16:00:00Z'}
+  if(typeof control.admissionsPaused!=='boolean'||typeof control.spendingPaused!=='boolean'||!Number.isFinite(Date.parse(control.expiresAt))) throw Error('Invalid durable control')
   if(action==='init' && existsSync(path)) { console.log('control exists; unchanged'); process.exit(0) }
   if(action==='resume' && Date.now()>=Date.parse(control.expiresAt)) throw Error('Admissions expired')
   if(action==='pause'||action==='resume') Object.assign(control,{admissionsPaused:action==='pause',spendingPaused:action==='pause',reasonCode:action==='pause'?(o.reason||'operator'):'ready'})

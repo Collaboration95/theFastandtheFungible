@@ -35,7 +35,11 @@ chmod 700 /srv/researchagent
 install -d -m 0700 /etc/researchagent /opt/researchagent
 # Files are delivered as a local archive by the deploy script, not downloaded from GitHub.
 # Stop before replacing configuration, including secrets.
-if [[ -f /opt/researchagent/compose.yaml ]]; then docker compose --env-file /etc/researchagent/images -f /opt/researchagent/compose.yaml down --timeout 120; fi
+if [[ -f /opt/researchagent/compose.yaml ]]; then
+  # Pause via the current image before stopping; recovery continues during drain.
+  docker compose --env-file /etc/researchagent/images -f /opt/researchagent/compose.yaml exec -T api node /app/scripts/hosted-control.mjs pause --local --execute --path /state/control.json --reason deploy
+  docker compose --env-file /etc/researchagent/images -f /opt/researchagent/compose.yaml down --timeout 120
+fi
 meta instance/attributes/ra-bundle | base64 -d | tar -xz -C /opt/researchagent
 cp /opt/researchagent/env.template /etc/researchagent/env.new
 sed -i "s|^HOSTED_ORIGIN=.*|HOSTED_ORIGIN=$origin|" /etc/researchagent/env.new
