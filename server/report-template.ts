@@ -29,10 +29,10 @@ export function reportHtml(report: Report): string {
   }).join(' ')
   const summary = report.answer ?? summarizeAnswer(report.question, { claims: findings, conclusion: report.executiveAnswer, openGaps: [], version: 1, provider: 'fixture', model: 'extractive' }, report.sources, report.access?.candidates ?? [])
   const paidFindings = findings.filter(claim => claim.citations.some(ref => report.access?.candidates.some(c => c.tier === 'PAID' && sameSource(c, ref))))
-  const lead = (summary.lead ?? leadFinding(report.question, paidFindings.length ? paidFindings : findings, report.sources)).map(item => `${escape(findingText(item.text))} ${cite(item.claim)}`).join(' ')
+  const lead = (summary.lead ?? leadFinding(report.question, paidFindings.length ? paidFindings : findings, report.sources, undefined, report.access?.candidates ?? [])).map(item => `${escape(findingText(item.text))} ${cite(item.claim)}`).join(' ')
   const groups = [['SUPPORTS','Supports'],['CHALLENGES','Disputes'],['UNCERTAIN','Cited findings']].map(([stance, name]) => {
     const items = findings.filter(c => c.stance === stance && !answerBoilerplate(c.text))
-    return items.length ? `<h3>${name} (${items.length})</h3><ul>${items.map(c => `<li>${escape(findingText(leadFinding(report.question, [c])[0]?.text ?? c.text))} ${cite(c)}</li>`).join('')}</ul>` : ''
+    return items.length ? `<h3>${name} (${items.length})</h3><ul>${items.map(c => `<li>${escape(findingText(leadFinding(report.question, [c], report.sources, undefined, report.access?.candidates ?? [])[0]?.text ?? c.text))} ${cite(c)}</li>`).join('')}</ul>` : ''
   }).join('')
   const refunds = (report.refunds ?? []).reduce((sum,r) => sum + r.amountMinor, 0)
   const candidate = (ref: SourceRef) => report.access?.candidates.find(c => sameSource(c,ref))

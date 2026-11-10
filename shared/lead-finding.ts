@@ -7,7 +7,7 @@ const words = (text: string) => [...new Set(text.replace(/([a-z])([A-Z])/g, '$1 
 /** Use Unicode sentence segmentation rather than an uppercase-only boundary rule.
  * Keep source bytes (including identifier punctuation) intact for quotation. */
 const segmenter = new Intl.Segmenter('en', { granularity: 'sentence' })
-export const answerBoilerplate = (text: string) => /\breference (?:defines the operation-specific fields|describes .* as part of a larger)\b|^(?:Author interpretation|I run|I have|Here is|Speaking|Verify|Confirm|Inspect|Retain|Keep|Read|Treat|Report|Include|Test|Distinguish|Explain|Consider|Avoid|Compare|Query|Estimate|Where an amendment|Do not|Creating a pool is not evidence|The public XRPL reference describes|For an agent builder)\b|^(?:Applications?|Integrations?|Clients?|Developers?)\b[^.!?]{0,60}\bshould\b|\b(?:I recommend|we recommend|my recommendation|integration recommendation)\b/i.test(text)
+export const answerBoilerplate = (text: string) => /\breference (?:defines the operation-specific fields|describes .* as part of a larger)\b|^(?:Author interpretation|I run|I have|I spent|Here is|Speaking|Verify|Confirm|Inspect|Retain|Keep|Read|Treat|Report|Include|Test|Distinguish|Explain|Consider|Avoid|Compare|Query|Estimate|Where an amendment|Do not|Creating a pool is not evidence|The public XRPL reference describes|For an agent builder)\b|^(?:Applications?|Integrations?|Clients?|Developers?)\b[^.!?]{0,60}\bshould\b|\b(?:I recommend|we recommend|my recommendation|integration recommendation|a reminder that|was no exception)\b/i.test(text)
 export function sentences(text: string): string[] {
   return Array.from(segmenter.segment(text), part => part.segment.trim()).filter(Boolean)
 }
@@ -53,14 +53,16 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
     return answerExtracts(claim.text).map((text, si) => {
     const lower = text.toLowerCase(), tokens = words(text)
     const metadata = candidates.find(c => claim.citations.some(ref => sameSource(c, ref)))
-    const titleTerms = words(`${metadata?.title ?? ''} ${metadata?.facets.join(' ') ?? ''}`)
-    // A following answer sentence may refer to an entity established earlier
-    // in the same verified passage. Bind its entity to that passage, then rank
-    // the sentence itself for the requested fact.
-    const subject = `${metadata?.title ?? ''} ${metadata?.facets.join(' ') ?? ''} ${claim.text}`
+    const content = delivered?.find(c => claim.citations.some(ref => sameSource(c, ref)))
+    const title = metadata?.title ?? content?.title ?? ''
+    const titleTerms = words(`${title} ${metadata?.facets.join(' ') ?? ''}`)
+    // An entity can be established earlier in the verified article. Require
+    // topical overlap in this cited passage, then rank its answer sentence.
+    const subject = `${title} ${metadata?.facets.join(' ') ?? ''} ${claim.text}`
+    const entityContext = `${subject} ${content?.body ?? ''}`
     const opening = firstFact.match(/^[A-Za-z]+\b/)?.[0]
     const entities = (firstFact.match(/\b[A-Z][a-z]+(?:[A-Z][a-z]+)*\b/g) ?? []).filter(name => !STOP.has(name.toLowerCase()) && name.length > 1 && (name !== opening || /[a-z][A-Z]/.test(name)))
-    if (!topicMatches(firstFact, subject) || !entities.every(name => new RegExp(`\\b${name}\\b`, 'i').test(subject))) return { text, claim, score: 0, ci, si }
+    if (!topicMatches(firstFact, subject) || !entities.every(name => new RegExp(`\\b${name}\\b`, 'i').test(entityContext))) return { text, claim, score: 0, ci, si }
     if (answerBoilerplate(text)) return { text, claim, score: 0, ci, si }
     if (/^(?:This (?:article|note|guide|source)\b|This is a team-authored|This team-authored|The implementation record|For a reader assessing|For an? .*integration|I recommend|Test missing|This is an integration recommendation|Reproduction requires|The four .*entries|Some .*examples use different headers|See\b|Code:|Sources?:)|(?:[\w-]+\/)+[\w.-]+\.(?:ts|md|tsx)\b/i.test(text)) return { text, claim, score: 0, ci, si }
     const overlap = terms.filter(term => tokens.includes(term)).length
@@ -137,6 +139,6 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
 /** Omit a repeated claim row only when its displayed sentence is already in the lead.
  * Callers must show the lead claim's stance alongside that sentence.
  */
-export function remainingClaims(question: string, claims: Claim[], lead: ReturnType<typeof leadFinding>): Claim[] {
-  return claims.filter(claim => !lead.some(item => item.claim.id === claim.id && item.text === (leadFinding(question, [claim])[0]?.text ?? claim.text)))
+export function remainingClaims(question: string, claims: Claim[], lead: ReturnType<typeof leadFinding>, delivered?: ContentEnvelope[], candidates: PublicCandidate[] = []): Claim[] {
+  return claims.filter(claim => !lead.some(item => item.claim.id === claim.id && item.text === (leadFinding(question, [claim], delivered, undefined, candidates)[0]?.text ?? claim.text)))
 }

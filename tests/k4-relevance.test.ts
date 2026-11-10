@@ -85,6 +85,7 @@ it('uses terminal heading and a pending anchor label, and hides fixture model ID
 })
 it('cleans display markers while leaving source bytes to callers',()=>{
  expect(findingText('## A finding [1] [2].')).toBe('A finding.')
+ expect(findingText('> *Two* _values_ and PAYMENT_REQUIRED with some_name_here.')).toBe('Two values and PAYMENT_REQUIRED with some_name_here.')
 })
 it('keeps a lowercase conditional premise when an authority prefix is removed',()=>{
  const text='According to the source, if a Stream does not satisfy every required permission and timing constraint for this particular account and asset combination then the transaction remains blocked for that account, because the network must check the entire condition before allowing it to proceed in the same validated ledger.'
@@ -92,7 +93,7 @@ it('keeps a lowercase conditional premise when an authority prefix is removed',(
  expect(leadFinding('Which transaction allows a Stream?', [claim])).toEqual([])
 })
 it('shows the clean cited passage with the full source under a separate disclosure',()=>{
- const text='## The Stream limit is **12** objects [1].'
+ const text='## The _Stream_ limit is **12** objects [1].'
  const content={...exampleContent,body:`Introductory material. ${text} Other material.`,spans:[{id:'p1',text}]}
  const candidate={...exampleCandidate,tier:'FREE' as const}
  const citation={profileId:content.profileId,resourceId:content.resourceId,version:content.version,spanId:'p1'}

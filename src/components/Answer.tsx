@@ -65,7 +65,7 @@ export default function Answer({ run, onCitation, view, compare, onCompare, repo
   const dropped = baseline?.claims.filter(c => !answer.claims.some(b => b.text === c.text)) ?? []
   const hasPaidEvidence = answer.claims.some(claim => claim.citations.some(ref => candidateOf(run, ref)?.tier === 'PAID'))
   const draft = !['DONE', 'STOPPED', 'FAILED'].includes(run.phase)
-  const groups: [string, Claim[]][] = compare ? [['Added', added], ['Dropped', dropped]] : GROUPS.map(([stance, label]) => [label, remainingClaims(run.question, answer.claims, lead).filter(c => c.stance === stance && !answerBoilerplate(c.text) && (!/^(?:I |My |Here |Speaking |Let me)/.test(c.text) && keywordCoverage(run.question, searchWords([c.text, ...c.citations.flatMap(ref => { const source = candidateOf(run, ref); return source ? [source.title, source.preview] : [] })].join(' '))) >= 0.5))])
+  const groups: [string, Claim[]][] = compare ? [['Added', added], ['Dropped', dropped]] : GROUPS.map(([stance, label]) => [label, remainingClaims(run.question, answer.claims, lead, delivered, run.candidates).filter(c => c.stance === stance && !answerBoilerplate(c.text) && (!/^(?:I |My |Here |Speaking |Let me)/.test(c.text) && keywordCoverage(run.question, searchWords([c.text, ...c.citations.flatMap(ref => { const source = candidateOf(run, ref); return source ? [source.title, source.preview] : [] })].join(' '))) >= 0.5))])
   return <>
     <section className="ra-verdict" aria-label="Research answer">
       <div className="ra-answer-heading"><h2 className="ra-caption">{run.phase === 'STOPPED' ? 'Partial answer · stopped' : run.phase === 'FAILED' ? 'Partial answer · interrupted' : draft ? hasPaidEvidence ? 'Draft · verified evidence' : 'Draft · free sources only' : 'Lead finding'}</h2>{report}</div>
@@ -79,7 +79,7 @@ export default function Answer({ run, onCitation, view, compare, onCompare, repo
 
     {!compare && <RequestedFacts run={run} version={answer.version} />}
     {compare && <button type="button" className="ra-link" onClick={onCompare}>Back to answer</button>}
-    <section className="ra-claims" aria-label={compare ? 'What changed after the purchase' : 'Claims'}>{groups.map(([name, items]) => items.length ? <div className="ra-group" key={name}><h3>{name} ({items.length})</h3><ul>{items.map(claim => <li key={claim.id} className="ra-claim"><p>{findingText(leadFinding(run.question, [claim])[0]?.text ?? claim.text)}{cites(claim)}</p></li>)}</ul></div> : null)}{compare && !added.length && !dropped.length && <p>The cited claims are unchanged.</p>}</section>
+    <section className="ra-claims" aria-label={compare ? 'What changed after the purchase' : 'Claims'}>{groups.map(([name, items]) => items.length ? <div className="ra-group" key={name}><h3>{name} ({items.length})</h3><ul>{items.map(claim => <li key={claim.id} className="ra-claim"><p>{findingText(leadFinding(run.question, [claim], delivered, undefined, run.candidates)[0]?.text ?? claim.text)}{cites(claim)}</p></li>)}</ul></div> : null)}{compare && !added.length && !dropped.length && <p>The cited claims are unchanged.</p>}</section>
     </details>
   </>
 }
