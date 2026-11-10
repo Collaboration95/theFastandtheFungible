@@ -12,7 +12,8 @@
     "replay": "https://collaboration95.github.io/theFastandtheFungible/demo/",
     "ledger": "https://collaboration95.github.io/theFastandtheFungible/ledger/",
     "site": "https://collaboration95.github.io/theFastandtheFungible/",
-    "deck": "https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs/submission/ResearchAgent-SFF-deck.pdf"
+    "deck": "https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs/submission/ResearchAgent-SFF-deck.pdf",
+    "video": null
   },
   "facts": {
     "as_of": {
@@ -140,6 +141,11 @@
       "source": "site/progress/data.json",
       "definition": "cold `try` runs that overran the 90 s limit"
     },
+    "try_limit": {
+      "value": "90",
+      "source": "site/progress/data.json",
+      "definition": "deadline in seconds the cold `try` runs were measured against"
+    },
     "mcp_mb": {
       "value": "3.4",
       "source": "site/progress/data.json",
@@ -189,6 +195,26 @@
       "value": "435",
       "source": "docs/evidence/round3-a/probe.json",
       "definition": "network fees per key-reveal purchase, drops"
+    },
+    "fee_xrp": {
+      "value": "0.000435",
+      "source": "docs/evidence/round3-a/probe.json",
+      "definition": "network fees per key-reveal purchase, XRP (1 XRP = 1,000,000 drops)"
+    },
+    "chaos_runs": {
+      "value": "500",
+      "source": "docs/evidence/chaos-279-500.json",
+      "definition": "seeded chaos runs, each with one injected fault (synthetic fixture ledger, no Testnet)"
+    },
+    "chaos_kills": {
+      "value": "130",
+      "source": "docs/evidence/chaos-279-500.json",
+      "definition": "real SIGKILLs of the API, MCP or publisher process across those runs"
+    },
+    "chaos_double": {
+      "value": "0",
+      "source": "docs/evidence/chaos-279-500.json",
+      "definition": "double charges across those runs"
     },
     "findings": {
       "value": "35",
@@ -242,6 +268,21 @@
     },
     "hosted": {
       "value": "Shared XRPL Testnet sandbox · no real value · open 13–19 Nov",
+      "source": "scripts/facts.mjs",
+      "definition": "canonical sentence built from the facts above"
+    },
+    "try_line": {
+      "value": "npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz try --testnet",
+      "source": "scripts/facts.mjs",
+      "definition": "canonical sentence built from the facts above"
+    },
+    "registry": {
+      "value": "GitHub Releases; not yet on npm, PyPI or the MCP Registry",
+      "source": "scripts/facts.mjs",
+      "definition": "canonical sentence built from the facts above"
+    },
+    "video": {
+      "value": "linked in the submission form",
       "source": "scripts/facts.mjs",
       "definition": "canonical sentence built from the facts above"
     }

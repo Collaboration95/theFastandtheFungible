@@ -1,11 +1,11 @@
-// One source for every number a judge reads (README, docs/, docs/submission/, the deck lane).
+// One source for every number a judge reads (README, docs/, docs/submission/, the deck).
 //   node scripts/facts.mjs           → writes docs/submission/facts.json and fills every marked fact
 //   node scripts/facts.mjs --check   → exits 1 if facts.json or any marked fact is stale (runs in `npm run hygiene`)
 //   node scripts/facts.mjs --get prs → prints one value (for scripts and the deck export)
 // Inputs are generated or committed evidence only: site/progress/data.json (git and gh counts at a
 // pinned SHA, from `npm run site:progress`), the held-out results, the receipt-conformance manifest,
 // the writer-onboarding and fee probes, and BUILDER-FEEDBACK.md counts (already in data.json).
-// In Markdown, a fact is written <!--f:key-->value<!--/f-->; GitHub hides the comments.
+// In Markdown and the deck HTML, a fact is written <!--f:key-->value<!--/f-->; GitHub and browsers hide the comments.
 // Refresh after any new measurement: `npm run site:progress -- --at origin/main && node scripts/facts.mjs`.
 // RA_DEV_BANKS_ONLY=1 uses published held-out aggregates without opening raw results.
 // The blind v5 bank is never opened: only its committed results file is read, once it exists.
@@ -23,6 +23,14 @@ const read = path => {
 }
 const json = path => JSON.parse(read(path))
 const OUT = 'docs/submission/facts.json'
+const DECK = 'docs/submission/deck/index.html'
+const REPO = 'https://github.com/Collaboration95/theFastandtheFungible'
+// Owner: paste the unlisted demo-video URL here once it is uploaded, then run
+// `node scripts/facts.mjs && node docs/submission/deck/export.mjs`. Until then the
+// deck says the video is linked in the submission form; it never shows a placeholder.
+const VIDEO_URL = ''
+// Owner decision A3: change this sentence when the packages are published.
+const REGISTRY = 'GitHub Releases; not yet on npm, PyPI or the MCP Registry'
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const day = iso => `${Number(iso.slice(8, 10))} ${MONTHS[Number(iso.slice(5, 7)) - 1]}`
 const WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty']
@@ -82,6 +90,8 @@ export function build() {
   const cases = json('tests/fixtures/receipt-conformance/manifest.json').cases
   const onboarding = json('docs/evidence/round4-j3/slim-onboarding.json')
   const probe = json('docs/evidence/round3-a/probe.json').timings[0].transactions
+  const CHAOS = 'docs/evidence/chaos-279-500.json'
+  const chaos = json(CHAOS)
   const fee = type => need(probe.find(t => t.type === type)?.feeDrops, `${type} fee`)
   const first = Object.fromEntries(progress.metrics.firstRun.map(m => [m.label, m]))
   const tries = progress.metrics.tryRuns
@@ -110,6 +120,7 @@ export function build() {
     // One-line judge path
     try_s: fact(tries.at(-1).seconds.toFixed(1), P, 'cold `try --testnet` wall time, empty npm cache, one measurement'),
     try_misses: fact(`${tries.filter(r => !r.pass).length} of ${tries.length}`, P, `cold \`try\` runs that overran the ${progress.metrics.tryLimit} s limit`),
+    try_limit: fact(progress.metrics.tryLimit, P, 'deadline in seconds the cold `try` runs were measured against'),
     mcp_mb: fact(first['Download size'].after.toFixed(1), P, 'MCP package download, MB'),
     mcp_init_s: fact(first['MCP server starts'].after.toFixed(1), P, 'cold MCP initialize, seconds'),
     app_ready_s: fact(first['Testnet app ready'].after.toFixed(1), P, 'zero-clone Testnet app ready, seconds'),
@@ -122,6 +133,11 @@ export function build() {
     fee_create: fact(fee('EscrowCreate'), 'docs/evidence/round3-a/probe.json', 'EscrowCreate network fee, drops'),
     fee_finish: fact(fee('EscrowFinish'), 'docs/evidence/round3-a/probe.json', 'EscrowFinish (key reveal) network fee, drops'),
     fee_drops: fact(fee('EscrowCreate') + fee('EscrowFinish'), 'docs/evidence/round3-a/probe.json', 'network fees per key-reveal purchase, drops'),
+    fee_xrp: fact(((fee('EscrowCreate') + fee('EscrowFinish')) / 1e6).toFixed(6), 'docs/evidence/round3-a/probe.json', 'network fees per key-reveal purchase, XRP (1 XRP = 1,000,000 drops)'),
+    // Recovery under chaos (synthetic fixture ledger, real SIGKILLs, 3 Nov)
+    chaos_runs: fact(need(chaos.iterations, 'chaos iterations'), CHAOS, 'seeded chaos runs, each with one injected fault (synthetic fixture ledger, no Testnet)'),
+    chaos_kills: fact(need(chaos.processKills, 'chaos kills'), CHAOS, 'real SIGKILLs of the API, MCP or publisher process across those runs'),
+    chaos_double: fact(need(chaos.doubleCharges, 'chaos double charges'), CHAOS, 'double charges across those runs'),
     // Builder feedback (counts in data.json follow BUILDER-FEEDBACK.md's own definitions)
     findings: fact(fb.findings, P, 'numbered findings B01–Bnn in docs/BUILDER-FEEDBACK.md'),
     ranked: fact(fb.ranked, P, 'ranked findings with runnable repros'),
@@ -138,6 +154,10 @@ export function build() {
     heldout_line: `${bank} blind held-out: ${v('heldout')} bought and cited, ${v('offtopic')} off-topic purchases (run once, ${v('heldout_on')}; fixture decision model, team-authored writers, XRPL Testnet)`,
     singhacks_then: 'At SingHacks the prototype let a language model plan each purchase; payment was a fixture by default, with optional Testnet settlement.',
     hosted: 'Shared XRPL Testnet sandbox · no real value · open 13–19 Nov',
+    // Same line as `node scripts/install-snippets.mjs --tag <release> --try` (tests/deck.test.ts checks it).
+    try_line: `npx -y ${REPO}/releases/download/${v('release')}/researchagent-mcp-${v('release').slice(1)}.tgz try --testnet`,
+    registry: REGISTRY,
+    video: VIDEO_URL || 'linked in the submission form',
   }
   for (const [key, value] of Object.entries(copy)) facts[key] = { value, source: 'scripts/facts.mjs', definition: 'canonical sentence built from the facts above' }
   return {
@@ -148,24 +168,27 @@ export function build() {
     links: {
       hosted: 'https://ra-front-651013803640.asia-southeast1.run.app',
       hosted_window: '13–19 Nov 2026',
-      repo: 'https://github.com/Collaboration95/theFastandtheFungible',
-      release: `https://github.com/Collaboration95/theFastandtheFungible/releases/tag/${v('release')}`,
+      repo: REPO,
+      release: `${REPO}/releases/tag/${v('release')}`,
       progress: 'https://collaboration95.github.io/theFastandtheFungible/progress/',
       replay: 'https://collaboration95.github.io/theFastandtheFungible/demo/',
       ledger: 'https://collaboration95.github.io/theFastandtheFungible/ledger/',
       site: 'https://collaboration95.github.io/theFastandtheFungible/',
-      deck: 'https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs/submission/ResearchAgent-SFF-deck.pdf',
+      deck: `${REPO}/blob/main/docs/submission/ResearchAgent-SFF-deck.pdf`,
+      video: VIDEO_URL || null,
     },
     facts,
   }
 }
 
 const MARK = /<!--f:([A-Za-z0-9_]+)-->([\s\S]*?)<!--\/f-->/g
-/** Replace every marked value with the current fact; unknown keys are errors. */
+const escapeHtml = text => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+/** Replace every marked value with the current fact; unknown keys are errors. HTML files get escaped values. */
 export function fill(text, facts, file = 'text') {
+  const html = file.endsWith('.html')
   return text.replace(MARK, (_, key) => {
     if (!facts[key]) throw new Error(`facts: ${file} uses unknown fact "${key}"`)
-    return `<!--f:${key}-->${facts[key].value}<!--/f-->`
+    return `<!--f:${key}-->${html ? escapeHtml(facts[key].value) : facts[key].value}<!--/f-->`
   })
 }
 /** Rendered text: what GitHub shows once the comments are hidden. */
@@ -173,7 +196,7 @@ export const strip = text => text.replace(/<!--\/?f(?::[A-Za-z0-9_]+)?-->/g, '')
 
 export function markedFiles() {
   const files = execFileSync('git', ['ls-files', '-z', '--cached', '--others', '--exclude-standard', '--', '*.md'], { cwd: root, encoding: 'utf8' }).split('\0').filter(Boolean)
-  return files.filter(f => !(developmentOnly() && heldOutPath(f)) && existsSync(join(root, f)) && read(f).includes('<!--f:'))
+  return [...files, DECK].filter(f => !(developmentOnly() && heldOutPath(f)) && existsSync(join(root, f)) && read(f).includes('<!--f:'))
 }
 
 function main() {

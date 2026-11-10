@@ -7,7 +7,8 @@ is (open item in the organiser brief). Spoken at about 140 words a minute.
 The brief says to skip the problem statement and cover the solution, key
 developments, and what we achieved since SingHacks. So we open on the
 mechanism, not the problem. Slide numbers refer to
-[the deck](ResearchAgent-SFF-deck.pdf) (12 slides).
+[the deck](ResearchAgent-SFF-deck.pdf) (14 slides); each slide's speaker notes in
+[deck/index.html](deck/index.html) name the judging criteria it serves.
 
 **Rules for the speaker:**
 - Say "Testnet" in the first 20 seconds. Call the hosted app "our live Testnet
@@ -16,8 +17,8 @@ mechanism, not the problem. Slide numbers refer to
 - Every number below is on a slide with its source, and comes from
   [facts.json](facts.json). Don't round up. Read this page rendered on GitHub:
   the markers that keep numbers in sync are hidden there.
-- Fill any `{{…}}` placeholders from the [README list](README.md#placeholders)
-  before rehearsing. If one is still empty on the day, drop that sentence.
+- The deck has no placeholders: every number on it is filled from
+  [facts.json](facts.json), and its export fails if one is stale.
 
 ## Script (~265 words)
 
@@ -63,7 +64,7 @@ Our measured key-reveal purchase used <!--f:fee_drops-->435<!--/f--> drops in
 network fees. The model only recommends; policy code spends, and our gate audit
 found zero violations.
 
-**[1:48 · slide 12]**
+**[1:48 · slide 14]**
 Every claim has a Testnet hash. ResearchAgent: agents pay the people who know,
 and the ledger keeps them honest.
 
@@ -84,7 +85,7 @@ folder becomes a Testnet writer with an XRPL credential in <!--f:writer_s-->33.9
 seconds (J3, #389). Our research writers are fictional, and we have no
 independent writers yet. That list stays empty until a real person consents."
 
-**Before slide 12 (+0:15) · Honest limits:** "What's not done: payer keys in a
+**On slide 12 (+0:15) · Honest limits:** "What's not done: payer keys in a
 KMS, RLUSD escrow until the issuer allows it, and KYB and sanctions screening.
 We wrote a mainnet checklist instead of claiming readiness."
 
@@ -99,7 +100,7 @@ We wrote a mainnet checklist instead of claiming readiness."
 | 1:08 | 7 | Verify | 29 |
 | 1:22 | 8 | Reachability, judge bank | 34 |
 | 1:36 | 9 | Fees, gates | 23 |
-| 1:48 | 12 | Close | 19 |
+| 1:48 | 14 | Close | 19 |
 
 Running out of time? Cut slide 6 (the stablecoin beat) first, then slide 9.
 Never cut the "Testnet" line on slide 1.
