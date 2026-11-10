@@ -192,7 +192,7 @@ test('Lane K decline explains three policy decisions', async ({page}) => {
  await page.goto('/?run=tickets-decline&pace=real')
  const answer=page.getByRole('region',{name:'Research answer'})
  await expect(answer).toContainText('Nothing was bought: the available articles do not add enough relevant evidence.')
- await expect(answer).not.toContainText('0.16')
+ await expect(answer.locator('.ra-why-value').first()).not.toBeVisible()
  await answer.getByText('Why ▸').click()
  await expect(answer).toContainText('value 0.16 vs 0.20')
  await expect(answer.locator('li')).toHaveCount(3)
