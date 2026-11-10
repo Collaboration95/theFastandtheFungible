@@ -1,3 +1,4 @@
+import { HOSTED_APP_URL } from '../shared/links'
 // This entry alone replaces transport. The production app and its presentation/gates are shared.
 import './style.css'
 import { RunSnapshotSchema } from '../shared/contracts/index.js'
@@ -18,7 +19,11 @@ if (active === modules['./traces/UC-key-reveal.json']) {
 }
 const visited = new Map<string, Recording>()
 const pinned = new Set<string>()
-const showLabel = () => { document.querySelector('.demo-banner > span')!.textContent = active.run.labels.settlement.includes('TESTNET') ? (active.run.intents.some(i => i.escrow?.mode === 'key-reveal') ? `Recorded on XRPL Testnet · no real value · key reveal · ciphertext before grant stays quarantined; plaintext only after verified grant${active.run.intents.some(i => i.refund) ? ' · the refund is writer-signed (fixture writer cooperates)' : ''}` : 'Recorded on XRPL Testnet · no real value') : 'Replay of a recorded run · fictional writers · simulated payments' }
+const showLabel = () => {
+  const date = active.run.events[0]?.at.slice(0, 10) ?? 'date unavailable'
+  document.querySelector('.demo-banner > span')!.textContent = `Replay · recorded ${date} · ${active.run.labels.settlement.includes('TESTNET') ? 'XRPL Testnet · no real value' : 'fictional writers · simulated payments'}`
+}
+visited.set(active.run.runId, active)
 const history = () => [...visited.values()].map(({ run }) => ({ runId: run.runId, question: run.question, phase: run.phase, stopped: false, budgetMinor: run.budgetMinor, spentMinor: run.spentMinor, at: run.events[0].at, pinned: pinned.has(run.runId) }))
 // No request escapes this entry: only committed recordings and in-memory navigation.
 window.fetch = async (input, init) => {
@@ -55,16 +60,18 @@ await import('../src/main')
 
 const testnet = active.run.labels.settlement.includes('TESTNET')
 showLabel()
+const banner = document.querySelector('.demo-banner')!
+const askOwn = document.createElement('a'); askOwn.href = HOSTED_APP_URL; askOwn.textContent = 'Ask your own question'; banner.append(askOwn)
 const controls = document.createElement('nav')
 controls.setAttribute('aria-label', 'Recorded scenarios')
-for (const [label, scenario] of [['Testnet UC3 · key reveal','testnet'],['Testnet UC3 · payment','UC3-testnet'],['Testnet · writer no-show','UC-key-reveal'],['Simulated UC1','UC1'],['Simulated UC2','UC2'],['Simulated UC3','UC3']]) {
+for (const [label, scenario] of [['Start here · key reveal','testnet'],['Testnet UC3 · payment','UC3-testnet'],['Testnet · writer no-show','UC-key-reveal'],['Simulated UC1','UC1'],['Simulated UC2','UC2'],['Simulated UC3','UC3']]) {
   const link = document.createElement('a'); link.textContent = label
   link.href = scenario === 'testnet' ? location.pathname : `${location.pathname}?scenario=${scenario}`
   controls.append(link)
 }
 const pause = document.createElement('button'); pause.textContent = 'Pause'
 pause.onclick = () => { const paused = pause.textContent === 'Pause'; pause.textContent = paused ? 'Resume' : 'Pause'; window.dispatchEvent(new CustomEvent('demo-pause', {detail:paused})) }
-controls.append(pause); document.querySelector('.demo-banner')!.after(controls)
+controls.append(pause); document.querySelector('.demo-banner')!.append(controls)
 
 if (testnet) {
   // @ts-expect-error Dependency-free browser JavaScript shared with the ledger page.
@@ -83,7 +90,7 @@ if (testnet) {
     a.href = `https://testnet.xrpl.org/transactions/${row.hash}`; a.textContent = `${'label' in row ? row.label : row.kind}: ${row.hash}`; a.target = '_blank'; a.rel = 'noopener'
     state.textContent = ' · Recorded validated tesSUCCESS; checking live…'; states.set(row.hash, state); p.append(a, state); panel.append(p)
   }
-  controls.after(panel)
+  banner.append(panel)
   void refresh(rows, WebSocket, (hash: string, status: string) => {
     states.get(hash)!.textContent = ` · ${status}`
     checked++; if (status.startsWith('validated')) verified++

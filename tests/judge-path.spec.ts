@@ -9,7 +9,7 @@ import AxeBuilder from '@axe-core/playwright'
 
 const TAG = 'https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.2'
 const SIMULATED: Record<string, RegExp> = { 'Testnet UC3 · payment': /^Malaysia packaging lead times/, 'Simulated UC1': /^Bank of Japan decision/, 'Simulated UC2': /^Kestrel–TSMC outlook/, 'Simulated UC3': /^Malaysia packaging lead times/ }
-const TABS = ['Testnet UC3 · key reveal', 'Testnet UC3 · payment', 'Testnet · writer no-show', 'Simulated UC1', 'Simulated UC2', 'Simulated UC3'] as const
+const TABS = ['Start here · key reveal', 'Testnet UC3 · payment', 'Testnet · writer no-show', 'Simulated UC1', 'Simulated UC2', 'Simulated UC3'] as const
 let server: ChildProcess, base: string
 
 // eslint-disable-next-line no-empty-pattern -- Playwright requires a destructured first argument.
@@ -68,7 +68,7 @@ for (const tab of TABS) {
     expect(await contrast(page), 'axe color-contrast on payment cards').toEqual([])
     if (tab === TABS[0]) {
       const banner = page.locator('.demo-banner')
-      await banner.locator('summary').click()
+      await banner.getByText('Run it yourself', { exact: true }).click()
       await expect(banner).toContainText('researchagent-mcp-1.0.2.tgz')
       await expect(banner.getByRole('link', { name: /Release/ })).toHaveAttribute('href', TAG)
       expect(await banner.locator('a[href*="releases/latest"]').count()).toBe(0)

@@ -24,8 +24,8 @@ test('UC2 keyboard only: palette, ask, clarify, plan, receipt, top layer, views,
   await page.keyboard.press('Control+Enter')
   await expect(page).toHaveTitle(/Answer ready/, { timeout: 60_000 })
   await expect(page.getByRole('button', { name: /Demo · simulated payments/ })).toBeVisible()
-  await expect(page.getByRole('region', { name: /Purchase: NotFinancialTimes/ })).toContainText('Verified')
-  await tabTo(page, 'Receipt ›')
+  await expect(page.getByRole('region', { name: /Payment: NotFinancialTimes/ })).toContainText('Verified')
+  await tabTo(page, 'Receipt')
   await page.keyboard.press('Enter')
   await expect(page.getByRole('dialog', { name: 'Receipt', exact: true })).toBeVisible()
   await expect(page.getByRole('dialog', { name: 'Receipt', exact: true })).toContainText('Simulated payment · no ledger entry')
@@ -79,7 +79,7 @@ test('failure recovery views: labelled fallback, slow Testnet, stopped unused pa
   await expect(page.getByText('Written from offline extracts: the model was unavailable.')).toBeVisible()
   snapshot = { ...snapshot, phase: 'FAILED', checkpoint: { ...snapshot.checkpoint, nextAction: 'retry-delivery' } }
   await page.reload()
-  await expect(page.getByText('Recovering', { exact: true })).toBeVisible()
+  await expect(page.getByText('Finishing after a restart…', { exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Resume answer' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Partial answer · interrupted' })).toBeVisible()
   snapshot = { ...snapshot, phase: 'STOPPED', stopped: true, answers: snapshot.answers.slice(0, 1) }
@@ -89,7 +89,7 @@ test('failure recovery views: labelled fallback, slow Testnet, stopped unused pa
   snapshot = { ...snapshot, phase: 'BUY', stopped: false, labels: { ...snapshot.labels, settlement: XRPL_LABEL }, intents: [{ ...snapshot.intents[0], status: 'SUBMITTING' }], receipts: [], grants: [], events: [], spentMinor: 0, reservedMinor: 90 }
   await page.reload()
   await expect(page.locator('.ra-side').getByText(/Waiting/)).toBeVisible()
-  await expect(page.getByRole('button', { name: /XRPL Testnet · test funds/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /Testnet · test funds/ })).toBeVisible()
   snapshot = { ...ucRuns.UC2, intents: [], receipts: [], grants: [], spentMinor: 0, decisions: ucRuns.UC2.decisions.map(round => ({ ...round, rows: round.rows.map(row => ({ ...row, verdict: 'SKIP_OVER_BUDGET' as const })) })) }
   await page.reload()
   await expect(page.getByText(/Budget too small for eligible sources/)).toBeVisible()

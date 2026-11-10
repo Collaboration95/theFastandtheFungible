@@ -12,9 +12,10 @@ const CSS = `.ra-agent-sprite{display:block;margin:0 0 12px;background-repeat:no
 @media (prefers-reduced-motion:reduce){.ra-agent-sprite{animation:none}}`
 
 /** Illustration of the agent's current state. Never drives policy or payment. */
-export default function AgentSprite({ animation = 'search', scale = 1, label }: { animation?: AgentAnimation; scale?: number; label?: string }) {
+export default function AgentSprite({ animation = 'search', scale = 1, label, still = false }: { animation?: AgentAnimation; scale?: number; label?: string; still?: boolean }) {
   const row = atlas.animations[animation], { w, h } = atlas.cell
   const style = {
+    animation: still ? 'none' : undefined,
     width: w * scale, height: h * scale,
     backgroundImage: `url(${sheet})`,
     backgroundSize: `${atlas.size.w * scale}px ${atlas.size.h * scale}px`,

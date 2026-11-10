@@ -1,3 +1,5 @@
+import Icon from './Icon'
+import { REFUND_LABEL } from '../copy'
 import { WriterVerification } from './WriterVerification.js'
 import { sourceKey, sameSource } from '../../shared/source-identity.js'
 /* eslint-disable react-refresh/only-export-components -- Shared access boundary for W2 drawer wiring. */
@@ -28,21 +30,21 @@ export function canDisplayPassage(candidate: PublicCandidate, content: ContentEn
     (candidate.tier === 'FREE' || drawerAccess.get(content) === identity(candidate))
 }
 
-const QUARANTINED: Partial<Record<string, string>> = { CLAIM_FAILED: 'not used', CHALLENGED: 'refund requested', REFUNDED: 'refunded', CHALLENGE_REJECTED: 'writer disputes', CHALLENGE_REFUSED: 'refused · delisted' }
+const QUARANTINED: Partial<Record<string, string>> = { CLAIM_FAILED: 'Not used', CHALLENGED: REFUND_LABEL.pending, REFUNDED: REFUND_LABEL.refunded, CHALLENGE_REJECTED: 'Writer disputes', CHALLENGE_REFUSED: REFUND_LABEL.refused }
 type CardState = { label: string; tone: string; bought?: boolean }
 function cardState(run: RunSnapshot, candidate: PublicCandidate): CardState {
   const price = money(candidate.price.amountMinor)
-  if (candidate.tier === 'FREE') return run.contents.some(item => sameSource(item, candidate)) ? { label: 'read', tone: 'read' } : { label: 'found', tone: 'found' }
+  if (candidate.tier === 'FREE') return run.contents.some(item => sameSource(item, candidate)) ? { label: 'Read', tone: 'read' } : { label: 'Found', tone: 'found' }
   const intent = run.intents.find(item => item.runId === run.runId && sameSource(item, candidate))
-  if (intent?.status === 'VERIFIED') return { label: `bought ${money(intent.amountMinor)}`, tone: 'bought', bought: true }
-  if (intent?.status === 'DELIVERY_FAILED') return { label: 'paid · not delivered', tone: 'fail' }
-  if (intent && QUARANTINED[intent.status]) return { label: `Promise broken · ${QUARANTINED[intent.status]}`, tone: 'fail' }
-  if (intent && intent.status !== 'SKIPPED' && intent.status !== 'FAILED_NOT_SETTLED') return { label: 'buying…', tone: 'buying' }
+  if (intent?.status === 'VERIFIED') return { label: `Bought ${money(intent.amountMinor)}`, tone: 'bought', bought: true }
+  if (intent?.status === 'DELIVERY_FAILED') return { label: 'Paid · not delivered', tone: 'fail' }
+  if (intent && QUARANTINED[intent.status]) return { label: `Failed promise check · ${QUARANTINED[intent.status]}`, tone: 'fail' }
+  if (intent && intent.status !== 'SKIPPED' && intent.status !== 'FAILED_NOT_SETTLED') return { label: 'Buying…', tone: 'buying' }
   const row = run.decisions[0]?.rows.find(item => sameSource(item.candidate, candidate))
   if (row) {
-    if (row.wouldBuy && run.budgetMinor === 0) return { label: `would buy · ${price}`, tone: 'would' }
+    if (row.wouldBuy && run.budgetMinor === 0) return { label: `Would buy · ${price}`, tone: 'would' }
     const stamp = plainVerdict(row, run).stamp
-    if (row.verdict !== 'BUY') return { label: `${stamp.toLowerCase()} · ${price}`, tone: row.verdict === 'SKIP_OVER_CAP' ? 'cap' : 'skip' }
+    if (row.verdict !== 'BUY') return { label: `${stamp} · ${price}`, tone: row.verdict === 'SKIP_OVER_CAP' ? 'cap' : 'skip' }
   }
   return { label: price, tone: 'lock' }
 }
@@ -55,7 +57,7 @@ export default function Sources({ run, onOpen }: SourcesProps) {
   const dialog = useRef<HTMLDialogElement>(null)
   useEffect(() => { if (all) dialog.current?.showModal(); else dialog.current?.close() }, [all])
   const cards = run.candidates.map(candidate => ({ candidate, state: cardState(run, candidate) })).sort((a,b) => RANK[a.state.tone] - RANK[b.state.tone])
-  return <section className="ra-strip" aria-label="Sources"><div className="ra-source-summary">{cards.length} source{cards.length === 1 ? '' : 's'} · {run.contents.length} read · {run.intents.filter(i => i.status === 'VERIFIED').length} kept · {run.intents.filter(i => i.status === 'REFUNDED').length} refunded <button type="button" className="ra-link" onClick={() => setAll(true)}>View all</button></div>
-    <dialog ref={dialog} className="ra-receipt-sheet ra-sources-sheet" aria-label="All sources" onCancel={event => { event.preventDefault(); setAll(false) }}><header><h2>Sources</h2><button type="button" className="ra-btn" onClick={() => setAll(false)} aria-label="Close sources">×</button></header><table><thead><tr><th>Article</th><th>Writer / access</th></tr></thead><tbody>{cards.map(({ candidate, state }) => <tr key={identity(candidate)}><td><button type="button" className="ra-link" onClick={() => { setAll(false); onOpen?.(candidate) }}>{candidate.title}</button></td><td>{candidate.publisher} <WriterVerification value={candidate.verification} />{candidate.source && <small> · {candidate.source.origin}</small>}<br />{state.label}</td></tr>)}</tbody></table></dialog>
+  return <section className="ra-strip" aria-label="Sources"><div className="ra-source-summary">{cards.length} source{cards.length === 1 ? '' : 's'} · {run.contents.length} read · {run.intents.filter(i => i.status === 'VERIFIED').length} bought · {run.intents.filter(i => i.status === 'REFUNDED').length} refunded <button type="button" className="ra-link" onClick={() => setAll(true)}>View all</button></div>
+    <dialog ref={dialog} className="ra-receipt-sheet ra-sources-sheet" aria-label="All sources" onCancel={event => { event.preventDefault(); setAll(false) }}><header><h2>Sources</h2><button type="button" className="ra-btn" onClick={() => setAll(false)} aria-label="Close sources"><Icon name="close" /></button></header><table><thead><tr><th>Article</th><th>Writer / access</th></tr></thead><tbody>{cards.map(({ candidate, state }) => <tr key={identity(candidate)}><td><button type="button" className="ra-link" onClick={() => { setAll(false); onOpen?.(candidate) }}>{candidate.title}</button></td><td>{candidate.publisher} <WriterVerification value={candidate.verification} />{candidate.source && <small> · {candidate.source.origin}</small>}<br />{state.label}</td></tr>)}</tbody></table></dialog>
   </section>
 }

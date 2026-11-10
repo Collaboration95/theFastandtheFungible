@@ -49,7 +49,7 @@ export default function ReputationPanel({ records, run, full, presenter = false,
     <WriterEarnings />
     {local.length > 0 && <div><h3>Writers · local · Testnet</h3><ul>{local.map(writer => <li key={writer.slug}><a href={`${writer.origin}/w/${writer.slug}/`} target="_blank" rel="noreferrer">{writer.slug}</a> · Testnet · no real value</li>)}</ul></div>}
     {list.length === 0 ? <p>No history yet.</p> : <div className="ra-table-scroll"><table>
-      <thead><tr><th scope="col">Writer</th><th scope="col">Trust</th><th scope="col">Checked / failed</th><th scope="col">Status</th></tr></thead>
+      <thead><tr><th scope="col">Writer</th><th scope="col">Trust</th><th scope="col">Promise checks passed / failed</th><th scope="col">Status</th></tr></thead>
       {list.map(row => <PublisherRow key={row.slug} row={row} />)}
     </table></div>}
   </section>

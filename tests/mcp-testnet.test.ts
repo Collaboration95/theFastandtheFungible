@@ -25,7 +25,7 @@ test.each([['faucet HTTP 429 · faucet unavailable', 'faucet_unavailable'], ['va
  const log = vi.spyOn(console, 'error').mockImplementation(() => {})
  vi.mocked(provision).mockRejectedValue(Error(message))
  const result = await prepareMcpTestnet()
- expect(result.testnet).toBe(false); expect(result.env).toEqual({}); expect(result.labels.join()).toContain(`SIMULATED fallback · ${reason} · no ledger transactions`)
+ expect(result.testnet).toBe(false); expect(result.env).toEqual({ RA_TESTNET_FALLBACK: reason }); expect(result.labels.join()).toContain(`SIMULATED fallback · ${reason} · no ledger transactions`)
  expect(JSON.stringify(log.mock.calls)).not.toContain('secret-value')
 })
 test('provisions wallets directly inside a private state root', async () => {

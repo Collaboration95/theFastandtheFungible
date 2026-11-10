@@ -40,6 +40,6 @@ export async function prepareMcpTestnet(load: typeof provision = provision, asse
   } catch (error) {
     const label = `SIMULATED fallback · ${reasonClass(error)} · no ledger transactions`
     console.error(label)
-    return { testnet: false as const, env: {} as NodeJS.ProcessEnv, labels: [label, FIXTURE, ...(asset === 'test-iou' ? [TEST_SGD_LABEL] : [])] }
+    return { testnet: false as const, env: { RA_TESTNET_FALLBACK: reasonClass(error) } as NodeJS.ProcessEnv, labels: [label, FIXTURE, ...(asset === 'test-iou' ? [TEST_SGD_LABEL] : [])] }
   }
 }

@@ -4,7 +4,7 @@
 /* The environment facts: header popovers list them as rows; the inline note lays them out in four columns. */
 .ra-env-pop dl > div { display: contents; }
 .ra-env-pop dd { margin: 0; }
-.ra-env-note { width: min(820px, 100%); margin: 14px 0 0; padding: 14px 16px; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
+.ra-env-note { width: min(820px, 100%); margin: 14px 0 0; padding: 14px 16px; border: 1px solid var(--rule); border-radius: var(--radius-md); background: var(--surface); }
 .ra-env-note-head { display: flex; align-items: baseline; gap: 12px; }
 .ra-env-note-head h2 { flex: none; font-size: 13px; line-height: 18px; font-weight: 600; }
 .ra-env-note-head p { flex: 1; margin: 0; font-size: 13px; line-height: 18px; color: var(--muted); }
@@ -26,12 +26,12 @@
 .ra-hhero { margin-bottom: 12px; font-size: 32px; line-height: 38px; }
 .ra-hlede { max-width: 640px; margin: 0 auto 24px; font-size: 15px; line-height: 22px; text-wrap: pretty; }
 .ra-hsteps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; width: min(820px, 100%); margin: 0 0 24px; padding: 0; list-style: none; }
-.ra-hsteps li { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
+.ra-hsteps li { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border: 1px solid var(--rule); border-radius: var(--radius-md); background: var(--surface); }
 .ra-hsteps svg { flex: none; width: 20px; height: 20px; fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 .ra-hsteps b { display: block; font-size: 13px; line-height: 18px; font-weight: 600; }
 .ra-hsteps small { display: block; font-size: 12px; line-height: 17px; color: var(--muted); }
 
-.ra-hstate { width: min(820px, 100%); margin: 0 0 16px; padding: 14px 16px 14px 18px; border: 1px solid var(--rule-2); border-radius: 10px; background: var(--surface); box-shadow: inset 3px 0 0 var(--ink); }
+.ra-hstate { width: min(820px, 100%); margin: 0 0 16px; padding: 14px 16px 14px 18px; border: 1px solid var(--rule-2); border-radius: var(--radius-md); background: var(--surface); box-shadow: inset 3px 0 0 var(--ink); }
 .ra-hstate.is-pause, .ra-hstate.is-warn { box-shadow: inset 3px 0 0 var(--warn); }
 .ra-hstate h2 { margin: 0 0 4px; font-size: 14px; line-height: 20px; font-weight: 600; }
 .ra-hstate p { margin: 0; font-size: 13px; line-height: 19px; color: var(--ink); }
@@ -41,7 +41,7 @@
 .ra-hnote > span:first-child { color: var(--ink); font-weight: 500; }
 .ra-hbusy::before { content: ''; display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 3px; background: var(--warn); vertical-align: 1px; }
 
-.ra-hwait, .ra-hqueue { display: flex; align-items: center; gap: 14px; width: min(820px, 100%); padding: 16px 18px; border: 1px solid var(--rule-2); border-radius: 10px; background: var(--surface); }
+.ra-hwait, .ra-hqueue { display: flex; align-items: center; gap: 14px; width: min(820px, 100%); padding: 16px 18px; border: 1px solid var(--rule-2); border-radius: var(--radius-md); background: var(--surface); }
 .ra-hwait > div, .ra-hqueue > p { flex: 1; min-width: 0; margin: 0; }
 .ra-hwait h2 { margin: 0 0 2px; font-size: 14px; line-height: 20px; font-weight: 600; }
 .ra-hwait p { margin: 0; font-size: 13px; line-height: 19px; color: var(--muted); }
@@ -63,7 +63,7 @@
 .ra-nav-clear .ra-menu-danger { color: var(--bad); }
 
 /* Run screen: after Stop, one line per purchase in its true state. */
-.ra-hstop { margin: 0 0 16px; padding: 12px 14px; border: 1px solid var(--rule-2); border-radius: 10px; background: var(--surface); }
+.ra-hstop { margin: 0 0 16px; padding: 12px 14px; border: 1px solid var(--rule-2); border-radius: var(--radius-md); background: var(--surface); }
 .ra-hstop h2 { margin: 0 0 6px; font-size: 14px; line-height: 20px; font-weight: 600; }
 .ra-hstop p { margin: 0; font-size: 13px; }
 .ra-hstop ul { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
@@ -73,8 +73,8 @@
 .ra-hstop li.is-bad i { background: var(--bad); }
 
 /* Verify on XRPL in your browser. */
-.ra-hv { padding: 16px; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
-.ra-hv h3 { margin: 0 0 6px; font-size: 14px; line-height: 20px; font-weight: 600; }
+.ra-hv { padding: 16px; border: 1px solid var(--rule); border-radius: var(--radius-md); background: var(--surface); }
+.ra-hv h2 { margin: 0 0 6px; font-size: 14px; line-height: 20px; font-weight: 600; }
 .ra-hv > p { margin: 0 0 12px; font-size: 13px; line-height: 19px; color: var(--muted); }
 .ra-hv-busy { display: flex; align-items: center; gap: 8px; }
 .ra-hv-head { margin: 0 0 10px; font-size: 15px; font-weight: 600; }
@@ -103,7 +103,7 @@
   .ra-home-wrap.is-hosted { padding-top: 32px; }
   .ra-hhero { font-size: 26px; line-height: 32px; }
   .ra-hlede { margin-bottom: 18px; font-size: 14px; line-height: 21px; }
-  .ra-hsteps { grid-template-columns: minmax(0, 1fr); gap: 0; margin-bottom: 20px; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
+  .ra-hsteps { grid-template-columns: minmax(0, 1fr); gap: 0; margin-bottom: 20px; border: 1px solid var(--rule); border-radius: var(--radius-md); background: var(--surface); }
   .ra-hsteps li { border: 0; border-radius: 0; background: none; padding: 10px 12px; }
   .ra-hsteps li + li { border-top: 1px solid var(--rule); }
   .ra-hwait { flex-wrap: wrap; }

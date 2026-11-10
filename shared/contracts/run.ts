@@ -23,7 +23,7 @@ export const AskSchema = z.object({ escrow: z.boolean().optional(), question: z.
 export const TRACE_EVENT_TYPES = ['CLARIFY', 'PLAN', 'PROOF', 'CHALLENGE', 'REFUND', 'REPUTATION', 'COVERAGE', 'FOLLOW_UP'] as const
 export const TraceEventSchema = z.object({ id: z.number().int(), runId: z.string(), type: z.string(), label: z.string(), at: z.string(), data: z.record(z.string(), z.unknown()).optional() })
 /** `search` is optional until the search stream (#125+) sets it on every run (gate 5). */
-export const ModeLabelsSchema = z.object({ research: z.string(), decision: z.string(), publisher: z.string(), settlement: SettlementLabelSchema, search: z.enum(SEARCH_LABELS).optional(), /** Who wrote the search plan: 'client plan', a live model, or 'fixture · scope-fixture' (gate 5). */ plan: z.string().optional() })
+export const ModeLabelsSchema = z.object({ research: z.string(), decision: z.string(), publisher: z.string(), testnetFallback: z.enum(['faucet_unavailable', 'validation_timeout', 'wallet_cache_unavailable', 'network_unavailable']).optional(), settlement: SettlementLabelSchema, search: z.enum(SEARCH_LABELS).optional(), /** Who wrote the search plan: 'client plan', a live model, or 'fixture · scope-fixture' (gate 5). */ plan: z.string().optional() })
 export const RunPhaseSchema = z.enum(['SEARCH', 'READ_FREE', 'ANSWER', 'DECIDE', 'BUY', 'READ_PAID', 'DONE', 'FAILED', 'STOPPED'])
 /** Why a run stopped looking (#209): shown next to the requested-facts checklist and in the report. */
 export const STOP_REASONS = ['complete', 'no-eligible-purchase', 'budget-exhausted', 'round-limit', 'decision-unavailable', 'stopped'] as const

@@ -10,6 +10,9 @@ const short = (address: string) => `${address.slice(0, 6)}…${address.slice(-4)
 
 /** Testnet ledger: who paid whom in this run, and every wallet's live balance. Public data only. */
 export default function Ledger({ run }: { run: RunSnapshot }) {
+  const [error, setError] = useState(false)
+  const [attempt, setAttempt] = useState(0)
+  const [updated, setUpdated] = useState<Date>()
   const [view, setView] = useState<LedgerView>()
   const previous = useRef(new Map<string, string | null>())
   const [moved, setMoved] = useState<Set<string>>(new Set())
@@ -25,12 +28,12 @@ export default function Ledger({ run }: { run: RunSnapshot }) {
       // Briefly highlight balances that changed since the last poll.
       setMoved(new Set(next.wallets.filter(w => previous.current.has(w.address) && previous.current.get(w.address) !== w.balanceDrops).map(w => w.address)))
       previous.current = new Map(next.wallets.map(w => [w.address, w.balanceDrops]))
-      setView(next)
-    }).catch(() => { /* keep the last good view */ })
+      setView(next); setError(false); setUpdated(new Date())
+    }).catch(() => { if (live) setError(true) })
     void load()
     const timer = active ? setInterval(load, 4000) : undefined
     return () => { live = false; if (timer) clearInterval(timer) }
-  }, [onLedger, active, paid])
+  }, [onLedger, active, paid, attempt])
   if (!onLedger) return null
   const payments = model.payments.filter(item => item.xrpl)
   const steps = run.events.filter(event => event.type === 'XRPL' && event.runId === run.runId)
@@ -51,7 +54,8 @@ export default function Ledger({ run }: { run: RunSnapshot }) {
       {steps.map(step => <li key={step.id}><time dateTime={step.at}>{step.at.slice(11, 19)}</time> {step.label}</li>)}
     </ol>}
     <h3>Wallets</h3>
-    {view?.rail !== 'xrpl-testnet' ? <p>Loading Testnet balances…</p> : <table className="ra-ledger-wallets">
+    {error && <p role="status">Couldn’t load balances. {view && updated && `Last updated ${updated.toLocaleTimeString()}. `}<button className="ra-btn" onClick={() => { setError(false); setAttempt(n => n + 1) }}>Retry balances</button></p>}
+    {view?.rail !== 'xrpl-testnet' ? <p>{error ? 'Balances unavailable.' : 'Loading Testnet balances…'}</p> : <table className="ra-ledger-wallets">
       <thead><tr><th scope="col">Wallet</th><th scope="col">Balance</th><th scope="col">XRP received from ResearchAgent</th></tr></thead>
       <tbody>{view.wallets.map(wallet => <tr key={wallet.address} className={moved.has(wallet.address) ? 'ra-ledger-moved' : undefined}>
         <th scope="row">{wallet.name}<br /><a href={`${view.accountExplorer}/${wallet.address}`} target="_blank" rel="noreferrer"><code>{short(wallet.address)}</code></a></th>

@@ -24,7 +24,7 @@ async function open(section: string) {
 
 it('saves owner limits with CSRF and reports that restart is required', async () => {
   const calls = backend(); render(<OwnerSettings />); await open('Budget and limits')
-  fireEvent.change(screen.getByLabelText('Per-call cap'), { target: { value: '125' } })
+  fireEvent.change(screen.getByLabelText('Budget limit (S$)'), { target: { value: '1.25' } })
   fireEvent.click(screen.getByRole('button', { name: 'Save settings' }))
   await screen.findByText('Saved and audited. Restart the app to apply configuration changes.')
   const saved = calls.find(c => c.init?.method === 'POST')!
@@ -71,8 +71,8 @@ it('onboarding confirms selected network and caps through the guarded save path'
   const calls = backend(); render(<OwnerSettings />)
   await screen.findByText('Only you can change these settings. Policy code remains the spending authority.')
   fireEvent.change(screen.getByLabelText('Network'), { target: { value: 'xrpl-testnet' } })
-  fireEvent.change(screen.getByLabelText('Per-call cap · SGD cents'), { target: { value: '100' } })
-  fireEvent.click(screen.getByRole('button', { name: 'Confirm caps and start' }))
+  fireEvent.change(screen.getByLabelText('Budget limit (S$)'), { target: { value: '1.00' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Confirm limits and start' }))
   await screen.findByText('Saved and audited. Restart the app to apply configuration changes.')
   expect(JSON.parse(String(calls.find(c => c.init?.method === 'POST')?.init?.body))).toEqual({ ...values, SETTLEMENT_RAIL: 'xrpl-testnet', MCP_MAX_BUDGET_MINOR: 100 })
 })

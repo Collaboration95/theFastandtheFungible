@@ -24,6 +24,8 @@ for (const folder of ['server', 'publisher', 'shared', 'mcp', 'sdk', 'eval/decis
   }
 }
 await mkdir(join(stage, 'desktop'), { recursive: true })
+await cp('node_modules/@fontsource-variable/geist/files/geist-latin-wght-normal.woff2', join(stage, 'desktop/geist.woff2'))
+await cp('src/tokens.css', join(stage, 'desktop/tokens.css'))
 for (const name of ['recovery.mjs', 'recovery.html', 'recovery.js', 'updates.mjs', 'main.mjs', 'backend.mjs', 'policy.mjs', 'keychain.mjs', 'engine-host.mjs', 'preload.cjs', 'preferences.html', 'preferences.js', 'preferences.css', 'mcp.mjs']) await cp(`desktop/${name}`, join(stage, 'desktop', name))
 // Compile the shared worker, retaining its startup, auth and shutdown contract.
 // The desktop adds only its local Host/Origin and pause boundary.

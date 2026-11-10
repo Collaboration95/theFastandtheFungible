@@ -26,10 +26,10 @@ export function usePublisherCard(slug?: string): PublisherCard | undefined {
 const titleCase = (slug: string) => slug.split('-').map(word => word[0]?.toUpperCase() + word.slice(1)).join(' ')
 export const writerName = (slug: string, card?: PublisherCard) => card?.writers.find(writer => writer.slug === slug)?.name ?? titleCase(slug)
 
-/** Reputation chip: trust T (D6). The status is spelled out only when it isn't active; `quiet` leaves a newcomer unmarked. */
+/** Reputation chip: "Trust 0.80" (trust T, D6). The status is spelled out only when it isn't active; `quiet` leaves a newcomer unmarked. */
 export function TrustChip({ reputation, quiet = false }: { reputation?: ReputationSummary; quiet?: boolean }) {
-  if (!reputation) return quiet ? null : <span className="ra-trust is-new" title="No history yet">T new</span>
-  return <span className={`ra-trust is-${reputation.status}`} title={`Honesty H ${reputation.H.toFixed(2)} · calibration C ${reputation.C.toFixed(2)}`}>T {reputation.T.toFixed(2)}{reputation.status === 'active' ? '' : ` · ${reputation.status}`}</span>
+  if (!reputation) return quiet ? null : <span className="ra-trust is-new" title="No history yet">No history</span>
+  return <span className={`ra-trust is-${reputation.status}`} title={`Honesty ${reputation.H.toFixed(2)} · coverage ${reputation.C.toFixed(2)}`}>Trust {reputation.T.toFixed(2)}{reputation.status === 'active' ? '' : ` · ${reputation.status === 'delisted' ? 'Delisted' : 'Blocked'}`}</span>
 }
 
 /** Who wrote a source and who sells it (D21). `card` (source cards) keeps the author link, SYNTHETIC and trust; `row` (decision rows) keeps trust only; the full chip is for Show work. */
@@ -41,9 +41,9 @@ export default function WriterChip({ candidate, reputation, variant = 'full' }: 
   const hosted = !!useHosted()
   if (variant === 'row') return trust
   // Hosted links stay on the gateway, which permits only public writer reads.
-  const link = slug ? <a href={import.meta.env.MODE === 'browser-demo' ? `${import.meta.env.BASE_URL}?writers=1` : candidate.source && !hosted ? new URL(`/w/${slug}`, candidate.source.origin).href : `/w/${slug}`} target="_blank" rel="noreferrer" className="ra-writer-n" title="Open the writer's site in a new tab">{writer} ↗</a> : <span className="ra-writer-n">{writer}</span>
+  const link = slug ? <a href={import.meta.env.MODE === 'browser-demo' ? `${import.meta.env.BASE_URL}?writers=1` : candidate.source && !hosted ? new URL(`/w/${slug}`, candidate.source.origin).href : `/w/${slug}`} target="_blank" rel="noreferrer" className="ra-writer-n" title="Open the writer’s site in a new tab">{writer} ↗</a> : <span className="ra-writer-n">{writer}</span>
   const verification = <WriterVerification value={candidate.verification} />
-  const authorship = ['team-builder-notes', 'team-xrpl-explainers'].includes(candidate.publisherSlug ?? '') && <span className="ra-chip" style={{ whiteSpace: 'normal', lineHeight: 1.4 }}>{candidate.publisherSlug === 'team-xrpl-explainers' ? 'team-authored explainer · sources cited · not an independent writer · Testnet' : 'team-authored · real content · not an independent writer · Testnet'}</span>
+  const authorship = ['team-builder-notes', 'team-xrpl-explainers'].includes(candidate.publisherSlug ?? '') && <span className="ra-chip" title={candidate.publisherSlug === 'team-xrpl-explainers' ? 'Team-authored explainer with cited sources. Not an independent writer.' : 'Team-authored notes with real content. Not an independent writer.'}>Team-authored</span>
   const synthetic = candidate.license.kind === 'SYNTHETIC' && <span className="ra-chip is-sim">SYNTHETIC</span>
   if (variant === 'card') return <span className="ra-writer">{writer !== candidate.publisher && link}{authorship}{synthetic}{verification}{trust}</span>
   return <span className="ra-writer">

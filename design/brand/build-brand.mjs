@@ -111,6 +111,7 @@ try {
 } finally {await browser.close()}
 // Wire identity metadata idempotently, preserving the page content and title.
 const base='https://collaboration95.github.io/theFastandtheFungible/'
+const hostedOrigin=(process.env.HOSTED_ORIGIN || JSON.parse(readFileSync(new URL('../../shared/links.json',import.meta.url),'utf8')).hostedApp).replace(/\/$/, '')
 function metadata(file,{title,description,image,url,prefix='',app=false}) {
  let html=readFileSync(resolve(root,file),'utf8').replace(/<!-- brand:start -->[\s\S]*?<!-- brand:end -->\n?/g,'')
  html=html.replace(/\s*<meta\b(?=[^>]*(?:name=["'](?:description|theme-color|twitter:[^"']+)["']|property=["']og:[^"']+["']))[^>]*>/gi,'').replace(/\s*<link\b(?=[^>]*rel=["'](?:icon|shortcut icon|apple-touch-icon|manifest)["'])[^>]*>/gi,'')
@@ -124,7 +125,7 @@ for(const [route,title,desc]of pageSpecs) {
 }
 for(const f of ['favicon.svg','favicon.ico','apple-touch-icon.png'])put(`site/brand/${f}`,readFileSync(resolve(root,'public',f)))
 put('public/brand/og.png',readFileSync(resolve(root,'site/brand/og/index.png')))
-metadata('index.html',{title:'ResearchAgent',description:'Search expertise. Buy the missing evidence, within a budget you set.',image:base+'brand/og/index.png',url:base,prefix:'/',app:true})
+metadata('index.html',{title:'ResearchAgent',description:'Search expertise. Buy the missing evidence, within a budget you set.',image:hostedOrigin+'/brand/og.png',url:hostedOrigin+'/',prefix:'/',app:true})
 // Manifest includes QA capture; platform ICNS is compared by verify.mjs across local rebuilds.
 const manifest=Object.fromEntries([...new Set(assets)].filter(f=>f!=='desktop/build/icon.icns').sort().map(f=>[f,createHash('sha256').update(readFileSync(resolve(root,f))).digest('hex')]))
 put('design/brand/manifest.json',JSON.stringify(manifest,null,2)+'\n')

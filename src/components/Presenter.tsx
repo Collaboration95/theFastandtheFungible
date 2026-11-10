@@ -1,3 +1,4 @@
+import Icon from './Icon'
 import { useState } from 'react'
 import type { Pace } from '../stage'
 
@@ -18,7 +19,7 @@ export default function Presenter({ pace, onPace, faults, busy, onClose, clarify
     finally { setArming(false) }
   }
   return <section className="ra-presenter" role="dialog" aria-label="Presenter menu">
-    <div className="ra-presenter-h"><h2>Presenter</h2><button type="button" className="ra-btn" onClick={onClose} aria-label="Close presenter menu"><kbd>.</kbd> ×</button></div>
+    <div className="ra-presenter-h"><h2>Presenter</h2><button type="button" className="ra-btn" onClick={onClose} aria-label="Close presenter menu"><kbd>.</kbd> <Icon name="close" size={16} /></button></div>
     <div className="ra-pr-row"><span className="ra-pr-label" id="ra-pace">Pace</span>
       <div className="ra-seg" role="radiogroup" aria-labelledby="ra-pace">{([['real', 'Real'], ['stage', 'Stage 1×'], ['slow', 'Stage 0.5×']] as [Pace, string][]).map(([value, label]) => <button key={value} type="button" role="radio" aria-checked={pace === value} onClick={() => onPace(value)}>{label}</button>)}</div>
       <p className="ra-note">Stage pace holds each step of the run on screen for a minimum time. Applies to the next question.</p></div>

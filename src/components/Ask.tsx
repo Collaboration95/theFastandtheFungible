@@ -1,8 +1,10 @@
 import { useId, useState, type ReactNode } from 'react'
-import { AskSchema, BUDGET, PURCHASE_RULE, type Ask as AskInput } from '../../shared/contracts/index.js'
+import { AskSchema, BUDGET, type Ask as AskInput } from '../../shared/contracts/index.js'
 import { exampleQuestions } from '../../shared/contracts/examples.js'
 import { money } from '../format'
 import BudgetPopover from './BudgetPopover'
+import AgentSprite from './AgentSprite'
+import { BUDGET_LABEL } from '../copy'
 
 export interface AskProps {
   onAsk: (input: AskInput) => void | Promise<void>
@@ -45,8 +47,8 @@ export default function Ask({ onAsk, busy = false, settlement, above, universalM
   const [error, setError] = useState('')
   const disabled = busy || submitting
   return <section className="ra-home" aria-label="Ask a research question">
-    {intro ?? <><h1 className="ra-hero">Ask a question. <em>Give it a budget.</em></h1>
-    <p className="ra-home-description">Answers from free sources first; buys only what helps ({PURCHASE_RULE}).</p></>}
+    {intro ?? <><AgentSprite animation="idle" still /><h1 className="ra-hero">Ask a question. <em>Give it a budget.</em></h1>
+    <p className="ra-home-description">Searches free sources first. Pays a writer only when it closes a gap, never beyond your budget.</p></>}
     {browserDemo && <p className="ra-note">Recorded budget: S$2.00. The Kestrel–TSMC replay covers pricing &amp; margins.</p>}
     {above && <p className="ra-pending-question">{question}</p>}
     {above}
@@ -54,17 +56,17 @@ export default function Ask({ onAsk, busy = false, settlement, above, universalM
       event.preventDefault()
       if (disabled) return
       const result = AskSchema.safeParse({ question, budgetMinor })
-      if (!result.success) { setError('Type a question first. Up to 2,000 characters.'); return }
+      if (!result.success) { setError('Enter a question (up to 2,000 characters).'); return }
       setError(''); setSubmitting(true)
       try { await onAsk(result.data) } catch { /* App owns the one network-error notice. */ } finally { setSubmitting(false) }
     }}>
       <label className="ra-sr" htmlFor={`${id}-q`}>Your question</label>
-      <textarea id={`${id}-q`} className="ra-qbox" value={question} onChange={event => setQuestion(event.target.value)} readOnly={browserDemo} maxLength={2000} rows={2} required disabled={disabled} placeholder={placeholder ?? (browserDemo ? "Choose a recorded question below, or press ⌘K…" : "Ask about a company, a market or a claim…")}
+      <textarea id={`${id}-q`} className="ra-qbox" value={question} onChange={event => setQuestion(event.target.value)} readOnly={browserDemo} maxLength={2000} rows={2} required disabled={disabled} placeholder={placeholder ?? (browserDemo ? "Choose a recorded question below, or press ⌘K…" : (settlement.startsWith('XRPL') ? "Ask about XRPL, x402 or agent payments…" : "Ask about a company, a market or a claim…"))}
         onKeyDown={event => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit() } }} />
       <div className="ra-comp-row">
         {universalMinor === undefined
           ? <BudgetPopover value={chosen} onChange={setBudget} disabled={disabled || browserDemo} max={budgetMax} />
-          : <button type="button" className="ra-budget-chip" onClick={onSettings} title="Universal budget · change it in Settings">{universalMinor === 0 ? 'Free' : money(universalMinor)}</button>}
+          : <button type="button" className="ra-budget-chip" onClick={onSettings} title={`${BUDGET_LABEL.default} · change it in Settings`}>{universalMinor === 0 ? 'Free' : money(universalMinor)}</button>}
         <button className="ra-ask" type="submit" disabled={disabled || !question.trim()}>{askLabel ?? (budgetMinor === 0 ? 'Ask free' : 'Ask')}</button>
       </div>
       {composerNote}

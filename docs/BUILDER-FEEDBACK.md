@@ -1192,3 +1192,10 @@ persistence or a mainnet deployment. No cloud resource or live ledger call ran.
 - **Workaround / fix:** use a 64 MiB buffer for every Git/GitHub capture in the local gate, including failure-status reporting. Requesting only needed SHA/tree fields is another bounded-output approach. Keep remote identity and source-race checks intact.
 - **Suggested tooling improvement:** command wrappers should set explicit output limits and test large responses alongside exact-source status admission.
 - **Mainnet impact:** none observed; the change affects local verification/status publication, not ledger signing, spending authority or payment execution.
+
+## 11 November 2026: Testnet fallback reason was lost at the browser boundary (code-derived, UI)
+
+- **Evidence:** `mcp/testnet.ts`, `server/routes.ts`, `tests/mcp-testnet.test.ts`, and `docs/evidence/ui-nov11/README.md`. The launcher labelled `faucet_unavailable` in its terminal output, but the browser received only simulated settlement labels. This is a code-derived UX failure mode; no new faucet outage was observed in this lane.
+- **Workaround:** pass only an allowlisted reason class through engine environment and health metadata, then explain the simulated preview in environment details. No automatic spending or Testnet retry.
+- **Suggested fix:** Starter Kit launchers should expose safe setup/fallback status to every UI alongside the rail label.
+- **Severity / mainnet impact:** medium UX friction; no mainnet execution, no real funds. This change conveys status and does not establish mainnet readiness.

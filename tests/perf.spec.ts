@@ -31,9 +31,9 @@ test('production preview: initial JS, interactive, input → paint, and full UC2
     await expect(page.getByRole('combobox')).toBeVisible()
     await page.keyboard.press('Escape')
     await page.keyboard.press('Control+2')
-    await expect(page.getByRole('tab', { name: /Writers/ })).toHaveAttribute('aria-selected', 'true')
+    await expect(page.getByRole('navigation', { name: 'Workspace views' }).getByRole('button', { name: /^Writers/ })).toHaveAttribute('aria-current', 'page')
     await page.keyboard.press('Control+1')
-    await expect(page.getByRole('tab', { name: /Run/ })).toHaveAttribute('aria-selected', 'true')
+    await expect(page.getByRole('navigation', { name: 'Workspace views' }).getByRole('button', { name: /^Run/ })).toHaveAttribute('aria-current', 'page')
   }
   const paints = await page.evaluate(() => (window as unknown as { foundationMetrics: { paints: { key: string; ms: number }[] } }).foundationMetrics.paints)
   const p95 = (key: string) => { const values = paints.filter(item => key.includes(item.key)).map(item => item.ms).sort((a, b) => a - b); return values[Math.ceil(values.length * .95) - 1] }

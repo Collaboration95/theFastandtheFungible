@@ -25,7 +25,7 @@ test('clarify chips, plan card, finished UC2 run and Writers tab have no serious
   await page.getByRole('button', { name: 'Start now' }).click()
   await expect(page).toHaveTitle(/Answer ready/, { timeout: 60_000 })
   expect(await serious(page)).toEqual([])
-  await page.getByRole('tab', { name: 'Writers' }).click()
+  await page.getByRole('button', { name: /^Writers/ }).click()
   expect(await serious(page)).toEqual([])
 })
 

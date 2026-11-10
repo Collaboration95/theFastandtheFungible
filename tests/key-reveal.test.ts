@@ -65,7 +65,7 @@ it('quarantines ciphertext from snapshot, model contents, UI, logs and exports w
   const { default: PaymentRow } = await import('../src/components/PaymentRow.js')
   const run = s.store.getRun(s.run.runId)
   const html = renderToStaticMarkup(createElement(PaymentRow, { run, intent: run.intents[0], onRetry: () => {}, onReceipt: () => {} }))
-  expect(html).toContain('Escrow locked · waiting for writer to reveal key')
+  expect(html).toContain('Held in escrow · waiting for the writer’s key')
   const publicBytes = JSON.stringify([run, html, receiptBundle(s.store, s.run.runId), s.store.auditEntries(), s.store.receiptRows()])
   expect(publicBytes).not.toContain(e.quote.ciphertext)
   expect(s.store.getRun(s.run.runId).contents).toEqual([])

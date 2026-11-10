@@ -15,9 +15,9 @@ export default function ClarifyChips({ questions, answers, onAnswer, onSkip }: C
   }, [questions, answers, onAnswer, onSkip])
   return <section className="ra-clarify" aria-label="Clarifying questions">
     {questions.map(question => <div key={question.id} className="ra-clarify-q" role="group" aria-label={question.text}>
-      <p>Which angle matters most?</p>
+      <p>{question.text}</p>
       <div className="ra-clarify-opts">{question.options.map((option, index) => <button key={option} type="button" className={`ra-chip-opt${answers[question.id] === option ? ' is-on' : ''}`} aria-pressed={answers[question.id] === option} onClick={() => onAnswer(question.id, option)} aria-label={option}><span aria-hidden="true">{index + 1}</span> {option}</button>)}</div>
     </div>)}
-    <button type="button" className="ra-link" onClick={onSkip}>Skip</button>
+    <button type="button" className="ra-link" onClick={onSkip}>Skip questions</button>
   </section>
 }

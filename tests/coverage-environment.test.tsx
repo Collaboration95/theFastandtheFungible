@@ -27,7 +27,7 @@ it('labels Testnet funds as having no value and preserves supplied model labels'
   const trigger = screen.getByRole('button')
   fireEvent.click(trigger)
   expect(screen.getByText('XRPL Testnet, test funds with no value')).toBeTruthy()
-  expect(screen.getByText('Hybrid')).toBeTruthy()
+  expect(screen.getByText('Keyword + meaning')).toBeTruthy()
   expect(screen.getByText(/research protocol fixture/)).toBeTruthy()
   fireEvent.click(trigger)
   expect(trigger.getAttribute('aria-expanded')).toBe('false')
@@ -42,10 +42,10 @@ for (const interaction of ['pointer', 'keyboard']) it(`does not cover an active 
     else fireEvent.keyDown(document.body, { key: 'k' })
     rerender(<EnvIndicator labels={exampleRun.labels} />)
     act(() => { vi.runAllTimers() })
-    expect(screen.queryByRole('region', { name: "What's real here" })).toBeNull()
+    expect(screen.queryByRole('region', { name: "What’s real here" })).toBeNull()
     // Explicit disclosure remains available after automatic onboarding is skipped.
     fireEvent.click(screen.getByRole('button'))
-    expect(screen.getByRole('region', { name: "What's real here" })).toBeTruthy()
+    expect(screen.getByRole('region', { name: "What’s real here" })).toBeTruthy()
   } finally { vi.useRealTimers() }
 })
 
@@ -58,8 +58,8 @@ it('does not auto-open after remount while a preset or question already holds fo
   try {
     render(<EnvIndicator labels={exampleRun.labels} />)
     act(() => { vi.runAllTimers() })
-    expect(screen.queryByRole('region', { name: "What's real here" })).toBeNull()
+    expect(screen.queryByRole('region', { name: "What’s real here" })).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: /Demo.*simulated payments/ }))
-    expect(screen.getByRole('region', { name: "What's real here" })).toBeTruthy()
+    expect(screen.getByRole('region', { name: "What’s real here" })).toBeTruthy()
   } finally { preset.remove(); vi.useRealTimers() }
 })

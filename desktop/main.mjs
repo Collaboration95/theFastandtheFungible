@@ -107,7 +107,7 @@ async function boot() {
         return new Response(response.body, { status: response.status, headers: { ...Object.fromEntries(response.headers), ...headers } })
       } catch { return new Response('Local engine unavailable', { status: 503, headers }) }
     }
-    const pathname = url.pathname === '/recovery' ? '/desktop/recovery.html' : url.pathname === '/preferences' ? '/ui/index.html' : url.pathname === '/desktop/preferences.js' || url.pathname === '/desktop/preferences.css' || url.pathname === '/desktop/recovery.js' ? url.pathname : url.pathname === '/' ? '/ui/index.html' : `/ui${url.pathname}`
+    const pathname = url.pathname === '/recovery' ? '/desktop/recovery.html' : url.pathname === '/preferences' ? '/ui/index.html' : url.pathname === '/desktop/preferences.js' || url.pathname === '/desktop/preferences.css' || url.pathname === '/desktop/recovery.js' || url.pathname === '/desktop/tokens.css' || url.pathname === '/desktop/geist.woff2' ? url.pathname : url.pathname === '/' ? '/ui/index.html' : `/ui${url.pathname}`
     const file = resolve(root, `.${decodeURIComponent(pathname)}`)
     if (!file.startsWith(root + sep) || !['.html', '.js', '.css', '.svg', '.png', '.ico', '.woff2', '.webmanifest'].includes(extname(file))) return new Response(null, { status: 403 })
     try {

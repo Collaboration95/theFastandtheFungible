@@ -4,6 +4,8 @@ import { RLUSD_TESTNET_ISSUER, type Asset } from './contracts/asset.js'
 export const settlementAssetLabel = (asset?: Asset) => !asset || asset === 'XRP' ? 'XRPL Testnet' : asset.issuer === RLUSD_TESTNET_ISSUER ? 'RLUSD (Testnet)' : asset.label
 
 export const money = (minor: number) => `S$${(minor / 100).toFixed(2)}`
+export const ENV = { testnet: 'Testnet · test funds', simulated: 'Demo · simulated payments' } as const
+export const environmentLabel = (settlement?: string) => settlement?.startsWith('XRPL') ? ENV.testnet : ENV.simulated
 export const assetMoney = (minor: number, asset?: Asset) => asset && asset !== 'XRP' && asset.currency === 'SGT' ? `TEST-SGD ${(minor / 100).toFixed(2)} · stand-in for RLUSD · no real value` : money(minor)
 export type PaymentPhase = 'quoted' | 'approved by policy' | 'submitted' | 'validated' | 'delivered' | 'verified' | 'challenged' | 'refunded' | 'failed' | 'skipped'
 const PAYMENT: Record<PurchaseIntent['status'], PaymentPhase> = { DECIDED: 'approved by policy', QUOTED: 'quoted', RESERVED: 'approved by policy', SUBMITTING: 'submitted', SETTLED: 'validated', DELIVERY_PENDING: 'delivered', VERIFIED: 'verified', CLAIM_FAILED: 'challenged', CHALLENGED: 'challenged', REFUNDED: 'refunded', CHALLENGE_REJECTED: 'challenged', CHALLENGE_REFUSED: 'challenged', DELIVERY_FAILED: 'failed', FAILED_NOT_SETTLED: 'failed', SKIPPED: 'skipped' }

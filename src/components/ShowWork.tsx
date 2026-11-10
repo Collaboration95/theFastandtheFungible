@@ -1,3 +1,4 @@
+import Icon from './Icon'
 import { useEffect, useRef, useState } from 'react'
 import { XRPL_LABEL, type ModeLabels, type RunSnapshot } from '../../shared/contracts/index.js'
 import Activity from './Activity'
@@ -25,7 +26,7 @@ export default function ShowWork({ run, configured, onClose }: { run: RunSnapsho
     <div className="ra-sheet-h">
       <h2>Show work</h2>
       <div className="ra-seg" role="tablist" aria-label="Show work views">{tabs.map(name => <button key={name} type="button" role="tab" aria-selected={tab === name} onClick={() => setTab(name)}>{name}</button>)}</div>
-      <button type="button" className="ra-btn" onClick={onClose} aria-label="Close show work">Esc ×</button>
+      <button type="button" className="ra-btn" onClick={onClose} aria-label="Close show work">Esc <Icon name="close" size={16} /></button>
     </div>
     <div className="ra-sheet-b" role="tabpanel" aria-label={tab}>
       <p className="ra-note">{{ Trace: 'What the agent did, in order.', Wire: 'The requests and responses behind this run.', Policy: 'Why each article was bought or skipped.', Receipts: 'The payment records saved with this run.', Models: 'The providers and substitutions used in this run.', Ledger: 'The transactions on XRPL Testnet.' }[tab]}</p>

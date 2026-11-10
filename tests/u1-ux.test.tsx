@@ -22,7 +22,7 @@ it('never marks an upcoming step done: nothing reads as paid or checked before i
   expect(html).toContain('Searching writers…')
   expect(html).not.toContain('Searched writers · 0 sources')
   for (const upcoming of ['Pay the writer, only if an article helps', 'Check the article against the writer’s promises', 'Update the answer with verified evidence']) {
-    expect(html).toMatch(new RegExp(`<li class="is-todo"><span><i aria-hidden="true">·</i><span class="ra-sr">Next: </span>${upcoming}`))
+    expect(html).toMatch(new RegExp(`<li class="is-todo"><span><i aria-hidden="true"><svg[^>]*>.*?</svg></i><span class="ra-sr">Next: </span>${upcoming}`))
   }
   expect(html).not.toMatch(/✓<\/i>(?:<span[^>]*>[^<]*<\/span>)?Pay/)
 })
@@ -42,14 +42,14 @@ it('explains a decline in plain words with value against the bar, and says it on
   const rows = [{ ...base, candidate: { ...candidate, resourceId: 'a', title: 'Note A' }, value: 0.08, verdict: 'SKIP_LOW_VALUE' as const, reason: 'Reason A' }, { ...base, candidate: { ...candidate, resourceId: 'b', title: 'Note B' }, value: 0.01, verdict: 'SKIP_LOW_TRUST' as const, reason: 'Reason B' }]
   const run = { ...offlineZeroBudgetRun, phase: 'DONE' as const, answers: [], intents: [], receipts: [], candidates: rows.map(r => r.candidate), decisions: [{ ...offlineZeroBudgetRun.decisions[0], threshold: 0.2, rows }] }
   const html = renderToStaticMarkup(<Answer run={run} view="latest" onView={() => {}} compare={false} onCompare={() => {}} />)
-  expect(html).toContain('<summary>Why ▸</summary>')
-  expect(html).toContain('Below the value bar')
-  expect(html).toContain('Writer blocked')
+  expect(html).toContain('<summary>Why nothing was bought</summary>')
+  expect(html).toContain('Skip')
+  expect(html).toContain('Blocked')
   expect(html).toContain('value 0.08 vs 0.20')
   expect(html).toContain('Reason A')
   expect(html).not.toContain('SKIP_LOW_VALUE')
   const spend = renderToStaticMarkup(<SpendPanel run={run} onRetry={() => {}} onReceipt={() => {}} />)
-  expect(spend).toContain('Nothing bought. 2 paid articles considered; none selected.')
+  expect(spend).toContain('Nothing bought. 2 paid articles considered; none bought.')
   expect(spend).not.toContain('Found 2 paid articles')
 })
 
@@ -59,15 +59,15 @@ it('tells the key-reveal story in order: escrow → key → refund, then promise
   const intent = run.intents.find(i => i.escrow?.mode === 'key-reveal' && i.refund)!
   const html = renderToStaticMarkup(<PaymentRow run={run} intent={intent} onRetry={() => {}} onReceipt={() => {}} />)
   const at = (text: string) => { const index = html.indexOf(text); expect(index, text).toBeGreaterThan(-1); return index }
-  expect(at('Escrow created')).toBeLessThan(at('Refund · writer-signed · fixture writer cooperates (a real writer could refuse)'))
-  expect(at('XRPL Testnet · key-reveal escrow · no real value')).toBeLessThan(at('Trust score drops'))
-  expect(at('Fraud proof')).toBeLessThan(at('ra-verification'))
+  expect(at('Payment locked in escrow')).toBeLessThan(at('Refund signed by the writer. This demo writer agrees to refund; a real writer could refuse.'))
+  expect(at('XRPL Testnet · key-reveal escrow · no real value')).toBeLessThan(at('The writer’s trust score drops.'))
+  expect(at('Download evidence')).toBeLessThan(at('ra-verification'))
 })
 
 it('pluralises the mobile spend summary', () => {
   const one = { ...ucRuns.UC2 }
-  expect(renderToStaticMarkup(<MobileSpend run={one} onRetry={() => {}} onReceipt={() => {}} />)).toContain(`${one.receipts.length} payment${one.receipts.length === 1 ? '' : 's'} ›`)
-  expect(renderToStaticMarkup(<MobileSpend run={{ ...one, receipts: [one.receipts[0]] }} onRetry={() => {}} onReceipt={() => {}} />)).toContain('1 payment ›')
+  expect(renderToStaticMarkup(<MobileSpend run={one} onRetry={() => {}} onReceipt={() => {}} />)).toContain(`${one.receipts.length} payment${one.receipts.length === 1 ? '' : 's'} `)
+  expect(renderToStaticMarkup(<MobileSpend run={{ ...one, receipts: [one.receipts[0]] }} onRetry={() => {}} onReceipt={() => {}} />)).toContain('1 payment ')
 })
 
 it('Settings shows readable names but keeps the stored identifiers as values', async () => {
@@ -78,16 +78,16 @@ it('Settings shows readable names but keeps the stored identifiers as values', a
   const network = screen.getByLabelText('Network') as HTMLSelectElement
   expect([...network.options].map(o => [o.value, o.textContent])).toEqual([['simulated', 'Simulated · no real funds'], ['xrpl-testnet', 'XRPL Testnet · test funds, no value']])
   expect(screen.getByText('DeepSeek API key', { selector: 'b' })).toBeTruthy()
-  expect((screen.getByRole('button', { name: 'Confirm caps and start' }) as HTMLButtonElement).className).toContain('owner-primary')
+  expect((screen.getByRole('button', { name: 'Confirm limits and start' }) as HTMLButtonElement).className).toContain('owner-primary')
   history.replaceState(null, '', '/')
 })
 
-it('shows an ISO UTC receipt date regardless of the browser locale', async () => {
+it('shows the receipt date with the browser timezone', async () => {
   const { default: ReceiptSheet } = await import('../src/components/ReceiptSheet')
   const run = ucRuns.UC2
   const receipt = { ...run.receipts[0], settledAt: '2026-11-07T06:16:00Z' }
   const html = renderToStaticMarkup(<ReceiptSheet run={run} receipt={receipt} onClose={() => {}} />)
-  expect(html).toContain('2026-11-07T06:16:00.000Z')
+  expect(html).toContain(new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'long' }).format(new Date(receipt.settledAt)))
   expect(html).not.toContain('07/11/2026')
 })
 
@@ -95,6 +95,6 @@ it('omits the unsourced registry Articles column from Writers', async () => {
   const { default: ReputationPanel } = await import('../src/components/ReputationPanel')
   const { uc3Reputation } = await import('../src/fixtures/run')
   const html = renderToStaticMarkup(<ReputationPanel records={uc3Reputation} run={ucRuns.UC3} />)
-  expect(html).toContain('Checked / failed')
+  expect(html).toContain('Promise checks passed / failed')
   expect(html).not.toContain('>Articles<')
 })
