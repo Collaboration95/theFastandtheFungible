@@ -35,8 +35,13 @@ export function parseArgs(argv) {
   return options
 }
 
+const maxBuffer = 64 * 1024 * 1024
+export function gh(root, args, env = {}) {
+  return execFileSync('gh', args, { cwd: root, encoding: 'utf8', maxBuffer, timeout: 30000,
+    stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, GH_PROMPT_DISABLED: '1', ...env } })
+}
 export function git(root, args, env = {}) {
-  return execFileSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024,
+  return execFileSync('git', args, { cwd: root, encoding: 'utf8', maxBuffer,
     env: { ...process.env, GIT_OPTIONAL_LOCKS: '0', ...env }, stdio: ['ignore', 'pipe', 'pipe'] }).trimEnd()
 }
 
@@ -322,9 +327,9 @@ export async function main(argv = process.argv.slice(2)) {
     const capturedChanges = changes(root, options.base)
     if (json(capturedChanges) !== json(sourceChanges)) throw Error('Changed paths or HEAD changed while planning')
     const current = async () => capture(scope)
-    const gh = args => execFileSync('gh', args, { cwd: root, encoding: 'utf8', timeout: 30000, stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, GH_PROMPT_DISABLED: '1' } })
+    const github = args => gh(root, args)
     const publish = async state => {
-      const result = await publishStatus({ source: receipt.source, target: options.target, repo, state, current, gh,
+      const result = await publishStatus({ source: receipt.source, target: options.target, repo, state, current, gh: github,
         description: state === 'pending' ? 'Local verification in progress' : state === 'success' ? `Verified tree ${receipt.source.tree.slice(0, 12)}; ${receipt.steps.filter(step => step.cacheHit).length}/${steps.length} cached` : 'Local verification failed; inspect local gate receipt' })
       receipt.statuses.push(result)
     }
@@ -390,7 +395,7 @@ export async function main(argv = process.argv.slice(2)) {
       // A fresh scope is needed for the last capture after resources were closed.
       const finalScope = await newScope()
       try {
-        const result = await publishStatus({ source: receipt.source, target: options.target, repo, state: 'success', current: async () => capture(finalScope), gh,
+        const result = await publishStatus({ source: receipt.source, target: options.target, repo, state: 'success', current: async () => capture(finalScope), gh: github,
           description: `Verified tree ${receipt.source.tree.slice(0, 12)}; ${receipt.steps.filter(step => step.cacheHit).length}/${steps.length} cached` })
         receipt.statuses.push(result)
       } finally { await finalScope.close() }
@@ -402,7 +407,7 @@ export async function main(argv = process.argv.slice(2)) {
       const failureScope = await newScope()
       try {
         const result = await publishStatus({ source: receipt.source, target: options.target, repo, state: 'failure', current: async () => capture(failureScope),
-          gh: args => execFileSync('gh', args, { cwd: root, encoding: 'utf8', timeout: 30000, stdio: ['ignore', 'pipe', 'pipe'] }), description: 'Local verification failed; inspect local gate receipt' })
+          gh: args => gh(root, args), description: 'Local verification failed; inspect local gate receipt' })
         receipt.statuses.push(result)
       } catch (failure) { receipt.publishError = String(failure) }
       finally { await failureScope.close() }

@@ -69,5 +69,8 @@ hashes, both DMG aliases and annotation notes with prerelease/Latest flags and
 no remote publication. These fixtures check orchestration, not real packaging.
 
 The shipping PR is [#433](https://github.com/Collaboration95/theFastandtheFungible/pull/433).
-It remains draft pending GF #427 and a fresh locked full rehearsal. The
-temporary rehearsal versions/tag will be removed before merge.
+GF merged as #434 (`d63049ac`) on 11 Nov; this branch has rebased onto it.
+Local-gate Git/GitHub CLI captures now share a 64 MiB output buffer, with a
+regression that exercises pending/success/failure publication using 2 MiB
+commit responses and a 2 MiB Git blob (16 runner tests pass).
+The temporary rehearsal versions/tag will be removed before merge.
