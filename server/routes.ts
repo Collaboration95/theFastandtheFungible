@@ -1,3 +1,5 @@
+import { writersRouter } from './api/writers.js'
+import { hostedWriterPages } from './hosted/writers.js'
 import { requestBodyStatus } from './body-limit.js'
 import openapi from '../docs/api/openapi.json' with { type: 'json' }
 import { validateHosted, hostedPayer, pausedShell } from './hosted/bootstrap.js'
@@ -200,6 +202,8 @@ async function createConfiguredApi(options: ApiOptions = {}) {
       next()
     })
   }
+  if (hosted) app.use(hostedWriterPages(publisherUrl))
+  app.use(writersRouter(context, !!hosted))
   app.use(providersRouter(work))
   app.use(ownerSettingsRouter(context))
   app.use(walletRouter(context))

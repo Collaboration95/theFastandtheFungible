@@ -11,11 +11,11 @@ const sgd = (minor: number) => `S$${(minor / 100).toFixed(2)}`
 const date = (iso: string) => esc(iso.slice(0, 10))
 const CSP = "default-src 'none'; style-src 'self'; base-uri 'none'; form-action 'none'"
 
-const page = (title: string, nav: string, main: string, synthetic = true) => `<!doctype html>
+const page = (title: string, nav: string, main: string, synthetic = true, team = false) => `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)}</title><link rel="stylesheet" href="/w/site.css"></head>
 <body>${nav}<main>${main}</main>
-<footer><span>${synthetic ? 'SYNTHETIC · fictional writer. Nothing here is real reporting.' : 'AUTHOR SUPPLIED · unverified writer · XRPL Testnet'}</span><a href="/w/">The web the engine searches</a></footer></body></html>
+<footer><span>${team ? 'TEAM-AUTHORED · XRPL Testnet · no real value' : synthetic ? 'SYNTHETIC · fictional writer. Nothing here is real reporting.' : 'AUTHOR SUPPLIED · unverified writer · XRPL Testnet'}</span><a href="/w/">The web the engine searches</a></footer></body></html>
 `
 
 const navFor = ({ publisher }: PublisherEntry) => {
@@ -23,7 +23,7 @@ const navFor = ({ publisher }: PublisherEntry) => {
   return `<nav><a class="name" href="${base}/">${esc(publisher.name)}</a><div class="mid"><a href="${base}/">Blogs</a><a href="${base}/about">About</a></div><div class="right"><a href="${base}/contact">Contact</a></div></nav>`
 }
 
-const entryPage = (entry: PublisherEntry, title: string, nav: string, main: string) => page(title, nav, main, entry.publisher.synthetic)
+const entryPage = (entry: PublisherEntry, title: string, nav: string, main: string) => page(title, nav, main, entry.publisher.synthetic, entry.publisher.slug.startsWith('team-'))
 
 const homePage = (entry: PublisherEntry) => {
   const { publisher, articles } = entry

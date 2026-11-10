@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { allowanceText, hostedLinks, HOSTED_DAILY_QUESTIONS, HOSTED_ENDS, HOSTED_QUESTION_MINOR, minorText, type HomeState, type Hosted } from '../../hosted'
+import { allowanceText, hostedLinks, HOSTED_DAILY_QUESTIONS, HOSTED_ENDS, questionCap, minorText, type HomeState, type Hosted } from '../../hosted'
 
 const Out = ({ href, children }: { href: string; children: ReactNode }) => <a href={href} target="_blank" rel="noopener noreferrer">{children}<span className="ra-sr"> (opens in a new tab)</span></a>
 
@@ -17,7 +17,7 @@ export function HostedIntro({ hosted, state }: { hosted: Hosted; state: HomeStat
     <h1 className="ra-hero ra-hhero">Research with a wallet.</h1>
     <p className="ra-home-description ra-hlede">Ask a question and set a budget. The agent answers from free sources first, then pays writers for missing evidence over x402 {testnet ? 'on XRPL Testnet' : 'with simulated payments'}, never beyond your budget. Every payment comes with a receipt you can verify.</p>
     <ol className="ra-hsteps" aria-label="How it works">
-      <li>{icons.ask}<span><b>Ask with a budget</b><small>Up to {minorText(HOSTED_QUESTION_MINOR)} in test funds</small></span></li>
+      <li>{icons.ask}<span><b>Ask with a budget</b><small>Up to {minorText(questionCap(hosted.status))} in test funds</small></span></li>
       <li>{icons.pay}<span><b>It buys only what helps</b><small>One article at a time, only to fill a gap</small></span></li>
       <li>{icons.verify}<span><b>Verify every receipt</b><small>{testnet ? 'On XRPL Testnet, in your browser' : 'Signatures and hashes, in your browser'}</small></span></li>
     </ol>

@@ -1,3 +1,4 @@
+import { publicWriterPath } from './writers.js'
 import { timingSafeEqual } from 'node:crypto'
 import { isIP, BlockList } from 'node:net'
 import type { RequestHandler } from 'express'
@@ -35,10 +36,19 @@ export function sessionGuard(limits: HostedLimits): RequestHandler {
   }
 }
 export function accessGuard(limits: HostedLimits): RequestHandler {
+  const reads = new Map<string, { at: number; n: number }>()
   return (req,res,next) => {
     // Deny by default, including alternate case, encoded slashes and trailing-path aliases.
     const path = req.path
-    const publicReads = ['/api/demo/status','/api/health','/health','/api/runs','/api/reputation','/api/writers/status','/livez','/startupz','/readyz']
+    const publicReads = ['/api/demo/status','/api/health','/health','/api/runs','/api/reputation','/api/writers/status','/api/writers/earnings','/livez','/startupz','/readyz']
+    if (['GET','HEAD'].includes(req.method) && (publicWriterPath(path) || path === '/api/writers/earnings')) {
+      if (Object.keys(req.query).length) return res.status(404).json({ error: 'Not found.' })
+      const now = Date.now(), key = limits.ipKey(res.locals.hostedIp)
+      for (const [k, value] of reads) if (now - value.at >= 60000) reads.delete(k)
+      const value = reads.get(key) ?? { at: now, n: 0 }
+      if (value.n >= 120 || (!reads.has(key) && reads.size >= 5000)) return res.status(429).json({ error: 'read_rate' })
+      value.n++; reads.set(key, value); next(); return
+    }
     const run = path.match(/^\/(?:api\/)?runs\/([a-zA-Z0-9-]+)(?:\/(?:events|stop|retry-delivery|receipts\.json|report\.json|report\.(?:pdf|html)|report|pin|intents\/([a-zA-Z0-9-]+)\/key-reveal-proof\.json))?$/)
     const deny = () => res.status(404).json({ error: 'Not found.' })
     if (run) {

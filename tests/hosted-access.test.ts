@@ -13,11 +13,12 @@ afterEach(async()=>{ for(const f of cleanup.splice(0).reverse()) await f(); vi.u
 const wire = (url:string, method='GET', headers:Record<string,string>={}, body?:unknown) => new Promise<{status:number; headers:import('node:http').IncomingHttpHeaders; text:string; json:<T=Record<string,unknown>>()=>T}>((resolve,reject)=>{
   const req=http(url,{method,headers:{Host:'demo.example','Content-Type':'application/json',...headers}},res=>{let text='';res.on('data',c=>text+=c);res.on('end',()=>resolve({status:res.statusCode!,headers:res.headers,text,json:<T>()=>JSON.parse(text) as T}))});req.on('error',reject);req.end(body===undefined?undefined:JSON.stringify(body))
 })
-async function setup() {
+async function setup(cap = '200', publisherUrl = 'http://127.0.0.1:1') {
+  vi.stubEnv('HOSTED_QUESTION_CAP_MINOR',cap)
   const dir=resources().tempDir('hg-access-')
-  for(const [k,v] of Object.entries({HOSTED:'1',HOSTED_ORIGIN:'https://demo.example',HOSTED_TRUSTED_PROXY:'127.0.0.2',HOSTED_IP_HMAC_KEY:'a'.repeat(32),HOSTED_CONTROL_PATH:join(dir,'control.json'),SETTLEMENT_RAIL:'simulated',LLM_PROVIDER:'fixture',DECISION_PROVIDER:'fixture',DEMO_PORT_OFFSET:'1500'})) vi.stubEnv(k,v)
+  for(const [k,v] of Object.entries({HOSTED:'1',HOSTED_ORIGIN:'https://demo.example',HOSTED_TRUSTED_PROXY:'127.0.0.2',HOSTED_IP_HMAC_KEY:'a'.repeat(32),HOSTED_CONTROL_PATH:join(dir,'control.json'),SETTLEMENT_RAIL:'simulated',LLM_PROVIDER:'fixture',DECISION_PROVIDER:'fixture',DEMO_PORT_OFFSET:'2600'})) vi.stubEnv(k,v)
   writeFileSync(process.env.HOSTED_CONTROL_PATH!,JSON.stringify({admissionsPaused:false,spendingPaused:false,reasonCode:'test_ready',expiresAt:'2026-11-19T16:00:00Z'}))
-  const api=await createApiApp({dbPath:join(dir,'app.db'),publisherUrl:'http://127.0.0.1:1',hostedReadiness:async()=>true})
+  const api=await createApiApp({dbPath:join(dir,'app.db'),publisherUrl,hostedReadiness:async()=>true})
   expect(api.store).toBeDefined()
   const server=api.app.listen(0,'127.0.0.1');await once(server,'listening')
   cleanup.push(async()=>{server.closeAllConnections();await new Promise<void>(done=>server.close(()=>done()));await api.close()})
@@ -107,4 +108,56 @@ it('binds nested real intent IDs and makes delivery retries durable and idempote
   expect((await wire(url+`/runs/${id}/retry-delivery`,'POST',headers,{intentId:'intent-a'})).status).toBe(202)
   expect((await wire(url+`/runs/${id}/retry-delivery`,'POST',headers,{intentId:'intent-a',changed:true})).status).toBe(409)
   await new Promise<void>(resolve=>setImmediate(resolve));expect(retry).toHaveBeenCalledTimes(1)
+})
+
+it('exposes and reserves a configured cap below 200 for scope and submit',async()=>{
+  const {url,a,b,limits}=await setup('100')
+  expect((await wire(url+'/api/demo/status','GET',a)).json().questionCapMinor).toBe(100)
+  const headers={...a,'Idempotency-Key':'small-cap'}
+  const scoped=await wire(url+'/api/scope','POST',headers,{question:'What is XRPL?'})
+  expect(scoped.status).toBe(200)
+  const principal=limits.session(a.Cookie.split('=')[1]).principal
+  expect(limits.existing(principal,'small-cap','scope',{question:'What is XRPL?'})?.minor).toBe(100)
+  expect((await wire(url+'/runs','POST',{...b,'Idempotency-Key':'over-cap'},{question:'What is XRPL?',budgetMinor:200})).status).toBe(400)
+  expect((await wire(url+'/runs','POST',headers,{question:'What is XRPL?',budgetMinor:200})).status).toBe(409)
+  expect((await wire(url+'/runs','POST',headers,{question:'What is XRPL?',budgetMinor:100})).status).toBe(201)
+})
+it('keeps zero cap authoritative',async()=>{
+  const {url,a}=await setup('0')
+  expect((await wire(url+'/api/demo/status','GET',a)).json().questionCapMinor).toBe(0)
+  expect((await wire(url+'/api/scope','POST',{...a,'Idempotency-Key':'zero'},{question:'What is XRPL?'})).status).toBe(200)
+})
+it('writer reads cannot tunnel to private data, purchases or state changes and are rate limited',async()=>{
+  const {url,a,b,seed}=await setup(), id=seed(a,'writer-path')
+  for(const path of [`/w/team-builder-notes/runs/${id}`, '/w/team-builder-notes/articles/secret','/w/team-builder-notes/search','/w/team-builder-notes/facilitator/supported','/w/__faults','/w/team-builder-notes/about?run='+id,'/w/team-builder-notes/%2e%2e/api/runs']) expect((await wire(url+path,'GET',b)).status,path).toBe(404)
+  expect((await wire(url+'/w/team-builder-notes','POST',b,{})).status).toBe(404)
+  for(let i=0;i<120;i++) expect((await wire(url+'/api/writers/earnings','GET',b)).status).toBe(200)
+  expect((await wire(url+'/api/writers/earnings','GET',b)).status).toBe(429)
+})
+it('earnings expose only confirmed sales and trust from the caller, without raw intent or premium data',async()=>{
+  const {url,a,b,seed,store}=await setup(), id=seed(a,'earnings')
+  const corpus=await import('../publisher/corpus.js').then(m=>m.loadWriterCorpus())
+  const article=corpus.articles.find(a=>a.tier==='PAID')!
+  store.updateRun(id,{labels:{...store.getRun(id).labels,settlement:'XRPL TESTNET · no real value'}})
+  const hash='A'.repeat(64)
+  const intent={runId:id,intentId:'private-intent',profileId:article.publisherSlug,resourceId:article.articleId,version:article.version,amountMinor:article.priceMinor,status:'VERIFIED',escrow:{scheme:'escrow-v1',policy:'escrow-policy-v1',owner:'rOwner',cancelAfter:1,finishHash:hash,revealLedger:123,state:'RELEASED'},refund:{txHash:'B'.repeat(64),amountMinor:article.priceMinor}}
+  store.hostedState(db=>db.prepare('INSERT INTO intents VALUES (?,?,?)').run(intent.intentId,id,JSON.stringify(intent)))
+  const mine=await wire(url+'/api/writers/earnings','GET',a),foreign=await wire(url+'/api/writers/earnings','GET',b)
+  expect(mine.text).toContain(hash);expect(foreign.text).not.toContain(hash)
+  expect(mine.text).not.toContain('private-intent');expect(mine.text).not.toContain(article.body);expect(mine.text).not.toContain('Private question')
+  expect(foreign.text).not.toContain(article.body)
+})
+it('serves public writer HTML and metadata without premium bytes through the real hosted gateway',async()=>{
+  const {serve}=await import('./site-serve.js')
+  const {miniCorpus}=await import('./fixtures/corpus-mini/index.js')
+  const publisherUrl=await serve(miniCorpus)
+  const {url,b}=await setup('200',publisherUrl)
+  const paid=miniCorpus.articles.find(a=>a.tier==='PAID')!
+  for(const path of [`/w/${paid.publisherSlug}`,`/w/${paid.publisherSlug}/about`,`/w/${paid.publisherSlug}/blog/${paid.articleId}`,`/w/${paid.publisherSlug}/.well-known/agent-publisher.json`]) {
+    const response=await wire(url+path,'GET',b)
+    expect(response.status,path).toBe(200)
+    expect(response.text).not.toContain(paid.body)
+    for(const passage of paid.passages) expect(response.text).not.toContain(passage.text)
+    expect(response.text).not.toContain('privateKey');expect(response.text).not.toContain('secret')
+  }
 })

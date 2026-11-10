@@ -1,7 +1,7 @@
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { BUDGET, ModeLabelsSchema, XRPL_LABEL, type Ask as AskInput, type Citation, type ModeLabels, type Plan, type PublicCandidate, type ReputationRecord, type Receipt as ReceiptData, type RunSnapshot } from '../shared/contracts/index.js'
 import { ApiError, ask, createReport, deleteRun, getDemoStatus, getReputation, getRun, listPastRuns, pinRun, resetReputation, retryDelivery, scope, stop, streamRun, type HostedDemoStatus, type PastRun, type ScopeResult } from './api'
-import { canAsk, homeState, HostedContext, HOSTED_QUESTION_MINOR, refusal, type Hosted } from './hosted'
+import { canAsk, homeState, HostedContext, questionCap, refusal, type Hosted } from './hosted'
 import { dwell, isPaid, isTerminal, runEvents, SPEED, staged, type Pace } from './stage'
 import { candidateOf, favicon, leadSentence, money } from './format'
 import Layout from './components/Layout'
@@ -466,8 +466,8 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
     <main className={`ra-home-wrap${hosted ? ' is-hosted' : ''}`}>
       {banner}
       {hosted && state
-        ? <Ask onAsk={sendAsk} busy={!canAsk(state) || sending || !!pending || !!waiting || (!!shown && !finished)} above={waiting ? <HostedWaiting onCancel={() => setWaiting(undefined)} /> : pendingCard} settlement={settlement} draft={draft} onDraft={setDraft} picked={Math.min(picked, HOSTED_QUESTION_MINOR)} onPick={setPicked}
-            intro={<HostedIntro hosted={hosted} state={state} />} budgetMax={HOSTED_QUESTION_MINOR} composerNote={canAsk(state) ? <HostedComposerNote hosted={hosted} state={state} /> : undefined}
+        ? <Ask onAsk={sendAsk} busy={!canAsk(state) || sending || !!pending || !!waiting || (!!shown && !finished)} above={waiting ? <HostedWaiting onCancel={() => setWaiting(undefined)} /> : pendingCard} settlement={settlement} draft={draft} onDraft={setDraft} picked={Math.min(picked, Math.floor(questionCap(hosted.status) / 5) * 5)} onPick={setPicked}
+            intro={<HostedIntro hosted={hosted} state={state} />} budgetMax={Math.floor(questionCap(hosted.status) / 5) * 5} composerNote={canAsk(state) ? <HostedComposerNote hosted={hosted} state={state} /> : undefined}
             placeholder={settlement.startsWith('XRPL') ? 'Ask about XRPL payments, escrow, x402 or agent wallets…' : undefined} examplesLabel="Questions that answer well today" />
         : <Ask onAsk={sendAsk} busy={healthError || sending || !!pending || (!!shown && !finished)} above={pendingCard} settlement={settlement} universalMinor={!browserDemo && universal ? universalMinor : undefined} onSettings={openSettings} draft={draft} onDraft={setDraft} picked={picked} onPick={setPicked}
             note={envNote && !recording ? <EnvNote labels={health.labels} onDone={() => setEnvNote(false)} /> : undefined} />}

@@ -30,7 +30,7 @@ export function admissionGuard(config: Config, store?: Store): RequestHandler {
     if (origin && origin !== webOrigin) { res.status(403).json({ error: 'Origin is not allowed.' }); return }
     const path = req.path.toLowerCase().replace(/\/+$/, '')
     const hasAgents = Boolean(store?.agentKeys.list().length)
-    const privateAgentData = hasAgents && (path.startsWith('/runs/') || path.startsWith('/api/runs') || path === '/api/wallet/status')
+    const privateAgentData = hasAgents && (path.startsWith('/runs/') || path.startsWith('/api/runs') || path === '/api/wallet/status' || path === '/api/writers/earnings')
     const protectedRoute = !['GET', 'HEAD', 'OPTIONS'].includes(req.method) || path.startsWith('/api/mcp/')
       || path.startsWith('/api/audit/') || privateAgentData || path === '/api/metrics' || (path === '/api/health' && req.query.deep === '1')
     const tokenOnly = path === '/api/wallet/pause' || path === '/api/spending/pause'

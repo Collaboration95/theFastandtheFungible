@@ -17,7 +17,7 @@ import { createDecipheriv, createHash, prepareDecryption } from './verify/shims/
 import { groupChecks } from './verify/browser'
 
 const status = (patch: Partial<HostedDemoStatus> = {}): HostedDemoStatus => ({
-  state: 'ready', csrfToken: 'token', queue: [],
+  questionCapMinor: 200, state: 'ready', csrfToken: 'token', queue: [],
   capabilities: { ask: true, scope: true, history: true, receipts: true, pdf: false, settings: false, faultControls: false },
   remaining: { questions: 5, minor: 1000 },
   labels: { models: 'live research configured · per-answer fallback labelled', rail: 'Shared XRPL Testnet demo · no real value' },
@@ -58,7 +58,7 @@ describe('hosted home state', () => {
     expect(refusal(new ApiError(409, 'idempotency_conflict')).kind).toBe('retry-new-key')
     for (const code of ['paused', 'spending_paused', 'ended', 'demo_unavailable']) expect(refusal(new ApiError(503, code)).kind).toBe('state')
     expect(refusal(new ApiError(429, 'allowance_exhausted')).text).toBe('You’ve used today’s questions on the shared demo.')
-    expect(refusal(new ApiError(400, 'invalid_budget')).text).toBe('Choose a budget up to S$2.00.')
+    expect(refusal(new ApiError(400, 'invalid_budget')).text).toBe('Choose a budget within the current per-question limit.')
     expect(refusal(new ApiError(429, 'model_daily_cap')).text).toContain('08:00 SGT')
     expect(refusal(new ApiError(408, 'queue_expired')).text).toContain('Nothing was charged')
     expect(refusal(new ApiError(422, 'private_input')).text).toContain('personal or secret details')

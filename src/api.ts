@@ -157,6 +157,7 @@ export function streamRun(runId: string, handlers: {
 
 /** Server-authoritative hosted capabilities. HU owns presentation and mutation headers. */
 const HostedDemoStatusSchema = z.object({
+  questionCapMinor: z.number().int().min(0).max(200).optional(),
   state: z.enum(['ready', 'paused', 'busy', 'degraded', 'ended']),
   capabilities: z.object({ ask: z.boolean(), scope: z.boolean(), history: z.boolean(), receipts: z.boolean(), pdf: z.literal(false), settings: z.literal(false), faultControls: z.literal(false) }),
   remaining: z.object({ questions: z.number().int().nonnegative(), minor: z.number().int().nonnegative() }),
