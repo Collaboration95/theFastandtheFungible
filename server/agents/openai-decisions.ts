@@ -1,3 +1,4 @@
+import { meteredFetch } from '../hosted/execution.js'
 import { pause } from './provider-retry.js'
 import { reportModelUsage } from '../telemetry.js'
 import { quotedText } from './untrusted.js'
@@ -210,7 +211,7 @@ export class OpenAIDecisionsProvider implements DecisionProvider {
       try {
         return await Promise.race([
           (async () => {
-            const response = await this.transport(DECISIONS_URL, { method: 'POST', headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' }, signal: controller.signal, body })
+            const response = await meteredFetch(this.transport, 'decision')(DECISIONS_URL, { method: 'POST', headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' }, signal: controller.signal, body })
             if (!response.ok) {
               const text = await response.text().catch(() => '')
               if (response.status === 429 && /insufficient_quota/.test(text)) throw new DecisionsUnavailableError('no credit')

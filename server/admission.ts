@@ -6,6 +6,7 @@ import type { Config } from './config.js'
 
 export const loopback = (host: string) => ['localhost', '127.0.0.1', '::1', '[::1]'].includes(host.toLowerCase())
 export function validateBind(config: Config) {
+  if (config.HOSTED === '1') return
   if (!loopback(config.HOST ?? '127.0.0.1') && !config.RA_API_TOKEN) {
     throw new Error('RA_API_TOKEN is required for a non-loopback HOST')
   }

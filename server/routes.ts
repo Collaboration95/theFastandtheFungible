@@ -1,5 +1,12 @@
 import { requestBodyStatus } from './body-limit.js'
 import openapi from '../docs/api/openapi.json' with { type: 'json' }
+import { validateHosted, hostedPayer, pausedShell } from './hosted/bootstrap.js'
+import { HostedLimits } from './hosted/limits.js'
+import { HostedQueue } from './hosted/queue.js'
+import { hostedRouter } from './hosted/routes.js'
+import { sessionGuard, accessGuard } from './hosted/session.js'
+import { hostedControl, HostedError } from './hosted/control.js'
+import { hostedExecution } from './hosted/execution.js'
 import { ownerSettingsRouter } from './owner-settings.js'
 import { localWriterRegistrations } from './local-writer-discovery.js'
 import { AnswerAnchors } from './anchor.js'
@@ -40,11 +47,16 @@ import { type DecisionProvider } from './agents/decision.js'
 import { isLlmConfigured, llmLabel, researchModel } from './agents/llm.js'
 
 /** `observe`: the trust check's relevance re-measure (#205); defaults to Workers AI embeddings when SEARCH_EMBEDDINGS=live. */
-export type ApiOptions = { payer?: XrplPayer; dbPath?: string; publisherUrl?: string; publisherUrls?: string[]; secret?: string; reportDir?: string; provider?: DecisionProvider; observe?: RelevanceObserver; reconcileIntervalMs?: number }
+export type ApiOptions = { payer?: XrplPayer; dbPath?: string; publisherUrl?: string; publisherUrls?: string[]; secret?: string; reportDir?: string; provider?: DecisionProvider; observe?: RelevanceObserver; reconcileIntervalMs?: number; hostedReadiness?: () => Promise<boolean> }
 export async function createApiApp(options: ApiOptions = {}) {
+  if (process.env.HOSTED !== '1') return createConfiguredApi(options)
+  try { validateHosted(loadConfig()); return await createConfiguredApi(options) }
+  catch { return { app: pausedShell(), close: async () => {}, drain: async () => {} } as Awaited<ReturnType<typeof createConfiguredApi>> }
+}
+async function createConfiguredApi(options: ApiOptions = {}) {
   const config = loadConfig()
   if (config.SETTLEMENT_RAIL === 'xrpl-testnet' && !options.payer && !config.XRPL_PAYER_SEED) throw new Error('Testnet requires wallet configuration')
-  const work = new ActiveWork(Number(config.ACTIVE_WORK_LIMIT || 4))
+  const work = new ActiveWork(config.HOSTED === '1' ? 1 : Number(config.ACTIVE_WORK_LIMIT || 4))
   const mcpPolicy = budgetPolicy(config)
   const jobs = new Set<Promise<void>>()
   const activeRuns = new Map<string, Promise<void>>()
@@ -83,7 +95,14 @@ export async function createApiApp(options: ApiOptions = {}) {
   }
   // Every durable event is also mirrored into the active Langfuse trace (a no-op when tracing is off).
   const store = new Store(options.dbPath ?? config.APP_DB ?? 'data/app.db', event => { try { traceEvent(event); logMoneyEvent(event, store) } catch { /* telemetry never blocks the run */ } publish(event) })
-  app.use(admissionGuard(config, store))
+  const hosted = config.HOSTED === '1' ? new HostedLimits(store, config) : undefined
+  const queue = hosted ? new HostedQueue(config) : undefined
+  if (hosted) {
+    store.spendingGuard = () => hostedControl(config).spendingPaused
+    app.use(sessionGuard(hosted))
+    app.use(express.json({ limit: '16kb' }))
+    app.use(accessGuard(hosted))
+  } else app.use(admissionGuard(config, store))
   app.get('/openapi.json', (_req, res) => res.json(openapi))
   app.post('/api/verify', express.json({ limit: '8mb' }), async (req, res) => {
     res.json(await verifyAnswer(req.body, { testnet: req.query.testnet === '1', expectHead: typeof req.query.expectHead === 'string' ? req.query.expectHead : undefined }))
@@ -91,7 +110,7 @@ export async function createApiApp(options: ApiOptions = {}) {
   app.use(express.json({ limit: '16kb' }))
   const client = new PublisherClient({ baseUrls: options.publisherUrls ?? (!options.publisherUrl && config.PUBLISHER_URLS ? config.PUBLISHER_URLS.split(',').map(s => s.trim()) : undefined), baseUrl: options.publisherUrl ?? config.PUBLISHER_URL, secret: options.secret ?? config.PUBLISHER_SECRET })
   // Requested Testnet never silently falls back to simulated settlement.
-  const payer = options.payer ?? (config.SETTLEMENT_RAIL === 'xrpl-testnet' && config.XRPL_PAYER_SEED ? XrplPayer.fromEnv() : undefined)
+  const payer = options.payer ?? (config.SETTLEMENT_RAIL === 'xrpl-testnet' && config.XRPL_PAYER_SEED ? (hosted ? hostedPayer(config) : XrplPayer.fromEnv()) : undefined)
   if (config.ANCHOR_RAIL !== 'off' && payer instanceof XrplPayer) anchors = new AnswerAnchors(store, payer)
   const purchases = new PurchaseManager(store, client, payer)
   let provider = options.provider
@@ -124,7 +143,7 @@ export async function createApiApp(options: ApiOptions = {}) {
     if (existing) { lease?.(); return existing }
     const release = lease ?? work.acquire()
     const done = progress(runId, 'Working with accessible evidence; spending policy remains enforced.')
-    const task = withModelUsage(usage => store.appendEvent(runId, { type: usage.fallback ? 'MODEL_FALLBACK' : 'MODEL_USAGE', label: usage.fallback ? 'LLM fallback · labelled fixture' : 'Provider-reported usage', data: usage }), job).catch(() => {
+    const runJob = () => withModelUsage(usage => store.appendEvent(runId, { type: usage.fallback ? 'MODEL_FALLBACK' : 'MODEL_USAGE', label: usage.fallback ? 'LLM fallback · labelled fixture' : 'Provider-reported usage', data: usage }), job).catch(() => {
       store.updateRun(runId, { phase: 'FAILED', error: 'Run interrupted; start a new ask or retry a settled delivery.' })
     }).finally(async () => {
       activeRuns.delete(runId)
@@ -140,12 +159,47 @@ export async function createApiApp(options: ApiOptions = {}) {
       await anchors?.ensure(runId).catch(() => undefined)
       jobs.delete(task)
     })
+    const hold = hosted?.forRun(runId)
+    const task = hosted && hold ? hostedExecution.run({ limits: hosted, holdId: hold.id, principal: hold.principal }, runJob) : runJob()
     activeRuns.set(runId, task)
     jobs.add(task)
     return task
   }
   const faultsAvailable = config.PUBLISHER_FAULTS === '1' && ['localhost', '127.0.0.1', '[::1]'].includes(new URL(publisherUrl).hostname)
   const context: ApiContext = { work, store, client, payer, purchases, loop, reputation, labels, mcpPolicy, publisherUrl, launch, streams, onStreamEmpty: runId => { clearTimeout(snapshotTimers.get(runId)); snapshotTimers.delete(runId); lastSnapshot.delete(runId) }, reportDir, reportJobs, progress }
+  if (hosted && queue) {
+    // Recovery is complete before startup health becomes available. Fresh probes are bounded and coalesced.
+    let probe: Promise<boolean> | undefined, checkedAt = 0, healthy = false
+    const ready = () => {
+      if (options.hostedReadiness) return options.hostedReadiness()
+      if (Date.now()-checkedAt < 5000) return Promise.resolve(healthy)
+      return probe ??= (async () => {
+        try {
+          if (!hosted.available()) return false
+          if (isLlmConfigured() && ['RESEARCH','DECISION'].some(profile => !Number.isFinite(Number(config[`HOSTED_${profile}_INPUT_USD_PER_MILLION`])) || Number(config[`HOSTED_${profile}_INPUT_USD_PER_MILLION`]) <= 0 || !Number.isFinite(Number(config[`HOSTED_${profile}_OUTPUT_USD_PER_MILLION`])) || Number(config[`HOSTED_${profile}_OUTPUT_USD_PER_MILLION`]) < 0)) return false
+          store.checkWritable()
+          const writers = await client.registry()
+          if (!writers.length || !payer) return false
+          const b = await payer.balance()
+          return b.ledgerAgeSeconds <= 30 && b.availableDrops > (store.walletStatus().reservedMinor + 200) * 1000 + 2000 &&
+            config.HOSTED_PROVIDERS_READY_UNTIL !== undefined && Date.parse(config.HOSTED_PROVIDERS_READY_UNTIL) > Date.now()
+        } catch { return false }
+      })().then(value => { checkedAt = Date.now(); healthy = value; return value }).finally(() => { probe = undefined })
+    }
+    app.use(hostedRouter(context,config,hosted,queue,ready,async () => {
+      try { store.checkWritable(); return (await client.registry()).length > 0 } catch { return false }
+    }))
+    // Per-principal and global SSE connection ceilings include reconnects.
+    app.get('/runs/:id/events',(req,res,next)=>{
+      const principal = res.locals.hostedSession.principal
+      const expires = setTimeout(() => res.end(), Math.min(86400000, Math.max(1,res.locals.hostedSession.expires-Date.now())))
+      res.on('close',()=>clearTimeout(expires))
+      const total = [...streams.values()].reduce((n,set)=>n+set.size,0)
+      const own = [...streams].filter(([id])=>store.runPrincipal(id)?.principal===principal).reduce((n,[,set])=>n+set.size,0)
+      if(total>=16 || own>=2) return res.status(429).json({error:'stream_limit'})
+      next()
+    })
+  }
   app.use(providersRouter(work))
   app.use(ownerSettingsRouter(context))
   app.use(walletRouter(context))
@@ -173,7 +227,8 @@ export async function createApiApp(options: ApiOptions = {}) {
   app.use(reportsRouter(context))
   const handleError: ErrorRequestHandler = (error, _req, res, _next) => {
     const notFound = error instanceof Error && error.message === 'Run not found'
-    const status = requestBodyStatus(error) ?? (error instanceof OverloadedError ? 503 : error instanceof AgentDenied ? 403 : notFound ? 404 : error instanceof z.ZodError ? 400 : 500)
+    const status = error instanceof HostedError ? error.status : requestBodyStatus(error) ?? (error instanceof OverloadedError ? 503 : error instanceof AgentDenied ? 403 : notFound ? 404 : error instanceof z.ZodError ? 400 : 500)
+    if (error instanceof HostedError) { res.set('Retry-After','30').status(status).json({error:error.code}); return }
     res.status(status).json({ ...errorEnvelope(error instanceof OverloadedError ? 'overloaded' : status === 403 ? 'unauthorized' : notFound ? 'not_found' : [400,413].includes(status) ? 'invalid' : 'backend_unavailable', status), error: notFound ? 'Run not found.' : status === 413 ? 'Request body too large.' : status === 400 ? 'Invalid command.' : 'Operation failed; the last validated answer and ledger are preserved.' })
   }
   app.use(handleError)
@@ -193,11 +248,11 @@ export async function createApiApp(options: ApiOptions = {}) {
         if (stopping) return
         // Existing durable runnable rows are retried on the next sweep when saturated;
         // this creates no new durable queue and never blocks signed reconciliation.
-        for (const runId of store.runnableRunIds()) {
+        for (const runId of hosted ? [] : store.runnableRunIds()) {
           if (activeRuns.has(runId)) continue
           try { const run = store.getRun(runId); void launch(runId, () => typeof run.checkpoint.recoveryIntentId === 'string' ? loop.recoverAnswer(runId, run.checkpoint.recoveryIntentId) : loop.start(runId)) } catch (error) { if (!(error instanceof OverloadedError)) throw error }
         }
-        for (const runId of store.recoverableRunIds()) {
+        for (const runId of hosted ? [] : store.recoverableRunIds()) {
           if (activeRuns.has(runId)) continue
           const run = store.getRun(runId)
           try { await launch(runId, () => loop.recoverAnswer(runId, run.checkpoint.intentId!)) } catch (error) { if (!(error instanceof OverloadedError)) throw error }
@@ -208,15 +263,37 @@ export async function createApiApp(options: ApiOptions = {}) {
     reconciliationJobs.add(task)
     return task
   }
+  if (hosted) {
+    const retain = () => {
+      hosted.expireDrafts()
+      store.prune({ olderThanDays: 1 })
+      store.hostedState(db => {
+        db.prepare('DELETE FROM hosted_sessions WHERE expires<=?').run(Date.now())
+        db.prepare("UPDATE hosted_holds SET scope_result=NULL,ip='' WHERE created<?").run(Date.now()-86400000)
+        db.prepare('DELETE FROM hosted_reputation WHERE principal NOT IN (SELECT principal FROM hosted_sessions)').run()
+      })
+    }
+    retain()
+    const retentionTimer = setInterval(() => { try { retain() } catch { /* readiness probes fail closed on unavailable storage */ } },60000); retentionTimer.unref(); timers.add(retentionTimer)
+    for (const runId of store.runnableRunIds(true)) {
+      if (hosted.forRun(runId)) loop.stop(runId)
+    }
+    store.hostedState(db => {
+      db.prepare("UPDATE hosted_holds SET state='interrupted' WHERE state IN ('active','queued')").run()
+      db.prepare('UPDATE hosted_holds SET scope_result=NULL WHERE created<?').run(Date.now()-86400000)
+    })
+    store.prune({ olderThanDays: 1 })
+  }
   await reconcileOnce()
   const reconcileTimer = setInterval(() => { void reconcileOnce().catch(() => undefined) }, options.reconcileIntervalMs ?? Number(config.RECONCILE_INTERVAL_MS || 15000))
   reconcileTimer.unref()
   const stopReconciler = () => { stopping = true; clearInterval(reconcileTimer) }
   let closing: Promise<void> | undefined
   // Reconciliation happens before new spending. Existing stopped/done runs remain final.
-  for (const runId of store.runnableRunIds()) { const run = store.getRun(runId); try { launch(runId, () => typeof run.checkpoint.recoveryIntentId === 'string' ? loop.recoverAnswer(runId, run.checkpoint.recoveryIntentId) : loop.start(runId)) } catch (error) { if (!(error instanceof OverloadedError)) throw error } }
+  for (const runId of hosted ? [] : store.runnableRunIds()) { const run = store.getRun(runId); try { launch(runId, () => typeof run.checkpoint.recoveryIntentId === 'string' ? loop.recoverAnswer(runId, run.checkpoint.recoveryIntentId) : loop.start(runId)) } catch (error) { if (!(error instanceof OverloadedError)) throw error } }
   const drain = async () => {
     stopReconciler()
+    queue?.close()
     work.controller.abort()
     loop.abortProviders()
     for (const runId of store.runnableRunIds(true)) loop.stop(runId)

@@ -131,3 +131,17 @@ export function streamRun(runId: string, handlers: {
   }
   return unsubscribe
 }
+
+/** Server-authoritative hosted capabilities. HU owns presentation and mutation headers. */
+export type HostedDemoStatus = {
+  state: 'ready' | 'paused' | 'busy' | 'degraded' | 'ended'
+  capabilities: { ask: boolean; scope: boolean; history: boolean; receipts: boolean; pdf: false; settings: false; faultControls: false }
+  remaining: { questions: number; minor: number }
+  labels: { models: string; rail: string }
+  links: { repo: string; deck: string; video: string; progress: string; replay: string }
+  csrfToken?: string
+  queue?: { runId: string; position: number | null; expiresAt: string }[]
+}
+export async function getDemoStatus(): Promise<HostedDemoStatus> {
+  return await request('/api/demo/status') as HostedDemoStatus
+}

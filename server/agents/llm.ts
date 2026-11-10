@@ -1,3 +1,4 @@
+import { meteredFetch } from '../hosted/execution.js'
 import { compatibleFetch } from './compatible.js'
 import { abortable, pause } from './provider-retry.js'
 import { reportModelUsage } from '../telemetry.js'
@@ -60,7 +61,7 @@ async function attemptJson(generation: LangfuseGeneration, system: string, input
   let usage: { prompt_tokens?: number; completion_tokens?: number; prompt_cache_hit_tokens?: number; prompt_cache_miss_tokens?: number } | undefined
   return withProviderDeadline('LLM', deadlineMs, controller, async () => {
     try {
-      const response = await (llmProvider() === 'openai-compatible' ? compatibleFetch : fetch)(endpoint, {
+      const response = await meteredFetch(llmProvider() === 'openai-compatible' ? compatibleFetch : fetch, 'research')(endpoint, {
         method: 'POST', signal: controller.signal,
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
         body: JSON.stringify({ model: researchModel(), ...modelParameters, stream: true, stream_options: { include_usage: true }, ...provider.extra,
