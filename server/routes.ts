@@ -183,7 +183,7 @@ async function createConfiguredApi(options: ApiOptions = {}) {
           const writers = await client.registry()
           if (!writers.length || !payer) return false
           const b = await payer.balance()
-          return b.ledgerAgeSeconds <= 30 && b.availableDrops > (store.walletStatus().reservedMinor + 200) * 1000 + 2000 &&
+          return b.ledgerAgeSeconds <= 30 && b.availableDrops > (store.walletStatus().reservedMinor + hosted.questionMinor) * 1000 + 2000 &&
             config.HOSTED_PROVIDERS_READY_UNTIL !== undefined && Date.parse(config.HOSTED_PROVIDERS_READY_UNTIL) > Date.now()
         } catch { return false }
       })().then(value => { checkedAt = Date.now(); healthy = value; return value }).finally(() => { probe = undefined })
