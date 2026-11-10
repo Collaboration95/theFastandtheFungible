@@ -23,6 +23,11 @@ describe('hosted operator boundaries',()=>{
    expect(output).toContain('--path=/ready')
    expect(output).toContain("'--tunnel-through-iap' '--quiet'")
    expect(output).toContain('/run/researchagent-startup.done')
+   expect(output).toContain('restart --no-block google-startup-scripts.service')
+   // GCP service-account IDs must be 6-30 characters ("ra-vm" was rejected in cloud).
+   const accounts=[...output.matchAll(/'service-accounts' 'create' '([^']+)'/g)].map(m=>m[1])
+   expect(accounts).toEqual(['ra-app-vm','ra-front'])
+   for (const id of accounts) expect(id).toMatch(/^[a-z][a-z0-9-]{4,28}[a-z0-9]$/)
    expect(output).not.toMatch(/sentinel-private|firestore|gcloud.*storage.*create/)
    expect(existsSync(join(dir,'manifest.json'))).toBe(false)
   } finally {rmSync(dir,{recursive:true,force:true})}

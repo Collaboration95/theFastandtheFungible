@@ -18,7 +18,8 @@ const project = options.project
 if (!/^[a-z][a-z0-9-]{4,28}[a-z0-9]$/.test(project || '')) throw Error('--project requires the dedicated new project ID')
 const region = 'asia-southeast1', zone = `${region}-b`, repo = 'researchagent', vm = 'ra-app', disk = 'ra-state', service = 'ra-front'
 const registry = `${region}-docker.pkg.dev/${project}/${repo}`
-const sa = `ra-vm@${project}.iam.gserviceaccount.com`, frontSa = `ra-front@${project}.iam.gserviceaccount.com`
+// Service-account IDs must be 6-30 characters.
+const sa = `ra-app-vm@${project}.iam.gserviceaccount.com`, frontSa = `ra-front@${project}.iam.gserviceaccount.com`
 const q = s => "'" + String(s).replaceAll("'", "'\\''") + "'"
 // The alert address is private operator data: never print it, even in a plan.
 const redact = s => options['alert-email'] ? String(s).replaceAll(options['alert-email'], '<alert-email>') : String(s)
@@ -141,7 +142,7 @@ if(!channel) {
   if(!channel||dry) channel=gc(['beta','monitoring','channels','create',...p,'--display-name=ra-operator','--type=email',`--channel-labels=email_address=${email}`,'--format=value(name)'])||channel
 }
 ensure(['artifacts','repositories','describe',repo,...p,`--location=${region}`],['artifacts','repositories','create',repo,...p,`--location=${region}`,'--repository-format=docker','--immutable-tags'])
-for (const name of ['ra-vm','ra-front']) ensure(['iam','service-accounts','describe',`${name}@${project}.iam.gserviceaccount.com`,...p],['iam','service-accounts','create',name,...p])
+for (const account of [sa,frontSa]) ensure(['iam','service-accounts','describe',account,...p],['iam','service-accounts','create',account.split('@')[0],...p])
 gc(['artifacts','repositories','add-iam-policy-binding',repo,...p,`--location=${region}`,`--member=serviceAccount:${sa}`,'--role=roles/artifactregistry.reader'])
 const sleep = ms => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
 const sshArgs = command => ['compute','ssh',vm,...p,`--zone=${zone}`,'--tunnel-through-iap','--quiet',`--command=${command}`]
@@ -153,14 +154,30 @@ function ssh(command, attempts = 1) {
     catch (e) { remember(sshArgs(command), e); if (i >= attempts) throw Error('VM command over IAP failed (details in the private manifest .log)'); sleep(15000) }
   }
 }
-// Re-run the startup script only after any boot-time run has finished, then require
+// Re-run the startup script only after the boot-time run has finished, then require
 // the release marker it writes last; the metadata runner itself exits 0 on script failure.
+// The restart is queued without blocking so a dropped IAP session cannot interrupt it.
+const probe = 'sudo systemctl show -p ActiveState -p ExecMainExitTimestampMonotonic google-startup-scripts.service; echo "MARKER=$(sudo cat /run/researchagent-startup.done 2>/dev/null)"'
+function startupState(attempts) {
+  const fields = Object.fromEntries(ssh(probe, attempts).split('\n').map(line => [line.slice(0, line.indexOf('=')), line.slice(line.indexOf('=') + 1)]))
+  return { active: fields.ActiveState, ran: fields.ExecMainExitTimestampMonotonic !== '0', marker: fields.MARKER }
+}
 function applyStartup(release) {
-  if (dry) { ssh('sudo systemctl show -p ActiveState --value google-startup-scripts.service'); ssh('sudo systemctl restart google-startup-scripts.service'); ssh('sudo cat /run/researchagent-startup.done'); return }
-  for (let i = 0; ssh('sudo systemctl show -p ActiveState --value google-startup-scripts.service', 40) === 'activating'; i++) { if (i > 80) throw Error('VM startup still running after 20 minutes'); sleep(15000) }
-  if (ssh('sudo cat /run/researchagent-startup.done 2>/dev/null || true', 3) === release) return
-  ssh('sudo systemctl restart google-startup-scripts.service', 1)
-  if (ssh('sudo cat /run/researchagent-startup.done 2>/dev/null || true', 3) !== release) throw Error('VM startup did not complete this release; inspect over IAP')
+  if (dry) { ssh(probe); ssh('sudo systemctl restart --no-block google-startup-scripts.service'); return }
+  const deadline = Date.now() + 20 * 60000
+  let state = startupState(40)
+  // Wait for the first boot-time run (or any run in progress) to finish before deciding.
+  while (state.active === 'activating' || !state.ran) { if (Date.now() > deadline) throw Error('VM startup did not settle within 20 minutes'); sleep(15000); state = startupState(3) }
+  if (state.marker === release) return
+  ssh('sudo systemctl restart --no-block google-startup-scripts.service', 3)
+  let seen = false
+  for (;;) {
+    if (Date.now() > deadline) throw Error('VM startup did not complete this release within 20 minutes')
+    sleep(15000); state = startupState(3)
+    if (state.active === 'activating') { seen = true; continue }
+    if (state.marker === release) return
+    if (seen) throw Error('VM startup failed for this release; inspect over IAP (startup output is suppressed)')
+  }
 }
 const scratch = dry ? '/PRIVATE_BUILD_DIRECTORY' : mkdtempSync(join(tmpdir(),'ra-hosted-'))
 try {
@@ -182,8 +199,8 @@ try {
       let digest
       try { digest=execFileSync('gcloud',['artifacts','docker','images','describe',image,...p,'--format=value(image_summary.digest)'],{encoding:'utf8',stdio:['ignore','pipe','pipe']}).trim() } catch(e) { if (!/NOT_FOUND|not found/i.test(String(e.stderr))) throw Error('Image inventory failed') }
       if (!digest) {
-        execFileSync('docker',['build','--platform=linux/amd64','-f',`${scratch}/${dockerfile}`,...(target==='front'?[]:['--target',target]),'--label',`org.opencontainers.image.revision=${sha}`,'-t',image,scratch],{stdio:['ignore','pipe','pipe']})
-        execFileSync('docker',['push',image],{stdio:['ignore','pipe','pipe']})
+        execFileSync('docker',['build','--platform=linux/amd64','-f',`${scratch}/${dockerfile}`,...(target==='front'?[]:['--target',target]),'--label',`org.opencontainers.image.revision=${sha}`,'-t',image,scratch],{stdio:['ignore','pipe','pipe'],maxBuffer:256*1024*1024})
+        execFileSync('docker',['push',image],{stdio:['ignore','pipe','pipe'],maxBuffer:64*1024*1024})
         digest=gc(['artifacts','docker','images','describe',image,...p,'--format=value(image_summary.digest)'])
       }
       if (!/^sha256:[a-f0-9]{64}$/.test(digest)) throw Error('Missing immutable image digest')
@@ -218,6 +235,8 @@ try {
   if (!dry) {
     const urls=JSON.parse(gc(['run','services','describe',service,...p,`--region=${region}`,'--format=json(metadata.annotations)'])||'{}')?.metadata?.annotations?.['run.googleapis.com/urls']
     if (urls && JSON.parse(urls).includes(canonical)) url=canonical
+    // Older API responses omit the URL list; accept the deterministic URL only if it serves this front.
+    else { try { if (execFileSync('curl',['-fsS','--max-time','10',`${canonical}/livez`],{encoding:'utf8',stdio:['ignore','pipe','ignore']}).trim()==='alive') url=canonical } catch { /* keep status.url */ } }
   }
   if (url!==origin) {
     // Record the canonical origin, then render secrets and restart while still paused.
