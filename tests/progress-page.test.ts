@@ -22,7 +22,12 @@ describe('progress data', () => {
     const h = data.headline
     for (const v of [h.days, h.prs, h.releases, h.transactions, h.heldout.n, h.heldout.N, h.heldout.offTopic.n, h.heldout.offTopic.N, h.try.seconds, h.try.limit, h.tests, h.commits]) expect(finite(v)).toBe(true)
     expect(h.transactions).toBe(JSON.parse(readFileSync('site/ledger/transactions.json', 'utf8')).rows.length)
-    expect(h.heldout).toMatchObject({ n: 7, N: 20, offTopic: { n: 0, N: 10 } })
+    // The headline is the latest blind bank run once: v5 once its results are committed, otherwise v4.
+    const bank = existsSync('docs/evidence/v5-heldout/v5/results.json') ? 'v5' : 'v4'
+    const summary = (file: string) => JSON.parse(readFileSync(`docs/evidence/${bank}-heldout/${file}/results.json`, 'utf8')).summary
+    const pos = summary(bank), neg = summary(`${bank}-negatives`)
+    expect(h.heldout).toMatchObject({ bank, n: pos.buyAndCite.n, N: pos.buyAndCite.N, offTopic: { n: neg.negativeBuys.n, N: neg.negativeBuys.N } })
+    if (bank === 'v5') expect(h.heldout).toMatchObject({ n: 16, N: 20, offTopic: { n: 0, N: 10 } })
   })
   it('gives every rail stop shipped items, a proof link and a committed image or excerpt', () => {
     expect(data.rail.filter((r: { kind: string }) => r.kind === 'release')).toHaveLength(data.headline.releases)

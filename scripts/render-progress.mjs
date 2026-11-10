@@ -153,7 +153,7 @@ ${table('Cold try --testnet runs', ['Run', 'Seconds', 'Result', 'Evidence'], m.t
     ? `<div class="hbar pending"><p class="hl">${esc(b.label)}</p><div class="htrack"><span class="ghost"></span></div><p class="hv">${b.status === 'pending' ? `frozen ${esc(day(b.frozen))} · not run yet` : 'not frozen'}</p></div>`
     : `<div class="hbar${b.heldout ? ' strong' : ''}"><p class="hl">${esc(b.label)}</p><div class="htrack"><span class="fill" style="width:${pct(b.n, b.N)}" data-tip="${esc(`${b.label}: ${b.n} of ${b.N} bought and cited`)}"></span></div><p class="hv mono">${b.n}/${b.N}</p></div>`).join('')
   const C = `<article class="card chart"><h3>Questions bought and cited</h3><p class="take">Development banks guided the work; the blind bank is the number we report. Off-topic purchases: <strong>${m.offTopic.n}/${m.offTopic.N}</strong>.</p>${banks}
-<p class="legend"><span class="key soft"></span>development <span class="key ink"></span>blind held-out <span class="key dash"></span>not run yet</p>${src('docs/evidence/v4-heldout/README.md', 'v4-heldout')}
+<p class="legend"><span class="key soft"></span>development <span class="key ink"></span>blind held-out <span class="key dash"></span>not run yet</p>${src(d.headline.heldout.source ?? 'docs/evidence/v4-heldout/README.md', (d.headline.heldout.source ?? 'v4-heldout').split('/').slice(-2, -1)[0] ?? 'v4-heldout')}
 ${table('Judge banks', ['Bank', 'Bought and cited', 'Source'], m.banks.map(b => [esc(b.label), b.n !== undefined ? `${b.n}/${b.N}` : esc(b.status), ext(blob(d, b.source), b.source.split('/').slice(-2).join('/'))]))}</article>`
   // D. Ledger rows over time (step line with HTML dots and labels).
   const L = m.ledgerHistory, lmax = Math.max(...L.map(x => x.rows)) * 1.1

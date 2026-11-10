@@ -1,0 +1,1355 @@
+{
+  "fraudProofs": [],
+  "ledgerAnchor": {
+    "version": "anchor-v1",
+    "network": "xrpl:1",
+    "txHash": "94DF0BE4FCC7E8109AE3E1A13E7109439B4B8AAE2028519D386DAFD301352CD8",
+    "account": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+    "head": "2471892cab401759f41b21fc6522d4d6270674e654486e4dc6205a6237e8b5a9",
+    "runIdHash": "cd72dfb2c2e94190a3ce495a4cd07ebc136158ccc34f8b52821efe218e20d32a",
+    "ledgerIndex": 22222653,
+    "feeDrops": "12"
+  },
+  "schemaVersion": 3,
+  "identityVersion": 1,
+  "contributions": {
+    "version": "structural-v1",
+    "semanticStatus": "not independently verified",
+    "purchases": [
+      {
+        "intentId": "55901905-23d0-4bff-896d-56642eb44f5c:1:xrpl-escrow:v1",
+        "sourceKey": "xrpl-escrow@v1",
+        "status": "VERIFIED",
+        "grossMinor": 40,
+        "refundMinor": 0,
+        "netMinor": 40,
+        "refundStatus": "none",
+        "assessment": "not assessed",
+        "structuralUse": "cited",
+        "links": [
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-escrow\",\"v1\",\"p1\"]",
+            "claim": "XRPL escrow locks funds until its time or cryptographic conditions permit release; it does not judge whether purchased prose is useful or true. EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds. Expiration alone does not submit that cancellation transaction. [1]",
+            "citation": "[\"xrpl-escrow@v1\",\"p1\"]",
+            "spanId": "p1",
+            "passage": "XRPL escrow locks funds until its time or cryptographic conditions permit release; it does not judge whether purchased prose is useful or true. EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds. Expiration alone does not submit that cancellation transaction. [1]",
+            "manifestRoot": "07d733ff630873b0abecfd26633b0b16e35eed1aad4851a891bbc81d5cb0ee8e",
+            "grantIntentId": "55901905-23d0-4bff-896d-56642eb44f5c:1:xrpl-escrow:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-escrow\",\"v1\",\"p2\"]",
+            "claim": "Time-based, conditional and combined escrows express different release constraints. A condition can bind release to a cryptographic fulfillment, while FinishAfter and CancelAfter control time windows. The documentation describes ledger objects that persist until completion or cancellation. A browser countdown is consequently an estimate of eligibility, not proof that the object was removed or the sender recovered funds. [1]",
+            "citation": "[\"xrpl-escrow@v1\",\"p2\"]",
+            "spanId": "p2",
+            "passage": "Time-based, conditional and combined escrows express different release constraints. A condition can bind release to a cryptographic fulfillment, while FinishAfter and CancelAfter control time windows. The documentation describes ledger objects that persist until completion or cancellation. A browser countdown is consequently an estimate of eligibility, not proof that the object was removed or the sender recovered funds. [1]",
+            "manifestRoot": "07d733ff630873b0abecfd26633b0b16e35eed1aad4851a891bbc81d5cb0ee8e",
+            "grantIntentId": "55901905-23d0-4bff-896d-56642eb44f5c:1:xrpl-escrow:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-escrow\",\"v1\",\"p3\"]",
+            "claim": "For encrypted information sales, my recommendation is to bind the agreed ciphertext, condition and delivered passage commitments before paying. A revealed key may satisfy a cryptographic condition without establishing factual accuracy. Preserve that distinction in dispute handling. A refund after completed release requires a separate mechanism; do not assume cancellation can undo an already finished escrow. [1]",
+            "citation": "[\"xrpl-escrow@v1\",\"p3\"]",
+            "spanId": "p3",
+            "passage": "For encrypted information sales, my recommendation is to bind the agreed ciphertext, condition and delivered passage commitments before paying. A revealed key may satisfy a cryptographic condition without establishing factual accuracy. Preserve that distinction in dispute handling. A refund after completed release requires a separate mechanism; do not assume cancellation can undo an already finished escrow. [1]",
+            "manifestRoot": "07d733ff630873b0abecfd26633b0b16e35eed1aad4851a891bbc81d5cb0ee8e",
+            "grantIntentId": "55901905-23d0-4bff-896d-56642eb44f5c:1:xrpl-escrow:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "evidence-[\"xrpl-escrow\",\"v1\",\"p4\"]",
+            "claim": "Test a valid fulfillment, an incorrect fulfillment, a seller that never finishes and a validated cancellation after expiry. Reconcile the exact escrow owner and sequence before retrying. Preserve transaction references rather than treating a network timeout as failure. These recommendations follow the lifecycle described in the source; they make no claim that a particular application has implemented semantic arbitration or unilateral refunds. [1]",
+            "citation": "[\"xrpl-escrow@v1\",\"p4\"]",
+            "spanId": "p4",
+            "passage": "Test a valid fulfillment, an incorrect fulfillment, a seller that never finishes and a validated cancellation after expiry. Reconcile the exact escrow owner and sequence before retrying. Preserve transaction references rather than treating a network timeout as failure. These recommendations follow the lifecycle described in the source; they make no claim that a particular application has implemented semantic arbitration or unilateral refunds. [1]",
+            "manifestRoot": "07d733ff630873b0abecfd26633b0b16e35eed1aad4851a891bbc81d5cb0ee8e",
+            "grantIntentId": "55901905-23d0-4bff-896d-56642eb44f5c:1:xrpl-escrow:v1",
+            "retained": true
+          }
+        ]
+      }
+    ]
+  },
+  "requirements": [
+    {
+      "id": "r1",
+      "text": "Which crypto-condition type do conditional escrows on the XRP Ledger support"
+    }
+  ],
+  "runId": "55901905-23d0-4bff-896d-56642eb44f5c",
+  "label": "XRPL TESTNET · no real value; fixture · extractive-fixture; writer identity unverified; team-authored explainer · sources cited · not an independent writer · Testnet; team-authored · real content · not an independent writer · Testnet",
+  "answers": [
+    {
+      "lead": [],
+      "conclusion": "Matched articles supplied no citable answer · nothing bought",
+      "claims": [],
+      "openGaps": [
+        {
+          "text": "Which crypto-condition type do conditional escrows on the XRP Ledger support"
+        }
+      ],
+      "version": 1,
+      "provider": "fixture",
+      "model": "extractive-fixture"
+    },
+    {
+      "lead": [
+        {
+          "text": "A condition can bind release to a cryptographic fulfillment, while FinishAfter and CancelAfter control time windows.",
+          "claim": {
+            "id": "evidence-[\"xrpl-escrow\",\"v1\",\"p2\"]",
+            "text": "Time-based, conditional and combined escrows express different release constraints. A condition can bind release to a cryptographic fulfillment, while FinishAfter and CancelAfter control time windows. The documentation describes ledger objects that persist until completion or cancellation. A browser countdown is consequently an estimate of eligibility, not proof that the object was removed or the sender recovered funds. [1]",
+            "stance": "UNCERTAIN",
+            "citations": [
+              {
+                "resourceId": "xrpl-escrow",
+                "version": "v1",
+                "spanId": "p2"
+              }
+            ]
+          }
+        },
+        {
+          "text": "EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds.",
+          "claim": {
+            "id": "evidence-[\"xrpl-escrow\",\"v1\",\"p1\"]",
+            "text": "XRPL escrow locks funds until its time or cryptographic conditions permit release; it does not judge whether purchased prose is useful or true. EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds. Expiration alone does not submit that cancellation transaction. [1]",
+            "stance": "UNCERTAIN",
+            "citations": [
+              {
+                "resourceId": "xrpl-escrow",
+                "version": "v1",
+                "spanId": "p1"
+              }
+            ]
+          }
+        }
+      ],
+      "conclusion": "A condition can bind release to a cryptographic fulfillment, while FinishAfter and CancelAfter control time windows. EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds. Time-based, conditional and combined escrows express different release constraints. The documentation describes ledger objects that persist until completion or cancellation. A revealed key may satisfy a cryptographic condition without establishing factual accuracy.",
+      "claims": [
+        {
+          "id": "evidence-[\"xrpl-escrow\",\"v1\",\"p1\"]",
+          "text": "XRPL escrow locks funds until its time or cryptographic conditions permit release; it does not judge whether purchased prose is useful or true. EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds. Expiration alone does not submit that cancellation transaction. [1]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-escrow",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-escrow\",\"v1\",\"p2\"]",
+          "text": "Time-based, conditional and combined escrows express different release constraints. A condition can bind release to a cryptographic fulfillment, while FinishAfter and CancelAfter control time windows. The documentation describes ledger objects that persist until completion or cancellation. A browser countdown is consequently an estimate of eligibility, not proof that the object was removed or the sender recovered funds. [1]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-escrow",
+              "version": "v1",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-escrow\",\"v1\",\"p3\"]",
+          "text": "For encrypted information sales, my recommendation is to bind the agreed ciphertext, condition and delivered passage commitments before paying. A revealed key may satisfy a cryptographic condition without establishing factual accuracy. Preserve that distinction in dispute handling. A refund after completed release requires a separate mechanism; do not assume cancellation can undo an already finished escrow. [1]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-escrow",
+              "version": "v1",
+              "spanId": "p3"
+            }
+          ]
+        },
+        {
+          "id": "evidence-[\"xrpl-escrow\",\"v1\",\"p4\"]",
+          "text": "Test a valid fulfillment, an incorrect fulfillment, a seller that never finishes and a validated cancellation after expiry. Reconcile the exact escrow owner and sequence before retrying. Preserve transaction references rather than treating a network timeout as failure. These recommendations follow the lifecycle described in the source; they make no claim that a particular application has implemented semantic arbitration or unilateral refunds. [1]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-escrow",
+              "version": "v1",
+              "spanId": "p4"
+            }
+          ]
+        }
+      ],
+      "openGaps": [],
+      "version": 2,
+      "provider": "fixture",
+      "model": "extractive-fixture"
+    }
+  ],
+  "sources": [
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-escrow",
+      "version": "v1",
+      "title": "What does XRPL conditional escrow actually guarantee?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored)",
+      "body": "XRPL escrow locks funds until its time or cryptographic conditions permit release; it does not judge whether purchased prose is useful or true. EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds. Expiration alone does not submit that cancellation transaction. [1]\n\nTime-based, conditional and combined escrows express different release constraints. A condition can bind release to a cryptographic fulfillment, while FinishAfter and CancelAfter control time windows. The documentation describes ledger objects that persist until completion or cancellation. A browser countdown is consequently an estimate of eligibility, not proof that the object was removed or the sender recovered funds. [1]\n\nFor encrypted information sales, my recommendation is to bind the agreed ciphertext, condition and delivered passage commitments before paying. A revealed key may satisfy a cryptographic condition without establishing factual accuracy. Preserve that distinction in dispute handling. A refund after completed release requires a separate mechanism; do not assume cancellation can undo an already finished escrow. [1]\n\nTest a valid fulfillment, an incorrect fulfillment, a seller that never finishes and a validated cancellation after expiry. Reconcile the exact escrow owner and sequence before retrying. Preserve transaction references rather than treating a network timeout as failure. These recommendations follow the lifecycle described in the source; they make no claim that a particular application has implemented semantic arbitration or unilateral refunds. [1]",
+      "spans": [
+        {
+          "id": "p1",
+          "text": "XRPL escrow locks funds until its time or cryptographic conditions permit release; it does not judge whether purchased prose is useful or true. EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds. Expiration alone does not submit that cancellation transaction. [1]"
+        },
+        {
+          "id": "p2",
+          "text": "Time-based, conditional and combined escrows express different release constraints. A condition can bind release to a cryptographic fulfillment, while FinishAfter and CancelAfter control time windows. The documentation describes ledger objects that persist until completion or cancellation. A browser countdown is consequently an estimate of eligibility, not proof that the object was removed or the sender recovered funds. [1]"
+        },
+        {
+          "id": "p3",
+          "text": "For encrypted information sales, my recommendation is to bind the agreed ciphertext, condition and delivered passage commitments before paying. A revealed key may satisfy a cryptographic condition without establishing factual accuracy. Preserve that distinction in dispute handling. A refund after completed release requires a separate mechanism; do not assume cancellation can undo an already finished escrow. [1]"
+        },
+        {
+          "id": "p4",
+          "text": "Test a valid fulfillment, an incorrect fulfillment, a seller that never finishes and a validated cancellation after expiry. Reconcile the exact escrow owner and sequence before retrying. Preserve transaction references rather than treating a network timeout as failure. These recommendations follow the lifecycle described in the source; they make no claim that a particular application has implemented semantic arbitration or unilateral refunds. [1]"
+        }
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-escrow",
+      "version": "v1",
+      "title": "What does XRPL conditional escrow actually guarantee?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Primary-source guide to what does xrpl conditional escrow actually guarantee?. Includes integration considerations and evidence boundaries.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+      "family": "xrpl-escrow",
+      "facets": [
+        "XRPL",
+        "escrow",
+        "EscrowCreate",
+        "EscrowFinish",
+        "EscrowCancel",
+        "refund"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-escrow",
+      "relevance": 0.7949798495336888,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-escrow",
+        "version": "v1",
+        "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+        "priceMinor": 40,
+        "leaves": [
+          "d4ac2fe2055cab7f50f84970c779034375ce82eed0527d0972dfe44b9ab23f99",
+          "6bb1a2f0c2b53cd0c3908ed497ac676db61e1432a862308193ab79e93b1e31c5",
+          "844f4efe4e6b1b230726c1517b97d3ddcbe5f9e1ae99b0781db117630c545efb",
+          "48094f2c6886ef38fa9dd3bd7425405df487b9cc8fbb4e74a1168c076b057d0f"
+        ],
+        "root": "07d733ff630873b0abecfd26633b0b16e35eed1aad4851a891bbc81d5cb0ee8e",
+        "claims": [],
+        "wordCount": 232,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.7949798495336888,
+        "sig": "09FAD1F4C911E147B5B72F0346B37060DF17131F7772099280E3E4F0C233096E44B118A999A088C6CC4FA3E9C467EEFDD460E9F999CB043D6A1C73D4A2D0D204"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-fees",
+      "version": "v3",
+      "title": "EscrowFinish fulfillment fees: XRP drops and SGD prices in the app",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "Measured Testnet costs and accounting: how XRP drops differ from the SGD price shown in the app, including principal and fees.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "raPho1icuMnXth6ZYqrm66ijYqmBSoRXwK",
+      "family": "team-fees",
+      "facets": [
+        "EscrowFinish fulfillment fees and XRP drops",
+        "fees",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-fees",
+      "relevance": 0.5672527906227819,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-fees",
+        "version": "v3",
+        "wallet": "raPho1icuMnXth6ZYqrm66ijYqmBSoRXwK",
+        "pubKey": "ED8DB0E471B8CC46BBAE380D3555D3DAD1D7C1A2FBA73ADE77B9D2B1C294A0D4FB",
+        "priceMinor": 40,
+        "leaves": [
+          "925c55fe8f79a8c30fb1a71aa2779aa4066682bc5a4c30628f24a7a82db6f61d",
+          "461748e50492bdc64aea078849ee65821e67681d4649031a9a224de1d07ee43b",
+          "61995126ae2f731326641e1c8d8f353d8c771ab1950b64b672a9188425e13009",
+          "6dd38d934aaea607ead858f4fb8225d0ff7010620fda504c12e3bc42cda0914a",
+          "855863bfb24ce8d7182ed84ae2e457dc4630a16dca6bf3f74079f36ca5d18f73",
+          "fdfd32fb89dd8a355721d3f1eb0bbc2d748a2b9b225c66883384d193180bd67d"
+        ],
+        "root": "bfb049e6cb6fbf5cf2fade83597a0b996b9a9d25aa7f39dd089afecb2e867590",
+        "claims": [],
+        "wordCount": 450,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.5672527906227819,
+        "sig": "5AFD60BD0575E45B482B2BF5DA41086B5168D82688EFC938477C02E7F57E85F8E8748650151FAC801F0301453B502B4CF9741FCBAE569BEC7DF3834CDB92AD0D"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-credentials",
+      "version": "v3",
+      "title": "XRPL Credentials: writer trust, article accuracy and identity evidence",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "How XRPL Credentials change writer identity checks without proving an article accurate or boosting trust scores.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "raPho1icuMnXth6ZYqrm66ijYqmBSoRXwK",
+      "family": "team-credentials",
+      "facets": [
+        "Writer Credentials",
+        " trust and refund responsibility",
+        "credentials",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-credentials",
+      "relevance": 0.49905950438726393,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-credentials",
+        "version": "v3",
+        "wallet": "raPho1icuMnXth6ZYqrm66ijYqmBSoRXwK",
+        "pubKey": "ED8DB0E471B8CC46BBAE380D3555D3DAD1D7C1A2FBA73ADE77B9D2B1C294A0D4FB",
+        "priceMinor": 40,
+        "leaves": [
+          "152bb0e2f955a343feb3377a4e9917d9c4357b2142fc941ca3a0413aa364d064",
+          "58aa169dfcb36c469ffdcbef80e1c025128830d2d2f96b396592ac3d6ecf1512",
+          "4e6c70be7b968434a034f4b6bacf797b18f70469ee050d06f72d8ff6358d8f69",
+          "1fbfc481ac92111745366e40ef64b70ee5c7fde659d47ad941e2367084fa3255",
+          "abff86286a0870dda5cefd4e719eaccdf784ff634f9fae31940a80b0205fd65a",
+          "f3c256fbf934ffdfa1263de071ec2df8aa7c6abd8f12554f1c123a4adb859ca1",
+          "548d83541d31f2fc7cba0067177824cfb85e732274ae51b8c6775666a12c0ac1",
+          "2b5d08978f0d6eace7a47d6c0b7c4bcd69c650d73c659c4893ddf088f5be946d"
+        ],
+        "root": "df8a83a926558e39143f3516c3db46feeb0260f27e7879540704cdb585d90b33",
+        "claims": [],
+        "wordCount": 520,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.49905950438726393,
+        "sig": "F86271AAA1E86A1A5D091EF672AB0024E60BE19745DD2FC417DF4EB8E9646B54BB4ACD1DBD1377F9C1046AF14DB874C3942EF8787708FB6C09211F6078A2E10F"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-tx-ledgerstatefix",
+      "version": "v1",
+      "title": "What does LedgerStateFix do on XRPL?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced explanation of LedgerStateFix and its practical limits.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+      "family": "xrpl-tx-ledgerstatefix",
+      "facets": [
+        "XRPL",
+        "LedgerStateFix",
+        "Ledger State Fix",
+        "transaction"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-tx-ledgerstatefix",
+      "relevance": 0.706654619674021,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-tx-ledgerstatefix",
+        "version": "v1",
+        "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+        "priceMinor": 40,
+        "leaves": [
+          "d214cd030b931a6b58f0fa278ea4c6b7c6b35a4a0ca0943bf6c438cf208f829a",
+          "0cc11ee45ec64a1a8dcae08711b9340a543c5124d7383124d673a51b16255b33",
+          "aadf32c0875306856ee6903e3ef7bf76ca8ad9056c3606c8b21bc90425901235",
+          "60023b7ccb046fda8b3acf1f83677d2e4eae84ee366000e3a686bab4820c46d3"
+        ],
+        "root": "fd1c3bac1b9ffbaf5a28b58c3251ddacbc708211bb2a58614ca5d53fac7226cd",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "d214cd030b931a6b58f0fa278ea4c6b7c6b35a4a0ca0943bf6c438cf208f829a",
+            "covers": {
+              "entity": "LedgerStateFix",
+              "measure": "ledger-state inconsistencies"
+            }
+          }
+        ],
+        "wordCount": 194,
+        "publishedAt": "2026-11-10",
+        "relevance": 0.706654619674021,
+        "sig": "76BB782DA0FE09E2D06707DE3ABBE48452DC1F9477E61371F6C703E67BAB2861516497285746B4E9F31F9AF4ED35DD39000729F48A43BFA796BA62B49C8A0305"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-verification",
+      "version": "v3",
+      "title": "Verifying cited answers: signed manifests, content hashes and ledger evidence",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "An independent verification workflow for a cited answer against ledger evidence, with a distinction between cryptographic consistency and validated settlement.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "raPho1icuMnXth6ZYqrm66ijYqmBSoRXwK",
+      "family": "team-verification",
+      "facets": [
+        "verification",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-verification",
+      "relevance": 0.4089425086259738,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-verification",
+        "version": "v3",
+        "wallet": "raPho1icuMnXth6ZYqrm66ijYqmBSoRXwK",
+        "pubKey": "ED8DB0E471B8CC46BBAE380D3555D3DAD1D7C1A2FBA73ADE77B9D2B1C294A0D4FB",
+        "priceMinor": 40,
+        "leaves": [
+          "16d8546f7219b9232e55bfb8f91ef9cab8e10adeb0e362c5d2328e46f7782562",
+          "96c6155ba5d6bdfac190971597c124d5cb971fb20b959f975cce0ade83bb48ce",
+          "0f48ff511ebe17e3106506be826e1b85fe5d2f1bfb46a2488649e7114535d875",
+          "048afa7ff57f3e44d02caaef7724ae35cabcfd45c2927da3b2cd76455504360e",
+          "b1fdfc1fa58264709f5e213290f716a3f7ae3fb6783b4bb024f8afc9f586cba1",
+          "0444bc2c36fab081b063b3f1ab71b541e7ea623e16b1b8ec2d06e95d3899a0f4",
+          "b540156100136a70a21c5028639dba00a52b5d8324470dc7520fc50553a47d1e",
+          "fa1c7d614910a88c59755e433e4acb8a41d8d2a58e5e40f6eee52637aae3c175"
+        ],
+        "root": "4a09e2c2a3440655388b3adb378925bca688b34e62b9e9dbcfa0e38ed5875bdb",
+        "claims": [],
+        "wordCount": 542,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.4089425086259738,
+        "sig": "D42935C3084E1ADC17A9283C234E843E3F4883F02A348D4CB00142EC5CD476EA18EE5626844B0B406D7C74834A248A84BF303D23BB2EDCE403674619BDBA0006"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-tx-escrowcreate",
+      "version": "v1",
+      "title": "What does EscrowCreate do on XRPL?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced explanation of EscrowCreate and its practical limits.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+      "family": "xrpl-tx-escrowcreate",
+      "facets": [
+        "XRPL",
+        "EscrowCreate",
+        "Escrow Create",
+        "transaction"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-tx-escrowcreate",
+      "relevance": 0.6790705541475857,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-tx-escrowcreate",
+        "version": "v1",
+        "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+        "priceMinor": 40,
+        "leaves": [
+          "ef685856322c0f31f72ddab50f55991a0a3f0e6e1bbba5cf885c78c7d5c38e19",
+          "d3b8027706f767a66f3134b21a1d61a1de0c5263585e26295e6969f32e0d4583",
+          "8d11532937de523bf9024e8b1617dc27639a34ec893e161f9eb3dab83f64994a",
+          "3313fa37379b5ddc8a79410d86bb16cc031ff7c40ef807308282f86b3aaa029f"
+        ],
+        "root": "ad9320118efb2116fd058fb7909b5eb9ffa2eaf9745b2945d30c96e2964df21e",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "ef685856322c0f31f72ddab50f55991a0a3f0e6e1bbba5cf885c78c7d5c38e19",
+            "covers": {
+              "entity": "EscrowCreate",
+              "measure": "funds"
+            }
+          }
+        ],
+        "wordCount": 192,
+        "publishedAt": "2026-11-10",
+        "relevance": 0.6790705541475857,
+        "sig": "00007BFA44D5F79781FA8118BDCEF2E2BFC392D343FE0A6212312C2EC413213B258DE87EB4445E469A2BAB0297B0368C4C3DA0BC1D0CDD1BB58B353085ECF50C"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-recovery",
+      "version": "v3",
+      "title": "Writer no-show: EscrowCancel, key deadlines and writer-signed refunds",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "When a writer never reveals the key, policy can cancel after expiry. A writer can refuse a refund after EscrowFinish; these are different protections.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "raPho1icuMnXth6ZYqrm66ijYqmBSoRXwK",
+      "family": "team-recovery",
+      "facets": [
+        "recovery",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-recovery",
+      "relevance": 0.36162508118831554,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-recovery",
+        "version": "v3",
+        "wallet": "raPho1icuMnXth6ZYqrm66ijYqmBSoRXwK",
+        "pubKey": "ED8DB0E471B8CC46BBAE380D3555D3DAD1D7C1A2FBA73ADE77B9D2B1C294A0D4FB",
+        "priceMinor": 40,
+        "leaves": [
+          "18adb682a306ccc514f59f895a56ca900687ef9e3b3ad534859dfc8e845fe888",
+          "ad76f64117bd588144e40e3972dde9678266a2a84633c93c79dde1801f58b9a7",
+          "f5c9c929ba98c30fe7f09539491faa108c117963952f7215f99d43333f29b789",
+          "e4668f88218ee99033356d8c6086b1e3a1ce49eb954af4497471c766fd2d9570",
+          "91084282080c61fcf3a294694d7c0d5e2a962352120c08349b77b41f7668f2b4",
+          "d241c8250239894860bdfe07ac74f5a4211c0f72992621dd045818a66f45a33b",
+          "41b43590ec953d875f83b17ed20e998428b40368ce4dfc2f8a890cad7ac7c194",
+          "f338f14fafa858144fad010917e32a111882c8c17ce4ec091dfcb78c6279cb74"
+        ],
+        "root": "a1cd51641ff1d5c32048c0c978ced8b0f3e0fb2b6f0e47952ee6bc4d4615b6b8",
+        "claims": [],
+        "wordCount": 568,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.36162508118831554,
+        "sig": "10C0C5584091D2B5438A78DC11786863F38F89CBA53B3FEFA75AD773B3BAB7E9FFB2EC2CE21AB6D63A8291BD5B8103140F268A10C518DC1EB4497A07395A180B"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-tx-escrowfinish",
+      "version": "v1",
+      "title": "What does EscrowFinish do on XRPL?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced explanation of EscrowFinish and its practical limits.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+      "family": "xrpl-tx-escrowfinish",
+      "facets": [
+        "XRPL",
+        "EscrowFinish",
+        "Escrow Finish",
+        "transaction"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-tx-escrowfinish",
+      "relevance": 0.6722740173144754,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-tx-escrowfinish",
+        "version": "v1",
+        "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+        "priceMinor": 40,
+        "leaves": [
+          "8d4a551cbd6fddbffaa4ca776271561a86274295d808c2dd5c8c1e3aeeca80b3",
+          "6cfe93f3abc3451a31f3b9db89b392f8eb6464df48bbeccea46b4c9e021491ff",
+          "639375fbbe9cc5cb4e37298e3f61ac650bc0a896d467fec14ce79a2a29dd1779",
+          "90b7281856d16ac70c7f321bbcc19b7f64810654bfd5f1f0d68909b29f3d122d"
+        ],
+        "root": "c9544edc4eafe09d63d94e8e0f7d7a5cb56888a83fac69bf37bafdbf33a9d069",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "8d4a551cbd6fddbffaa4ca776271561a86274295d808c2dd5c8c1e3aeeca80b3",
+            "covers": {
+              "entity": "EscrowFinish",
+              "measure": "escrow"
+            }
+          }
+        ],
+        "wordCount": 193,
+        "publishedAt": "2026-11-10",
+        "relevance": 0.6722740173144754,
+        "sig": "952F8FEE43A56DE7610D17EA1BD9173C71D63F93AB09B314033D887CFAB6A8CD654E5A3B7C58DAB20CC56F7D383338B7E29C327E12CA0C731E4A2BAD1B61F50C"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-tx-escrowcancel",
+      "version": "v1",
+      "title": "What does EscrowCancel do on XRPL?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced explanation of EscrowCancel and its practical limits.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+      "family": "xrpl-tx-escrowcancel",
+      "facets": [
+        "XRPL",
+        "EscrowCancel",
+        "Escrow Cancel",
+        "transaction"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-tx-escrowcancel",
+      "relevance": 0.6572745186927317,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-tx-escrowcancel",
+        "version": "v1",
+        "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+        "priceMinor": 40,
+        "leaves": [
+          "5b678f576ec52a031d327932417ab35663443949f19ee4eb67b4dc55f606e7ba",
+          "8949d779c1cd6bdd9a437fc0c390e65b8cff33e27d8164eafe5855bcf4b56cef",
+          "c4c3a75a386e969aab94587723fce0aaa2d597803cd0cde3922e0441cf5ad4e5",
+          "942e34d9ea99ced3c5c107fb44057b784fed10ec61c39442b059e9ef78ddfc34"
+        ],
+        "root": "8ca092fe2035072caa47f105a96dcc4ca02efde792bcfb70ebf89e9793a10d88",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "5b678f576ec52a031d327932417ab35663443949f19ee4eb67b4dc55f606e7ba",
+            "covers": {
+              "entity": "EscrowCancel",
+              "measure": "principal"
+            }
+          }
+        ],
+        "wordCount": 186,
+        "publishedAt": "2026-11-10",
+        "relevance": 0.6572745186927317,
+        "sig": "497F32B8E4E17DD9316D451B7731669426FAD0B44E35FECA646C194E54A3AF81CC4FB45BB3130F2857CD66821EF6BA4A6D28E2785B98ED59A2E3B19BAC53330D"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-x402",
+      "version": "v3",
+      "title": "x402 payment headers and delivery failure modes: budgets and one charge per intent",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "What x402 headers an XRPL buyer sends, payment and delivery failure modes, policy spending authority and retry idempotency.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "raPho1icuMnXth6ZYqrm66ijYqmBSoRXwK",
+      "family": "team-x402",
+      "facets": [
+        "x402 headers",
+        " budgets and one charge per intent",
+        "x402",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-x402",
+      "relevance": 0.2835267398532489,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-x402",
+        "version": "v3",
+        "wallet": "raPho1icuMnXth6ZYqrm66ijYqmBSoRXwK",
+        "pubKey": "ED8DB0E471B8CC46BBAE380D3555D3DAD1D7C1A2FBA73ADE77B9D2B1C294A0D4FB",
+        "priceMinor": 40,
+        "leaves": [
+          "2d20e47992da5103a716cf7ad876b5dc3307b17602ce7433ae825083e7d938af",
+          "a12c10ce3c700eee37e5025801eda2224eec2840541712e716809ee0a8ca18ed",
+          "abafb2b42b28f3e1833eacd17e075b90a9f8892cdb1551489bf9d119846fdada",
+          "3d06b0ea95a6d814616c92b31415aa9ee96352e3925ffaf8672fce945d5c64c6",
+          "9a713d431808d0d8a1c76b145fed08c245498b35239db0409f3711d4cab60c4c",
+          "1284ca481669744bf1a814fb240d445b4527f8dc3be1ea273d6f35c14712cffb",
+          "20bb3d465ebaedc572c87049943a927b1bcbeb39ab34f15dda70fcd2fb056f59"
+        ],
+        "root": "ed199ed4e97db295d64022b51dc32f9102a840d6dc1ad4e578ef60042763520a",
+        "claims": [],
+        "wordCount": 373,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.2835267398532489,
+        "sig": "C829A5A8C1C161B7BC3AA80AB0FEE7F1FDF42B9C9E2A6DE651E036DC8E8E3E3532002825FD9F9AD6F73683C273C4DAE3C21959116CB9DFD5171ADCF083EC490A"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-asset-provisioning",
+      "version": "v3",
+      "title": "Agent payment assets: stablecoin trust lines, token escrow and DEX provisioning",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "Dated Testnet asset and reserve observations: why trust lines and provisioning do not establish RLUSD escrow support or a production exchange rate.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "raPho1icuMnXth6ZYqrm66ijYqmBSoRXwK",
+      "family": "team-asset-provisioning",
+      "facets": [
+        "RLUSD",
+        "XLS-85",
+        "stablecoin",
+        "DEX",
+        "reserve"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-asset-provisioning",
+      "relevance": 0.1784104854690329,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-asset-provisioning",
+        "version": "v3",
+        "wallet": "raPho1icuMnXth6ZYqrm66ijYqmBSoRXwK",
+        "pubKey": "ED8DB0E471B8CC46BBAE380D3555D3DAD1D7C1A2FBA73ADE77B9D2B1C294A0D4FB",
+        "priceMinor": 40,
+        "leaves": [
+          "819ceb2a7e6b731e0e7398b552dc3831d0d8e47ae365706836f554179626b1cc",
+          "4b54a29aac2255d1f1b54f3274fe7038b44869f31d3c94cdb4a9bb36ba459b12",
+          "de1ac50db42d47fd754e360a5c12380ad8299eb2093d348c1153548df7b7c6d6",
+          "57483f6199add9192ec744cd3a95331312fb79746bda4933d3c70f1c379fbf17",
+          "e1d26d222f85a3f808fc574a4d0987c32e532e1ae60872142ea7493930f6eb45",
+          "40c2e140d82faa748ea1250bc431b0def1b108951997e60b80f92d8e1b5d9717",
+          "692cf99b25c244648c1e26574f972a8091caa9c243779fdcf30f957988f4cbf2",
+          "f4382a891d116f554f262e7db9ca96aa88b5b485b2b7a1ca2b4394cb5e68ae92"
+        ],
+        "root": "236aaaccd64c74d013b89507629384b14ca57305840518b3c6c428b4f0a7ce90",
+        "claims": [],
+        "wordCount": 666,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.1784104854690329,
+        "sig": "C1AE8888B43010C11BC6674A07ABD73E93E412881B74246E0B85480C0BD8D00CD018F722841DFDACECA8D80F0DF95617FACA0AF2EBFBCFF1A77FE18B6323930A"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-clawback",
+      "version": "v1",
+      "title": "Can an XRPL issuer claw back XRP or tokens?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Primary-source guide to can an xrpl issuer claw back xrp or tokens?. Includes integration considerations and evidence boundaries.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+      "family": "xrpl-clawback",
+      "facets": [
+        "XRPL",
+        "Clawback",
+        "issuer controls",
+        "freeze",
+        "XRP"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-clawback",
+      "relevance": 0.6519711566066818,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-clawback",
+        "version": "v1",
+        "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+        "priceMinor": 40,
+        "leaves": [
+          "cd437027ad1ed3b000857b57859ae2814923938041bc632632d9116fe9f304e9",
+          "ca372fa6bb48ece98ed25811403e96633a23d93da7e01935688c407a9cbe3242",
+          "be550612ff2fcb65f99616c2f030036944ee720c6d1d203a0946ea0e3d5ddbe3",
+          "43b437f1fc72c1164a3516dea076e9de5c82045d3a77f89c88c798866301d6fe"
+        ],
+        "root": "c50ef15220fde1aa34a3f7401d0462d4b22fd46ee2c1d188c26ec55dd12f85af",
+        "claims": [],
+        "wordCount": 233,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.6519711566066818,
+        "sig": "BF3137B836B8A5CF0A253D7404072AB96F1196285CA126163F7433C90A280893090622F2CC281B04AA5C6A10417718B98A248082AF968EE471B5906F68062C09"
+      }
+    }
+  ],
+  "intents": [
+    {
+      "escrow": {
+        "scheme": "escrow-v1",
+        "policy": "escrow-policy-v1",
+        "state": "RELEASED",
+        "mode": "key-reveal",
+        "revealLedger": 22222651,
+        "owner": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+        "cancelAfter": 847650631,
+        "createSequence": 22222632,
+        "createHash": "AB64D35F3AC695392DE715405D339378F0296C7007D1F459031ACE8E4032DF0C",
+        "keyVerified": true,
+        "decryptVerified": true,
+        "finishHash": "7ED7776C03B92B4F5843553E4E37193C86B07040BB6AA67D999936833DAD81D8",
+        "proofOk": true
+      },
+      "intentId": "55901905-23d0-4bff-896d-56642eb44f5c:1:xrpl-escrow:v1",
+      "runId": "55901905-23d0-4bff-896d-56642eb44f5c",
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-escrow",
+      "version": "v1",
+      "amountMinor": 40,
+      "status": "VERIFIED",
+      "createdAt": "2026-11-10T18:28:37.160Z",
+      "submittingAt": "2026-11-10T18:28:37.161Z",
+      "settledAt": "2026-11-10T18:28:53.335Z",
+      "quote": {
+        "profileId": "team-xrpl-explainers",
+        "resourceId": "xrpl-escrow",
+        "version": "v1",
+        "runId": "55901905-23d0-4bff-896d-56642eb44f5c",
+        "intentId": "55901905-23d0-4bff-896d-56642eb44f5c:1:xrpl-escrow:v1",
+        "quoteId": "{\"amount\":\"40000\",\"articleId\":\"xrpl-escrow\",\"asset\":\"XRP\",\"cancelAfter\":847650631,\"condition\":\"A025802088B283870D2893287B03356DB3C92DC726BA2281A2850640D212A5D3616F6E66810120\",\"intentId\":\"55901905-23d0-4bff-896d-56642eb44f5c:1:xrpl-escrow:v1\",\"keyReveal\":{\"ciphertextHash\":\"8b00cb387490ae3d795cce94b3ebee4d08ec5450a5aaa89cd24e46afa47ea2bd\",\"iv\":\"529A9AFC75103E5ED0F2C875\",\"plaintextHash\":\"236849b2a4245112f8fb16c3138a388e053fd7667cd5edc7f4d571e2ea2e1110\",\"tag\":\"2BA7D445114F4A40E90BD62A443AA963\"},\"manifestRoot\":\"07d733ff630873b0abecfd26633b0b16e35eed1aad4851a891bbc81d5cb0ee8e\",\"network\":\"xrpl:1\",\"payTo\":\"r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb\",\"payer\":\"rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV\",\"publisherSlug\":\"team-xrpl-explainers\",\"quoteId\":\"8871b883-7b52-4774-8d11-b978fd85d572\",\"scheme\":\"escrow-v1\",\"version\":\"v1\"}",
+        "quoteHash": "432D82310A3CD2796C93AF6040B680048FAEA34B62A7D9CD188F66E92DD6D9C9",
+        "amountMinor": 40,
+        "currency": "SGD",
+        "expiresAt": "2026-11-10T18:29:37.159Z",
+        "contentDigest": "07d733ff630873b0abecfd26633b0b16e35eed1aad4851a891bbc81d5cb0ee8e",
+        "payment": {
+          "rail": "xrpl-testnet",
+          "network": "xrpl:1",
+          "asset": "XRP",
+          "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+          "amountDrops": "40000",
+          "invoiceId": "432D82310A3CD2796C93AF6040B680048FAEA34B62A7D9CD188F66E92DD6D9C9"
+        }
+      },
+      "paidPath": "/w/team-xrpl-explainers/articles/xrpl-escrow",
+      "receiptId": "escrow-7ED7776C03B92B4F5843553E4E37193C86B07040BB6AA67D999936833DAD81D8",
+      "txHash": "7ED7776C03B92B4F5843553E4E37193C86B07040BB6AA67D999936833DAD81D8",
+      "failedClaimIds": []
+    }
+  ],
+  "grants": [
+    {
+      "runId": "55901905-23d0-4bff-896d-56642eb44f5c",
+      "resourceId": "xrpl-escrow",
+      "version": "v1",
+      "intentId": "55901905-23d0-4bff-896d-56642eb44f5c:1:xrpl-escrow:v1",
+      "contentDigest": "07d733ff630873b0abecfd26633b0b16e35eed1aad4851a891bbc81d5cb0ee8e",
+      "grantedAt": "2026-11-10T18:28:53.333Z"
+    }
+  ],
+  "receipts": [
+    {
+      "escrow": {
+        "scheme": "escrow-v1",
+        "policy": "escrow-policy-v1",
+        "state": "RELEASED",
+        "mode": "key-reveal",
+        "revealLedger": 22222651,
+        "owner": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+        "cancelAfter": 847650631,
+        "createSequence": 22222632,
+        "createHash": "AB64D35F3AC695392DE715405D339378F0296C7007D1F459031ACE8E4032DF0C",
+        "keyVerified": true,
+        "decryptVerified": true,
+        "finishHash": "7ED7776C03B92B4F5843553E4E37193C86B07040BB6AA67D999936833DAD81D8",
+        "proofOk": true
+      },
+      "receiptId": "escrow-7ED7776C03B92B4F5843553E4E37193C86B07040BB6AA67D999936833DAD81D8",
+      "intentId": "55901905-23d0-4bff-896d-56642eb44f5c:1:xrpl-escrow:v1",
+      "runId": "55901905-23d0-4bff-896d-56642eb44f5c",
+      "resourceId": "xrpl-escrow",
+      "version": "v1",
+      "amountMinor": 40,
+      "currency": "SGD",
+      "settledAt": "2026-11-10T18:28:53.335Z",
+      "label": "XRPL TESTNET · no real value",
+      "xrpl": {
+        "txHash": "7ED7776C03B92B4F5843553E4E37193C86B07040BB6AA67D999936833DAD81D8",
+        "ledgerIndex": 22222651,
+        "payer": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+        "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "amountDrops": "40000",
+        "asset": "XRP",
+        "explorerUrl": "https://testnet.xrpl.org/transactions/7ED7776C03B92B4F5843553E4E37193C86B07040BB6AA67D999936833DAD81D8"
+      }
+    }
+  ],
+  "payments": [
+    {
+      "asset": "XRP",
+      "escrowTerms": {
+        "keyReveal": {
+          "ciphertextHash": "8b00cb387490ae3d795cce94b3ebee4d08ec5450a5aaa89cd24e46afa47ea2bd",
+          "plaintextHash": "236849b2a4245112f8fb16c3138a388e053fd7667cd5edc7f4d571e2ea2e1110",
+          "iv": "529A9AFC75103E5ED0F2C875",
+          "tag": "2BA7D445114F4A40E90BD62A443AA963"
+        },
+        "scheme": "escrow-v1",
+        "network": "xrpl:1",
+        "asset": "XRP",
+        "quoteId": "8871b883-7b52-4774-8d11-b978fd85d572",
+        "intentId": "55901905-23d0-4bff-896d-56642eb44f5c:1:xrpl-escrow:v1",
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-escrow",
+        "version": "v1",
+        "manifestRoot": "07d733ff630873b0abecfd26633b0b16e35eed1aad4851a891bbc81d5cb0ee8e",
+        "amount": "40000",
+        "payer": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+        "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "condition": "A025802088B283870D2893287B03356DB3C92DC726BA2281A2850640D212A5D3616F6E66810120",
+        "cancelAfter": 847650631
+      },
+      "escrowCreateHash": "AB64D35F3AC695392DE715405D339378F0296C7007D1F459031ACE8E4032DF0C",
+      "escrowCreateSequence": 22222632,
+      "escrowState": "RELEASED",
+      "kind": "purchase",
+      "label": "XRPL TESTNET · no real value",
+      "network": "XRPL Testnet (xrpl:1), no real value",
+      "runId": "55901905-23d0-4bff-896d-56642eb44f5c",
+      "intentId": "55901905-23d0-4bff-896d-56642eb44f5c:1:xrpl-escrow:v1",
+      "surface": "mcp",
+      "principal": "operator",
+      "policyVersion": "wallet-v1",
+      "writer": "team-xrpl-explainers",
+      "resourceId": "xrpl-escrow",
+      "version": "v1",
+      "payee": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+      "payer": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+      "amountMinor": 40,
+      "currency": "SGD",
+      "amountDrops": "40000",
+      "txHash": "7ED7776C03B92B4F5843553E4E37193C86B07040BB6AA67D999936833DAD81D8",
+      "invoiceId": "432D82310A3CD2796C93AF6040B680048FAEA34B62A7D9CD188F66E92DD6D9C9",
+      "ledgerIndex": 22222651,
+      "explorerUrl": "https://testnet.xrpl.org/transactions/7ED7776C03B92B4F5843553E4E37193C86B07040BB6AA67D999936833DAD81D8",
+      "status": "VERIFIED",
+      "refundTxHash": "",
+      "refundAmountMinor": "",
+      "refundExplorerUrl": "",
+      "reservedAt": "2026-11-10T18:28:37.160Z",
+      "settledAt": "2026-11-10T18:28:53.335Z"
+    }
+  ],
+  "proofs": [
+    {
+      "resourceId": "xrpl-escrow",
+      "version": "v1",
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-escrow",
+        "version": "v1",
+        "wallet": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+        "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+        "priceMinor": 40,
+        "leaves": [
+          "d4ac2fe2055cab7f50f84970c779034375ce82eed0527d0972dfe44b9ab23f99",
+          "6bb1a2f0c2b53cd0c3908ed497ac676db61e1432a862308193ab79e93b1e31c5",
+          "844f4efe4e6b1b230726c1517b97d3ddcbe5f9e1ae99b0781db117630c545efb",
+          "48094f2c6886ef38fa9dd3bd7425405df487b9cc8fbb4e74a1168c076b057d0f"
+        ],
+        "root": "07d733ff630873b0abecfd26633b0b16e35eed1aad4851a891bbc81d5cb0ee8e",
+        "claims": [],
+        "wordCount": 232,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.7949798495336888,
+        "sig": "09FAD1F4C911E147B5B72F0346B37060DF17131F7772099280E3E4F0C233096E44B118A999A088C6CC4FA3E9C467EEFDD460E9F999CB043D6A1C73D4A2D0D204"
+      },
+      "salts": [
+        "bc9472645d604cbcbeecae9832640792",
+        "e352b2a6a10396aa97f334ad8af47982",
+        "79f0b6d4f145d2224b91033cc9e30e70",
+        "3e361d3e6c68a84d7677e6fe83c1ded2"
+      ],
+      "intentId": "55901905-23d0-4bff-896d-56642eb44f5c:1:xrpl-escrow:v1",
+      "keyReveal": {
+        "quote": {
+          "ciphertext": "F325F19A4A6460D5CB3206AB101299FE096F52E6D476D0120C7400A50FF318B6BA00EBBB8C82D220AD3BB92C2CB9C45DC207E29A58FC7DC0E19737B8CB8B71D80F450E78312C07C2610F8BAB506D3543CF9AA7E77A8C611E4C677B32C278CFFECC18274DDD2F53FD158BC27D815E4F6D79AB3F648F283F53CEDC0CEC722DCEA780D2DF93B3BEB23D71145951C19DF3C779AED93A6A3D6A63FA8507A9102472AD98547D7204BA3DA03C8E6880999D11F1B269BA7ACE489C83AEE5C2407539A51C63A811E5789AC90CBF7EC6981E22227ADE4DFA1B1565EA5F594850230ADF47F463C57F0A2C35AED530799BBC51EBA71597F91D8C1A4F25DE304ADDE07B1D1B2C50D9E81B34A421ACEBD5B594B9FF2B6BE701DDC017A3E975A93FBC9E7F8C291D92A8B8983DBAF560BCEC09D0BA32671244DF6D77AF57C075BF55376713D387A5FD73E21D01EA997D0F92DC3E0DC82B5314FC882D521B6932C002C97FA2B171E3BE53862E01A65A8323F4B44BFD1A825A79385B94DBAF65375846674BFE381FF8685CB608402BAEE5D4798CB7E5125A601C4D95F1170A9264FF6C84236BAD122978D1EF129B450402E84B36BBFDA94CB1CE6F8EEBD42FAD259E994D636FDBE229268239C57F2C0A044E5F309410F652BE5F268CC870E8B0430D78A42AA3ED79A059A09BB212F6619F856739A1D95896091FBA6110063FD7D1442981BDC9566AC6ADAF88E1526C656E4B149F0842D33A6F8A4F62EA9F5C3656CFBFE48D3F12AE379DE540884876132D7A9F79D53759E940CCF18392954F63AC88E54FD62D6086CEA7262492AB9E96775F9D907CB920431DD50CC1096EBAA1000CB48561D21D64C58D52C85F6C6B622AF5528E66E82FDB34A80C856D620E0F202EBC26C66A7329B6CBAF7AB3A0E3F4685A72B980BD6C0B80C3607DE697CA1B8E8A1F2015FC1E2B1CFA206F5D1B77157CFF570CD2C2FD80C7D82E2694DF4E3C452ABB6FDC64B8DFF362B3F6AB9AFF9423F3477F63D86425D0A595F1CD6542B12DC10CE279B2AB18E4043FD4FBD177C28034D8E066B67E745929EE16DC447B0EF4042CFB9C842966D8BFE3AB89CED1FE32951094C17EE1CAC83ED954D749AAA503FB136DFCFEBD14D09DE820F534608058B08B76312E84626BC428AB4A3BD3D68BB5B43040CD08388F375D61DAC2BB5379EEC9FBEB3A8B49C37D12022BCD3442F83457CBC5DADA213C926C0259B5A3C6DBD6D35C9151B9663609F6C917864005AEA8A042328498360CE8C6BF2EF7866256F11A2A6FAEF6344F461017F7E927E8B81FFAA89640E773DCA26EC2AEADB72E4C973D8A35438733C0DC2E106C5A7D76CCD4D9AFBC24C5EE21C0A59123482093178C704FD0568C9AF0F64E1DD9BE5531B653CFF5C4F97B2187D139281AD0DE3AC73EE60E22F62B64ED9A902E310A78A3117959CBB5AA5C7FE7AB451E8B92CB4341049C1CB7BAC9CC2E2BD8491389DE1487D14B2095247E5825127AE956D980290910B8FD0E34C70EFCB39DDEED8B232DB9148802C3D53D81D88CE664FA13250BF459CEBDBD5910CEBD0F5D56F961F02CBA9FDD92A458CF9B7418C17C5E0824CF1D0412E089D65FE3E4A97B53ADB701ABD1CFC37E0B3B89CFFCC1DF36520A5C34D8FD58A4199CC04757C5C7BA1E1016033308A9639CFE20D70E72B28DC766BBE980B7E78619712A0BA2A3E57DE4434D5D911ACE665BAA37D35F383580CF4E32369175090336C9AF2AA3A1DC562F8ED3FB806F205D25450D0737708657362F2BF43A664EE312D335964B6E49AB5D5DFD528AA9375C074AD5B40E34CC1FD662A5F41DE8C5189AB75AB08A91DF2B89BFCE40102C4DC19FF904497AC16A754D4671B7619C45B36AC29FA4CD96CB8990A3EAABE87817B4EC4E0730D0B1DE16168C1A4915488620E87F7B8D0D5A698EDE26538618605792420928899217FC0598EE92286DE18519478A227CC6E42BE94F189477DF4BEAB55F9ECEF0DC3F5C9FC10989CA84B2B45E2D3CE3F141EA54021E89A3454EAD3D9BC730AAD1743F90B9E8D0EAEB2DB4B59F135A2EC59A5296E4F61521B83A4B712D50513CAFA19A10FC1C0909075F7DF74ECD9C0A1D781C9E5D500DD8F9E4984EB4A6334C68248B833F1B58B4D9AA38C343B77F59AFBFBAFC1E4504CBB70520EA2CDF9FD1EAE1A6F824DD867F60183D51D034C26308AC5AA7C06A6579CB8835FA8C6EEC3E9D4083D0CD04119808F31AD2BE5CF9FDC1EB67859E3F2F7A038281F63D5BFA14D97CB69F98672F96A43BA00CFF262DD81FA553692CA6E95BCD9AFA8D9ED02103C82FF7531C0D26B0364686B34285AF3DDDCDAAA28A4C49532E114B1FC6B3D02AC44DE0ECE28571238A9B54E6B133F6CECB0B7A565B6AE0C936A79AE2FB2D5DCDA9DC58F821AD4CEB75339D0C7EB9F66B87D62874B3267CC785054FD8211F68DA154F6806F564C4DD81A273C5C9B612FB571AEEEAF1AA795CF49FED44A1FF4982378CEB78EAF6836827DEB90C0B93BB09BC9B8328B3E6DD7FE04FF73285D025F5019CAE5FADFA06AE48869761958D7C1E1E4A55A4352EC614C456FFDD870D0BE06F7743A95B46A04F95E43229BED000C71B888ABB9DC3D92BE681C42F39167BFAF5B6BBFAA34675A1A10022A8BF79CDF033D9266E7200AACA0A1611A7E63130FA5CB400943DF183678DD03F49389F812ADF1DE4E6596FF4300E056A9B2593709A9014F9C1DED465B45AADC8E86C2677EB4864911E96DD2E8608787FD04F838359E28E671549414F7BCCC7D5316ECBD34ACF9A73C43FB1831B242517CC570EE3F94EE9BA1CC2D07072F4C0CF7FA5370F8B6B48D1E5CAEFEAD17BCB7BB3CD10C5D2B9951241BDB46A6B039B65147FD6A4F60DA634A2A27E67139FF85F77AA636801A19E8A82F30B7FE67F7469F155D36928A71AE590A3E8DE51BCBD403BCFE318D9BBF11448EEA49BAAD2CA1ED1E9591A00A4921F9D72D7108F73878A46F9CBA341FCF13494CC848B225A8940C950517C4A69E224F3E32A9CA6A89CBFCC4EF7FC2775FC855D051D8B7293596078950C323D6AFC672D46E424C233A2F6694821038ECFA958047C4407A6818870B0BCAF47071BE0870CF762534806BAF1950CC74D84D5E5E87CBE716135717A89ED9D14DA88382E173F00976C078E5682A0D3C977F4E67438C76AD9C45A71BD0F1FDE6D9859868DC18EA49511C8130FA2FA56D665CD6FFF294E818F0CCF9AC6370A291716C9EE9FE4855D1AB41D6F5502F13546210D0C10CEB459987844A4AE134CFFC32F717E6CBDA9878AB16A58630BFCE2E507B992F32DCF60B576768FE21FCC874C61A1B86CE0ECC34EB3C01362A9160140FC2FE2893325ECD346596E964887608B26330C12E1A48B85888FDA6C01578DCCC6CA9715D9819EB152FE3DC88C4F377A9699CF4EEF459E2F4EB5AEBFB35BE607F341CC6E6F37EB982D97DCD116BCD71CA10826DECD5A876EEE7B7D68D7786D377E85E7B8CE15BD1A45D158042FB0D3D66AFDE8C0C17A00108D320C7EE8DB5233B52F727CCBC63378621B95C3ACB6778980ED265F894185386EF3A545160E9CDAB579D9C27A93FD319D0092FE3A470F17EBFABAAD55362A9F37350E0187C66A7AD0ECC018771FAB5917D126F23D2601A3F00353ACFE5EDF0C4A7390372F001FF04AC5485ECA365B6F7BB0F48533488B8DD802229D0395F4B44CDAE5C288A2CDF8156017C9DACC62043A004972916EE99EC19DB9F6A05E34E45FD69DD1CBCBBF401A105C5B3ACCB2E09F247C9D0E8814E9885B3C906D533D8E155B321110931FAB248BE5FB5895E2206FC86F12E395261F4D391E641BC0BA1A9716985C24C309DB0E6031E6FEC4D8470F6E8C5B280CFEF37E100F962A3CACB3789CFB8A396D8AC68A79E6025331124B39657EB1DE69C01D9F0DAC1835A2BF2BACBCE63DBC2010432B8C6639705E5DDC68208183D8476B91FA5496D16C627DE819EDC6A50B460A8668E60504AAECC5AD3F39C7EE809A6040364AE26CABCF49D79E99E49D49B7C66E46A8A341C1869181544554746EFE63587B4D4E7324B01F2C1CEA9E6FE9B401241D4C301E51BE55AC5D216774D0BA13ADC66D031E34CA1D786331100F76C7BA55F641486A0BEBB383746077DBF6F08CC51FC093825B4F6927EB8C9DAD9E3793CD5398416CB7479F44C1FE4AF45ECB836562E04A096698F41357E438E9584D4E98ABDBA800967C963279A00E26EB18CAACB732206C232EE696F2ADCDF3F7799C01EA16807BF18F5539E457CFBCF3A1D2E1B7BE6A5EB38AB9EDD93F1CEBCE83F0C6C65F2309B85BD9EC9FCEF0A644CBA537D734171035A5E60BCF59680305896E297D212646B167520ED04983E39B017A924F33100A40D3D2BB7B6856D1401BDAE9EF843E1656C71F1F99DD5A87354BA9740FDF1D580F0C5CB01C4B15C065630B5668CB91D31DE59B901B32D166848EEC3AB265851606F94A5B3A62F244BEC1BF988C0E930061771D794B51ECE9C8C1BFC63A4CAA46413745E46C35733FC4A9CD0A15527F63650E82775B33556B546A8B81C6B3CF0A79829E17435FB5AF60944AE3CBF32B726736A1FEE131F4ABB9851EA8A9C84275DC5F76D82BF52E41F06001B1893AD5E60D5D28D5ADE0851C997177E87BDD1E14F59B694989D1249F37C146902D5E2221AFD2F8328195CDC9E393F0BE96F166B8C465D93468998649791BB6859ADAE9E2FFF30CB45A2A15CB47853B1AB07987F7379176E38FABAB80179D422927990C4FF7256058DAC3773B2299B7B55F015873C8ECAA9FB5C90E4AA9E51EF899540382440639603D2EEF609522D51E74B2BE4C74353D78B1E0AC6542B388DCFAAE3CE3FE92FCF6C84763A629C654DA33112F977077101850810CBDEDAE205698374FFD559F69C482937FDD56C930C7A8F84C3C2784CF84014E8D3EEE8BFCD4C5C59F04A513D2040C7FAED5E8CEAE780A7BD6A549FB7B8991B1578F67025584D87A45BB04F3C501C2A551695AA08B9DF4337F5219382407EDEAAF7315593A773D960AB03CE1E0045941EAAE102F6AA0B89320ECFD29E65C51942E9E728F19FD8A98B5557B4D50542A224B28ED3709A00C93AA83382671F2A4186A074AE876DFAEFC4F31A3E430A7F5FFD71CB8865C954076AC5AD06CB67F63A35F913CAE4F9DE0721164F166D97DE9882FF5B9185029F0B6769877930DFFE5E4A134CB423E7B5491F9796FC5D95046B4CC76DADC07AB4E2B05A8F3F2BF3E7AAE3EAF8B9CA1ACCEE656CB2664EAA1769BA4682E5E9B5E4F3FE02BB8943BC5C5F1332DF81B785F4D4F11A6007C98A15E31CA93EBB49B1100A71E444553ED3CA265D260A974A395E1DCA28FA30BE31898C737EFA6505582CC1043A73E021A42B23CC7106969C3DA640501F5FF54A4",
+          "terms": {
+            "keyReveal": {
+              "ciphertextHash": "8b00cb387490ae3d795cce94b3ebee4d08ec5450a5aaa89cd24e46afa47ea2bd",
+              "plaintextHash": "236849b2a4245112f8fb16c3138a388e053fd7667cd5edc7f4d571e2ea2e1110",
+              "iv": "529A9AFC75103E5ED0F2C875",
+              "tag": "2BA7D445114F4A40E90BD62A443AA963"
+            },
+            "scheme": "escrow-v1",
+            "network": "xrpl:1",
+            "asset": "XRP",
+            "quoteId": "8871b883-7b52-4774-8d11-b978fd85d572",
+            "intentId": "55901905-23d0-4bff-896d-56642eb44f5c:1:xrpl-escrow:v1",
+            "publisherSlug": "team-xrpl-explainers",
+            "articleId": "xrpl-escrow",
+            "version": "v1",
+            "manifestRoot": "07d733ff630873b0abecfd26633b0b16e35eed1aad4851a891bbc81d5cb0ee8e",
+            "amount": "40000",
+            "payer": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+            "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+            "condition": "A025802088B283870D2893287B03356DB3C92DC726BA2281A2850640D212A5D3616F6E66810120",
+            "cancelAfter": 847650631
+          },
+          "pubKey": "ED0741315955CA556EFF88B78024F0A8D47988377A95700080F9594F360FA78D56",
+          "sig": "0BED5DBC8DB54F978CDEAF083333A48B05DE54A9F24E25BCD4A2ECAF86D757E3748F498ECA1E39DBA2F607EE15D933EC09B4C9F2A4E97B72306E375A62BD5D0B"
+        },
+        "key": "1E312C1385A10BCDE4070552CC4CD7D45DFE7B63B822925B2489B7AA78579EE8",
+        "finishHash": "7ED7776C03B92B4F5843553E4E37193C86B07040BB6AA67D999936833DAD81D8",
+        "ledgerIndex": 22222651,
+        "createHash": "AB64D35F3AC695392DE715405D339378F0296C7007D1F459031ACE8E4032DF0C"
+      }
+    }
+  ],
+  "audit": {
+    "anchor": {
+      "seq": 42,
+      "hash": "e3b21398a1ae51a05dbbdd58a3461a10e049a39207d51013ea23aacba5054488"
+    },
+    "entries": [
+      {
+        "seq": 43,
+        "at": "2026-11-10T18:28:36.637Z",
+        "prevHash": "e3b21398a1ae51a05dbbdd58a3461a10e049a39207d51013ea23aacba5054488",
+        "hash": "775f094d7c8d465e38a306ffb513fb19050a174b03f9c0289310d7b8aef64dc2",
+        "runId": "55901905-23d0-4bff-896d-56642eb44f5c",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "admission",
+        "data": {
+          "admittedMinor": 200,
+          "agentMaxMinor": null,
+          "day": "2026-11-10",
+          "hireReserveMinor": 0,
+          "labels": {
+            "decision": "fixture · metadata-fixture",
+            "publisher": "local",
+            "research": "fixture · extractive-fixture",
+            "settlement": "XRPL TESTNET · no real value"
+          },
+          "maxMinor": 200,
+          "paused": false,
+          "policyVersion": "wallet-v1",
+          "questionCommitment": "c518cc713960e97e7e1ba36de8c54aef318b109b71324fff66876bfce36d4983",
+          "requestedMinor": 200,
+          "surfaceDailyMinor": 5000,
+          "surfaceRemainingMinor": 4840,
+          "walletDailyMinor": 2000,
+          "walletRemainingMinor": 1840
+        }
+      },
+      {
+        "seq": 44,
+        "at": "2026-11-10T18:28:36.722Z",
+        "prevHash": "775f094d7c8d465e38a306ffb513fb19050a174b03f9c0289310d7b8aef64dc2",
+        "hash": "96a0c9d26855596343455d6a19a4ff1796bdf40a60e8f5b7f7f9b40311cf79eb",
+        "runId": "55901905-23d0-4bff-896d-56642eb44f5c",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "decision",
+        "data": {
+          "calibration": null,
+          "candidatesJudged": 12,
+          "fallbackReason": null,
+          "model": "metadata-fixture",
+          "promptVersion": null,
+          "provider": "fixture",
+          "round": 1,
+          "selectedResourceId": "xrpl-escrow",
+          "selectedSourceKey": "xrpl-escrow@v1",
+          "threshold": 0.2,
+          "verdicts": {
+            "BUY": 5,
+            "SKIP_LOW_VALUE": 7
+          }
+        }
+      },
+      {
+        "seq": 45,
+        "at": "2026-11-10T18:28:37.160Z",
+        "prevHash": "96a0c9d26855596343455d6a19a4ff1796bdf40a60e8f5b7f7f9b40311cf79eb",
+        "hash": "f3604506d88526878d3a4a01fd4677191bdaf90ee2c948c19e76011cb5c9cd4b",
+        "runId": "55901905-23d0-4bff-896d-56642eb44f5c",
+        "intentId": "55901905-23d0-4bff-896d-56642eb44f5c:1:xrpl-escrow:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "reserve",
+        "data": {
+          "amountMinor": 40,
+          "committedMinor": 0,
+          "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+          "perSourceCapMinor": 100,
+          "policyVersion": "wallet-v1",
+          "profileId": "team-xrpl-explainers",
+          "quoteHash": "432D82310A3CD2796C93AF6040B680048FAEA34B62A7D9CD188F66E92DD6D9C9",
+          "rail": "xrpl-testnet",
+          "resourceId": "xrpl-escrow",
+          "runBudgetMinor": 200,
+          "source": null,
+          "version": "v1",
+          "walletDailyMinor": 2000
+        }
+      },
+      {
+        "seq": 46,
+        "at": "2026-11-10T18:28:38.930Z",
+        "prevHash": "f3604506d88526878d3a4a01fd4677191bdaf90ee2c948c19e76011cb5c9cd4b",
+        "hash": "93e154179f8e71f017276cceee609c3521ba05da2ed53eb66e6659a4f904ddfd",
+        "runId": "55901905-23d0-4bff-896d-56642eb44f5c",
+        "intentId": "55901905-23d0-4bff-896d-56642eb44f5c:1:xrpl-escrow:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "escrow-sign",
+        "data": {
+          "amountDrops": "40000",
+          "createSequence": 22222632,
+          "invoiceHash": "432D82310A3CD2796C93AF6040B680048FAEA34B62A7D9CD188F66E92DD6D9C9",
+          "lastLedgerSequence": 22222668,
+          "operation": "create",
+          "owner": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+          "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+          "proofOk": false,
+          "txHash": "AB64D35F3AC695392DE715405D339378F0296C7007D1F459031ACE8E4032DF0C"
+        }
+      },
+      {
+        "seq": 47,
+        "at": "2026-11-10T18:28:46.200Z",
+        "prevHash": "93e154179f8e71f017276cceee609c3521ba05da2ed53eb66e6659a4f904ddfd",
+        "hash": "a63efc14489b7c50050c5563634b9be937c48589186ddb6c10718a2c7f8f75d7",
+        "runId": "55901905-23d0-4bff-896d-56642eb44f5c",
+        "intentId": "55901905-23d0-4bff-896d-56642eb44f5c:1:xrpl-escrow:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "ESCROW_CREATE",
+        "data": {
+          "amountDrops": "40000",
+          "cancelAfter": 847650631,
+          "createSequence": 22222632,
+          "invoiceHash": "432D82310A3CD2796C93AF6040B680048FAEA34B62A7D9CD188F66E92DD6D9C9",
+          "ledgerIndex": 22222649,
+          "owner": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+          "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+          "result": "tesSUCCESS",
+          "txHash": "AB64D35F3AC695392DE715405D339378F0296C7007D1F459031ACE8E4032DF0C"
+        }
+      },
+      {
+        "seq": 48,
+        "at": "2026-11-10T18:28:53.333Z",
+        "prevHash": "a63efc14489b7c50050c5563634b9be937c48589186ddb6c10718a2c7f8f75d7",
+        "hash": "3ed5001318cd7bbaaf69672882e20ce5d333a0f570016a998374ec5ead323ecc",
+        "runId": "55901905-23d0-4bff-896d-56642eb44f5c",
+        "intentId": "55901905-23d0-4bff-896d-56642eb44f5c:1:xrpl-escrow:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "deliver",
+        "data": {
+          "accessible": false,
+          "contentDigest": "07d733ff630873b0abecfd26633b0b16e35eed1aad4851a891bbc81d5cb0ee8e",
+          "passageCount": 4,
+          "resourceId": "xrpl-escrow",
+          "version": "v1"
+        }
+      },
+      {
+        "seq": 49,
+        "at": "2026-11-10T18:28:53.335Z",
+        "prevHash": "3ed5001318cd7bbaaf69672882e20ce5d333a0f570016a998374ec5ead323ecc",
+        "hash": "8ce931c73b0f7b317eff484ae59571e62ee30d2d9321fd3a75301c9f65fcc902",
+        "runId": "55901905-23d0-4bff-896d-56642eb44f5c",
+        "intentId": "55901905-23d0-4bff-896d-56642eb44f5c:1:xrpl-escrow:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "proof",
+        "data": {
+          "accessible": false,
+          "scheme": "escrow-v1",
+          "status": "LOCKED",
+          "verified": true
+        }
+      },
+      {
+        "seq": 50,
+        "at": "2026-11-10T18:28:53.335Z",
+        "prevHash": "8ce931c73b0f7b317eff484ae59571e62ee30d2d9321fd3a75301c9f65fcc902",
+        "hash": "f0a45193292b91b0875eea72b3d0dfed850697033b0f22aaf8f966af26329118",
+        "runId": "55901905-23d0-4bff-896d-56642eb44f5c",
+        "intentId": "55901905-23d0-4bff-896d-56642eb44f5c:1:xrpl-escrow:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "ESCROW_FINISH",
+        "data": {
+          "amountDrops": "40000",
+          "createHash": "AB64D35F3AC695392DE715405D339378F0296C7007D1F459031ACE8E4032DF0C",
+          "createSequence": 22222632,
+          "ledgerIndex": 22222651,
+          "owner": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+          "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+          "proofOk": true,
+          "result": "tesSUCCESS",
+          "txHash": "7ED7776C03B92B4F5843553E4E37193C86B07040BB6AA67D999936833DAD81D8"
+        }
+      },
+      {
+        "seq": 51,
+        "at": "2026-11-10T18:28:53.335Z",
+        "prevHash": "f0a45193292b91b0875eea72b3d0dfed850697033b0f22aaf8f966af26329118",
+        "hash": "154e6fa7f040b417c4b66b609fad1b55aa2172a2b197359b47de77bb2949edff",
+        "runId": "55901905-23d0-4bff-896d-56642eb44f5c",
+        "intentId": "55901905-23d0-4bff-896d-56642eb44f5c:1:xrpl-escrow:v1",
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "settle",
+        "data": {
+          "amountDrops": "40000",
+          "amountMinor": 40,
+          "asset": "XRP",
+          "deliveredAmount": null,
+          "label": "XRPL TESTNET · no real value",
+          "ledgerIndex": 22222651,
+          "payTo": "r4MpcHLhAXCx4epuiKSsW83e9qm5yF6Xfb",
+          "payer": "rESQGwNmueCsdGvf9F1dRr37BHuAvus6EV",
+          "receiptId": "escrow-7ED7776C03B92B4F5843553E4E37193C86B07040BB6AA67D999936833DAD81D8",
+          "scheme": "escrow-v1",
+          "state": "RELEASED",
+          "txHash": "7ED7776C03B92B4F5843553E4E37193C86B07040BB6AA67D999936833DAD81D8"
+        }
+      },
+      {
+        "seq": 52,
+        "at": "2026-11-10T18:28:53.361Z",
+        "prevHash": "154e6fa7f040b417c4b66b609fad1b55aa2172a2b197359b47de77bb2949edff",
+        "hash": "2471892cab401759f41b21fc6522d4d6270674e654486e4dc6205a6237e8b5a9",
+        "runId": "55901905-23d0-4bff-896d-56642eb44f5c",
+        "intentId": null,
+        "surface": "mcp",
+        "principal": "operator",
+        "kind": "answer-anchor",
+        "data": {
+          "answersHash": "f7c21431e73334d24367b9e4d9592cc4e3bf307ed8448536b360206fe3fd4497"
+        }
+      }
+    ],
+    "head": "2471892cab401759f41b21fc6522d4d6270674e654486e4dc6205a6237e8b5a9"
+  }
+}

@@ -7,8 +7,8 @@ submission texts cannot disagree.
 
 ## Judge questions
 
-**<!--f:heldout_line-->v4 blind held-out: 7/20 bought and cited, 0/10 off-topic purchases (run once, 7 Nov; fixture decision model, team-authored writers, XRPL Testnet)<!--/f-->.**
-The key fact leads the answer in <!--f:answers_it-->2/20<!--/f-->; <!--f:heldout_violations-->0<!--/f--> gate violations; all
+**<!--f:heldout_line-->v5 blind held-out: 16/20 bought and cited, 0/10 off-topic purchases (run once, 11 Nov; fixture decision model, team-authored writers, XRPL Testnet)<!--/f-->.**
+The key fact leads the answer in <!--f:answers_it-->7/20<!--/f-->; <!--f:heldout_violations-->0<!--/f--> gate violations; all
 ten v4-negatives abstained. Run once on `main` `bdc30f97` against the packed MCP tgz
 (artifact SHA-256 `7fcdc665…`), blind banks v4 `0b770536…` and v4-negatives `d3c4738a…`,
 fixture decision model at threshold 0.20. v4 is now used: a new held-out claim needs a new
@@ -77,7 +77,7 @@ MCP package <!--f:mcp_mb-->3.4<!--/f--> MB (was 21.4 MB), cold MCP initialize
 
 ## Progress since SingHacks
 
-<!--f:progress_line-->217 pull requests merged since 21 Sep (counted at 522d32e0 on 10 Nov) · 13 releases · 61 Testnet transactions you can re-check<!--/f-->.
+<!--f:progress_line-->235 pull requests merged since 21 Sep (counted at 75cc2797 on 11 Nov) · 13 releases · 61 Testnet transactions you can re-check<!--/f-->.
 The queries behind every count, the release rail and the misses we kept are on the
 [progress page](https://collaboration95.github.io/theFastandtheFungible/progress/)
 (data: [`site/progress/data.json`](../site/progress/data.json)).
