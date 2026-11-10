@@ -1,7 +1,8 @@
 import { it, expect } from 'vitest'
-import { writeFileSync, mkdirSync, existsSync } from 'node:fs'
+import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'node:fs'
 import { execFileSync, spawnSync } from 'node:child_process'
 import { join, resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { resources } from './helpers/resource-scope'
 // @ts-expect-error local CLI helper
 import { shipPlan } from '../scripts/ship-check.mjs'
@@ -124,5 +125,62 @@ if(process.argv[2]==='api' && process.argv[3].endsWith('/status')) {
   expect(existsSync(join(root,'.git/forbidden-gh-call'))).toBe(false)
   expect(existsSync(join(root,'dist/local-release/assets'))).toBe(false)
   expect(git('ls-remote','--tags','origin','refs/tags/v1.2.3')).toBe('')
+  expect(git('status','--porcelain')).toBe('')
+})
+
+it('dry-run stages the admitted bytes and annotation without a tag push or release creation', () => {
+  // Fixture packages/DMGs exercise the orchestration, not real build acceptance.
+  const root=resources().tempDir('publisher-dryrun-'), bin=join(root,'bin')
+  mkdirSync(bin);mkdirSync(join(root,'scripts'))
+  const env: NodeJS.ProcessEnv={...process.env,PATH:bin+':'+process.env.PATH}
+  for (const key of Object.keys(env)) if (key.startsWith('GIT_')) delete env[key]
+  const git=(...args:string[])=>execFileSync('git',args,{cwd:root,env,encoding:'utf8',stdio:'pipe'}).trim()
+  git('init','-q','-b','main');git('config','user.name','Fixture');git('config','user.email','fixture@example.invalid')
+  writeFileSync(join(root,'package.json'),JSON.stringify({version:'1.2.3-rc.2'}))
+  writeFileSync(join(root,'.gitignore'),'remote.git/\ndist/\ndesktop/\n')
+  const contract=JSON.stringify(pathToFileURL(resolve('scripts/release-contract.mjs')).href)
+  writeFileSync(join(bin,'npm'),`#!${process.execPath}
+const {execFileSync}=require('node:child_process'),fs=require('node:fs')
+const git=(ref)=>execFileSync('git',['rev-parse',ref],{encoding:'utf8'}).trim()
+const source={head:git('HEAD'),tree:git('HEAD^{tree}'),dirty:false}
+fs.writeFileSync('.git/gate.json',JSON.stringify({schema:'local-gate-v1',state:'success',route:{all:true},source,finalSource:source,steps:${JSON.stringify(localGateSteps.map((id:string)=>({id,state:'success'})))}}))
+console.log('local-gate: success; receipt '+process.cwd()+'/.git/gate.json')
+`,{mode:0o755})
+  writeFileSync(join(bin,'gh'),`#!${process.execPath}
+require('node:fs').writeFileSync('.git/forbidden-gh-call','unexpected');process.exit(99)
+`,{mode:0o755})
+  writeFileSync(join(root,'scripts/final-acceptance.mjs'),`
+import {mkdirSync,writeFileSync} from 'node:fs'
+import {execFileSync} from 'node:child_process'
+import {resolve,join} from 'node:path'
+import {sha256,localAcceptanceGates} from ${contract}
+const git=(ref)=>execFileSync('git',['rev-parse',ref],{encoding:'utf8'}).trim()
+const sha=git('HEAD'),version='1.2.3-rc.2',root=resolve('dist/release')
+mkdirSync(root,{recursive:true});mkdirSync('dist/final',{recursive:true});mkdirSync('desktop/out',{recursive:true})
+const artifacts=['tgz','wheel','sdist','mcpb','mcp-tgz','metadata'].map(kind=>{
+ writeFileSync(join(root,kind),kind)
+ return {kind,file:kind,version:['wheel','sdist'].includes(kind)?'1.2.3rc2':version,bytes:kind.length,sha256:sha256(join(root,kind))}
+})
+writeFileSync(join(root,'manifest.json'),JSON.stringify({schema:1,sourceSha:sha,mode:'fixture providers; simulated settlement',artifacts}))
+writeFileSync(join(root,'accepted-receipt.json'),'fixture')
+const consumers={sourceSha:sha,manifestSha256:sha256(join(root,'manifest.json')),verifiers:{typescript:{pass:true},python:{pass:true},receiptSha256:sha256(join(root,'accepted-receipt.json'))},consumers:['tgz','wheel','mcpb','mcp-tgz','app'].map(kind=>({kind,sha256:artifacts.find(a=>a.kind===(kind==='app'?'mcp-tgz':kind)).sha256,citations:1,receipts:1,intents:1,idempotent:true,capPreserved:true}))}
+writeFileSync(join(root,'consumer-results.json'),JSON.stringify(consumers))
+const dmgs=['arm64','x64'].map(arch=>{const file=resolve('desktop/out','ResearchAgent-'+version+'-'+arch+'.dmg');writeFileSync(file,arch);return {file,bytes:arch.length,sha256:sha256(file)}})
+writeFileSync('dist/final/acceptance.json',JSON.stringify({pass:true,checksPass:true,acceptanceEligible:true,quick:false,worktreeDirty:false,sourceStable:true,sourceSha:sha,sourceTree:git('HEAD^{tree}'),schedule:{mode:'isolated soak then DAG',localArchitectures:['arm64','x64']},gates:localAcceptanceGates.map(name=>({name,pass:true,status:'PASS'})),artifacts,consumers,dmgs}))
+`)
+  // The real desktop staging helper runs; only package/test producers are fixtures.
+  writeFileSync(join(root,'scripts/desktop-release-assets.mjs'),`import ${JSON.stringify(pathToFileURL(resolve('scripts/desktop-release-assets.mjs')).href)}\n`)
+  git('add','.');git('commit','-qm','isolated dry-run fixture');git('tag','-a','v1.2.3-rc.2','-m','Fixture annotation\n\nPreserve these notes.')
+  git('init','--bare','-q',join(root,'remote.git'));git('remote','add','origin',join(root,'remote.git'));git('push','-q','origin','main')
+  const result=spawnSync(process.execPath,[resolve('scripts/release.mjs'),'publish','--tag','v1.2.3-rc.2','--dry-run'],{cwd:root,env,encoding:'utf8'})
+  expect(result.status,result.stderr).toBe(0)
+  const assets=join(root,'dist/local-release/assets')
+  const report=JSON.parse(readFileSync(join(assets,'release-publication.json'),'utf8'))
+  expect(report).toMatchObject({tag:'v1.2.3-rc.2',dryRun:true,mainAncestor:true,prerelease:true,latest:false,sha:git('rev-parse','HEAD')})
+  expect(readFileSync(join(root,'dist/local-release/notes.md'),'utf8')).toContain('Fixture annotation\n\nPreserve these notes.')
+  for (const row of report.assets) expect(sha256(join(assets,row.file))).toBe(row.sha256)
+  for (const arch of ['arm64','x64']) expect(sha256(join(assets,'ResearchAgent-unsigned-'+arch+'.dmg'))).toBe(sha256(join(assets,'ResearchAgent-1.2.3-rc.2-'+arch+'.dmg')))
+  expect(existsSync(join(root,'.git/forbidden-gh-call'))).toBe(false)
+  expect(git('ls-remote','--tags','origin','refs/tags/v1.2.3-rc.2')).toBe('')
   expect(git('status','--porcelain')).toBe('')
 })
