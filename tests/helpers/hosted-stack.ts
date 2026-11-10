@@ -7,7 +7,10 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node
 import { createServer as createHttps } from 'node:https'
 import { request as httpRequest, type IncomingMessage, type ServerResponse } from 'node:http'
 import { extname, join, relative, resolve } from 'node:path'
+import { createHash } from 'node:crypto'
 import { ResourceScope } from '../../shared/resource-scope.js'
+import { canonical } from '../../server/audit.js'
+import { XRPL_LABEL } from '../../shared/contracts/publisher.js'
 
 const web = Number(process.env.HOSTED_WEB_PORT), api = Number(process.env.HOSTED_API_PORT), pub = Number(process.env.HOSTED_PUBLISHER_PORT)
 const scope = new ResourceScope()
@@ -33,6 +36,25 @@ const { createApiApp } = await import('../../server/routes.js')
 const backend = await createApiApp({ publisherUrl: process.env.PUBLISHER_URL, hostedReadiness: async () => !existsSync(join(dir, 'degraded')) })
 const apiServer = backend.app.listen(api, '127.0.0.1')
 
+// Test-only stand-in for the XRPL anchor (never part of the gateway): with the simulated rail no run is ever anchored, so
+// a spec can promote one finished run to "anchored" and read back the ledger answer a Testnet node would give for it.
+// The transaction is synthetic; the specs that use it say so in their evidence.
+const sha = (text: string) => createHash('sha256').update(text).digest('hex')
+const hex = (text: string) => Buffer.from(text).toString('hex').toUpperCase()
+const stubLedger = new Map<string, unknown>()
+function anchorRun(runId: string) {
+  const store = backend.store!
+  store.updateRun(runId, { labels: { ...store.getRun(runId).labels, settlement: XRPL_LABEL } })
+  const answersHash = sha(canonical(store.getRun(runId).answers))
+  store.recordAudit({ runId, kind: 'answer-anchor', data: { answersHash } })
+  const tip = store.auditEntries().at(-1)!
+  store.saveAnchor({ runId, head: tip.hash, seq: tip.seq, answersHash })
+  const anchor = { version: 'anchor-v1', network: 'xrpl:1', head: tip.hash, runIdHash: sha(runId), account: 'rNY14qvMuBi6CqU4wPbWaS5nztPLCxJTFn', txHash: sha(`stub-tx:${runId}`).toUpperCase(), ledgerIndex: 22150001, feeDrops: '12' } as const
+  store.updateRun(runId, { ledgerAnchor: anchor })
+  stubLedger.set(anchor.txHash, { validated: true, ledger_index: anchor.ledgerIndex, meta: { TransactionResult: 'tesSUCCESS' }, Account: anchor.account, hash: anchor.txHash, Fee: anchor.feeDrops, TransactionType: 'AccountSet', Memos: [{ Memo: { MemoType: hex('researchagent/anchor-v1'), MemoData: hex(`${anchor.head}:${anchor.runIdHash}`) } }] })
+  return anchor
+}
+
 // The front: static production build with SPA fallback; gateway paths stream through with the public Host intact.
 execFileSync('openssl', ['req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-keyout', join(dir, 'key.pem'), '-out', join(dir, 'cert.pem'), '-days', '2', '-subj', '/CN=localhost', '-addext', 'subjectAltName=DNS:localhost'], { stdio: 'ignore' })
 const root = resolve('dist')
@@ -44,7 +66,12 @@ const proxy = (req: IncomingMessage, res: ServerResponse) => {
 }
 const front = createHttps({ key: readFileSync(join(dir, 'key.pem')), cert: readFileSync(join(dir, 'cert.pem')) }, (req, res) => {
   const path = new URL(req.url ?? '/', origin).pathname
-  if (/^\/(?:api|runs|w|livez|startupz|readyz)(?:\/|$)/.test(path)) return proxy(req, res)
+  const stub = path.match(/^\/__test\/(anchor|tx)\/([A-Za-z0-9-]+)$/)
+  if (stub) {
+    const body = stub[1] === 'anchor' && req.method === 'POST' ? anchorRun(stub[2]) : stub[1] === 'tx' ? stubLedger.get(stub[2]) : undefined
+    res.writeHead(body ? 200 : 404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(body ?? { error: 'unknown' })); return
+  }
+  if (/^\/(?:api|runs|w|proof|livez|startupz|readyz)(?:\/|$)/.test(path)) return proxy(req, res)
   const file = resolve(root, `.${decodeURIComponent(path)}`)
   const target = file.startsWith(root) && existsSync(file) && extname(file) ? file : join(root, 'index.html')
   res.writeHead(200, { 'Content-Type': types[extname(target)] ?? 'application/octet-stream', 'Cache-Control': 'no-store' })

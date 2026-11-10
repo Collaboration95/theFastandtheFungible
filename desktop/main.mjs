@@ -100,7 +100,7 @@ async function boot() {
     const url = new URL(request.url)
     if (url.host !== 'researchagent') return new Response(null, { status: 403 })
     const headers = { 'Content-Security-Policy': CSP, 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'no-store' }
-    if (/^\/(?:health|runs(?:\/|$)|api(?:\/|$)|w(?:\/|$))/.test(url.pathname)) {
+    if (/^\/(?:health|runs(?:\/|$)|api(?:\/|$)|proof(?:\/|$)|w(?:\/|$))/.test(url.pathname)) {
       try {
         const response = await backendRequest(engine, url.pathname + url.search, { method: request.method,
           ...(!['GET', 'HEAD'].includes(request.method) ? { body: await request.text() } : {}), signal: request.signal })

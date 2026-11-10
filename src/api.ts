@@ -189,3 +189,14 @@ export async function detectHosted(attempts = 3): Promise<{ status?: HostedDemoS
   }
   return { failed: true }
 }
+
+/** Proof of refusal (lane W1): may this finished decline be shared, and has it been? The server decides; the words are its. */
+const RefusalProofSchema = z.object({ id: z.string().regex(/^[a-f0-9]{32}$/), path: z.string().regex(/^\/proof\/[a-f0-9]{32}$/), createdAt: z.string() })
+const RefusalStatusSchema = z.object({ eligible: z.boolean(), code: z.string().max(40).optional(), message: z.string().max(300).optional(), proof: RefusalProofSchema.optional() })
+export type RefusalStatus = z.infer<typeof RefusalStatusSchema>
+export type RefusalProof = z.infer<typeof RefusalProofSchema>
+export const getRefusalProof = async (runId: string, signal?: AbortSignal): Promise<RefusalStatus> => RefusalStatusSchema.parse(await request(`/api${runPath(runId)}/proof`, undefined, signal))
+/** Creates the public snapshot, or returns the one already made for this run. Needs the visitor's explicit click. */
+export async function createRefusalProof(runId: string): Promise<RefusalProof> {
+  return z.object({ proof: RefusalProofSchema }).parse(await (await send(`/api${runPath(runId)}/proof`, { method: 'POST' })).json()).proof
+}

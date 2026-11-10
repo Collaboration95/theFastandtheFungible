@@ -159,7 +159,7 @@ export function inputsFor(id, files, read, unknown = false) {
   else if (id === 'desktop-loader') match = file => /^desktop\/(?:smoke|recovery-smoke|accept)\.mjs$|^scripts\/(?:record|mcp-demo|local-gate-smoke)\.mjs$|^shared\/resource-scope\.ts$/.test(file)
   else if (id === 'desktop-build') match = file => /^(?:src|server|shared|publisher|sdk|mcp|data|eval\/decisions|desktop)\/|^index\.html$|^vite\.config|^scripts\/local-gate-smoke/.test(file)
   else if (id === 'browser-app' || id === 'browser-perf') match = file => /^(?:src|server|shared|publisher|sdk|mcp|data|eval\/decisions|tests\/fixtures|design\/cast)\/|^index\.html$|^vite\.config|^playwright\.config|^tests\/.*\.spec\.ts$|^scripts\/(?:demo(?:-ports)?|prepare-e2e-store)\.mjs$/.test(file)
-  else if (id === 'browser-hosted') match = file => /^(?:src|server|shared|publisher|sdk|data|tests\/fixtures|tests\/helpers)\/|^index\.html$|^vite\.config|^playwright\.hosted\.config|^tests\/(?:hosted-ui\.spec|evidence-path)\.ts$|^scripts\/demo-ports\.mjs$/.test(file)
+  else if (id === 'browser-hosted') match = file => /^(?:src|server|shared|publisher|sdk|data|public|tests\/fixtures|tests\/helpers)\/|^index\.html$|^vite\.config|^playwright.hosted\.config|^tests\/(?:hosted-ui\.spec|proof-of-refusal\.spec|evidence-path)\.ts$|^scripts\/demo-ports\.mjs$/.test(file)
   else match = file => /^(?:src|shared|demo|site|design|docs\/evidence)\/|^vite\.demo\.config|^playwright\.(?:demo|judge|ledger)\.config|^tests\/(?:browser-demo|judge-path|ledger-viewer|ledger-sockets)/.test(file)
   const selected = files.filter(file => common(file) || match(file))
   return scriptClosure(files, read, selected)

@@ -1,0 +1,25 @@
+/* Proof of refusal (lane W1): scoped to .ra-share so the shared restyle of the answer cannot reach it. Tokens only. */
+.ra-share { margin-top: 14px; max-width: 640px; }
+.ra-share-ico { flex: none; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+.ra-share-ico path { stroke: var(--deep, #91503F); stroke-width: 2.5; stroke-linecap: square; }
+.ra-share-btn { gap: 8px; }
+.ra-share-why { display: flex; align-items: flex-start; gap: 8px; margin: 0; font-size: 13px; line-height: 20px; color: var(--muted); }
+.ra-share-why .ra-share-ico { margin-top: 1px; }
+.ra-share-why b { color: var(--ink); font-weight: 600; }
+.ra-share-confirm, .ra-share-done { padding: 16px 18px; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
+.ra-share-confirm h3, .ra-share-head { margin: 0 0 8px; font: 600 15px/22px var(--f-ui); color: var(--ink); letter-spacing: -.01em; }
+.ra-share-confirm h3:focus-visible { outline-offset: 4px; }
+.ra-share-head { display: flex; align-items: center; gap: 8px; }
+.ra-share-confirm p, .ra-share-done p { margin: 0 0 8px; font-size: 14px; line-height: 21px; color: var(--ink); }
+.ra-share-confirm p.ra-note, .ra-share-done p.ra-note { font-size: 13px; line-height: 19px; color: var(--muted); }
+.ra-share-confirm ul { margin: 0 0 10px; padding-left: 20px; font-size: 14px; line-height: 21px; }
+.ra-share-confirm li { margin: 3px 0; overflow-wrap: anywhere; }
+.ra-share-confirm q { font-weight: 500; }
+.ra-share-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.ra-share-actions .ra-btn { text-decoration: none; }
+.ra-share-url { overflow-wrap: anywhere; font: 500 13px/20px var(--f-mono); }
+.ra-share-url a { color: var(--ink); }
+@media (max-width: 520px) {
+  .ra-share-actions { flex-direction: column; }
+  .ra-share-actions .ra-btn { width: 100%; }
+}
