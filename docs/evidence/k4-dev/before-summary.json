@@ -1,0 +1,2381 @@
+{
+  "v1": {
+    "N": 20,
+    "buyAndCite": 17,
+    "answersIt": 0,
+    "negativeBuys": 0,
+    "violations": 0,
+    "verificationFailures": 0,
+    "results": [
+      {
+        "id": "J01",
+        "question": "How much does EscrowFinish with a fulfillment cost on XRPL Testnet?",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "The EscrowFinish reference defines the operation-specific fields alongside the shared XRPL transaction fields.",
+            "claim": {
+              "id": "evidence-[\"xrpl-tx-escrowfinish\",\"v1\",\"p3\"]",
+              "text": "The EscrowFinish reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-tx-escrowfinish",
+                  "version": "v1",
+                  "spanId": "p3"
+                }
+              ]
+            }
+          },
+          {
+            "text": "A conditional escrow needs the matching fulfillment, and time restrictions still apply.",
+            "claim": {
+              "id": "evidence-[\"xrpl-tx-escrowfinish\",\"v1\",\"p2\"]",
+              "text": "A conditional escrow needs the matching fulfillment, and time restrictions still apply. The finishing account does not choose a replacement destination. Conditional fulfillment increases transaction cost relative to a simple payment. Inspect the validated finish and original escrow together; a published secret by itself is not proof that release succeeded. [1]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-tx-escrowfinish",
+                  "version": "v1",
+                  "spanId": "p2"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "The EscrowFinish reference defines the operation-specific fields alongside the shared XRPL transaction fields. A conditional escrow needs the matching fulfillment, and time restrictions still apply. According to XRPL documentation, EscrowFinish releases an existing escrow to its predetermined recipient when the escrow's release conditions are satisfied. Conditional fulfillment increases transaction cost relative to a simple payment. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. Author interpretation: before using EscrowFinish, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "J02",
+        "question": "How does key reveal deliver paid research without premium bytes before payment?",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "Key reveal delivers paid research by making the writer publish a decryption key through a validated EscrowFinish.",
+            "claim": {
+              "id": "evidence-[\"team-delivery\",\"v3\",\"p1\"]",
+              "text": "Key reveal delivers paid research by making the writer publish a decryption key through a validated EscrowFinish. The buyer receives encrypted delivery bytes first, but those bytes stay quarantined. Only after the engine verifies the successful finish, the key binding and the authenticated envelope can premium plaintext become accessible through a verified grant. This distinction is essential: ciphertext possession alone does not authorize reading, synthesis or citation.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "team-delivery",
+                  "version": "v3",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "Key reveal delivers paid research by making the writer publish a decryption key through a validated EscrowFinish. The payment is not a loan and not an equity investment. The buyer receives encrypted delivery bytes first, but those bytes stay quarantined. Only after the engine verifies the successful finish, the key binding and the authenticated envelope can premium plaintext become accessible through a verified grant. The writer generates a fresh 32-byte key K and 12-byte IV per buyer and intent, and AES-256-GCM encrypts the delivery JSON (body, passages, salts and identity). The writer signs the escrow quote with its wallet key. A refund after successful key publication is a separate writer-signed Payment.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "J03",
+        "question": "Can RLUSD be escrowed with key reveal today?",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "RLUSD escrow support cannot be inferred from an XRP key-reveal purchase.",
+            "claim": {
+              "id": "evidence-[\"team-rlusd\",\"v3\",\"p1\"]",
+              "text": "RLUSD escrow support cannot be inferred from an XRP key-reveal purchase. The team documented official RLUSD as blocked until its issuer enables AllowTrustLineLocking. Our alternative is TEST-SGD, an IOU issued by our own Testnet issuer with no real value. It stands in for RLUSD in a mechanism experiment; it is neither official RLUSD nor evidence of stablecoin adoption. The docs contain no verified list of Singapore banks piloting RLUSD settlement in 2026. We cannot name banks from this evidence.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "team-rlusd",
+                  "version": "v3",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "RLUSD escrow support cannot be inferred from an XRP key-reveal purchase. The team documented official RLUSD as blocked until its issuer enables AllowTrustLineLocking. It stands in for RLUSD in a mechanism experiment; it is neither official RLUSD nor evidence of stablecoin adoption. The docs contain no verified list of Singapore banks piloting RLUSD settlement in 2026. A dedicated issuer creates TEST-SGD tokens on Testnet for experiments; these tokens carry no economic value and substitute for RLUSD only in mechanism tests. It does not change the official RLUSD issuer's permissions or establish a live bank settlement partnership.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "J04",
+        "question": "Which Singapore banks are piloting RLUSD settlement in 2026?",
+        "phase": "DONE",
+        "lead": [],
+        "conclusion": "Matched articles supplied no citable answer · nothing bought",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "J05",
+        "question": "What x402 headers does an XRPL buyer send?",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information.",
+            "claim": {
+              "id": "evidence-[\"team-x402\",\"v3\",\"p1\"]",
+              "text": "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information. The x402 buyer first requests a resource and receives payment requirements rather than premium content. The exact resource, version, seller wallet, network and amount must remain bound throughout negotiation. A model can assess usefulness but cannot initiate payment. Deterministic policy checks the authorized budget and reserves exposure before signing or submitting a purchase.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "team-x402",
+                  "version": "v3",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          },
+          {
+            "text": "Relevant CAIP-2 network identifiers are xrpl:0 for Mainnet, xrpl:1 for Testnet, and xrpl:2 for Devnet.",
+            "claim": {
+              "id": "evidence-[\"team-x402\",\"v3\",\"p4\"]",
+              "text": "Relevant CAIP-2 network identifiers are xrpl:0 for Mainnet, xrpl:1 for Testnet, and xrpl:2 for Devnet. The first live proof should use XRP on Testnet. One XRP equals one million drops; quote amounts must use exact integer drop strings.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "team-x402",
+                  "version": "v3",
+                  "spanId": "p4"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information. Relevant CAIP-2 network identifiers are xrpl:0 for Mainnet, xrpl:1 for Testnet, and xrpl:2 for Devnet. The x402 buyer first requests a resource and receives payment requirements rather than premium content. Each writer serves its own payment challenge and receives the buyer's Testnet payment. The buyer checks the named writer, article version, network and exact amount before authorizing the purchase. Some XRPL and older x402 examples use different headers. The escrow purchase binds the buyer, writer, article version, amount, condition and deadline in signed terms. A restarted buyer reconciles the original purchase before submitting another payment.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "J06",
+        "question": "How does delivered_amount prevent partial payment underpayment?",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "A payment integration must credit the validated delivered_amount, because a partial Payment can succeed while delivering less than the transaction's requested amount.",
+            "claim": {
+              "id": "evidence-[\"xrpl-partial-payments\",\"v1\",\"p1\"]",
+              "text": "A payment integration must credit the validated delivered_amount, because a partial Payment can succeed while delivering less than the transaction's requested amount. In API v2, the Amount field is renamed DeliverMax to make its maximum semantics clearer. Checking only the requested amount creates the partial-payment exploit described in the XRPL documentation. [1]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-partial-payments",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "A payment integration must credit the validated delivered_amount, because a partial Payment can succeed while delivering less than the transaction's requested amount. Checking only the requested amount creates the partial-payment exploit described in the XRPL documentation. The partial-payment flag changes what counts as success. Also test the ordinary non-partial case and a mismatched issuer. These are defensive recommendations based on the documented exploit, not a claim that every payment rail or historical transaction exposes identical metadata.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "J07",
+        "question": "How do XRPL Credentials change writer trust?",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "XRPL Credentials attest to writer identity under an operator-trusted issuer.",
+            "claim": {
+              "id": "evidence-[\"team-credentials\",\"v3\",\"p1\"]",
+              "text": "XRPL Credentials attest to writer identity under an operator-trusted issuer. The writer accepts the credential, and the engine checks acceptance, expiration and issuer policy against validated Testnet evidence. A Credential does not prove an article is accurate. It does not increase the writer trust weight or change the price or spending policy.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "team-credentials",
+                  "version": "v3",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          },
+          {
+            "text": "Issuer trust is operator policy.",
+            "claim": {
+              "id": "evidence-[\"team-credentials\",\"v3\",\"p2\"]",
+              "text": "Identity is not truth. A credential attests to a seller wallet, not an article, claim, reputation score or investment recommendation. Issuer trust is operator policy. Purchase decisions, trust weights, prices, budgets and payment authority are unchanged: only deterministic policy code can spend. Testnet only; no real value.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "team-credentials",
+                  "version": "v3",
+                  "spanId": "p2"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "XRPL Credentials attest to writer identity under an operator-trusted issuer. Issuer trust is operator policy. The writer accepts the credential, and the engine checks acceptance, expiration and issuer policy against validated Testnet evidence. It does not increase the writer trust weight or change the price or spending policy. Purchase decisions, trust weights, prices, budgets and payment authority are unchanged: only deterministic policy code can spend. A refund after successful key publication is a separate writer-signed Payment. A signed passage promise and a verifiable fraud proof establish responsibility for a broken commitment, but a real writer could refuse a refund. The fixture writer cooperates in our demonstrations. A writer no-show follows a different path.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 3,
+        "spentMinor": 120,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "J08",
+        "question": "What happens when a writer never reveals the key?",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "The buyer has reserved budget and submitted an EscrowCreate, but the writer has not yet published a usable key.",
+            "claim": {
+              "id": "evidence-[\"team-recovery\",\"v3\",\"p1\"]",
+              "text": "Writer no-show recovery starts with a durable purchase intent. The buyer has reserved budget and submitted an EscrowCreate, but the writer has not yet published a usable key. The principal is locked in an escrow object rather than transferred directly to the writer. The buyer must retain the signed quote, object identity and transaction hash while waiting. A missing HTTP response is not permission to buy the article a second time.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "team-recovery",
+                  "version": "v3",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          },
+          {
+            "text": "EscrowCancel returns the original principal when the writer never completes delivery.",
+            "claim": {
+              "id": "evidence-[\"team-recovery\",\"v3\",\"p3\"]",
+              "text": "EscrowCancel returns the original principal when the writer never completes delivery. The transaction fees remain spent. In our documented XRP example a cancelled sixty-thousand-drop principal returned in full, while create and cancel fees together consumed twenty-four drops. These figures describe a historical Testnet observation. They do not promise identical fees under future network load and do not express the principal as real SGD.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "team-recovery",
+                  "version": "v3",
+                  "spanId": "p3"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "The buyer has reserved budget and submitted an EscrowCreate, but the writer has not yet published a usable key. EscrowCancel returns the original principal when the writer never completes delivery. Writer no-show recovery starts with a durable purchase intent. The principal is locked in an escrow object rather than transferred directly to the writer. A writer-signed refund after EscrowFinish is a different operation. Successful finish has already paid the writer and published the key. The writer may voluntarily sign a separate Payment returning money to the buyer. The key-reveal mechanism makes publication of a key atomic with settlement, but it does not make prose true. The writer can sign a promise and deliver content that breaks it.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "J09",
+        "question": "Can a writer refuse a refund after EscrowFinish?",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "A writer-signed refund after EscrowFinish is a different operation.",
+            "claim": {
+              "id": "evidence-[\"team-recovery\",\"v3\",\"p4\"]",
+              "text": "A writer-signed refund after EscrowFinish is a different operation. Successful finish has already paid the writer and published the key. A subsequent quality challenge cannot reverse that transaction unilaterally. The writer may voluntarily sign a separate Payment returning money to the buyer. The demonstration uses a cooperative seller. Outside that fixture, repayment depends on the seller's consent and cannot be compelled by this protocol. The receipt must distinguish that cooperative refund from expiry cancellation, even when both leave the buyer with returned principal.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "team-recovery",
+                  "version": "v3",
+                  "spanId": "p4"
+                }
+              ]
+            }
+          },
+          {
+            "text": "A refund after completed release requires a separate mechanism; do not assume cancellation can undo an already finished escrow.",
+            "claim": {
+              "id": "evidence-[\"xrpl-escrow\",\"v1\",\"p3\"]",
+              "text": "For encrypted information sales, my recommendation is to bind the agreed ciphertext, condition and delivered passage commitments before paying. A revealed key may satisfy a cryptographic condition without establishing factual accuracy. Preserve that distinction in dispute handling. A refund after completed release requires a separate mechanism; do not assume cancellation can undo an already finished escrow. [1]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-escrow",
+                  "version": "v1",
+                  "spanId": "p3"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "A writer-signed refund after EscrowFinish is a different operation. A refund after completed release requires a separate mechanism; do not assume cancellation can undo an already finished escrow. EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds. Writer no-show recovery starts with a durable purchase intent. The buyer has reserved budget and submitted an EscrowCreate, but the writer has not yet published a usable key. The principal is locked in an escrow object rather than transferred directly to the writer. EscrowCancel returns the original principal when the writer never completes delivery. Successful finish has already paid the writer and published the key.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 2,
+        "spentMinor": 80,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "J10",
+        "question": "How do I get faucet funds and choose a Testnet endpoint?",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "Faucet funding supplies test assets for experiments and is separate from settling a purchase.",
+            "claim": {
+              "id": "evidence-[\"team-settlement\",\"v3\",\"p2\"]",
+              "text": "Faucet funding supplies test assets for experiments and is separate from settling a purchase. A faucet balance is not revenue or evidence of customer adoption. The payment receipt should identify the network and exact asset, and distinguish a simulated transaction from a validated Testnet transaction. Testnet balances have no redeemable value.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "team-settlement",
+                  "version": "v3",
+                  "spanId": "p2"
+                }
+              ]
+            }
+          },
+          {
+            "text": "The payment receipt should identify the network and exact asset, and distinguish a simulated transaction from a validated Testnet transaction.",
+            "claim": {
+              "id": "evidence-[\"team-settlement\",\"v3\",\"p2\"]",
+              "text": "Faucet funding supplies test assets for experiments and is separate from settling a purchase. A faucet balance is not revenue or evidence of customer adoption. The payment receipt should identify the network and exact asset, and distinguish a simulated transaction from a validated Testnet transaction. Testnet balances have no redeemable value.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "team-settlement",
+                  "version": "v3",
+                  "spanId": "p2"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "Faucet funding supplies test assets for experiments and is separate from settling a purchase. The payment receipt should identify the network and exact asset, and distinguish a simulated transaction from a validated Testnet transaction. A faucet balance is not revenue or evidence of customer adoption. Testnet balances have no redeemable value. When a public server cannot find an older transaction, retain its hash and check an appropriate history endpoint. These boundaries make it possible to inspect a demonstration without confusing Testnet activity with real-world commercial settlement.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "J11",
+        "question": "Why is the purchase budget controlled by policy rather than the model?",
+        "phase": "DONE",
+        "lead": [],
+        "conclusion": "Matched articles supplied no citable answer · nothing bought",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "J12",
+        "question": "How is one charge per intent enforced on retries?",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "One XRP equals one million drops; quote amounts must use exact integer drop strings.",
+            "claim": {
+              "id": "evidence-[\"team-x402\",\"v3\",\"p4\"]",
+              "text": "Relevant CAIP-2 network identifiers are xrpl:0 for Mainnet, xrpl:1 for Testnet, and xrpl:2 for Devnet. The first live proof should use XRP on Testnet. One XRP equals one million drops; quote amounts must use exact integer drop strings.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "team-x402",
+                  "version": "v3",
+                  "spanId": "p4"
+                }
+              ]
+            }
+          },
+          {
+            "text": "A timeout cannot authorize a second principal charge.",
+            "claim": {
+              "id": "evidence-[\"team-x402\",\"v3\",\"p6\"]",
+              "text": "A restarted buyer reconciles the original purchase before submitting another payment. A timeout cannot authorize a second principal charge. If a finish might already have reached the ledger, recovery checks that outcome before cancellation. Missing transaction history alone does not prove that principal returned. Expiry permits a cancellation transaction; it does not automatically return funds.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "team-x402",
+                  "version": "v3",
+                  "spanId": "p6"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "One XRP equals one million drops; quote amounts must use exact integer drop strings. A timeout cannot authorize a second principal charge.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "J13",
+        "question": "How can I independently verify a cited answer against the ledger?",
+        "phase": "DONE",
+        "lead": [],
+        "conclusion": "Matched articles supplied no citable answer · nothing bought",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "J14",
+        "question": "What does AllowTrustLineLocking mean for RLUSD escrow?",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "The team documented official RLUSD as blocked until its issuer enables AllowTrustLineLocking.",
+            "claim": {
+              "id": "evidence-[\"team-rlusd\",\"v3\",\"p1\"]",
+              "text": "RLUSD escrow support cannot be inferred from an XRP key-reveal purchase. The team documented official RLUSD as blocked until its issuer enables AllowTrustLineLocking. Our alternative is TEST-SGD, an IOU issued by our own Testnet issuer with no real value. It stands in for RLUSD in a mechanism experiment; it is neither official RLUSD nor evidence of stablecoin adoption. The docs contain no verified list of Singapore banks piloting RLUSD settlement in 2026. We cannot name banks from this evidence.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "team-rlusd",
+                  "version": "v3",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          },
+          {
+            "text": "RLUSD escrow support cannot be inferred from an XRP key-reveal purchase.",
+            "claim": {
+              "id": "evidence-[\"team-rlusd\",\"v3\",\"p1\"]",
+              "text": "RLUSD escrow support cannot be inferred from an XRP key-reveal purchase. The team documented official RLUSD as blocked until its issuer enables AllowTrustLineLocking. Our alternative is TEST-SGD, an IOU issued by our own Testnet issuer with no real value. It stands in for RLUSD in a mechanism experiment; it is neither official RLUSD nor evidence of stablecoin adoption. The docs contain no verified list of Singapore banks piloting RLUSD settlement in 2026. We cannot name banks from this evidence.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "team-rlusd",
+                  "version": "v3",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "The team documented official RLUSD as blocked until its issuer enables AllowTrustLineLocking. RLUSD escrow support cannot be inferred from an XRP key-reveal purchase. It stands in for RLUSD in a mechanism experiment; it is neither official RLUSD nor evidence of stablecoin adoption. The docs contain no verified list of Singapore banks piloting RLUSD settlement in 2026. A dedicated issuer creates TEST-SGD tokens on Testnet for experiments; these tokens carry no economic value and substitute for RLUSD only in mechanism tests. A successful TEST-SGD escrow proves only that this configured stand-in worked on Testnet. It does not change the official RLUSD issuer's permissions or establish a live bank settlement partnership.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "J15",
+        "question": "How do XRP drops differ from the SGD price shown in the app?",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "EscrowFinish with a fulfillment cost 423 drops in our observed XRPL Testnet conditional finish, more than a plain XRP Payment.",
+            "claim": {
+              "id": "evidence-[\"team-fees\",\"v3\",\"p1\"]",
+              "text": "EscrowFinish with a fulfillment cost 423 drops in our observed XRPL Testnet conditional finish, more than a plain XRP Payment. EscrowCreate used 12 drops, so the measured purchase overhead was 435 drops before a separate answer anchor. These are historical observations rather than a promise about future network load. A price displayed in SGD is an application accounting unit; it is not the network fee and it is not a market exchange rate.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "team-fees",
+                  "version": "v3",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "EscrowFinish with a fulfillment cost 423 drops in our observed XRPL Testnet conditional finish, more than a plain XRP Payment. EscrowCreate used 12 drops, so the measured purchase overhead was 435 drops before a separate answer anchor. A price displayed in SGD is an application accounting unit; it is not the network fee and it is not a market exchange rate. At the observed 12-drop signing base, ceil(12 × (33 + 36/16)) = 423 drops. Live create/cancel each cost 12 drops. A cancelled 60,000-drop principal is fully returned; its buyer still pays 24 drops in fees. - Synthetic corpus and extractive fixture answers in the proof are labelled; Testnet value transfer is real Testnet execution, with no real value.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "J16",
+        "question": "What are the x402 payment and delivery failure modes?",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information.",
+            "claim": {
+              "id": "evidence-[\"team-x402\",\"v3\",\"p1\"]",
+              "text": "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information. The x402 buyer first requests a resource and receives payment requirements rather than premium content. The exact resource, version, seller wallet, network and amount must remain bound throughout negotiation. A model can assess usefulness but cannot initiate payment. Deterministic policy checks the authorized budget and reserves exposure before signing or submitting a purchase.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "team-x402",
+                  "version": "v3",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          },
+          {
+            "text": "A valid payment for another article or another recipient does not unlock this delivery.",
+            "claim": {
+              "id": "evidence-[\"team-x402\",\"v3\",\"p2\"]",
+              "text": "Each writer serves its own payment challenge and receives the buyer's Testnet payment. The buyer checks the named writer, article version, network and exact amount before authorizing the purchase. A valid payment for another article or another recipient does not unlock this delivery. Testnet funds have no real value.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "team-x402",
+                  "version": "v3",
+                  "spanId": "p2"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information. A valid payment for another article or another recipient does not unlock this delivery. The x402 buyer first requests a resource and receives payment requirements rather than premium content. A model can assess usefulness but cannot initiate payment. Each writer serves its own payment challenge and receives the buyer's Testnet payment. Some XRPL and older x402 examples use different headers. The writer checks the validated create and escrow object before providing the encrypted delivery. Premium plaintext stays inaccessible until a verified grant follows successful release and authenticated delivery. A restarted buyer reconciles the original purchase before submitting another payment.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 3,
+        "spentMinor": 120,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "J17",
+        "question": "Does a Credential prove an article is accurate?",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "CredentialType is issuer-defined binary data encoded as hexadecimal, not a globally unique legal classification.",
+            "claim": {
+              "id": "evidence-[\"xrpl-tx-credentialcreate\",\"v1\",\"p2\"]",
+              "text": "CredentialType is issuer-defined binary data encoded as hexadecimal, not a globally unique legal classification. The subject normally must accept the credential before permission checks can rely on it. Expiration and URI can qualify the attestation. Trust depends on the issuer and purpose; a credential does not certify every article or grant universal payment-service approval. [1]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-tx-credentialcreate",
+                  "version": "v1",
+                  "spanId": "p2"
+                }
+              ]
+            }
+          },
+          {
+            "text": "Trust depends on the issuer and purpose; a credential does not certify every article or grant universal payment-service approval.",
+            "claim": {
+              "id": "evidence-[\"xrpl-tx-credentialcreate\",\"v1\",\"p2\"]",
+              "text": "CredentialType is issuer-defined binary data encoded as hexadecimal, not a globally unique legal classification. The subject normally must accept the credential before permission checks can rely on it. Expiration and URI can qualify the attestation. Trust depends on the issuer and purpose; a credential does not certify every article or grant universal payment-service approval. [1]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-tx-credentialcreate",
+                  "version": "v1",
+                  "spanId": "p2"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "CredentialType is issuer-defined binary data encoded as hexadecimal, not a globally unique legal classification. Trust depends on the issuer and purpose; a credential does not certify every article or grant universal payment-service approval. According to XRPL documentation, CredentialCreate issues a provisional on-ledger credential to a subject account. The subject normally must accept the credential before permission checks can rely on it.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "J18",
+        "question": "What is the difference between EscrowCancel and a writer signed refund?",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "EscrowCancel returns the original principal when the writer never completes delivery.",
+            "claim": {
+              "id": "evidence-[\"team-recovery\",\"v3\",\"p3\"]",
+              "text": "EscrowCancel returns the original principal when the writer never completes delivery. The transaction fees remain spent. In our documented XRP example a cancelled sixty-thousand-drop principal returned in full, while create and cancel fees together consumed twenty-four drops. These figures describe a historical Testnet observation. They do not promise identical fees under future network load and do not express the principal as real SGD.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "team-recovery",
+                  "version": "v3",
+                  "spanId": "p3"
+                }
+              ]
+            }
+          },
+          {
+            "text": "A writer-signed refund after EscrowFinish is a different operation.",
+            "claim": {
+              "id": "evidence-[\"team-recovery\",\"v3\",\"p4\"]",
+              "text": "A writer-signed refund after EscrowFinish is a different operation. Successful finish has already paid the writer and published the key. A subsequent quality challenge cannot reverse that transaction unilaterally. The writer may voluntarily sign a separate Payment returning money to the buyer. The demonstration uses a cooperative seller. Outside that fixture, repayment depends on the seller's consent and cannot be compelled by this protocol. The receipt must distinguish that cooperative refund from expiry cancellation, even when both leave the buyer with returned principal.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "team-recovery",
+                  "version": "v3",
+                  "spanId": "p4"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "EscrowCancel returns the original principal when the writer never completes delivery. A writer-signed refund after EscrowFinish is a different operation. Writer no-show recovery starts with a durable purchase intent. The buyer has reserved budget and submitted an EscrowCreate, but the writer has not yet published a usable key. The principal is locked in an escrow object rather than transferred directly to the writer. The buyer must retain the signed quote, object identity and transaction hash while waiting. Passing that deadline permits an EscrowCancel; it does not automatically move funds back to the buyer. Successful finish has already paid the writer and published the key. The writer may voluntarily sign a separate Payment returning money to the buyer.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "J19",
+        "question": "How are manifest signatures and content hashes checked?",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "Offline cryptographic checks can authenticate the signed manifest, exact passage hashes, delivered identity and key binding.",
+            "claim": {
+              "id": "lead-[null,\"team-delivery\",\"v3\",\"p6\"]",
+              "text": "Independent verification checks several different things. Offline cryptographic checks can authenticate the signed manifest, exact passage hashes, delivered identity and key binding. A ledger lookup separately establishes successful validated settlement. Historical endpoints can disagree about availability; a transaction not found on one endpoint is not proof of failure. Readers should retain the transaction hash, network, ledger index and receipt bundle when reporting evidence.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "team-delivery",
+                  "version": "v3",
+                  "spanId": "p6"
+                }
+              ]
+            }
+          },
+          {
+            "text": "A receipt reader should preserve both the identity status and the content provenance rather than interpreting either as an endorsement of every claim.",
+            "claim": {
+              "id": "lead-[null,\"team-verification\",\"v3\",\"p7\"]",
+              "text": "Identity Credentials answer a separate question. An accepted, unexpired credential from a trusted issuer supports an identity attestation. It does not prove article accuracy, independent authorship, market adoption or production readiness. A receipt reader should preserve both the identity status and the content provenance rather than interpreting either as an endorsement of every claim.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "team-verification",
+                  "version": "v3",
+                  "spanId": "p7"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "Offline cryptographic checks can authenticate the signed manifest, exact passage hashes, delivered identity and key binding. A receipt reader should preserve both the identity status and the content provenance rather than interpreting either as an endorsement of every claim. The signed terms bind buyer, intent, article version, passage-manifest root, XRP amount, CancelAfter, PREIMAGE-SHA-256(K), ciphertext SHA-256, plaintext SHA-256, IV and GCM tag. The existing passage manifest separately authenticates each salted passage. The signed manifest binds the writer wallet, article version, price and passage root. Passage verification uses salted hashes committed under a manifest root. To establish ledger finality, query the named Testnet transaction hashes and require successful validated results.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 2,
+        "spentMinor": 80,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "J20",
+        "question": "What evidence supports using this Testnet prototype with real money?",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "ResearchAgent is a Testnet prototype, with no mainnet readiness claim.",
+            "claim": {
+              "id": "evidence-[\"team-readiness\",\"v3\",\"p1\"]",
+              "text": "ResearchAgent is a Testnet prototype, with no mainnet readiness claim. Testnet transactions can demonstrate that a particular payment mechanism settled on that network; they do not establish suitability for handling real customer funds. A successful receipt is evidence about a specific run. It does not certify legal compliance, commercial reliability, investment quality or regulatory approval. The distinction matters when a judge asks what the demonstrated system is ready to do.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "team-readiness",
+                  "version": "v3",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          },
+          {
+            "text": "Testnet transactions can demonstrate that a particular payment mechanism settled on that network; they do not establish suitability for handling real customer funds.",
+            "claim": {
+              "id": "evidence-[\"team-readiness\",\"v3\",\"p1\"]",
+              "text": "ResearchAgent is a Testnet prototype, with no mainnet readiness claim. Testnet transactions can demonstrate that a particular payment mechanism settled on that network; they do not establish suitability for handling real customer funds. A successful receipt is evidence about a specific run. It does not certify legal compliance, commercial reliability, investment quality or regulatory approval. The distinction matters when a judge asks what the demonstrated system is ready to do.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "team-readiness",
+                  "version": "v3",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "ResearchAgent is a Testnet prototype, with no mainnet readiness claim. Testnet transactions can demonstrate that a particular payment mechanism settled on that network; they do not establish suitability for handling real customer funds. A successful receipt is evidence about a specific run. Neither this article nor a successful Testnet payment establishes that future work as completed. The practical reading of the evidence is therefore bounded. Treat Testnet funds as having no real value.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "verificationOk": true,
+        "violations": []
+      }
+    ]
+  },
+  "v3": {
+    "N": 20,
+    "buyAndCite": 11,
+    "answersIt": 5,
+    "negativeBuys": 0,
+    "violations": 0,
+    "verificationFailures": 0,
+    "results": [
+      {
+        "id": "V01",
+        "topic": "payments-fees",
+        "question": "What is the minimum transaction cost on the XRP Ledger, and in which unit is it quoted?",
+        "gold": "10 drops",
+        "phase": "DONE",
+        "lead": [],
+        "conclusion": "Matched articles supplied no citable answer · nothing bought",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "V02",
+        "topic": "payments-fees",
+        "question": "How do I tag an XRP payment so an exchange or merchant can credit the right customer?",
+        "gold": "DestinationTag",
+        "phase": "DONE",
+        "lead": [],
+        "conclusion": "Matched articles supplied no citable answer · nothing bought",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "V03",
+        "topic": "payments-fees",
+        "question": "A submitted XRP payment returned a preliminary result. When is the outcome actually final?",
+        "gold": "validated ledger",
+        "phase": "DONE",
+        "lead": [],
+        "conclusion": "Matched articles supplied no citable answer · nothing bought",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "V04",
+        "topic": "escrow",
+        "question": "Which EscrowCreate field lets the sender recover locked funds if the escrow is never finished?",
+        "gold": "CancelAfter",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds.",
+            "claim": {
+              "id": "evidence-[\"xrpl-escrow\",\"v1\",\"p1\"]",
+              "text": "XRPL escrow locks funds until its time or cryptographic conditions permit release; it does not judge whether purchased prose is useful or true. EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds. Expiration alone does not submit that cancellation transaction. [1]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-escrow",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          },
+          {
+            "text": "A condition can bind release to a cryptographic fulfillment, while FinishAfter and CancelAfter control time windows.",
+            "claim": {
+              "id": "evidence-[\"xrpl-escrow\",\"v1\",\"p2\"]",
+              "text": "Time-based, conditional and combined escrows express different release constraints. A condition can bind release to a cryptographic fulfillment, while FinishAfter and CancelAfter control time windows. The documentation describes ledger objects that persist until completion or cancellation. A browser countdown is consequently an estimate of eligibility, not proof that the object was removed or the sender recovered funds. [1]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-escrow",
+                  "version": "v1",
+                  "spanId": "p2"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds. A condition can bind release to a cryptographic fulfillment, while FinishAfter and CancelAfter control time windows. XRPL escrow locks funds until its time or cryptographic conditions permit release; it does not judge whether purchased prose is useful or true. A browser countdown is consequently an estimate of eligibility, not proof that the object was removed or the sender recovered funds. A refund after completed release requires a separate mechanism; do not assume cancellation can undo an already finished escrow. Test a valid fulfillment, an incorrect fulfillment, a seller that never finishes and a validated cancellation after expiry.",
+        "buyAndCite": true,
+        "answersIt": 1,
+        "purchases": 1,
+        "spentMinor": 40,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "V05",
+        "topic": "escrow",
+        "question": "Which crypto-condition type does XRPL escrow use for a hash-locked release?",
+        "gold": "PREIMAGE-SHA-256",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "According to XRPL documentation, EscrowCreate locks funds for a specified recipient until the configured time or cryptographic conditions permit release.",
+            "claim": {
+              "id": "evidence-[\"xrpl-tx-escrowcreate\",\"v1\",\"p1\"]",
+              "text": "According to XRPL documentation, EscrowCreate locks funds for a specified recipient until the configured time or cryptographic conditions permit release. [1]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-tx-escrowcreate",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          },
+          {
+            "text": "According to XRPL documentation, EscrowFinish releases an existing escrow to its predetermined recipient when the escrow's release conditions are satisfied.",
+            "claim": {
+              "id": "evidence-[\"xrpl-tx-escrowfinish\",\"v1\",\"p1\"]",
+              "text": "According to XRPL documentation, EscrowFinish releases an existing escrow to its predetermined recipient when the escrow's release conditions are satisfied. [1]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-tx-escrowfinish",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "According to XRPL documentation, EscrowCreate locks funds for a specified recipient until the configured time or cryptographic conditions permit release. According to XRPL documentation, EscrowFinish releases an existing escrow to its predetermined recipient when the escrow's release conditions are satisfied. XRPL escrow locks funds until its time or cryptographic conditions permit release; it does not judge whether purchased prose is useful or true. EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds. Time-based, conditional and combined escrows express different release constraints. A condition can bind release to a cryptographic fulfillment, while FinishAfter and CancelAfter control time windows.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 3,
+        "spentMinor": 120,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "V06",
+        "topic": "escrow",
+        "question": "Does an XRPL escrow pay out by itself once FinishAfter has passed, or does something have to be submitted?",
+        "gold": "EscrowFinish",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "FinishAfter and CancelAfter use ledger time, and a Condition can require a matching fulfillment.",
+            "claim": {
+              "id": "evidence-[\"xrpl-tx-escrowcreate\",\"v1\",\"p2\"]",
+              "text": "FinishAfter and CancelAfter use ledger time, and a Condition can require a matching fulfillment. Trust-line token escrow requires the issuer's AllowTrustLineLocking permission; MPT escrow has its own capability flags. Holding a token balance alone does not establish escrow eligibility. Creation locks principal but does not pay the recipient. [1]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-tx-escrowcreate",
+                  "version": "v1",
+                  "spanId": "p2"
+                }
+              ]
+            }
+          },
+          {
+            "text": "Inspect the validated finish and original escrow together; a published secret by itself is not proof that release succeeded.",
+            "claim": {
+              "id": "evidence-[\"xrpl-tx-escrowfinish\",\"v1\",\"p2\"]",
+              "text": "A conditional escrow needs the matching fulfillment, and time restrictions still apply. The finishing account does not choose a replacement destination. Conditional fulfillment increases transaction cost relative to a simple payment. Inspect the validated finish and original escrow together; a published secret by itself is not proof that release succeeded. [1]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-tx-escrowfinish",
+                  "version": "v1",
+                  "spanId": "p2"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "FinishAfter and CancelAfter use ledger time, and a Condition can require a matching fulfillment. Inspect the validated finish and original escrow together; a published secret by itself is not proof that release succeeded. According to XRPL documentation, EscrowCreate locks funds for a specified recipient until the configured time or cryptographic conditions permit release. Trust-line token escrow requires the issuer's AllowTrustLineLocking permission; MPT escrow has its own capability flags. Holding a token balance alone does not establish escrow eligibility. Creation locks principal but does not pay the recipient. The EscrowCreate reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 2,
+        "spentMinor": 80,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "V07",
+        "topic": "rlusd-stablecoin",
+        "question": "Which US state regulator supervises the trust company that issues RLUSD?",
+        "gold": "New York",
+        "phase": "DONE",
+        "lead": [],
+        "conclusion": "No listed writer covers this yet · nothing bought",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "V08",
+        "topic": "rlusd-stablecoin",
+        "question": "RLUSD has a five-letter code. How is that currency code represented on the XRP Ledger?",
+        "gold": "524C555344",
+        "phase": "DONE",
+        "lead": [],
+        "conclusion": "Matched articles supplied no citable answer · nothing bought",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "V09",
+        "topic": "trust-lines-reserves",
+        "question": "What must a holder submit before an account can receive an issued token such as a stablecoin on XRPL?",
+        "gold": "TrustSet",
+        "phase": "DONE",
+        "lead": [],
+        "conclusion": "Matched articles supplied no citable answer · nothing bought",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "V10",
+        "topic": "trust-lines-reserves",
+        "question": "Why does every trust line make a wallet need more XRP than just the transaction fee?",
+        "gold": "owner reserve",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "A wallet with enough principal for a purchase may still lack room for the escrow object or transaction fee.",
+            "claim": {
+              "id": "evidence-[\"xrpl-reserves\",\"v1\",\"p3\"]",
+              "text": "For an agent builder, my recommendation is to estimate spendable XRP from validated account state and the network's reserve settings before authorizing a payment. Include pending object creation in that estimate. A wallet with enough principal for a purchase may still lack room for the escrow object or transaction fee. Report the failed prerequisite precisely rather than silently switching assets or increasing funding authority. [1]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-reserves",
+                  "version": "v1",
+                  "spanId": "p3"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "A wallet with enough principal for a purchase may still lack room for the escrow object or transaction fee. An XRPL wallet needs a base reserve plus applicable owner reserves, separately from the money it intends to send. The reserve documentation lists Mainnet settings of 1 XRP per account and 0.2 XRP per owned item at access time, and warns that other networks can differ. Validators can change requirements through fee voting; these figures are a dated reference, not a permanent application constant. Reserves are not payments to validators, and the documentation permits reserved XRP to pay transaction costs. Treating every XRP in a balance as transferable would therefore confuse several distinct accounting concepts.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "V11",
+        "topic": "credentials-did",
+        "question": "Which transaction must the subject of a Credential submit to accept it?",
+        "gold": "CredentialAccept",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "The CredentialAccept reference defines the operation-specific fields alongside the shared XRPL transaction fields.",
+            "claim": {
+              "id": "evidence-[\"xrpl-tx-credentialaccept\",\"v1\",\"p3\"]",
+              "text": "The CredentialAccept reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-tx-credentialaccept",
+                  "version": "v1",
+                  "spanId": "p3"
+                }
+              ]
+            }
+          },
+          {
+            "text": "The CredentialCreate reference defines the operation-specific fields alongside the shared XRPL transaction fields.",
+            "claim": {
+              "id": "evidence-[\"xrpl-tx-credentialcreate\",\"v1\",\"p3\"]",
+              "text": "The CredentialCreate reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-tx-credentialcreate",
+                  "version": "v1",
+                  "spanId": "p3"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "The CredentialAccept reference defines the operation-specific fields alongside the shared XRPL transaction fields. The CredentialCreate reference defines the operation-specific fields alongside the shared XRPL transaction fields. According to XRPL documentation, CredentialAccept records the subject account's acceptance of a credential issued to it. The issuer, subject and CredentialType identify the credential being accepted. Creation by an issuer alone is not acceptance by the subject. An expired or deleted credential cannot establish a current permission merely because it once appeared in history. Acceptance concerns the attestation's lifecycle, not a guarantee that every statement by the subject is true. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules.",
+        "buyAndCite": true,
+        "answersIt": 1,
+        "purchases": 2,
+        "spentMinor": 80,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "V12",
+        "topic": "credentials-did",
+        "question": "Which XRPL transaction publishes or updates a decentralized identifier for an account?",
+        "gold": "DIDSet",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "An XLS-40 decentralized identifier identifies a controller and supports verifiable associations, but does not by itself prove a person's legal identity.",
+            "claim": {
+              "id": "evidence-[\"xrpl-did\",\"v1\",\"p1\"]",
+              "text": "An XLS-40 decentralized identifier identifies a controller and supports verifiable associations, but does not by itself prove a person's legal identity. XRPL's DID documentation explicitly distinguishes a self-created identifier from assertions validated by a trusted credential issuer. An identifier's existence and the truth of claims about its owner require separate evidence. [1] [2]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-did",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          },
+          {
+            "text": "XLS-40 specifies the XRPL DID method and operations for managing DID data.",
+            "claim": {
+              "id": "evidence-[\"xrpl-did\",\"v1\",\"p2\"]",
+              "text": "XLS-40 specifies the XRPL DID method and operations for managing DID data. A DID document can supply verification information or refer to externally stored material. The documentation describes resolving a document and checking a credential as distinct steps. A working URI proves neither that an issuer is trustworthy nor that every assertion in the referenced document is current. [1] [2]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-did",
+                  "version": "v1",
+                  "spanId": "p2"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "An XLS-40 decentralized identifier identifies a controller and supports verifiable associations, but does not by itself prove a person's legal identity. XLS-40 specifies the XRPL DID method and operations for managing DID data. XRPL's DID documentation explicitly distinguishes a self-created identifier from assertions validated by a trusted credential issuer. An identifier's existence and the truth of claims about its owner require separate evidence. Test document updates, deleted references and a credential from an issuer the verifier does not trust. These are implementation recommendations grounded in the DID model, not a declaration that a DID constitutes KYC approval or that an identifier owner holds any particular licence.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "V13",
+        "topic": "x402",
+        "question": "What does an x402 facilitator do on behalf of a resource server?",
+        "gold": "settle",
+        "phase": "DONE",
+        "lead": [],
+        "conclusion": "Matched articles supplied no citable answer · nothing bought",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "V14",
+        "topic": "x402",
+        "question": "What HTTP status code does a server return when payment is required before serving a resource?",
+        "gold": "402",
+        "phase": "DONE",
+        "lead": [],
+        "conclusion": "No listed writer covers this yet · nothing bought",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "V15",
+        "topic": "amm-dex",
+        "question": "What is the maximum trading fee an XRPL AMM pool can set?",
+        "gold": "1%",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "According to XRPL documentation, AMMVote lets liquidity providers express a preference for an AMM's trading fee.",
+            "claim": {
+              "id": "evidence-[\"xrpl-tx-ammvote\",\"v1\",\"p1\"]",
+              "text": "According to XRPL documentation, AMMVote lets liquidity providers express a preference for an AMM's trading fee. [1]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-tx-ammvote",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          },
+          {
+            "text": "This is a pool parameter mechanism rather than validator governance or a vote on XRPL transaction fees.",
+            "claim": {
+              "id": "evidence-[\"xrpl-tx-ammvote\",\"v1\",\"p2\"]",
+              "text": "Voting weight depends on the provider's pool participation, and the reference defines how recorded votes determine the fee. This is a pool parameter mechanism rather than validator governance or a vote on XRPL transaction fees. Check the current pool and eligible voting position. A submitted preference does not guarantee the final fee equals that preference. [1]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-tx-ammvote",
+                  "version": "v1",
+                  "spanId": "p2"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "According to XRPL documentation, AMMVote lets liquidity providers express a preference for an AMM's trading fee. This is a pool parameter mechanism rather than validator governance or a vote on XRPL transaction fees. Voting weight depends on the provider's pool participation, and the reference defines how recorded votes determine the fee. Check the current pool and eligible voting position. A submitted preference does not guarantee the final fee equals that preference. The AMMVote reference defines the operation-specific fields alongside the shared XRPL transaction fields.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "V16",
+        "topic": "amm-dex",
+        "question": "Which Payment field lets an agent pay in one currency while the recipient receives another through the DEX or AMMs?",
+        "gold": "SendMax",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "Its observed OwnerCount changed from zero to one and back to zero with a 0.2 XRP increment.",
+            "claim": {
+              "id": "evidence-[\"team-asset-provisioning\",\"v3\",\"p7\"]",
+              "text": "Fees and reserves constrain even faucet-funded micropayments. Builder feedback B19 records 12-drop create and cancel fees and a 423-drop conditional finish using the documented client version. Its observed OwnerCount changed from zero to one and back to zero with a 0.2 XRP increment. These are dated measurements, not universal fee quotes. A wallet needs terminal transaction fee headroom and object reserve liquidity as well as purchase principal. The number of concurrent escrow objects can therefore constrain capacity independently of article prices or burned network fees.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "team-asset-provisioning",
+                  "version": "v3",
+                  "spanId": "p7"
+                }
+              ]
+            }
+          },
+          {
+            "text": "The workaround used an exact self-payment, a bounded SendMax and a fee cap, checked validated delivered_amount, and kept provisioning separate from product purchases.",
+            "claim": {
+              "id": "evidence-[\"team-asset-provisioning\",\"v3\",\"p5\"]",
+              "text": "Funding observations also need labels. The 3 November builder feedback records public RLUSD faucet authentication friction and historical bounded native Testnet DEX provisioning. In those samples, acquisition cost about 25.1 Testnet XRP for two RLUSD. That arbitrary test exchange rate is not economic evidence. The workaround used an exact self-payment, a bounded SendMax and a fee cap, checked validated delivered_amount, and kept provisioning separate from product purchases. It does not establish an automatic exchange strategy for the research agent or an available mainnet funding route.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "team-asset-provisioning",
+                  "version": "v3",
+                  "spanId": "p5"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "Its observed OwnerCount changed from zero to one and back to zero with a 0.2 XRP increment. The workaround used an exact self-payment, a bounded SendMax and a fee cap, checked validated delivered_amount, and kept provisioning separate from product purchases. That distinction is essential for stablecoins: a successful direct token payment does not prove that the same issuer permits token escrow. A wallet balance does not establish that an agent may spend it, and a price displayed in SGD is not an independently measured foreign exchange rate. XRP uses integer drops, with one million drops per XRP. An issued asset also needs the currency and issuer identity; the currency name alone is insufficient.",
+        "buyAndCite": true,
+        "answersIt": 1,
+        "purchases": 1,
+        "spentMinor": 40,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "V17",
+        "topic": "mainnet-kyc-mas",
+        "question": "Which Singapore statute governs digital payment token services that an XRPL payments product could fall under?",
+        "gold": "Payment Services Act",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "According to MAS, Singapore's Payment Services Act regulates specified payment services according to the activity performed, rather than the technology's marketing label.",
+            "claim": {
+              "id": "evidence-[\"xrpl-compliance-mas-psa\",\"v1\",\"p1\"]",
+              "text": "According to MAS, Singapore's Payment Services Act regulates specified payment services according to the activity performed, rather than the technology's marketing label. [1]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-compliance-mas-psa",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          },
+          {
+            "text": "A token's foreign regulatory status does not establish a Singapore application's permission to provide a regulated service.",
+            "claim": {
+              "id": "evidence-[\"xrpl-singapore\",\"v1\",\"p1\"]",
+              "text": "Singapore payment-service obligations depend on the service and applicable legal scope, not on whether an agent or XRPL submits the transaction. MAS describes the Payment Services Act as regulating payment-service providers and payment systems. A token's foreign regulatory status does not establish a Singapore application's permission to provide a regulated service. [1] [2] [3]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-singapore",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "According to MAS, Singapore's Payment Services Act regulates specified payment services according to the activity performed, rather than the technology's marketing label. A token's foreign regulatory status does not establish a Singapore application's permission to provide a regulated service. Singapore payment-service obligations depend on the service and applicable legal scope, not on whether an agent or XRPL submits the transaction. MAS describes the Payment Services Act as regulating payment-service providers and payment systems. It covers Singapore-issued single-currency stablecoins pegged to SGD or a G10 currency and discusses proposals concerning foreign issuance. Do not label a stablecoin MAS-regulated solely because it tracks USD, runs on XRPL or has supervision elsewhere. Keep product claims bounded by dated official evidence.",
+        "buyAndCite": true,
+        "answersIt": 1,
+        "purchases": 2,
+        "spentMinor": 80,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "V18",
+        "topic": "mainnet-kyc-mas",
+        "question": "Which FATF rule requires originator and beneficiary information to travel with crypto transfers between VASPs?",
+        "gold": "Travel Rule",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "According to FATF, the FATF travel rule calls for relevant originator and beneficiary information to accompany covered virtual-asset transfers through regulated providers.",
+            "claim": {
+              "id": "evidence-[\"xrpl-compliance-fatf-travel-rule\",\"v1\",\"p1\"]",
+              "text": "According to FATF, the FATF travel rule calls for relevant originator and beneficiary information to accompany covered virtual-asset transfers through regulated providers. [1]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-compliance-fatf-travel-rule",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "According to FATF, the FATF travel rule calls for relevant originator and beneficiary information to accompany covered virtual-asset transfers through regulated providers. FATF's virtual-asset guidance applies its risk-based framework to virtual asset service providers and explains implementation of the travel rule. A public wallet address or transaction hash alone is not the complete customer-information exchange described by the framework. The 2021 guidance must be read alongside later FATF revisions. For an agent payment service, assess the parties, control over funds and actual service before drawing a legal conclusion about FATF travel rule. Keep personal information out of public ledger memos and use appropriate private channels for necessary information exchange.",
+        "buyAndCite": true,
+        "answersIt": 1,
+        "purchases": 1,
+        "spentMinor": 40,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "V19",
+        "topic": "spending-controls",
+        "question": "How can an XRPL account require more than one approver before an agent's payment is released?",
+        "gold": "SignerListSet",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "For an agent payment service, assess the parties, control over funds and actual service before drawing a legal conclusion about MAS Payment Services Act.",
+            "claim": {
+              "id": "evidence-[\"xrpl-compliance-mas-psa\",\"v1\",\"p3\"]",
+              "text": "For an agent payment service, assess the parties, control over funds and actual service before drawing a legal conclusion about MAS Payment Services Act. Testnet execution demonstrates a mechanism with faucet assets; it does not establish licensing, safeguarding or real-customer compliance. A small payment or an automated decision is not evidence of an exemption. The cited authority describes a framework, not a legal opinion about this product. [1]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-compliance-mas-psa",
+                  "version": "v1",
+                  "spanId": "p3"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "For an agent payment service, assess the parties, control over funds and actual service before drawing a legal conclusion about MAS Payment Services Act. According to XRPL documentation, RequireDest requires incoming payments to carry a destination tag, represented in AccountRoot by RequireDestTag. Keep the tag with the verified destination address throughout payment preparation, rather than substituting a number inferred from a display name. XRPL distinguishes an AccountSet option from the AccountRoot bit that records the resulting state. Read the documented mapping for RequireDest and check the validated account state after any permitted change. According to XRPL documentation, PaymentChannelClaim redeems an authorized cumulative XRP claim or changes a payment channel's closing state. MAS's payment-services framework includes digital payment token services.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 3,
+        "spentMinor": 120,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "V20",
+        "topic": "spending-controls",
+        "question": "Which native XRPL object lets a payer pre-approve a capped payment that the recipient cashes later?",
+        "gold": "CheckCash",
+        "phase": "DONE",
+        "lead": [],
+        "conclusion": "No listed writer covers this yet · nothing bought",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      }
+    ]
+  },
+  "v3-dev": {
+    "N": 20,
+    "buyAndCite": 8,
+    "answersIt": 1,
+    "negativeBuys": 0,
+    "violations": 0,
+    "verificationFailures": 0,
+    "results": [
+      {
+        "id": "D01",
+        "topic": "payments-fees",
+        "question": "Which flag lets a Payment deliver less than the stated amount, and what field shows what the recipient actually got?",
+        "gold": "tfPartialPayment",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "In API v2, the Amount field is renamed DeliverMax to make its maximum semantics clearer.",
+            "claim": {
+              "id": "evidence-[\"xrpl-partial-payments\",\"v1\",\"p1\"]",
+              "text": "A payment integration must credit the validated delivered_amount, because a partial Payment can succeed while delivering less than the transaction's requested amount. In API v2, the Amount field is renamed DeliverMax to make its maximum semantics clearer. Checking only the requested amount creates the partial-payment exploit described in the XRPL documentation. [1]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-partial-payments",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          },
+          {
+            "text": "The partial-payment flag changes what counts as success.",
+            "claim": {
+              "id": "evidence-[\"xrpl-partial-payments\",\"v1\",\"p2\"]",
+              "text": "The partial-payment flag changes what counts as success. DeliverMin can impose a lower bound, while SendMax bounds the source amount. Exchange paths and token transfer fees can make the source and destination amounts different. The XRP transaction cost remains separate from those conversion calculations. A successful transaction result alone is therefore insufficient evidence that the receiver obtained the application's required amount. [1]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-partial-payments",
+                  "version": "v1",
+                  "spanId": "p2"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "In API v2, the Amount field is renamed DeliverMax to make its maximum semantics clearer. The partial-payment flag changes what counts as success. The prepayment can cover a portion of the total contract value or the entire amount. The filing stated that the increase was due to a single customer's prepayment for capacity at a 5-nanometer node. That distinction matters more than the headline number, and it is the thing I want to unpack here. If TSMC is spending, Japanese equipment makers and materials suppliers benefit, and that shows up in the corporate surveys that the bank watches closely. Checking only the requested amount creates the partial-payment exploit described in the XRPL documentation.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "D02",
+        "topic": "payments-fees",
+        "question": "How does an autonomous sender know a submitted XRP payment can no longer succeed and is safe to retry?",
+        "gold": "LastLedgerSequence",
+        "phase": "DONE",
+        "lead": [],
+        "conclusion": "No listed writer covers this yet · nothing bought",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "D03",
+        "topic": "payments-fees",
+        "question": "Which public WebSocket host should a developer connect to for XRPL Testnet?",
+        "gold": "s.altnet.rippletest.net",
+        "phase": "DONE",
+        "lead": [],
+        "conclusion": "Matched articles supplied no citable answer · nothing bought",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "D04",
+        "topic": "escrow",
+        "question": "Which field on EscrowFinish reveals the secret that unlocks a conditional escrow?",
+        "gold": "Fulfillment",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "The EscrowFinish reference defines the operation-specific fields alongside the shared XRPL transaction fields.",
+            "claim": {
+              "id": "evidence-[\"xrpl-tx-escrowfinish\",\"v1\",\"p3\"]",
+              "text": "The EscrowFinish reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-tx-escrowfinish",
+                  "version": "v1",
+                  "spanId": "p3"
+                }
+              ]
+            }
+          },
+          {
+            "text": "According to XRPL documentation, EscrowFinish releases an existing escrow to its predetermined recipient when the escrow's release conditions are satisfied.",
+            "claim": {
+              "id": "evidence-[\"xrpl-tx-escrowfinish\",\"v1\",\"p1\"]",
+              "text": "According to XRPL documentation, EscrowFinish releases an existing escrow to its predetermined recipient when the escrow's release conditions are satisfied. [1]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-tx-escrowfinish",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "The EscrowFinish reference defines the operation-specific fields alongside the shared XRPL transaction fields. According to XRPL documentation, EscrowFinish releases an existing escrow to its predetermined recipient when the escrow's release conditions are satisfied. A conditional escrow needs the matching fulfillment, and time restrictions still apply. Conditional fulfillment increases transaction cost relative to a simple payment. Inspect the validated finish and original escrow together; a published secret by itself is not proof that release succeeded. Author interpretation: before using EscrowFinish, compare the intended change with the current ledger state and keep the transaction hash with the resulting metadata.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "D05",
+        "topic": "escrow",
+        "question": "Which EscrowCreate field stops an escrow being released before a given time?",
+        "gold": "FinishAfter",
+        "phase": "DONE",
+        "lead": [],
+        "conclusion": "Matched articles supplied no citable answer · nothing bought",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "D06",
+        "topic": "escrow",
+        "question": "Why would an AI agent use a conditional escrow instead of paying upfront for a document?",
+        "gold": "crypto-condition",
+        "phase": "DONE",
+        "lead": [],
+        "conclusion": "No listed writer covers this yet · nothing bought",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "D07",
+        "topic": "rlusd-stablecoin",
+        "question": "How is RLUSD backed relative to the US dollar?",
+        "gold": "1:1",
+        "phase": "DONE",
+        "lead": [],
+        "conclusion": "No listed writer covers this yet · nothing bought",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "D08",
+        "topic": "rlusd-stablecoin",
+        "question": "Besides the XRP Ledger, which other blockchain was RLUSD launched on?",
+        "gold": "Ethereum",
+        "phase": "DONE",
+        "lead": [],
+        "conclusion": "No listed writer covers this yet · nothing bought",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "D09",
+        "topic": "trust-lines-reserves",
+        "question": "Which issuer setting lets a stablecoin issuer claw back tokens from a holder, and when must it be enabled?",
+        "gold": "AllowTrustLineClawback",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "Do not generalize from those tests to a named stablecoin without examining its real settings.",
+            "claim": {
+              "id": "evidence-[\"xrpl-clawback\",\"v1\",\"p4\"]",
+              "text": "Exercise the configured capability on a testing token, a token without it and a native XRP transaction. Record the issuer and issuance configuration used. Do not generalize from those tests to a named stablecoin without examining its real settings. These recommendations derive from the documented controls and intentionally avoid asserting that any issuer has a universal legal entitlement to recover funds in every jurisdiction. [1]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-clawback",
+                  "version": "v1",
+                  "spanId": "p4"
+                }
+              ]
+            }
+          },
+          {
+            "text": "XRPL issuers can claw back eligible issued tokens when the required controls are enabled, but native XRP cannot be clawed back.",
+            "claim": {
+              "id": "evidence-[\"xrpl-clawback\",\"v1\",\"p1\"]",
+              "text": "XRPL issuers can claw back eligible issued tokens when the required controls are enabled, but native XRP cannot be clawed back. The documentation distinguishes trust-line token controls from MPT issuance flags. Clawback is an issuer capability, not a general right for any dissatisfied buyer to reverse a payment. [1]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-clawback",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "Do not generalize from those tests to a named stablecoin without examining its real settings. XRPL issuers can claw back eligible issued tokens when the required controls are enabled, but native XRP cannot be clawed back. Clawback is an issuer capability, not a general right for any dissatisfied buyer to reverse a payment. For trust-line tokens, Allow Clawback must be configured under the documented account restrictions before issuance. The documentation also describes incompatibility with the No Freeze setting. These different control surfaces are a reason to inspect the actual asset and issuer rather than treating all fungible tokens as interchangeable. For an agent wallet, I recommend surfacing issuer control risk when selecting a payment asset.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "D10",
+        "topic": "trust-lines-reserves",
+        "question": "Which AccountSet flag lets an issuer approve each holder before they may hold its token?",
+        "gold": "RequireAuth",
+        "phase": "DONE",
+        "lead": [],
+        "conclusion": "Matched articles supplied no citable answer · nothing bought",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "D11",
+        "topic": "credentials-did",
+        "question": "Which XRPL feature uses Credentials to decide which senders may pay an account that blocks unknown deposits?",
+        "gold": "DepositPreauth",
+        "phase": "DONE",
+        "lead": [],
+        "conclusion": "No listed writer covers this yet · nothing bought",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "D12",
+        "topic": "credentials-did",
+        "question": "Which field of an XRPL DID ledger entry holds the DID document?",
+        "gold": "DIDDocument",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "Read the associated field definitions and constraints together, rather than treating a single displayed value as complete evidence.",
+            "claim": {
+              "id": "evidence-[\"xrpl-concept-ledger-validation\",\"v1\",\"p3\"]",
+              "text": "The public XRPL reference describes Ledger validation as part of a larger transaction or ledger lifecycle. Read the associated field definitions and constraints together, rather than treating a single displayed value as complete evidence. The network, account, transaction hash and validated state provide the context needed to interpret the result. Documentation examples explain a format; they are not observations of the current state of a particular wallet. [1]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-concept-ledger-validation",
+                  "version": "v1",
+                  "spanId": "p3"
+                }
+              ]
+            }
+          },
+          {
+            "text": "The public XRPL reference describes Ledger validation as part of a larger transaction or ledger lifecycle.",
+            "claim": {
+              "id": "evidence-[\"xrpl-concept-ledger-validation\",\"v1\",\"p3\"]",
+              "text": "The public XRPL reference describes Ledger validation as part of a larger transaction or ledger lifecycle. Read the associated field definitions and constraints together, rather than treating a single displayed value as complete evidence. The network, account, transaction hash and validated state provide the context needed to interpret the result. Documentation examples explain a format; they are not observations of the current state of a particular wallet. [1]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-concept-ledger-validation",
+                  "version": "v1",
+                  "spanId": "p3"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "Read the associated field definitions and constraints together, rather than treating a single displayed value as complete evidence. The public XRPL reference describes Ledger validation as part of a larger transaction or ledger lifecycle. According to XRPL documentation, a closed XRPL ledger becomes final for a client when the client can establish that trusted validators have validated it. A proposed transaction, a server's preliminary result and a closed ledger are distinct stages. Consensus determines the agreed transaction set and deterministic execution produces ledger state. Validation authenticates the ledger result; it does not certify the economic value, legal status or editorial truth of an attached document.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "D13",
+        "topic": "x402",
+        "question": "In x402 v1, which response header does the server return after settlement with the transaction result?",
+        "gold": "X-PAYMENT-RESPONSE",
+        "phase": "DONE",
+        "lead": [],
+        "conclusion": "Matched articles supplied no citable answer · nothing bought",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "D14",
+        "topic": "x402",
+        "question": "What is the name of the x402 payment scheme for a fixed-amount transfer?",
+        "gold": "exact",
+        "phase": "DONE",
+        "lead": [],
+        "conclusion": "Matched articles supplied no citable answer · nothing bought",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "D15",
+        "topic": "amm-dex",
+        "question": "Which transaction places a limit order on the XRPL decentralized exchange?",
+        "gold": "OfferCreate",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "Do not treat a successful pathfinding response as a completed trade: retain settlement evidence for the executed transaction.",
+            "claim": {
+              "id": "evidence-[\"xrpl-dex\",\"v1\",\"p4\"]",
+              "text": "Test an empty route, insufficient liquidity and two issuers sharing a currency code. Compare requested bounds with validated balance changes. Do not treat a successful pathfinding response as a completed trade: retain settlement evidence for the executed transaction. These recommendations combine the documented token and AMM models; they do not claim that a particular pair is currently liquid or that using the native exchange resolves compliance requirements. [1] [2] [3]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-dex",
+                  "version": "v1",
+                  "spanId": "p4"
+                }
+              ]
+            }
+          },
+          {
+            "text": "XLS-30 adds AMM liquidity that can work alongside order books.",
+            "claim": {
+              "id": "evidence-[\"xrpl-dex\",\"v1\",\"p2\"]",
+              "text": "The fungible-token documentation explains that trust-line tokens can trade and can interact through rippling. XLS-30 adds AMM liquidity that can work alongside order books. An available route is consequently evidence of a possible exchange at particular conditions, not evidence of issuer solvency, off-ledger redemption rights or future market depth. [1] [2] [3]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-dex",
+                  "version": "v1",
+                  "spanId": "p2"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "Do not treat a successful pathfinding response as a completed trade: retain settlement evidence for the executed transaction. XLS-30 adds AMM liquidity that can work alongside order books. The native XRPL decentralized exchange supports exchanging assets through ledger-based trading mechanisms; it does not guarantee liquidity for every asset pair. Trust-line tokens can participate in exchange and cross-currency payments. An available route is consequently evidence of a possible exchange at particular conditions, not evidence of issuer solvency, off-ledger redemption rights or future market depth. These recommendations combine the documented token and AMM models; they do not claim that a particular pair is currently liquid or that using the native exchange resolves compliance requirements.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "D16",
+        "topic": "amm-dex",
+        "question": "What does a liquidity provider receive when depositing into an XRPL AMM pool?",
+        "gold": "LP token",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "According to XRPL documentation, AMMCreate initializes an automated market maker for an asset pair by depositing both pool assets.",
+            "claim": {
+              "id": "evidence-[\"xrpl-tx-ammcreate\",\"v1\",\"p1\"]",
+              "text": "According to XRPL documentation, AMMCreate initializes an automated market maker for an asset pair by depositing both pool assets. [1]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-tx-ammcreate",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          },
+          {
+            "text": "The creator receives liquidity-provider tokens representing its pool share.",
+            "claim": {
+              "id": "evidence-[\"xrpl-tx-ammcreate\",\"v1\",\"p2\"]",
+              "text": "The creator receives liquidity-provider tokens representing its pool share. Initial amounts establish the starting price, while the trading fee and asset eligibility affect operation. Creating a pool is not evidence that other traders will supply liquidity. Check issuer controls, deposit amounts and special transaction cost before authorizing the initial commitment. [1]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-tx-ammcreate",
+                  "version": "v1",
+                  "spanId": "p2"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "According to XRPL documentation, AMMCreate initializes an automated market maker for an asset pair by depositing both pool assets. The creator receives liquidity-provider tokens representing its pool share. Creating a pool is not evidence that other traders will supply liquidity. The AMMCreate reference defines the operation-specific fields alongside the shared XRPL transaction fields.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "D17",
+        "topic": "mainnet-kyc-mas",
+        "question": "Which MAS licence category did Ripple obtain in Singapore for its payments business?",
+        "gold": "Major Payment Institution",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "MAS's September 2026 stablecoin announcement describes consultation on legislative amendments, including the framework for qualifying MAS-regulated stablecoins.",
+            "claim": {
+              "id": "evidence-[\"xrpl-singapore\",\"v1\",\"p2\"]",
+              "text": "MAS's September 2026 stablecoin announcement describes consultation on legislative amendments, including the framework for qualifying MAS-regulated stablecoins. It covers Singapore-issued single-currency stablecoins pegged to SGD or a G10 currency and discusses proposals concerning foreign issuance. A consultation proposal should not be reported as a licence already granted to a particular issuer. [1] [2] [3]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-singapore",
+                  "version": "v1",
+                  "spanId": "p2"
+                }
+              ]
+            }
+          },
+          {
+            "text": "A consultation proposal should not be reported as a licence already granted to a particular issuer.",
+            "claim": {
+              "id": "evidence-[\"xrpl-singapore\",\"v1\",\"p2\"]",
+              "text": "MAS's September 2026 stablecoin announcement describes consultation on legislative amendments, including the framework for qualifying MAS-regulated stablecoins. It covers Singapore-issued single-currency stablecoins pegged to SGD or a G10 currency and discusses proposals concerning foreign issuance. A consultation proposal should not be reported as a licence already granted to a particular issuer. [1] [2] [3]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-singapore",
+                  "version": "v1",
+                  "spanId": "p2"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "MAS's September 2026 stablecoin announcement describes consultation on legislative amendments, including the framework for qualifying MAS-regulated stablecoins. A consultation proposal should not be reported as a licence already granted to a particular issuer. Singapore payment-service obligations depend on the service and applicable legal scope, not on whether an agent or XRPL submits the transaction. MAS describes the Payment Services Act as regulating payment-service providers and payment systems. A token's foreign regulatory status does not establish a Singapore application's permission to provide a regulated service. It covers Singapore-issued single-currency stablecoins pegged to SGD or a G10 currency and discusses proposals concerning foreign issuance. Do not label a stablecoin MAS-regulated solely because it tracks USD, runs on XRPL or has supervision elsewhere.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "D18",
+        "topic": "mainnet-kyc-mas",
+        "question": "Under the MAS single-currency stablecoin framework, how quickly must an issuer redeem at par?",
+        "gold": "business days",
+        "phase": "DONE",
+        "lead": [],
+        "conclusion": "Matched articles supplied no citable answer · nothing bought",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "D19",
+        "topic": "spending-controls",
+        "question": "Which XRPL transaction assigns a regular key so a hot agent key can be rotated without changing the account address?",
+        "gold": "SetRegularKey",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "According to XRPL documentation, PasswordSpent records whether an account has used its free regular-key reset transaction.",
+            "claim": {
+              "id": "evidence-[\"xrpl-flag-passwordspent\",\"v1\",\"p1\"]",
+              "text": "According to XRPL documentation, PasswordSpent records whether an account has used its free regular-key reset transaction. [1]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-flag-passwordspent",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          },
+          {
+            "text": "The SetRegularKey reference defines the operation-specific fields alongside the shared XRPL transaction fields.",
+            "claim": {
+              "id": "evidence-[\"xrpl-tx-setregularkey\",\"v1\",\"p3\"]",
+              "text": "The SetRegularKey reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-tx-setregularkey",
+                  "version": "v1",
+                  "spanId": "p3"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "According to XRPL documentation, PasswordSpent records whether an account has used its free regular-key reset transaction. The SetRegularKey reference defines the operation-specific fields alongside the shared XRPL transaction fields. According to XRPL documentation, SetRegularKey assigns, replaces or removes the regular signing key for an XRPL account. Using a regular key keeps the master key out of routine signing. A regular key does not create a new funded account or restrict transaction types by itself. Removing the last usable signing method is restricted to avoid locking out the account. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. The account still needs a valid signing method.",
+        "buyAndCite": true,
+        "answersIt": 1,
+        "purchases": 2,
+        "spentMinor": 80,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "D20",
+        "topic": "spending-controls",
+        "question": "Which XRPL primitive suits many small agent micropayments settled with a single on-ledger claim?",
+        "gold": "Payment Channel",
+        "phase": "DONE",
+        "lead": [],
+        "conclusion": "No listed writer covers this yet · nothing bought",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      }
+    ]
+  },
+  "v3-negatives": {
+    "N": 10,
+    "buyAndCite": 2,
+    "answersIt": 0,
+    "negativeBuys": 2,
+    "violations": 0,
+    "verificationFailures": 0,
+    "results": [
+      {
+        "id": "N01",
+        "topic": "off-topic",
+        "question": "What is a good recipe for chicken rice at home?",
+        "expect": "no_purchase",
+        "phase": "DONE",
+        "lead": [],
+        "conclusion": "No listed writer covers this yet · nothing bought",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "N02",
+        "topic": "off-topic",
+        "question": "Who won the most recent Premier League title?",
+        "expect": "no_purchase",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "In its most recent statements, the bank has emphasized the importance of wage growth and inflation expectations in determining the future path of policy.",
+            "claim": {
+              "id": "evidence-[\"basis-yen-strength-and-the-rate-differential-implications-for-inve\",\"v1\",\"p3\"]",
+              "text": "The Bank of Japan has repeatedly indicated that it won't hesitate to ease further if needed, but it has also acknowledged that the side effects of prolonged easing are becoming more visible. In its most recent statements, the bank has emphasized the importance of wage growth and inflation expectations in determining the future path of policy. Governor Ueda has said that the bank will carefully assess the data before making any changes, and that it does not target the exchange rate. That is a standard line, but it is worth taking at face value: the BoJ's mandate is price stability, not a particular yen level.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "basis-yen-strength-and-the-rate-differential-implications-for-inve",
+                  "version": "v1",
+                  "spanId": "p3"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "In its most recent statements, the bank has emphasized the importance of wage growth and inflation expectations in determining the future path of policy. The yen has strengthened against the dollar in recent weeks, and that move has prompted a familiar debate about whether the long-standing rate differential between Japan and the United States is finally narrowing in a way that matters for investors. The Bank of Japan has repeatedly indicated that it won't hesitate to ease further if needed, but it has also acknowledged that the side effects of prolonged easing are becoming more visible. The 10-year US Treasury yield is still well above the 10-year JGB yield, even after the recent moves.",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "N03",
+        "topic": "off-topic",
+        "question": "Which Singapore banks offer the highest fixed deposit rate this month?",
+        "expect": "no_purchase",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "The problem is that Singapore's home loan market is structurally allergic to rate rises, and almost nobody is prepared.",
+            "claim": {
+              "id": "evidence-[\"kopi-singapore-home-loans-the-silent-rate-sensitivity-killer\",\"v1\",\"p2\"]",
+              "text": "Here is the thing. For years, rates were so low that a mortgage felt like a rounding error. You signed the papers, the banker smiled, and you went back to scrolling PropertyGuru. But rates do not stay low forever. They never do. And when they move, they move fast, like a taxi driver who just saw a green light. The problem is that Singapore's home loan market is structurally allergic to rate rises, and almost nobody is prepared.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "kopi-singapore-home-loans-the-silent-rate-sensitivity-killer",
+                  "version": "v1",
+                  "spanId": "p2"
+                }
+              ]
+            }
+          },
+          {
+            "text": "If not, fix it now, even if the fixed rate looks ugly.",
+            "claim": {
+              "id": "evidence-[\"kopi-singapore-home-loans-the-silent-rate-sensitivity-killer\",\"v1\",\"p14\"]",
+              "text": "If you have a floating rate loan, stress-test it. Imagine your monthly payment going up by 50 percent. Can you still afford it? If not, fix it now, even if the fixed rate looks ugly. Ugly and predictable beats pretty and volatile. And if you are thinking of buying, factor in the rate rise that is almost certainly coming. The seller's agent will not mention it. The bank will not mention it. But it is there, lurking, like a durian on a hot day.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "kopi-singapore-home-loans-the-silent-rate-sensitivity-killer",
+                  "version": "v1",
+                  "spanId": "p14"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "The problem is that Singapore's home loan market is structurally allergic to rate rises, and almost nobody is prepared. If not, fix it now, even if the fixed rate looks ugly. The 18 September move represented the largest single-session increase in the benchmark tenor since the Bank of Japan exited its negative-rate policy in March 2024. The Bank of Japan conducted its regular outright purchase operations for 5-year to 10-year JGBs on 18 September 2026, offering to buy 600 billion yen at fixed-rate and variable-rate auctions. Minutes from the September meeting, released on 25 September 2026, showed that seven members voted to raise the policy rate by 25 bp to 1.00%, while two members preferred to keep it at 0.75%.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 10,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "N04",
+        "topic": "off-topic",
+        "question": "What is Taylor Swift's net worth?",
+        "expect": "no_purchase",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "The 10-year US Treasury yield is still well above the 10-year JGB yield, even after the recent moves.",
+            "claim": {
+              "id": "evidence-[\"basis-yen-strength-and-the-rate-differential-implications-for-inve\",\"v1\",\"p5\"]",
+              "text": "Markets, however, have a habit of running ahead of central banks. The yen's recent appreciation has been driven in part by expectations that the rate differential will narrow, either because the Fed will cut rates or because the BoJ will raise them. But the actual differential remains wide. The 10-year US Treasury yield is still well above the 10-year JGB yield, even after the recent moves. That gap is the compensation for currency risk, and it is why the carry trade persists.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "basis-yen-strength-and-the-rate-differential-implications-for-inve",
+                  "version": "v1",
+                  "spanId": "p5"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "The 10-year US Treasury yield is still well above the 10-year JGB yield, even after the recent moves. That is a standard line, but it is worth taking at face value: the BoJ's mandate is price stability, not a particular yen level.",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "N05",
+        "topic": "off-topic",
+        "question": "What will the weather be in Singapore this weekend?",
+        "expect": "no_purchase",
+        "phase": "DONE",
+        "lead": [],
+        "conclusion": "No listed writer covers this yet · nothing bought",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "N06",
+        "topic": "off-topic",
+        "question": "Which hawker stall in Singapore has the cheapest laksa?",
+        "expect": "no_purchase",
+        "phase": "DONE",
+        "lead": [],
+        "conclusion": "No listed writer covers this yet · nothing bought",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "N07",
+        "topic": "off-topic",
+        "question": "How do I center a div in CSS?",
+        "expect": "no_purchase",
+        "phase": "DONE",
+        "lead": [],
+        "conclusion": "No listed writer covers this yet · nothing bought",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "N08",
+        "topic": "off-topic",
+        "question": "What are the best things to do in Tokyo in spring?",
+        "expect": "no_purchase",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "Something is moving in Tokyo, and it is not the Nikkei.",
+            "claim": {
+              "id": "evidence-[\"alphaleak-jgb-auction-whispers-what-the-2026-bids-reveal-about-japan-s\",\"v1\",\"p1\"]",
+              "text": "Something is moving in Tokyo, and it is not the Nikkei. I have been sitting on this for weeks, waiting for the right moment, and that moment is now. People familiar with the matter tell me that the bidding behavior at recent Japanese government bond auctions has shifted in ways that seasoned desks are only beginning to whisper about. Nobody wants to say it on the record. Nobody ever does. But the tape does not lie, and the people who watch the tape for a living are suddenly very, very interested in what the Ministry of Finance is doing behind closed doors.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "alphaleak-jgb-auction-whispers-what-the-2026-bids-reveal-about-japan-s",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "Something is moving in Tokyo, and it is not the Nikkei. The central bank has spent years doing things that textbooks say are impossible, and it has gotten away with it because the world was willing to look the other way.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 30,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "N09",
+        "topic": "off-topic",
+        "question": "Which movie won the Best Picture Oscar last year?",
+        "expect": "no_purchase",
+        "phase": "DONE",
+        "lead": [],
+        "conclusion": "Matched articles supplied no citable answer · nothing bought",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "N10",
+        "topic": "off-topic",
+        "question": "How often should I change the oil in a petrol car?",
+        "expect": "no_purchase",
+        "phase": "DONE",
+        "lead": [],
+        "conclusion": "Matched articles supplied no citable answer · nothing bought",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      }
+    ]
+  },
+  "uc": {
+    "N": 3,
+    "buyAndCite": 2,
+    "answersIt": 0,
+    "negativeBuys": 0,
+    "violations": 0,
+    "verificationFailures": 0,
+    "results": [
+      {
+        "id": "UC1",
+        "question": "What did the Bank of Japan change at its last meeting, and how did 10-year JGB yields react?",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "Minutes from the September meeting, released on 25 September 2026, showed that seven members voted to raise the policy rate by 25 bp to 1.00%, while two members preferred to keep it at 0.75%.",
+            "claim": {
+              "id": "evidence-[\"or-jgb-yield-table-2026-09\",\"v1\",\"p3\"]",
+              "text": "The Bank of Japan conducted its regular outright purchase operations for 5-year to 10-year JGBs on 18 September 2026, offering to buy 600 billion yen at fixed-rate and variable-rate auctions. The operation was oversubscribed by a factor of 2.1. On 19 September 2026, the Bank of Japan released its quarterly outlook report, which stated that long-term interest rates would be allowed to \"move more flexibly\" in response to economic and price conditions. The report did not specify a target range for the 10-year yield. The next Monetary Policy Meeting is scheduled for 28-29 October 2026. Minutes from the September meeting, released on 25 September 2026, showed that seven members voted to raise the policy rate by 25 bp to 1.00%, while two members preferred to keep it at 0.75%.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "or-jgb-yield-table-2026-09",
+                  "version": "v1",
+                  "spanId": "p3"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "Minutes from the September meeting, released on 25 September 2026, showed that seven members voted to raise the policy rate by 25 bp to 1.00%, while two members preferred to keep it at 0.75%. I spent most of the week before the September meeting staring at the same question every rates strategist was asking: how much of this was already in the curve? The hike was roughly 85% priced by 17 September 2026, so the 9 bp rise in the 10-year yield on 18 September 2026 reflects guidance, not the move itself. The 18 September move represented the largest single-session increase in the benchmark tenor since the Bank of Japan exited its negative-rate policy in March 2024.",
+        "buyAndCite": false,
+        "answersIt": 0,
+        "purchases": 0,
+        "spentMinor": 0,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "UC2",
+        "question": "What's the analyst outlook on Kestrel Semiconductor's latest deal with TSMC?",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "On 1 October 2026, the average fiscal 2027 gross margin estimate across the five brokers covering the Singapore-based fabless designer fell to 55.2% from 58.5%",
+            "claim": {
+              "id": "evidence-[\"notft-kestrel-tsmc-deal-margins\",\"v1\",\"p1\"]",
+              "text": "Kestrel Semiconductor lost a fifth of its consensus gross margin in a single morning. On 1 October 2026, the average fiscal 2027 gross margin estimate across the five brokers covering the Singapore-based fabless designer fell to 55.2% from 58.5%, after three of the five revised their models to absorb the terms of a new wafer supply agreement with TSMC. The stock closed 4.1% lower in Taipei, its worst session since February.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "notft-kestrel-tsmc-deal-margins",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          },
+          {
+            "text": "Kestrel Semiconductor lost a fifth of its consensus gross margin in a single morning.",
+            "claim": {
+              "id": "evidence-[\"notft-kestrel-tsmc-deal-margins\",\"v1\",\"p1\"]",
+              "text": "Kestrel Semiconductor lost a fifth of its consensus gross margin in a single morning. On 1 October 2026, the average fiscal 2027 gross margin estimate across the five brokers covering the Singapore-based fabless designer fell to 55.2% from 58.5%, after three of the five revised their models to absorb the terms of a new wafer supply agreement with TSMC. The stock closed 4.1% lower in Taipei, its worst session since February.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "notft-kestrel-tsmc-deal-margins",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "On 1 October 2026, the average fiscal 2027 gross margin estimate across the five brokers covering the Singapore-based fabless designer fell to 55.2% from 58.5% Kestrel Semiconductor lost a fifth of its consensus gross margin in a single morning. On 29 September 2026 Kestrel Semiconductor announced a five-year agreement with TSMC for N3P wafer capacity, 24,000 wafers a month from Q3 2027, plus advanced-packaging slots. Kestrel will pay a US$1.1 billion prepayment and gave no margin guidance. Under the previous contract, Kestrel paid about US$19,800 for each N3P wafer. That is a rise of 13.6%, and it lands directly on a product line that accounts for the majority of Kestrel's data-center accelerator volume.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 90,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "UC3",
+        "question": "Are Kestrel Semiconductor's advanced-packaging lead times in Malaysia getting shorter?",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "So from 1 June 2026 to 15 September 2026, we went from 26 weeks to 18 weeks, a cut of 31%, while capacity grew from 11,000 units to 16,000 units a month.",
+            "claim": {
+              "id": "evidence-[\"fab-floor-kestrel-penang-lead-times\",\"v1\",\"lead-times\"]",
+              "text": "By 1 August 2026, the same Penang line was quoting 22 weeks. That is a four-week improvement in eight weeks, which sounds modest until you annualise it. Then on 15 September 2026, the number came in at 18 weeks. So from 1 June 2026 to 15 September 2026, we went from 26 weeks to 18 weeks, a cut of 31%, while capacity grew from 11,000 units to 16,000 units a month. That is eight weeks of lead time gone in fifteen weeks of calendar time. I have been doing this for eleven years and I have never seen a packaging queue compress that fast without a demand shock behind it.",
+              "stance": "SUPPORTS",
+              "citations": [
+                {
+                  "resourceId": "fab-floor-kestrel-penang-lead-times",
+                  "version": "v1",
+                  "spanId": "lead-times"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "So from 1 June 2026 to 15 September 2026, we went from 26 weeks to 18 weeks, a cut of 31%, while capacity grew from 11,000 units to 16,000 units a month. A Kestrel statement dated 2 September 2026 says Phase 2 reached its rated capacity on 28 August 2026. The record states no customer lead times. On 29 September 2026 Kestrel Semiconductor announced a five-year agreement with TSMC for N3P wafer capacity, 24,000 wafers a month from Q3 2027, plus advanced-packaging slots. Kestrel will pay a US$1.1 billion prepayment and gave no margin guidance. On July 25, 2026, Kestrel Semiconductor published its quarterly exchange filings with the Taiwan Stock Exchange and the Tokyo Stock Exchange.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 2,
+        "spentMinor": 70,
+        "verificationOk": true,
+        "violations": []
+      }
+    ]
+  },
+  "presets": {
+    "N": 3,
+    "buyAndCite": 3,
+    "answersIt": 0,
+    "negativeBuys": 0,
+    "violations": 0,
+    "verificationFailures": 0,
+    "results": [
+      {
+        "id": "XRPL1",
+        "question": "Can an XRPL escrow hold RLUSD today, and what must the issuer enable before a buyer can lock it?",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "XLS-85 extends escrow to trust-line tokens and Multi-Purpose Tokens, subject to issuer controls and the TokenEscrow amendment.",
+            "claim": {
+              "id": "evidence-[\"xrpl-token-escrow\",\"v1\",\"p1\"]",
+              "text": "XLS-85 extends escrow to trust-line tokens and Multi-Purpose Tokens, subject to issuer controls and the TokenEscrow amendment. A specification marked Final is not by itself proof of activation on the network an application uses. Check that network's enabled amendments and the specific token configuration before offering token escrow. [1] [2]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-token-escrow",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          },
+          {
+            "text": "The team documented official RLUSD as blocked until its issuer enables AllowTrustLineLocking.",
+            "claim": {
+              "id": "evidence-[\"team-rlusd\",\"v3\",\"p1\"]",
+              "text": "RLUSD escrow support cannot be inferred from an XRP key-reveal purchase. The team documented official RLUSD as blocked until its issuer enables AllowTrustLineLocking. Our alternative is TEST-SGD, an IOU issued by our own Testnet issuer with no real value. It stands in for RLUSD in a mechanism experiment; it is neither official RLUSD nor evidence of stablecoin adoption. The docs contain no verified list of Singapore banks piloting RLUSD settlement in 2026. We cannot name banks from this evidence.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "team-rlusd",
+                  "version": "v3",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "XLS-85 extends escrow to trust-line tokens and Multi-Purpose Tokens, subject to issuer controls and the TokenEscrow amendment. The team documented official RLUSD as blocked until its issuer enables AllowTrustLineLocking. RLUSD escrow support cannot be inferred from an XRP key-reveal purchase. Our alternative is TEST-SGD, an IOU issued by our own Testnet issuer with no real value. It stands in for RLUSD in a mechanism experiment; it is neither official RLUSD nor evidence of stablecoin adoption. The docs contain no verified list of Singapore banks piloting RLUSD settlement in 2026. A dedicated issuer creates TEST-SGD tokens on Testnet for experiments; these tokens carry no economic value and substitute for RLUSD only in mechanism tests. Cancellation checks the buyer's returned balance delta.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 2,
+        "spentMinor": 80,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "XRPL2",
+        "question": "What HTTP headers does x402 use on XRPL, and how does the server know the payment actually settled?",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "Keep premium access conditional on the application's verified delivery boundary rather than on an untrusted payment header.",
+            "claim": {
+              "id": "evidence-[\"xrpl-x402\",\"v1\",\"p3\"]",
+              "text": "For an XRPL integration, I recommend documenting the exact supported scheme, network identifier, asset encoding and proof-validation rules. Reconcile the ledger transaction and actual delivery before declaring settlement successful. The partial-payment reference is relevant because requested amounts alone cannot safely establish received value. Keep premium access conditional on the application's verified delivery boundary rather than on an untrusted payment header. [1] [2]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-x402",
+                  "version": "v1",
+                  "spanId": "p3"
+                }
+              ]
+            }
+          },
+          {
+            "text": "x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required.",
+            "claim": {
+              "id": "evidence-[\"xrpl-x402\",\"v1\",\"p1\"]",
+              "text": "x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required. Its specification separates transport representation from payment schemes and network-specific logic. Receiving a 402 response alone does not prove that a client can pay with an arbitrary asset on an arbitrary ledger. [1] [2]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-x402",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "Keep premium access conditional on the application's verified delivery boundary rather than on an untrusted payment header. x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required. Its specification separates transport representation from payment schemes and network-specific logic. The v2 specification defines payment requirements, a client payment payload and settlement responses, with facilitator interfaces for verification and settlement. Its HTTP transport uses PAYMENT-REQUIRED for requirements and PAYMENT-SIGNATURE for authorization. Scheme and network support must match the requested payment; the protocol's extensibility is not universal implementation compatibility. For an XRPL integration, I recommend documenting the exact supported scheme, network identifier, asset encoding and proof-validation rules.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "XRPL3",
+        "question": "How much XRP reserve does an agent wallet need, and how much does each open escrow or trust line add?",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "For an agent builder, my recommendation is to estimate spendable XRP from validated account state and the network's reserve settings before authorizing a payment.",
+            "claim": {
+              "id": "evidence-[\"xrpl-reserves\",\"v1\",\"p3\"]",
+              "text": "For an agent builder, my recommendation is to estimate spendable XRP from validated account state and the network's reserve settings before authorizing a payment. Include pending object creation in that estimate. A wallet with enough principal for a purchase may still lack room for the escrow object or transaction fee. Report the failed prerequisite precisely rather than silently switching assets or increasing funding authority. [1]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-reserves",
+                  "version": "v1",
+                  "spanId": "p3"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "For an agent builder, my recommendation is to estimate spendable XRP from validated account state and the network's reserve settings before authorizing a payment. An XRPL wallet needs a base reserve plus applicable owner reserves, separately from the money it intends to send. The reserve documentation lists Mainnet settings of 1 XRP per account and 0.2 XRP per owned item at access time, and warns that other networks can differ. Base reserve supports the account's existence; owner reserve constrains ledger objects. Removing an object can release its reserve requirement. Reserves are not payments to validators, and the documentation permits reserved XRP to pay transaction costs. Treating every XRP in a balance as transferable would therefore confuse several distinct accounting concepts.",
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "verificationOk": true,
+        "violations": []
+      }
+    ]
+  }
+}
