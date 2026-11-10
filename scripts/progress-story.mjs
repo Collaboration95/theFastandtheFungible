@@ -17,10 +17,10 @@ export const milestones = [
     date: { fixed: '2026-09-20', source: 'docs/submission/deck/index.html', mustInclude: '<div class="crit">Progress since SingHacks · <!--f:event-->19–20 Sep 2026<!--/f--></div>' },
     label: '19–20 Sep',
     title: 'SingHacks: the prototype',
-    summary: 'The prototype that took us to the finals: one web page, synthetic sources, and a language model choosing what to buy.',
+    summary: 'The prototype that took us to the finals: one web page, synthetic sources, a language model proposing what to buy, and a person approving every quote.',
     bullets: [
       'A research desk that bought synthetic premium sources within an XRP budget and wrote a cited dossier.',
-      'A language model planned each purchase; payment was a fixture by default, with optional Testnet settlement.',
+      'A language model proposed each purchase and a person approved every quote before payment (manual approval was required in the event build); payment was a fixture by default, with optional Testnet settlement.',
       { template: 'The frozen prototype held {baseline.files} files and {baseline.codeLines} lines of code (tag hackathon-baseline).' },
     ],
     image: { tag: 'hackathon-baseline', path: 'prototypes/ResearchAgent/assets/research-agent-dossier.png', alt: 'The SingHacks prototype: a verified dossier page with supporting and challenging evidence', caption: 'Prototype dossier, from the hackathon-baseline tag' },
@@ -87,7 +87,7 @@ export const releases = {
 
 // Then → now. `prs` resolve to the merge date and the first release tag containing them.
 export const capabilities = [
-  { name: 'Who decides to buy', then: 'A language model planned each purchase', now: 'Policy code buys within the budget you set; a decision model only scores', prs: [], tag: 'known-good-2026-10-08', evidence: 'docs/FINAL-PUSH.md' },
+  { name: 'Who decides to buy', then: 'A language model proposed; a person approved every quote', now: 'Policy code buys within the budget you set, after one plan confirmation; a decision model only scores', prs: [], tag: 'known-good-2026-10-08', evidence: 'docs/FINAL-PUSH.md' },
   { name: 'Payment', then: 'A fixture by default; Testnet optional', now: 'Each writer paid at its own Testnet wallet, one charge per intent', prs: [101, 103] },
   { name: 'Agents', then: 'One web page', now: 'An MCP server for Claude Code and Codex, plus TypeScript and Python SDKs', prs: [266, 333] },
   { name: 'Refunds', then: 'None', now: 'Proof-or-refund escrow; a broken promise is refunded on the ledger', prs: [308] },
