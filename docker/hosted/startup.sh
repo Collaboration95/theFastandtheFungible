@@ -53,13 +53,15 @@ fi
 meta instance/attributes/ra-bundle | base64 -d | tar -xz -C /opt/researchagent
 cp /opt/researchagent/env.template /etc/researchagent/env.new
 sed -i "s|^HOSTED_ORIGIN=.*|HOSTED_ORIGIN=$origin|" /etc/researchagent/env.new
-# Operator-qualified runtime values (provider rates, preflight deadline, wallet cap)
-# live in a private override file so a reboot or redeploy keeps them. Only these
-# names are accepted; anything else fails the start closed.
+# Operator-qualified runtime values (provider rates, preflight deadline, wallet cap,
+# decision provider while a live key is unavailable) live in a private override
+# file so a reboot or redeploy keeps them. Only these names are accepted; anything
+# else fails the start closed. A fixture decision model is labelled on every answer.
 if [[ -f /etc/researchagent/env.local ]]; then
   while IFS='=' read -r name value; do
     [[ -z $name || $name == \#* ]] && continue
-    [[ $name =~ ^(HOSTED_PROVIDERS_READY_UNTIL|HOSTED_(RESEARCH|DECISION)_(INPUT|OUTPUT)_USD_PER_MILLION|HOSTED_DECISION_OUTPUT_TOKENS|HOSTED_QUESTION_CAP_MINOR|HOSTED_ADMISSIONS_UNTIL|HOSTED_(DECK|VIDEO|PROGRESS|REPLAY)_URL|WALLET_DAILY_CAP_MINOR)$ && $value =~ ^[A-Za-z0-9.:/_-]+$ ]]
+    [[ $name =~ ^(HOSTED_PROVIDERS_READY_UNTIL|HOSTED_(RESEARCH|DECISION)_(INPUT|OUTPUT)_USD_PER_MILLION|HOSTED_DECISION_OUTPUT_TOKENS|HOSTED_QUESTION_CAP_MINOR|HOSTED_ADMISSIONS_UNTIL|HOSTED_(DECK|VIDEO|PROGRESS|REPLAY)_URL|WALLET_DAILY_CAP_MINOR|DECISION_PROVIDER)$ && $value =~ ^[A-Za-z0-9.:/_-]+$ ]] || exit 1
+    [[ $name != DECISION_PROVIDER || $value =~ ^(openai|cloudflare|fixture)$ ]] || exit 1
     sed -i "/^$name=/d" /etc/researchagent/env.new
     printf '%s=%s\n' "$name" "$value" >>/etc/researchagent/env.new
   done </etc/researchagent/env.local

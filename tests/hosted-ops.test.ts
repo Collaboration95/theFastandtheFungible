@@ -62,6 +62,7 @@ describe('hosted operator boundaries',()=>{
   expect(startup).toContain('/etc/researchagent/env.local')
   expect(startup).toMatch(/HOSTED_PROVIDERS_READY_UNTIL\|HOSTED_\(RESEARCH\|DECISION\)/)
   expect(startup).not.toMatch(/env\.local[\s\S]*(SEED|API_KEY|PUBLISHER_SECRET)/)
+  expect(startup).toContain('[[ $name != DECISION_PROVIDER || $value =~ ^(openai|cloudflare|fixture)$ ]] || exit 1')
   expect(startup.lastIndexOf('researchagent-startup.done')).toBeGreaterThan(startup.indexOf('bash /opt/researchagent/update.sh'))
  })
  it('keeps final snapshot before deleting the disk and never deletes the project',()=>{
