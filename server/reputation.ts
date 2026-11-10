@@ -1,3 +1,4 @@
+import { hostedExecution } from './hosted/execution.js'
 // Trust matrix (D6, FINAL-PUSH §7): Beta Reputation honesty × Brier calibration,
 // keyed by the seller of record, the publisher wallet (D21). Trust only lowers
 // value; it never touches the budget or the per-source cap (gate 2).
@@ -96,7 +97,12 @@ export class Reputation {
   reset(): void { this.store.resetReputation() }
   /** Summaries by wallet, the decision step's input; decide() treats a wallet with no entry as a newcomer (H = 0.8). */
   summaries(): Record<string, ReputationSummary> { return Object.fromEntries(this.list().map(r => [r.wallet, summary(r)])) }
-  private update(publisherSlug: string, wallet: string, change: (r: ReputationRecord) => ReputationRecord, runId: string | undefined, label: string) {
+  private update(publisherSlug: string, wallet: string, change: (r: ReputationRecord) => ReputationRecord, runId: string | undefined, label: string): ReputationRecord {
+    const current = hostedExecution.getStore()
+    const principal = runId ? this.store.runPrincipal(runId)?.principal : current?.principal
+    if (process.env.HOSTED === '1' && principal && current?.principal !== principal) {
+      return hostedExecution.run({ ...current!, principal }, () => this.update(publisherSlug,wallet,change,runId,label))
+    }
     const before = this.get(publisherSlug, wallet)
     const after = change(before)
     this.store.putReputation(after)

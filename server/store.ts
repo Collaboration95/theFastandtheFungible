@@ -1,4 +1,5 @@
 import { probeMetadata } from './agents/precision.js'
+import { hostedExecution } from './hosted/execution.js'
 import { pastRunSummaries } from './history-query.js'
 import { ExactCache } from './exact-cache.js'
 import { sourceKey, sameSource, sourceBinding } from '../shared/source-identity.js'
@@ -140,6 +141,9 @@ export class Store {
     } catch { return undefined }
   }
   private transactionDepth = 0
+  /** Hosted state shares the journal transaction authority; no async callbacks. */
+  hostedState<T>(fn: (db: DatabaseSync) => T): T { return this.atomic(() => fn(this.db)) }
+  spendingGuard?: () => boolean
   private atomic<T>(fn: () => T): T {
     const depth = this.transactionDepth++, savepoint = `nested_${depth}`
     this.db.exec(depth ? `SAVEPOINT ${savepoint}` : 'BEGIN IMMEDIATE')
@@ -280,7 +284,7 @@ export class Store {
     })
   }
   isPaused() {
-    return spendPolicy().paused || Boolean(this.prepare('SELECT paused FROM wallet_control WHERE id=1').get()?.paused)
+    return Boolean(this.spendingGuard?.()) || spendPolicy().paused || Boolean(this.prepare('SELECT paused FROM wallet_control WHERE id=1').get()?.paused)
   }
   setPaused(paused: boolean, actor: { surface?: string; principal?: string; reason?: string } = {}) {
     this.atomic(() => {
@@ -411,8 +415,8 @@ export class Store {
   }
   listRuns(): RunSnapshot[] { return this.prepare('SELECT id FROM runs ORDER BY rowid').all().map(row => this.getRun(row.id as string)) }
   /** Sidebar history, newest first: every pinned run, then the `recent` latest others. Deleting only hides a run: its receipts and ledger rows stay (one charge per intent). */
-  listPastRuns(recent = 4): { runId: string; question: string; phase: RunSnapshot['phase']; stopped: boolean; budgetMinor: number; spentMinor: number; at: string; pinned: boolean }[] {
-    return pastRunSummaries(this.db, { recent })
+  listPastRuns(recent = 4, principal?: string): { runId: string; question: string; phase: RunSnapshot['phase']; stopped: boolean; budgetMinor: number; spentMinor: number; at: string; pinned: boolean }[] {
+    return pastRunSummaries(this.db, { recent, principal })
   }
 
   setRunMeta(runId: string, change: { pinned?: boolean; hidden?: boolean }): void {
@@ -894,10 +898,20 @@ export class Store {
     return result
   }
   // Engine-side trust per seller of record (D6, D21), across runs; server/reputation.ts owns the math.
-  getReputation(wallet: string): ReputationRecord | undefined { return this.rows<ReputationRecord>('SELECT json FROM publisher_reputation WHERE wallet=?', wallet)[0] }
-  listReputation(): ReputationRecord[] { return this.rows<ReputationRecord>('SELECT json FROM publisher_reputation ORDER BY wallet') }
+  getReputation(wallet: string): ReputationRecord | undefined {
+    if (process.env.HOSTED === '1') return this.rows<ReputationRecord>('SELECT json FROM hosted_reputation WHERE principal=? AND wallet=?', hostedExecution.getStore()?.principal ?? '', wallet)[0]
+    return this.rows<ReputationRecord>('SELECT json FROM publisher_reputation WHERE wallet=?', wallet)[0] }
+  listReputation(): ReputationRecord[] {
+    if (process.env.HOSTED === '1') return this.rows<ReputationRecord>('SELECT json FROM hosted_reputation WHERE principal=? ORDER BY wallet', hostedExecution.getStore()?.principal ?? '')
+    return this.rows<ReputationRecord>('SELECT json FROM publisher_reputation ORDER BY wallet') }
   putReputation(record: ReputationRecord): void {
     const parsed = ReputationRecordSchema.parse(record)
+    if (process.env.HOSTED === '1') {
+      const principal = hostedExecution.getStore()?.principal
+      if (!principal) throw new Error('Hosted reputation principal missing')
+      this.prepare('INSERT INTO hosted_reputation VALUES (?,?,?) ON CONFLICT(principal,wallet) DO UPDATE SET json=excluded.json').run(principal, parsed.wallet, JSON.stringify(parsed))
+      return
+    }
     this.prepare('INSERT INTO publisher_reputation VALUES (?,?) ON CONFLICT(wallet) DO UPDATE SET json=excluded.json').run(parsed.wallet, JSON.stringify(parsed))
   }
   resetReputation(): void { this.db.exec('DELETE FROM publisher_reputation') }

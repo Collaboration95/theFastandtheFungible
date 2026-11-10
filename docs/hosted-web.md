@@ -1,4 +1,148 @@
-# Hosted judge demo operations
+# Hosted gateway: configuration and limits
+
+This section describes the HG gateway. Deployment, provisioning, snapshots and the
+public URL smoke test belong to the operations runbook. Local, desktop and MCP
+behavior stays unchanged unless `HOSTED=1` is explicitly set. This source change
+is not evidence of a deployed or funded service.
+
+## Configuration (operator owned)
+
+Use one API process and one publisher process, with the existing SQLite WAL
+journals on one persistent disk. Deploy stop-before-start; do not overlap old and
+new processes or mount independent databases behind the same payer. No Firestore
+or GCS migration is involved. The front proxy must send the exact public Host.
+
+| Variable | Contract |
+| --- | --- |
+| `HOSTED` | `1` enables the gateway. Invalid initialization serves a paused shell; it never falls back to owner authority. |
+| `HOSTED_ORIGIN` | Exact HTTPS origin without a trailing slash, path, credentials or query. |
+| `HOSTED_TRUSTED_PROXY` | One numeric IP: the directly connected trusted forwarder (127.0.0.1 for the packaged supervisor). It must overwrite X-Forwarded-For with exactly one validated client IP. Comma-separated chains and untrusted senders are rejected. Do not append an unvalidated Cloud Run chain. |
+| `HOSTED_IP_HMAC_KEY` | Separate secret, at least 32 characters. Daily-derived HMACs identify abuse buckets; raw IPs are not written to the application database. |
+| `HOSTED_CONTROL_PATH` | Durable local control file, default `data/hosted-control.json`. Missing, malformed, unreadable or expired means both admission and spending paused. |
+| `HOSTED_ADMISSIONS_UNTIL` | Default and latest permitted deadline: `2026-11-19T16:00:00Z`. Earlier cutoffs are allowed. |
+| `HOSTED_QUESTION_CAP_MINOR` | Default 200; may only reduce the per-question cap. |
+| `HOSTED_PROVIDERS_READY_UNTIL` | Expiry of the operator's provider preflight evidence. Readiness fails after expiry. Do not set this without testing actual account/model access. |
+| `HOSTED_RESEARCH_INPUT_USD_PER_MILLION`, `HOSTED_RESEARCH_OUTPUT_USD_PER_MILLION` | Conservative upper billing rates for the selected research model, including its peak tier. Missing or invalid rates prevent calls. |
+| `HOSTED_DECISION_INPUT_USD_PER_MILLION`, `HOSTED_DECISION_OUTPUT_USD_PER_MILLION` | Separate conservative upper rates for the selected decision provider/model. |
+| `HOSTED_DECISION_OUTPUT_TOKENS` | Bounded decision-attempt output envelope, default 8192. Qualify the selected provider's bound before enabling admission. |
+| `HOSTED_DECK_URL`, `HOSTED_VIDEO_URL`, `HOSTED_PROGRESS_URL`, `HOSTED_REPLAY_URL` | Public evidence links; replay defaults to the recorded demo. |
+| `APP_DB`, `REPORT_DIR` | Existing durable buyer journal and private report paths. Never serve either directory as static content. |
+| `WALLET_DAILY_CAP_MINOR` | Existing wallet authority remains an additional ceiling. Provision a suitable sponsored cap explicitly; the local default remains unchanged. |
+
+Use the pre-funded shared Testnet payer through the existing rail/seed settings.
+Keys remain operator secrets. The gateway never provisions or faucets visitor
+wallets. Hosted BYOK/compatible provider profiles and live remote search embeddings
+currently fail initialization closed: publisher-side embedding attempts are not
+yet qualified against the per-attempt model ledger. Use keyword search with
+DeepSeek and OpenAI Decisions or Clef. Fixture substitution remains labelled on
+answers and receipts. Do not advertise a live model result from configuration
+alone; record the actual provider/rail identity in launch acceptance.
+
+## Visitor and route contract
+
+`GET /api/demo/status` issues an opaque `__Host-ra_session` cookie (Secure,
+HttpOnly, SameSite=Lax, Path=/, absolute 24-hour lifetime) and returns `csrfToken`.
+Only a SHA-256 cookie hash is stored. Every mutation requires that cookie, the
+exact `Origin`, and `X-CSRF-Token`; Fetch Metadata must be same-origin when sent.
+No CORS permission is emitted. Public bearer/principal/internal routing headers
+are stripped. A supplied owner bearer cannot grant public authority.
+
+HU must preserve an `Idempotency-Key` (1–128 ASCII letters, digits, underscore or
+hyphen) across scope, submit, network retries and reload recovery. Scope reserves
+a draft and its full question/model envelope; submit uses the same key. The full
+canonical request digest is bound independently at scope and submit; a changed
+digest returns 409. Cached scope and submit identities do not repeat work. A
+settled-delivery retry requires its own persistent key. It reuses the same run and
+intent; it cannot authorize a new purchase. SSE reconnects read durable state.
+
+All run, intent/proof, receipt, JSON report, history, SSE, stop, retry, pin and
+delete paths check the persisted principal before reading payloads. Missing,
+foreign, hidden and expired IDs use the same 404 response. History includes all
+of this visitor's visible runs, without the local four-run limit. Two concurrent
+SSE streams per visitor and 16 globally are allowed; snapshots/backpressure are
+bounded to 256 KiB and streams close at session expiry. All private responses
+use `Cache-Control: private, no-store` and vary on Cookie/Origin.
+
+The public API is an allowlist. Settings, reset reputation, keys/BYOK, wallet
+funding, global wallet/export/ledger/audit, metrics, remote MCP/hire, publisher
+faults, presenter/record, provider probes, online verification and PDF/HTML report
+generation/downloads are unavailable. Writer status exposes bounded public
+registry metadata only. **Route `/w` to this gateway, never directly to the writer
+server**; quote/redeem/finish/fault administration must remain internal. The
+publisher port itself must not be publicly reachable.
+
+Learned writer reputation uses the visitor principal, including background proof
+updates. No visitor can mutate a global publisher fault switch. A future guided
+fault scenario must be bound to a run; there is no public fault endpoint here.
+
+## Limits and accounting
+
+| Scope | Maximum |
+| --- | --- |
+| Question | 200 minor gross; 2,000 characters; JSON bodies 16 KiB |
+| Session / UTC day | 5 questions, 1,000 minor gross, one outstanding question |
+| IP / UTC day | 60 questions, 12,000 minor gross; 3 starts/minute |
+| Whole demo / UTC day | 300 admissions, 60,000 minor gross |
+| Whole demo / lifetime | 2,100 admissions, 420,000 minor gross |
+| Model USD | $0.05/question, $15/day, $105/lifetime |
+| Model tokens / question | Research input 60,000 and output 6,000; decision input 50,000 |
+| Queue | One active job, two waiting, 90-second wait, cancellable |
+
+SQLite immediate transactions reserve the requested gross allowance and complete
+$0.05 model envelope before queueing. Provider transports reserve integer
+microdollars and worst-case tokens before **each attempt**, inside existing retry
+loops. Completed provider usage can reduce the reservation; failed, partial,
+missing-usage and malformed responses retain it. Unknown billing rates fail
+closed. Refunds never restore gross authority. A terminal run releases unused
+principal only when all intents prove final settlement or non-settlement;
+uncertain money keeps the full hold. Outstanding holds count across midnight
+and restart. Question counts are not refunded. IP HMAC buckets expire after 24
+hours; unresolved global/session obligations remain held.
+
+Restart stops interrupted research rather than silently replaying it. Existing
+payment, refund, cancellation and anchor journals still reconcile; a paused
+signer can cancel an outstanding escrow and re-send an already signed blob.
+Pause is checked synchronously immediately before each new buyer signature;
+new payments, creates, releases and anchors cannot sign while spending is paused.
+Local operator pause and wallet caps remain additional restrictions.
+
+Active history is inaccessible after 24 hours. The startup and one-minute retention sweeps
+prunes terminal research payloads older than one day, preserving unresolved
+payment journals and audit/idempotency records. Abandoned drafts release only their unused envelope after 90 seconds; draft scope payloads expire;
+question commitments in hosted holds are hashes, not duplicate plaintext.
+Langfuse export/public traces are disabled for hosted traffic. Provider/network
+services can still receive request metadata; the operations runbook must qualify
+proxy/cloud log retention before making broader privacy claims. Do not enter
+personal or confidential information.
+
+## Control and status
+
+Initialize paused with `node scripts/hosted-control.mjs init`. Use `status`,
+`pause [all|admissions|spending]` or `resume [all|admissions|spending]` over the
+private operator channel. `--project` selects the IAP remote interface, which
+defaults to dry-run and requires `--execute` to act. Writes use a
+0600 temporary file, fsync, atomic rename and directory fsync. Set
+`HOSTED_CONTROL_EXPIRES_AT` for an earlier control expiry. Resume refuses missing, malformed or expired control; no public route can
+resume the service. An explicit future `HOSTED_CONTROL_EXPIRES_AT` can renew
+control only while pausing, never silently during resume.
+
+`GET /api/demo/status` returns `state` (`ready`, `paused`, `busy`, `degraded`,
+`ended`), capabilities, remaining question/minor allowance, model/rail labels,
+evidence links, CSRF token, and own queue positions. `src/api.ts` exports the typed
+client; HU owns screen rendering and mutation headers.
+
+`/livez` reports process liveness. `/startupz` requires writable DB, initialized
+recovery and reachable corpus registry. `/readyz` additionally requires current
+funding/ledger headroom, caps, provider preflight freshness, queue capacity,
+unpaused controls and an unexpired admission window. Paused initialization serves
+liveness and status but fails startup/readiness. Launch acceptance must still
+exercise two actual deployed cookie jars, proxy-header spoofing, a real Testnet
+purchase/refund/restart and read-only explorer verification before advertising a
+URL; local synthetic tests do not establish those outcomes.
+
+---
+
+## Deployment and operations runbook
 
 The app runs on one Singapore Compute Engine VM with a persistent ext4 disk.
 Cloud Run runs only nginx. Its stable `run.app` origin forwards to the VM's
@@ -33,32 +177,25 @@ An unreachable VM returns a static paused page with HTTP 503 and a recording lin
 
 ## Gateway configuration (HG)
 
-`docker/hosted/env.template` is the single public configuration template. HG owns
-runtime enforcement and the final names for hosted policy/session configuration.
-At HO implementation time HG was not merged: the template uses the binding
-architecture decision names, and proposed policy names remain **unqualified
-until HG confirms them**. Never treat the presence of a template limit as proof
-that the gateway enforces it. Match this section and template to HG before launch.
+The configuration and limits sections above are the runtime contract. The public
+`docker/hosted/env.template` now uses those names. Limits other than the reducible
+question cap are code constants; unrecognized template knobs cannot raise them.
+The supervisor forwards over loopback, so `HOSTED_TRUSTED_PROXY=127.0.0.1` trusts
+that final hop only; nginx must overwrite X-Forwarded-For with one validated IP.
+The `/w` path also passes through HG; the publisher is never a public upstream.
 
-Required shared settings are `HOSTED=1`, exact HTTPS `HOSTED_ORIGIN`,
-`HOSTED_ADMISSIONS_UNTIL`, and `HOSTED_CONTROL_PATH=/state/control.json`.
-Proposed template limits: question 200 minor; session 5 questions/1000 gross minor
-per UTC day; IP 60 questions/12000 minor/day and 3 starts/minute; global
-300 questions/60000 minor/day; lifetime 2100 questions/420000 minor; model
-US$0.05/question, $15/day, $105 total; one active/two waiting/90 s queue expiry.
-HG also enforces 16 KiB bodies, 2000-character questions, 24 h history, ownership,
-exact Origin/CSRF, disabled owner/PDF routes and provider freshness.
+Secrets supplied as environment variable **names**, never CLI values, are
+`DEEPSEEK_API_KEY`, `OPENAI_API_KEY`, `PUBLISHER_SECRET`, `HOSTED_IP_HMAC_KEY`,
+`XRPL_PAYER_SEED`, and paid roster `XRPL_PUBLISHER_<SLUG>_SEED` values. Session
+cookies are random opaque values with server-side hashes; no session signing key
+is required. Deploy copies secrets through 0600 temporary files into pinned
+Secret Manager versions and removes local scratch files. The front receives no
+keys. Scripts never read the owner's `.env` automatically.
 
-Secret names supplied as local environment variable **names**, never CLI values:
-`DEEPSEEK_API_KEY`, `OPENAI_API_KEY`, `PUBLISHER_SECRET`, `HOSTED_SESSION_KEY`,
-`HOSTED_IP_HMAC_KEY`, `XRPL_PAYER_SEED`, and every paid roster writer's
-`XRPL_PUBLISHER_<SLUG>_SEED`; optional corresponding addresses. HG must confirm
-the session/HMAC names. Deploy copies each value to a 0600 temporary file,
-creates an immutable per-release Secret Manager secret with version 1, grants
-only the VM identity access, then deletes the local scratch files. Startup renders
-those pinned versions into the private env file. The source archive, Docker build
-arguments, metadata and printed plan contain no secret values. Restrict operator
-shell tracing/history; scripts never read the owner's `.env` automatically.
+Provider prices default to invalid zero rates and the provider-preflight deadline
+to expired. Keep control paused while setting conservative rates and a verified
+freshness deadline in the private runtime environment over IAP, then restart and
+qualify the exact images before resuming. Templates do not prove live readiness.
 
 `docker/hosted/start.mjs` is a packaging guard. The raw API binds loopback inside
 its container; public traffic is forwarded only when `/api/demo/status` returns
@@ -221,7 +358,7 @@ recorded walkthrough before shutdown.
 
 ## Mandatory checks before advertising the URL
 
-1. Confirm HG's actual env/secret/control names and one-hop proxy trust. Verify
+1. Verify the documented env/control names and one-hop proxy trust. Verify
    session cookies, exact Origin/CSRF, owner-route denial and fail-closed boot.
 2. Build and run the exact Linux images on the disk. Exercise buyer and writer
    crashes/recovery, stop-before-start updates, pending refund/anchor recovery,
@@ -255,7 +392,7 @@ HG/HM crash/concurrency/abuse and HU visual evidence is still required.
 See [local evidence](evidence/hosted-ops/README.md). Docker daemon unavailable:
 production Vite build + bundled API/publisher ran natively with HOSTED=1, fixture
 models/simulated rail, ports 6800/10488/10490 (OFFSET 1700), raw API 10489 and
-front 6801. HG absent means the normal isolation/purchase probes remain blocked.
+front 6801. That historical HO proof predates HG; normal deployed isolation/purchase probes remain unqualified.
 No cloud deployment, provider call, wallet provisioning or Testnet transaction
 was performed by HO. A local proxy probe separately checks header stripping,
 one XFF hop, SSE and VM-unreachable paused behavior. All listeners are cleaned up.

@@ -25,7 +25,7 @@ export function maskSecrets(data: string, env: NodeJS.ProcessEnv = loadConfig())
 }
 
 export const telemetryEnabled = (env: NodeJS.ProcessEnv = loadConfig()) =>
-  env.LANGFUSE_ENABLED === '1' && Boolean(env.LANGFUSE_PUBLIC_KEY && env.LANGFUSE_SECRET_KEY)
+  env.HOSTED !== '1' && env.LANGFUSE_ENABLED === '1' && Boolean(env.LANGFUSE_PUBLIC_KEY && env.LANGFUSE_SECRET_KEY)
 
 /** Starts the exporter once per process; returns a shutdown that flushes pending spans. */
 export async function startTelemetry(): Promise<() => Promise<void>> {
@@ -56,7 +56,7 @@ export function traceRun<T>(name: string, run: RunInfo, fn: () => Promise<T>, su
     startActiveObservation(name, async observation => {
       observation.update({ input: { question: run.question, budget: money(run.budgetMinor) } })
       // Public traces open without a login: stage backups when the venue wifi or login fails.
-      if (loadConfig().LANGFUSE_PUBLIC_TRACES === '1') setActiveTraceAsPublic()
+      if (loadConfig().HOSTED !== '1' && loadConfig().LANGFUSE_PUBLIC_TRACES === '1') setActiveTraceAsPublic()
       try { return await fn() }
       catch (error) { observation.update({ level: 'ERROR', statusMessage: error instanceof Error ? error.message : 'failed' }); throw error }
       finally {

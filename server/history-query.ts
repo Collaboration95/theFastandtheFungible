@@ -11,17 +11,17 @@ const charged = "'SETTLED','DELIVERY_PENDING','DELIVERY_FAILED','VERIFIED','CLAI
  * and the first event by id (never chronological MIN); no event means ''. Missing/wrong
  * summary scalars fail closed, just as getRun does. Unselected snapshot bodies are not validated.
  */
-export function pastRunSummaries(db: DatabaseSync, { recent }: { recent: number }) {
+export function pastRunSummaries(db: DatabaseSync, { recent, principal }: { recent: number; principal?: string }) {
   // JS's old counter comparison selects ceil(recent) for positive fractions, all unpinned rows for NaN.
   const limit = Number.isNaN(recent) ? -1 : Math.max(0, Math.ceil(recent))
   return db.prepare(`WITH selected AS (
     SELECT r.rowid AS ord, r.id, r.json, COALESCE(m.pinned,0) AS pinned
     FROM runs r LEFT JOIN run_meta m ON m.run_id=r.id
-    WHERE COALESCE(m.hidden,0)=0 AND COALESCE(m.pinned,0)!=0
+    WHERE COALESCE(m.hidden,0)=0 AND (? IS NULL OR EXISTS (SELECT 1 FROM admissions a WHERE a.run_id=r.id AND a.principal=?)) AND COALESCE(m.pinned,0)!=0
     UNION ALL
     SELECT * FROM (SELECT r.rowid, r.id, r.json, COALESCE(m.pinned,0)
       FROM runs r LEFT JOIN run_meta m ON m.run_id=r.id
-      WHERE COALESCE(m.hidden,0)=0 AND COALESCE(m.pinned,0)=0
+      WHERE COALESCE(m.hidden,0)=0 AND (? IS NULL OR EXISTS (SELECT 1 FROM admissions a WHERE a.run_id=r.id AND a.principal=?)) AND COALESCE(m.pinned,0)=0
       ORDER BY r.rowid DESC LIMIT ?)
   ) SELECT id, pinned, json -> '$.question' AS question, json -> '$.phase' AS phase,
     json -> '$.stopped' AS stopped, json -> '$.budgetMinor' AS budget, json -> '$.spentMinor' AS storedSpent,
@@ -32,7 +32,7 @@ export function pastRunSummaries(db: DatabaseSync, { recent }: { recent: number 
     (SELECT count(*) FROM intents i WHERE i.run_id=selected.id AND
       (COALESCE(json_type(i.json,'$.amountMinor'),'null') NOT IN ('integer','real') OR CAST(json_extract(i.json,'$.amountMinor') AS INTEGER) != json_extract(i.json,'$.amountMinor') OR json_extract(i.json,'$.amountMinor') < 0 OR json_extract(i.json,'$.amountMinor') > 9007199254740991
        OR COALESCE(json_extract(i.json,'$.status'),'') NOT IN (${statuses}))) AS invalid
-    FROM selected ORDER BY ord DESC`).all(Number.isFinite(limit) ? limit : -1).map(row => {
+    FROM selected ORDER BY ord DESC`).all(principal ?? null, principal ?? null, principal ?? null, principal ?? null, Number.isFinite(limit) ? limit : -1).map(row => {
       if (row.invalid || (row.hasEvent && row.at === null)) throw new Error('Invalid history intent summary')
       const parse = (value: unknown) => value === null ? undefined : JSON.parse(String(value))
       RunSnapshotSchema.shape.spentMinor.parse(parse(row.storedSpent))

@@ -1,3 +1,4 @@
+import { meteredFetch } from '../hosted/execution.js'
 import { pause as abortablePause, abortable } from './provider-retry.js'
 import { reportModelUsage } from '../telemetry.js'
 import { quotedText } from './untrusted.js'
@@ -137,7 +138,7 @@ export class ClefDecisionProvider implements DecisionProvider {
       try {
         return await Promise.race([
           (async () => {
-            const response = await this.transport(`https://api.cloudflare.com/client/v4${path}`, { method: body === undefined ? 'GET' : 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, signal: controller.signal, ...(body === undefined ? {} : { body: JSON.stringify(body) }) })
+            const response = await meteredFetch(this.transport, 'decision')(`https://api.cloudflare.com/client/v4${path}`, { method: body === undefined ? 'GET' : 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, signal: controller.signal, ...(body === undefined ? {} : { body: JSON.stringify(body) }) })
             if (!response.ok) {
               // The daily quota will not clear in seconds: fail at once, without a retry or a pause (#195).
               if (response.status === 429 && isDailyQuotaExhausted(429, await response.text().catch(() => ''))) throw new ClefUnavailableError('daily quota')
