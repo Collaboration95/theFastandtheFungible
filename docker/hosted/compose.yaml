@@ -28,7 +28,9 @@ services:
       PORT: "8788"
       RAW_API_PORT: "18788"
       HOST: 127.0.0.1
-      PUBLISHER_URL: http://publisher:8790
+      # The API pins its publisher to numeric loopback; start.mjs relays it to the publisher container.
+      PUBLISHER_URL: http://127.0.0.1:8790
+      HOSTED_PUBLISHER_UPSTREAM: publisher:8790
       APP_DB: /state/api/app.db
       REPORT_DIR: /state/api/reports
       HOSTED_CONTROL_PATH: /state/control.json
