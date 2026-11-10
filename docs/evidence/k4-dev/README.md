@@ -8,7 +8,7 @@ question and miss is retained; neither scorer nor gold phrases were changed.
 
 Both sides use the merged C3 (#425) and C4 (#437) corpus, with identical bank
 hashes and no corpus edits by K4. Baseline: `cbfc63ab8432b2b3d8c663fc7875c1d1cf963023`.
-After: `d5f8282ddad797c7be571c79ba17bd8127367956`, with HU (#438) integrated after that corpus baseline. Hosted
+After: `ff87ea21d36946d8744bf29651cb0cd64657e367`, with HU (#438), site/README and release-policy (#433) integrations after that corpus baseline. Hosted
 execution is off. Corpus/writer bytes are identical between these sources.
 These matched local baselines differ from K3's earlier published runs.
 
