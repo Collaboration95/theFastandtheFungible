@@ -96,7 +96,9 @@ No downloaded service-account keys are used. The operator needs project creation
 approved billing link, service enablement, registry write, secret administration,
 VM/network/Run/IAM administration, IAP/OS Login and monitoring/budget permissions.
 The runtime receives registry reader and access to its individually named secrets.
-The verified notification channel must exist before deployment.
+Supply --alert-email to create the operator channel in the new project, or
+--notification-channel to reuse an already verified channel on a retry. Verify
+actual alert delivery before advertising the URL.
 
 ### Exact command sequence
 
@@ -117,10 +119,10 @@ node --import tsx scripts/hosted-wallets.ts --testnet --out "$RA_PRIVATE_DIR/wal
 # Check public.json balances and headroom before proceeding.
 
 # 3. Review the plan, including all secret variable names and firewall ranges.
-make hosted-deploy ARGS="--project $RA_PROJECT --billing-account $RA_BILLING_ACCOUNT --sha $RA_SHA --manifest $RA_PRIVATE_DIR/deployment.json --notification-channel $RA_NOTIFICATION_CHANNEL --dry-run"
+make hosted-deploy ARGS="--project $RA_PROJECT --billing-account $RA_BILLING_ACCOUNT --sha $RA_SHA --manifest $RA_PRIVATE_DIR/deployment.json --alert-email $RA_ALERT_EMAIL --dry-run"
 
 # 4. Orchestrator only. Requires clean selected HEAD and published local gate.
-make hosted-deploy ARGS="--project $RA_PROJECT --billing-account $RA_BILLING_ACCOUNT --sha $RA_SHA --manifest $RA_PRIVATE_DIR/deployment.json --notification-channel $RA_NOTIFICATION_CHANNEL --execute"
+make hosted-deploy ARGS="--project $RA_PROJECT --billing-account $RA_BILLING_ACCOUNT --sha $RA_SHA --manifest $RA_PRIVATE_DIR/deployment.json --alert-email $RA_ALERT_EMAIL --execute"
 ```
 
 The script builds from `git archive SHA` locally, uses each Dockerfile's own

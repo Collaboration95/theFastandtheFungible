@@ -7,7 +7,7 @@ const [action, ...argv] = process.argv.slice(2)
 const options = {}
 for (let i = 0; i < argv.length; i++) {
   if (['--dry-run','--execute'].includes(argv[i])) options[argv[i].slice(2)] = true
-  else if (['--project','--billing-account','--sha','--origin','--manifest','--notification-channel'].includes(argv[i]) && argv[i+1]) options[argv[i].slice(2)] = argv[++i]
+  else if (['--project','--billing-account','--sha','--origin','--manifest','--notification-channel','--alert-email'].includes(argv[i]) && argv[i+1]) options[argv[i].slice(2)] = argv[++i]
   else throw Error('Unknown or incomplete argument')
 }
 if (!['deploy','teardown'].includes(action)) throw Error('Expected deploy or teardown')
@@ -73,6 +73,7 @@ if (action === 'teardown') {
   for (const name of [sa,frontSa]) remove(['iam','service-accounts','describe',name,...p],['iam','service-accounts','delete',name,...p,'--quiet'])
   if (m.uptime) remove(['monitoring','uptime','describe',m.uptime,...p],['monitoring','uptime','delete',m.uptime,...p,'--quiet'])
   if (m.alert) remove(['alpha','monitoring','policies','describe',m.alert,...p],['alpha','monitoring','policies','delete',m.alert,...p,'--quiet'])
+  if(m.ownsNotificationChannel && m.notificationChannel) remove(['beta','monitoring','channels','describe',m.notificationChannel,...p],['beta','monitoring','channels','delete',m.notificationChannel,...p,'--quiet'])
   if (m.budget) remove(['billing','budgets','describe',m.budget,`--billing-account=${m.billingAccount}`],['billing','budgets','delete',m.budget,`--billing-account=${m.billingAccount}`,'--quiet'])
   console.log(JSON.stringify({project,finalSnapshot:snapshot,state:dry?'planned':'retained-snapshot-project-and-billing-link'}))
   process.exit(0)
@@ -82,8 +83,10 @@ if (!/^[A-Fa-f0-9-]+$/.test(billing || '')) throw Error('--billing-account requi
 const sha = git(['rev-parse','--verify',`${options.sha || 'HEAD'}^{commit}`])
 const origin = options.origin || 'https://paused.invalid'
 if (!/^https:\/\/[a-z0-9.-]+$/.test(origin)) throw Error('--origin must be an exact HTTPS origin')
-const channel = options['notification-channel']
-if (!/^projects\/[^/]+\/notificationChannels\/\d+$/.test(channel || '')) throw Error('--notification-channel requires an existing verified operator channel')
+let channel = options['notification-channel']
+const email=options['alert-email']
+if(channel && !/^projects\/[^/]+\/notificationChannels\/\d+$/.test(channel)) throw Error('Invalid notification channel')
+if(!channel && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email||'')) throw Error('Supply --alert-email or --notification-channel')
 const writerNames=readdirSync('data/writers').filter(f=>f.endsWith('.json')).map(f=>JSON.parse(readFileSync(join('data/writers',f))).publisher).filter(w=>Object.values(w.prices||{}).some(p=>Number(p)>0)).map(w=>'XRPL_PUBLISHER_'+w.slug.toUpperCase().replaceAll('-','_')+'_SEED')
 const mappings = [...writerNames,'DEEPSEEK_API_KEY','OPENAI_API_KEY','PUBLISHER_SECRET','HOSTED_SESSION_KEY','HOSTED_IP_HMAC_KEY',...Object.keys(process.env).filter(n=>/^XRPL_(PAYER|PUBLISHER_[A-Z0-9_]+)_(SEED|ADDRESS)$/.test(n))]
 if (!mappings.includes('XRPL_PAYER_SEED')) mappings.push('XRPL_PAYER_SEED')
@@ -110,6 +113,10 @@ if (!dry && !existing) {
 ensure(['projects','describe',project], ['projects','create',project,'--name=ResearchAgent SFF demo','--labels=purpose=sff-demo,expires=20261120'])
 gc(['billing','projects','link',project,`--billing-account=${billing}`])
 gc(['services','enable','compute.googleapis.com','run.googleapis.com','artifactregistry.googleapis.com','secretmanager.googleapis.com','monitoring.googleapis.com','logging.googleapis.com','iam.googleapis.com','billingbudgets.googleapis.com','cloudresourcemanager.googleapis.com',...p])
+if(!channel) {
+  channel=dry?'projects/'+project+'/notificationChannels/RESOLVED_CHANNEL':gc(['beta','monitoring','channels','list',...p,'--filter=displayName=ra-operator','--format=value(name)'])
+  if(!channel||dry) channel=gc(['beta','monitoring','channels','create',...p,'--display-name=ra-operator','--type=email',`--channel-labels=email_address=${email}`,'--format=value(name)'])||channel
+}
 ensure(['artifacts','repositories','describe',repo,...p,`--location=${region}`],['artifacts','repositories','create',repo,...p,`--location=${region}`,'--repository-format=docker','--immutable-tags'])
 for (const name of ['ra-vm','ra-front']) ensure(['iam','service-accounts','describe',`${name}@${project}.iam.gserviceaccount.com`,...p],['iam','service-accounts','create',name,...p])
 gc(['artifacts','repositories','add-iam-policy-binding',repo,...p,`--location=${region}`,`--member=serviceAccount:${sa}`,'--role=roles/artifactregistry.reader'])
@@ -181,7 +188,7 @@ try {
   const number=dry?'PROJECT_NUMBER':gc(['projects','describe',project,'--format=value(projectNumber)'])
   let budget=dry?'':gc(['billing','budgets','list',`--billing-account=${billing}`,`--filter=displayName=ra-${project}`,'--format=value(name)'])
   if (!budget) budget=gc(['billing','budgets','create',`--billing-account=${billing}`,`--display-name=ra-${project}`,'--budget-amount=50USD',`--filter-projects=projects/${number}`,'--threshold-rule=percent=0.5,basis=current-spend','--threshold-rule=percent=0.9,basis=current-spend','--threshold-rule=percent=1,basis=current-spend',`--notifications-rule-monitoring-notification-channels=${channel}`,'--format=value(name)']) || 'BUDGET_ID'
-  const m={project,billingAccount:billing,sha,region,zone,vm,disk,service,url,digests,secrets:[...new Set([...(existing?.secrets||[]),...secretMap.map(([,s])=>s)])],uptime,alert,budget,pendingObligations:null,archiveVerified:false,teardownAt:'2026-11-20T00:00:00+08:00'}
+  const m={project,notificationChannel:channel,ownsNotificationChannel:!options['notification-channel'],billingAccount:billing,sha,region,zone,vm,disk,service,url,digests,secrets:[...new Set([...(existing?.secrets||[]),...secretMap.map(([,s])=>s)])],uptime,alert,budget,pendingObligations:null,archiveVerified:false,teardownAt:'2026-11-20T00:00:00+08:00'}
   if (!dry) writeFileSync(manifestPath,JSON.stringify(m,null,2)+'\n',{mode:0o600})
   console.log(JSON.stringify({project,sha,url,state:dry?'planned':'deployed-paused'}))
 } finally { if (!dry) rmSync(scratch,{recursive:true,force:true}) }
