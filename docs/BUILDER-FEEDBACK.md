@@ -1138,3 +1138,15 @@ claims that a law applies or that a credential satisfies it.
 | partial | Privacy and retention | `npm run data:prune` removes premium bodies, salts, events and question text and keeps receipts and the chain; questions stay off the ledger. Remaining: deletion requests, encryption at rest, mainnet retention periods, public Langfuse traces carry questions. |
 | gap | Disputes and refunds | Cooperative refunds are built, enforceable settlement is not. Evaluate #261; document refusal, escalation and loss allocation. |
 | gap | Independent security / production validation | Multi-process concurrency, external x402 interop, abuse/load testing and explicit network enablement review before mainnet. |
+
+### 2026-11-10 — Hosted image qualification needs a running Docker daemon (observed local tooling)
+
+HO's Docker CLI 28.0.1 was installed, but `docker info` refused the local daemon
+socket, so image build/run acceptance could not proceed. Evidence:
+[hosted ops local proof](evidence/hosted-ops/README.md). Workaround: production
+Vite build plus native bundled API/publisher and nginx at OFFSET 1700, clearly
+labelled partial paused-shell/fixture/simulated evidence while HG is pending.
+Suggested tooling fix: add daemon availability to the orchestrator preflight and
+run exact Linux images before public launch. Severity: low local tooling blocker;
+mainnet impact: none observed, and native proof does not qualify container
+persistence or a mainnet deployment. No cloud resource or live ledger call ran.

@@ -1,12 +1,12 @@
 # syntax=docker/dockerfile:1.7
-FROM node:24.21.0-alpine3.24 AS build
+FROM node:24.21.0-alpine3.24@sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1 AS build
 WORKDIR /src
 COPY package.json package-lock.json ./
 RUN npm ci --ignore-scripts --no-audit --no-fund
 COPY . .
 RUN npx vite build && node docker/bundle.mjs out
 
-FROM node:24.21.0-alpine3.24 AS runtime
+FROM node:24.21.0-alpine3.24@sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1 AS runtime
 RUN apk add --no-cache tini
 WORKDIR /app
 COPY --from=build /src/out/ dist/
@@ -26,7 +26,7 @@ ENV ROLE=publisher PUBLISHER_PORT=8790
 WORKDIR /state/publisher
 EXPOSE 8790
 HEALTHCHECK --interval=10s --timeout=3s --start-period=30s CMD node /app/docker/hosted/health.mjs
-FROM nginxinc/nginx-unprivileged:1.29.8-alpine3.23-slim AS web
+FROM nginxinc/nginx-unprivileged:1.29.8-alpine3.23-slim@sha256:59678856b05324b7f6371f26eb1520be7fcd8bdc8ab380fc4913db8503e5a842 AS web
 USER root
 RUN apk add --no-cache tini
 COPY docker/hosted/nginx.conf /etc/nginx/nginx.conf

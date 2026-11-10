@@ -37,5 +37,6 @@ services:
   web:
     <<: *service
     image: ${WEB_IMAGE:-researchagent-hosted-web:local}
+    environment: {HOSTED: "1"}
     depends_on: {api: {condition: service_healthy}}
     ports: ["${HOSTED_BIND_IP:-127.0.0.1}:${HOSTED_PORT:-6800}:8080"]

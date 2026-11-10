@@ -3,6 +3,8 @@
 This is **local native fixture/simulated evidence**, not Docker-image, cloud,
 live-provider, funded-wallet or XRPL Testnet acceptance.
 
+- Read-only registry manifest inspection resolved Node, nginx and Caddy base
+  digests; new image bases are pinned to those digests. This is not an image build.
 - Production Vite build and existing esbuild API/publisher bundles: passed.
 - Docker CLI 28/Compose v2 available; daemon refused connection. No container
   image was built or run. Compose base/fallback models validated with a public

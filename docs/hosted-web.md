@@ -135,7 +135,8 @@ placeholder origin; after Run returns its stable URL, metadata is updated and th
 VM renders the exact origin and restarts while still paused. Retries preserve
 existing control and journals. Package/bootstrap and cloud IAM/quotas remain
 cloud acceptance work. The VM image family selects Debian 12; app image bases
-are exact version tags and app release images are deployed by digest.
+are exact version tags plus registry manifest digests; app releases are also
+deployed by digest.
 
 ### Verify, pause, resume and rotate
 
