@@ -39,7 +39,7 @@ function publicMetadata(value: unknown): void {
 }
 
 
-export type PolicyPayment = ChainPayment & { submission?: Submission; confirmedAt?: string; ledgerIndex?: number; cancelledAt?: string }
+export type PolicyPayment = ChainPayment & { submission?: Submission; confirmedAt?: string; ledgerIndex?: number; cancelledAt?: string; retiredSubmissions?: Submission[] }
 
 /** All mutations are synchronous SQLite transactions; no transaction crosses an await. */
 export class Store {
@@ -791,6 +791,16 @@ export class Store {
       this.prepare('UPDATE policy_payments SET json=? WHERE id=?').run(JSON.stringify({ ...payment, submission }), id)
       this.audit.append({ runId, intentId: id, kind: 'payout-sign', data: { paymentKind: payment.kind, txHash: submission.txHash, lastLedgerSequence: submission.lastLedgerSequence, payTo: payment.payTo, amountDrops: payment.amountDrops, paused: false, walletDailyMinor: spendPolicy().walletDailyMinor } })
       return submission
+    })
+  }
+  /** Called only after ledger-proven expiry/failure; retain the old hash for audit. */
+  retirePolicySubmission(runId: string, id: string, txHash: string, reason: 'expired' | 'failed') {
+    this.atomic(() => {
+      const payment = this.policyPayments(runId).find(p => p.id === id)!
+      if (payment.confirmedAt || payment.submission?.txHash !== txHash) throw new Error('Policy attempt changed')
+      const { submission, ...rest } = payment
+      this.prepare('UPDATE policy_payments SET json=? WHERE id=?').run(JSON.stringify({ ...rest, retiredSubmissions: [...(payment.retiredSubmissions ?? []), submission] }), id)
+      this.audit.append({ runId, intentId: id, kind: 'refusal', data: { stage: 'payout-attempt', txHash, reason, paymentKind: payment.kind } })
     })
   }
   confirmPolicyPayment(runId: string, id: string, ledgerIndex?: number) {

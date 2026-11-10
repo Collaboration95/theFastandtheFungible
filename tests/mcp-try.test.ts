@@ -29,3 +29,16 @@ it('runs and verifies labelled simulated receipts when the faucet is unavailable
   expect(log.mock.calls.flat().join('\n').match(/VERIFY ([^\n]+)/)?.[1]).toBe(run)
  } finally { log.mockRestore(); rmSync(scratch, { recursive: true, force: true }) }
 }, 15000)
+
+it('labels a hire faucet fallback precisely and does not claim a ledger hire was exercised', async () => {
+ const log = vi.spyOn(console, 'log').mockImplementation(() => {})
+ try {
+  await runTry(['--testnet', '--hire'])
+  const output = log.mock.calls.flat().join('\n')
+  expect(output).toContain('SIMULATED fallback · faucet_unavailable')
+  expect(output).toContain('Client agent → ResearchAgent → writer')
+  expect(output).toContain('hire chain not exercised')
+  expect(output).not.toContain('https://testnet.xrpl.org/transactions/')
+  expect(output.match(/RESULT PASS/g)).toHaveLength(1)
+ } finally { log.mockRestore(); rmSync(scratch, { recursive: true, force: true }) }
+}, 15000)

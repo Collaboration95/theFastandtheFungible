@@ -78,6 +78,8 @@ Every gate has regression tests and a corresponding [read-only audit rule](scrip
 
 ## Use it from your agent
 
+Agent hires agent (source / next release): `npx -y <tgz> try --testnet --hire`, or `make try-hire OFFSET=1900` from a clone; [three-party timeline and recovery](docs/hire.md).
+
 Run the whole judge path and exit (Node ≥ 22.13, XRPL Testnet only, no real value):
 
 ```sh

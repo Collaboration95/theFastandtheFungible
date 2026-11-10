@@ -156,3 +156,6 @@ hosted-smoke: ## bounded acceptance: ARGS="--url ... --question ... --paused-url
 	node --import tsx scripts/hosted-smoke.mjs $(if $(filter --execute,$(ARGS)),,--dry-run) $(ARGS)
 hosted-teardown: ## operator teardown plan; ARGS="--project ... --manifest ..."; preserves final disk snapshot
 	bash scripts/hosted-teardown.sh $(ARGS)
+.PHONY: try-hire
+try-hire: ## client agent hires ResearchAgent, buys evidence, pays royalties and returns change (Testnet, fixture models)
+	@node --import tsx mcp/extension.mjs try --testnet --hire

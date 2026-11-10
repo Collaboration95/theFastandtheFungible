@@ -9,9 +9,10 @@ export function parseCommand(argv: string[]) {
   let kind = (explicit ? argv[0] : argv.includes('--http') ? 'http' : 'stdio') as CommandKind
   const args = explicit ? argv.slice(1) : argv
   const { values, positionals } = parseArgs({ args, allowPositionals: true, options: {
-    testnet: { type: 'boolean' }, iou: { type: 'boolean' }, http: { type: 'boolean' }, open: { type: 'boolean' },
+    hire: { type: 'boolean' }, testnet: { type: 'boolean' }, iou: { type: 'boolean' }, http: { type: 'boolean' }, open: { type: 'boolean' },
     port: { type: 'string' }, slug: { type: 'string' }, name: { type: 'string' }, rail: { type: 'string' }, relax: { type: 'boolean' }, help: { type: 'boolean' },
   } })
+  if (values.hire && (kind !== 'try' || !values.testnet)) throw Error('--hire requires try --testnet')
   if (values.http) kind = 'http'
   if (values.iou && !values.testnet) throw Error('--iou requires --testnet')
   const port = values.port === undefined ? undefined : Number(values.port)

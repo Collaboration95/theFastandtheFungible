@@ -1,7 +1,7 @@
 import { DatabaseSync } from 'node:sqlite'
 import type { X402Quote } from '../../publisher/journal.js'
 
-export type Hire = { key: string; question: string; budgetMinor: number; quote: X402Quote; signature?: string; runId?: string; writerAddresses?: Record<string, string>; result?: unknown }
+export type Hire = { key: string; agentId?: string; question: string; budgetMinor: number; quote: X402Quote; signature?: string; runId?: string; writerAddresses?: Record<string, string>; result?: unknown; inboundExpired?: boolean }
 /** Durable request binding; a quote can acquire exactly one signed blob before any submission. */
 export class HireJournal {
   private db: DatabaseSync
@@ -13,6 +13,10 @@ export class HireJournal {
   get(key: string): Hire | undefined {
     const row = this.db.prepare('SELECT json FROM hires WHERE key=?').get(key)
     return row ? JSON.parse(String(row.json)) : undefined
+  }
+  /** Only durable admitted work can owe research or payouts; unpaid quotes are not work. */
+  due(): Hire[] {
+    return this.db.prepare("SELECT json FROM hires WHERE json_extract(json,'$.runId') IS NOT NULL AND json_extract(json,'$.signature') IS NOT NULL AND json_extract(json,'$.result') IS NULL AND NOT coalesce(json_extract(json,'$.inboundExpired'),0) ORDER BY rowid").all().map(row => JSON.parse(String(row.json)))
   }
   save(hire: Hire): Hire {
     this.db.prepare('INSERT OR IGNORE INTO hires VALUES (?,?)').run(hire.key, JSON.stringify(hire))
