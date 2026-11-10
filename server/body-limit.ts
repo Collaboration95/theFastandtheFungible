@@ -14,3 +14,11 @@ export async function boundedBody(response: Response, limit: number): Promise<Bu
     }
   } finally { await reader.cancel().catch(() => undefined); reader.releaseLock() }
 }
+
+/** Recognize parser failures without exposing request bytes or parser details. */
+export function requestBodyStatus(error: unknown): 400 | 413 | undefined {
+  if (!error || typeof error !== 'object') return undefined
+  const e = error as { type?: string; status?: number }
+  if (e.type === 'entity.too.large' && e.status === 413) return 413
+  if (e.type === 'entity.parse.failed' && e.status === 400) return 400
+}

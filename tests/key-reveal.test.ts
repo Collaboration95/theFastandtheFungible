@@ -35,7 +35,7 @@ async function setup(options: { opted?: boolean; broken?: boolean; budget?: numb
   const candidate = await candidateFrom(baseUrl, options.broken ? alphaLeakArticle : honestArticle)
   const run = store.createRun('SYNTHETIC escrow check', options.budget ?? 200)
   const buy = (intentId = 'escrow-one', escrow = true) => manager.purchase({ runId: run.runId, candidate, intentId, escrow })
-  return { c, client, candidate, run, wallet, buy, get store() { return store }, get manager() { return manager }, restart() { store.close(); store = new Store(db); manager = new PurchaseManager(store, client, payer()) } }
+  return { c, client, candidate, run, wallet, buy, journal:app.locals.journal as import('../publisher/journal.js').PublisherJournal, writer:Wallet.fromSeed(env.XRPL_PUBLISHER_LOAD_FACTOR_SEED), get store() { return store }, get manager() { return manager }, restart() { store.close(); store = new Store(db); manager = new PurchaseManager(store, client, payer()) } }
 }
 
 it('key reveal pays only through writer finish and grants only after validated key', async () => {
@@ -214,4 +214,56 @@ it('IOU no-show returns principal once and never grants plaintext', async () => 
   expect(s.store.getRun(s.run.runId).contents).toEqual([])
   expect(s.store.getRun(s.run.runId).spentMinor).toBe(0)
   expect([...s.c.txs.values()].filter(t=>t.tx_json.TransactionType==='EscrowCancel')).toHaveLength(1)
+})
+
+it('A05 recovers a failed paid proof challenge independently of failed answer phase', async()=>{
+  const s=await setup({broken:true})
+  const first=await s.buy()
+  s.store.updateRun(s.run.runId,{phase:'FAILED',checkpoint:{intentId:first.intentId}})
+  s.restart(); await s.manager.reconcile()
+  expect(s.store.getIntent(first.intentId)!.status).toBe('REFUNDED')
+})
+it('A13 verifies failed TEST-SGD escrow proof followed by a full writer refund', async()=>{
+  const s=await setup({broken:true,iou:true}), original=await s.buy()
+  const {challenge}=await import('../server/challenges.js'), {verifyEscrowEvents}=await import('../server/audit.js')
+  expect((await challenge(s.manager,original.intentId,{pollMs:1,timeoutMs:100})).status).toBe('REFUNDED')
+  if (process.env.HM_GENERATE_FIXTURE === '1') {
+    const {writeFileSync}=await import('node:fs')
+    writeFileSync('tests/fixtures/receipt-conformance/test-sgd-refund-ledger.json',JSON.stringify({payments:s.store.receiptRows(),entries:s.store.auditEntries(),transactions:Object.fromEntries(s.c.txs)},null,2)+'\n')
+  }
+  expect((await verifyEscrowEvents(s.store.auditEntries(),s.c.ledger)).find(c=>c.kind==='key-reveal-proof')?.status).toBe('refunded')
+})
+it('A07 keeps a writer-offered unvalidated refund pending',async()=>{
+  const s=await setup({broken:true}), original=await s.buy()
+  const {challenge}=await import('../server/challenges.js')
+  s.c.state.validate=false
+  const pending=await challenge(s.manager,original.intentId,{timeoutMs:200,pollMs:1})
+  expect(pending.status).toBe('CHALLENGED')
+  expect(pending.refundCandidate).toBeDefined()
+})
+
+it('A07 replaces a ledger-proven expired writer refund and retains both attempts',async()=>{
+  const s=await setup({broken:true}), original=await s.buy()
+  const {challenge}=await import('../server/challenges.js')
+  const {decode}=await import('xrpl')
+  s.c.state.validate=false
+  const pending=await challenge(s.manager,original.intentId,{timeoutMs:200,pollMs:1})
+  const old=pending.refundCandidate!.txHash, tx=s.c.txs.get(old)!.tx_json
+  s.c.txs.delete(old); s.c.state.index=Number(tx.LastLedgerSequence)+1; s.c.state.validate=true
+  const recovered=await challenge(s.manager,original.intentId,{timeoutMs:200,pollMs:1})
+  expect(recovered.status).toBe('REFUNDED'); expect(recovered.refund!.txHash).not.toBe(old)
+  const paid=[...s.c.txs.values()].filter(t=>t.tx_json.TransactionType==='Payment')
+  expect(paid).toHaveLength(1)
+  expect(decode(s.store.escrowOutbox(original.intentId)[0].txBlob).TransactionType).toBe('EscrowCreate')
+})
+
+it('A04 concurrent retries of one invoice share one durable writer finish',async()=>{
+ const s=await setup(), failed=vi.spyOn(s.client,'paidGet').mockRejectedValue(new Error('synthetic interrupted writer'))
+ await s.buy();failed.mockRestore()
+ const {revealEscrow}=await import('../publisher/escrow.js'),e=s.store.getEscrow('escrow-one')!,create=s.store.escrowOutbox('escrow-one')[0]
+ const results=await Promise.all(Array.from({length:8},()=>revealEscrow(e.quote,create.txBlob,{publicKey:s.writer.publicKey,privateKey:s.writer.privateKey,wallet:s.writer.classicAddress,simulated:false},s.c.ledger,s.journal)))
+ expect(new Set(results.map(r=>r.finishHash)).size).toBe(1)
+ expect([...s.c.txs.values()].filter(t=>t.tx_json.TransactionType==='EscrowFinish')).toHaveLength(1)
+ const {escrowInvoice}=await import('../shared/escrow.js')
+ expect(s.journal.terminalAttempts(escrowInvoice(e.quote.terms))).toHaveLength(1)
 })

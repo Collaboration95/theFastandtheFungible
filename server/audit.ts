@@ -369,7 +369,11 @@ export async function verifyEscrowEvents(entries: AuditEntry[], ledger: Ledger):
         let refunded = false
         const create = entries.find(r => r.kind === 'ESCROW_CREATE' && r.intentId === e.intentId)
         if (ok && e.data.proofOk === false && refund && create) {
-          const proof = await verifyPayment(ledger, String(refund.data.txHash), { rail: 'xrpl-testnet', network: 'xrpl:1', asset: 'XRP', payTo: String(e.data.owner), amountDrops: String(create.data.amountDrops), invoiceId: base.txHash.toUpperCase() })
+          const createTx = await lookupTx(ledger, String(create.data.txHash))
+          if (createTx.state !== 'validated') throw Error('Create terms unavailable')
+          const terms = EscrowTermsSchema.parse(JSON.parse(Buffer.from((createTx.tx.Memos as {Memo:{MemoData:string}}[])[0].Memo.MemoData,'hex').toString('utf8')))
+          if (!matchesCreate(createTx.tx, terms)) throw Error('Create terms mismatch')
+          const proof = await verifyPayment(ledger, String(refund.data.txHash), { rail: 'xrpl-testnet', network: 'xrpl:1', asset: terms.asset, payTo: String(e.data.owner), amountDrops: String(create.data.amountDrops), invoiceId: base.txHash.toUpperCase() })
           refunded = proof.state === 'ok' && proof.proof.payer === create.data.payTo
         }
         checks.push({ ...base, kind: 'key-reveal-proof', status: ok && e.data.proofOk === true ? 'ok' : refunded ? 'refunded' : 'mismatch', detail: refunded ? 'Failed proof; validated writer refund' : e.data.proofOk === true ? 'Proof accepted' : 'Failed proof requires validated writer refund' })

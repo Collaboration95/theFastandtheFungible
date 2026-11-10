@@ -293,6 +293,7 @@ export class PurchaseManager {
       this.store.appendEvent(intent.runId, { type: 'PURCHASE', label: `Reconcile · delivery retry ${claimed.deliveryAttempts ?? 0}/3`, data: { intentId: intent.intentId, attempt: claimed.deliveryAttempts ?? 0 } })
       return this.deliver(claimed)
     })))
+    await (await import('./challenges.js')).reconcileChallenges(this)
   }
 }
 

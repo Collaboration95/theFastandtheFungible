@@ -1,3 +1,4 @@
+import { signPayment } from '../shared/xrpl.js'
 import { amountFor, ledgerAmount } from '../shared/contracts/asset.js'
 import { checkIssuedPayment } from '../shared/issued-currency.js'
 import { screenPayee } from './payee-screening.js'
@@ -19,10 +20,10 @@ export class BeforeSignError extends Error {}
 export const FEE_CAP_DROPS = 2000
 
 /** Buyer wallet. The seed stays inside this object: never logged, traced or sent to a model. */
+// Every role and signer object sharing an address shares its sequence reservation.
+const walletQueues = new Map<string, { queue: Promise<unknown>; pending: Submission[] }>()
 export class XrplPayer {
   readonly rail = 'xrpl-testnet' as const
-  private queue: Promise<unknown> = Promise.resolve()
-  private pending: Submission[] = []
   readonly lockWaitMs: number[] = []
   private escrowFeeHolds: () => number = () => 0
   holdEscrowFees(hold: () => number) { this.escrowFeeHolds = hold }
@@ -50,23 +51,34 @@ export class XrplPayer {
   pay<T>(terms: PaymentRequirement & { memo?: string }, persist: (signed: Submission) => Submission, send: (submission: Submission) => Promise<T>): Promise<{ submission: Submission; sent: Promise<T> }> {
     return this.queued(() => this.sign(terms), persist, send)
   }
+  /** Writer policy has already bound the full refund to a settled charge. Keep the original
+   * refund signing checks, while reserving its sequence with every other wallet operation. */
+  refund<T>(payment: Parameters<typeof signPayment>[1], persist: (s: Submission) => Submission, send: (s: Submission) => Promise<T>) {
+    return this.queued(() => signPayment(this.wallet!,payment,this.ledger),persist,send)
+  }
   private queued<T>(sign: () => Promise<Submission>, persist: (s: Submission) => Submission, send: (s: Submission) => Promise<T>) {
     const started = Date.now()
-    const run = this.queue.then(async () => {
-      for (const previous of this.pending) {
+    const key = this.address
+    if (!key) return Promise.reject(new BeforeSignError('Testnet signer unavailable'))
+    let state = walletQueues.get(key)
+    if (!state) { state = { queue: Promise.resolve(), pending: [] }; walletQueues.set(key, state) }
+    const shared = state
+    const run = shared.queue.then(async () => {
+      this.balanceCache = undefined
+      for (const previous of shared.pending) {
         const outcome = await this.waitForSequence(previous)
         if (outcome.state === 'pending') throw new BeforeSignError('Previous payer sequence unresolved; retry after reconciliation; nothing was charged')
       }
-      this.pending = []
+      shared.pending = []
       this.lockWaitMs.push(Date.now() - started)
       if (this.lockWaitMs.length > 1024) this.lockWaitMs.shift()
       const submission = persist(await sign())
-      this.pending.push(submission)
+      shared.pending.push(submission)
       const sent = send(submission)
       void sent.catch(() => undefined)
       return { submission, sent }
     })
-    this.queue = run.catch(() => undefined)
+    shared.queue = run.catch(() => undefined)
     return run
   }
   escrow<T>(tx: Omit<Transaction, 'Account'>, principal: number, persist: (s: Submission) => Submission, send: (s: Submission) => Promise<T>, beforeSign?: () => Promise<void>, reservedTerminalFees: () => number = () => 0) {
@@ -102,7 +114,12 @@ export class XrplPayer {
   revokeCredential<T>(subject: string, credentialType: string, persist: (s: Submission) => Submission, send: (s: Submission) => Promise<T>) {
     return this.escrow({ TransactionType: 'CredentialDelete', Subject: subject, CredentialType: credentialType } as Omit<Transaction, 'Account'>, 0, persist, send)
   }
-  restorePending(submissions: Submission[]) { this.pending.push(...submissions) }
+  restorePending(submissions: Submission[]) {
+    if (!this.address) return
+    let state = walletQueues.get(this.address)
+    if (!state) { state = { queue: Promise.resolve(), pending: [] }; walletQueues.set(this.address, state) }
+    for (const s of submissions) if (!state.pending.some(p => p.txHash === s.txHash)) state.pending.push(s)
+  }
   private async waitForSequence(submission: Submission): Promise<PaymentOutcome> {
     const deadline = Date.now() + Math.min(5000, this.timing.timeoutMs)
     do {

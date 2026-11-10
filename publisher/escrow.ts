@@ -69,7 +69,17 @@ export async function lockEscrow(blob: string, invoice: string, articleId: strin
 }
 
 /** Writer alone holds K. Persist the exact finish blob before any network submission. */
-export async function revealEscrow(quote: EscrowQuote, createBlob: string, keys: PublisherKeys, ledger: Ledger, journal: PublisherJournal) {
+const reveals = new WeakMap<PublisherJournal, Map<string, Promise<{finishHash: string}>>>()
+export function revealEscrow(quote: EscrowQuote, createBlob: string, keys: PublisherKeys, ledger: Ledger, journal: PublisherJournal) {
+  let active = reveals.get(journal)
+  if (!active) { active = new Map(); reveals.set(journal, active) }
+  const invoice = escrowInvoice(quote.terms), existing = active.get(invoice)
+  if (existing) return existing
+  const work = revealOnce(quote, createBlob, keys, ledger, journal).finally(()=>active!.delete(invoice))
+  active.set(invoice, work)
+  return work
+}
+async function revealOnce(quote: EscrowQuote, createBlob: string, keys: PublisherKeys, ledger: Ledger, journal: PublisherJournal) {
   const invoice = escrowInvoice(quote.terms), privateState = journal.keyReveal(invoice)
   if (!privateState || !quote.terms.keyReveal) throw new Error('No writer key')
   // Persist the IOU identity before submitting, including recovery after a writer crash.
@@ -79,11 +89,17 @@ export async function revealEscrow(quote: EscrowQuote, createBlob: string, keys:
     if (!journal.quoteByInvoice(id)) journal.saveQuote({invoiceId:invoice,ledgerInvoiceId:id,quoteId:t.quoteId,publisherSlug:t.publisherSlug,articleId:t.articleId,version:t.version,amount:t.amount,payTo:t.payTo,asset:t.asset,expiresAt:new Date().toISOString()})
   }
   const payer = new XrplPayer(ledger, new Wallet(keys.publicKey, keys.privateKey))
+  payer.restorePending(journal.pendingSignatures(payer.address!))
   let finish = privateState.finish
+  if (finish) {
+    const status = await payer.status(finish)
+    if (status.state === 'failed' || status.state === 'expired') { journal.retireFinish(invoice, finish.txHash); finish = undefined }
+    else if (status.state === 'pending') payer.restorePending([finish])
+  }
   if (!finish) {
     await lockEscrow(createBlob, invoice, quote.terms.articleId, quote.terms.version, ledger, journal)
     const sent = await payer.escrow({ TransactionType: 'EscrowFinish', Owner: quote.terms.payer, OfferSequence: Number(decode(createBlob).Sequence), Condition: quote.terms.condition, Fulfillment: fulfillmentFor(privateState.secret) }, 0,
-      s => { journal.saveKeyReveal(invoice, { ...privateState, finish: s }); return s },
+      s => journal.saveKeyReveal(invoice, { ...privateState, finish: s })!,
       s => ledger.request({ command: 'submit', tx_blob: s.txBlob }))
     finish = sent.submission
     await sent.sent

@@ -35,8 +35,7 @@ def verify_transactions(b, entries, lookup, add):
 
     def payment(h, sender, dest, amount, invoice, asset='XRP', ledger=None):
         t, m, n = tx(h)
-        expected = amount if asset == 'XRP' else dict(currency=asset['currency'], issuer=asset['issuer'], value=amount)
-        return t.get('TransactionType') == 'Payment' and t.get('Account') == sender and t.get('Destination') == dest and m.get('delivered_amount') == expected and t.get('InvoiceID', '').upper() == invoice.upper() and not (int(t.get('Flags', 0)) & 0x20000) and not any(k in t for k in ('SendMax', 'Paths', 'DeliverMin')) and (asset == 'XRP' or t.get('Amount', t.get('DeliverMax')) == expected) and (ledger in (None, '') or n == ledger)
+        return t.get('TransactionType') == 'Payment' and t.get('Account') == sender and t.get('Destination') == dest and matches_amount(m.get('delivered_amount'), amount, asset) and t.get('InvoiceID', '').upper() == invoice.upper() and not (int(t.get('Flags', 0)) & 0x20000) and not any(k in t for k in ('SendMax', 'Paths', 'DeliverMin')) and (asset == 'XRP' or matches_amount(t.get('Amount', t.get('DeliverMax')), amount, asset)) and (ledger in (None, '') or n == ledger)
 
     def matches_amount(actual, value, asset):
         if asset == 'XRP':
@@ -109,5 +108,7 @@ def verify_transactions(b, entries, lookup, add):
                     return True
                 r = next(r for r in entries if r['kind'] == 'refund' and r['intentId'] == e['intentId'] and r['data']['originalTxHash'] == d['txHash'])
                 c = next(c['data'] for c in entries if c['kind'] == 'ESCROW_CREATE' and c['intentId'] == e['intentId'])
-                return d.get('proofOk') is False and payment(r['data']['txHash'], c['payTo'], d['owner'], c['amountDrops'], d['txHash'])
+                create, _, _ = tx(c['txHash'])
+                terms = json.loads(bytes.fromhex(create['Memos'][0]['Memo']['MemoData']).decode())
+                return create_ok(create, terms) and d.get('proofOk') is False and payment(r['data']['txHash'], c['payTo'], d['owner'], c['amountDrops'], d['txHash'], terms['asset'])
             check('key-reveal-proof ' + e['intentId'], proof)

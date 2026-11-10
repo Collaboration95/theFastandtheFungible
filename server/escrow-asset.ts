@@ -1,11 +1,13 @@
+import { loadConfig } from './config.js'
 import { TEST_SGD_LABEL, decimalUnits, type Asset } from '../shared/contracts/asset.js'
 import type { EscrowTerms } from '../shared/contracts/escrow.js'
 import type { Ledger } from '../shared/xrpl.js'
 import { checkIssuedPayment } from '../shared/issued-currency.js'
 export function escrowAsset(): Asset {
-  if (!process.env.ESCROW_ASSET || process.env.ESCROW_ASSET === 'XRP') return 'XRP'
-  if (process.env.ESCROW_ASSET !== 'test-iou' || !process.env.TESTNET_IOU_ISSUER) throw Error('Unknown escrow asset or missing Testnet issuer')
-  return { currency: 'SGT', issuer: process.env.TESTNET_IOU_ISSUER, label: TEST_SGD_LABEL }
+  const env=loadConfig()
+  if (!env.ESCROW_ASSET || env.ESCROW_ASSET === 'XRP') return 'XRP'
+  if (env.ESCROW_ASSET !== 'test-iou' || !env.TESTNET_IOU_ISSUER) throw Error('Unknown escrow asset or missing Testnet issuer')
+  return { currency: 'SGT', issuer: env.TESTNET_IOU_ISSUER, label: TEST_SGD_LABEL }
 }
 export async function preflightEscrow(ledger: Ledger, t: EscrowTerms) {
   if (t.asset === 'XRP') return

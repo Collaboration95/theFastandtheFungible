@@ -1,8 +1,9 @@
+import { decode } from 'xrpl'
 import type { Asset } from '../shared/contracts/asset.js'
 import type { EscrowQuote } from '../shared/contracts/escrow.js'
 import { escrowInvoice } from '../shared/escrow.js'
 import { createHash, randomBytes } from 'node:crypto'
-import { mkdirSync } from 'node:fs'
+import { mkdirSync, chmodSync, existsSync, openSync, closeSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 
@@ -21,7 +22,11 @@ export type X402Settlement = { txHash: string; ledgerInvoiceId: string; payer: s
 export class PublisherJournal {
   private readonly db: DatabaseSync
   constructor(readonly path: string) {
-    if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true })
+    if (path !== ':memory:') {
+      mkdirSync(dirname(path), { recursive: true, mode: 0o700 }); chmodSync(dirname(path), 0o700)
+      closeSync(openSync(path, 'a', 0o600)); chmodSync(path, 0o600)
+      for (const file of [`${path}-wal`, `${path}-shm`]) if (existsSync(file)) chmodSync(file,0o600)
+    }
     this.db = new DatabaseSync(path)
     this.db.exec(`PRAGMA busy_timeout = 5000; PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;
       CREATE TABLE IF NOT EXISTS x402_bindings (invoice TEXT PRIMARY KEY, hash TEXT NOT NULL);
@@ -32,6 +37,8 @@ export class PublisherJournal {
       CREATE TABLE IF NOT EXISTS x402_settlements (
         tx_hash TEXT PRIMARY KEY, ledger_invoice_id TEXT UNIQUE NOT NULL REFERENCES x402_quotes(ledger_invoice_id), settlement_json TEXT NOT NULL
       );`)
+    if (path !== ':memory:') for (const file of [path, `${path}-wal`, `${path}-shm`]) if (existsSync(file)) chmodSync(file, 0o600)
+    this.db.exec('CREATE TABLE IF NOT EXISTS terminal_attempts (tx_hash TEXT PRIMARY KEY, kind TEXT NOT NULL, identity TEXT NOT NULL, json TEXT NOT NULL)')
     // Per-passage manifest salts (#125), generated once per article version and released only with the paid body (#129).
     // One refund per paid tx and per buyer intent (D5, gate 3): the signed blob is stored before it is ever submitted.
     this.db.exec('CREATE TABLE IF NOT EXISTS refunds (original_tx_hash TEXT PRIMARY KEY REFERENCES x402_settlements(tx_hash), intent_id TEXT UNIQUE NOT NULL, tx_hash TEXT UNIQUE NOT NULL, tx_blob TEXT NOT NULL)')
@@ -68,8 +75,35 @@ export class PublisherJournal {
     return row && JSON.parse(String(row.json))
   }
   saveKeyReveal(invoice: string, value: { secret: string; finish?: import('../server/xrpl.js').Submission }) {
-    this.db.prepare('INSERT INTO key_reveals VALUES (?,?) ON CONFLICT(invoice) DO UPDATE SET json=excluded.json').run(invoice, JSON.stringify(value))
+    return this.transaction(() => {
+      const current = this.keyReveal(invoice)
+      if (current?.finish) return current.finish
+      if (current && current.secret !== value.secret) throw new PublisherError(409, 'Key reveal already bound')
+      this.db.prepare('INSERT INTO key_reveals VALUES (?,?) ON CONFLICT(invoice) DO UPDATE SET json=excluded.json').run(invoice, JSON.stringify(value))
+      if (value.finish) this.db.prepare('INSERT OR IGNORE INTO terminal_attempts VALUES (?,?,?,?)').run(value.finish.txHash, 'finish', invoice, JSON.stringify(value.finish))
+      return value.finish
+    })
   }
+  /** Caller must first prove the exact old attempt failed or expired without applying. */
+  retireFinish(invoice: string, hash: string) {
+    this.transaction(() => {
+      const current = this.keyReveal(invoice)
+      if (current?.finish?.txHash !== hash) throw new PublisherError(409, 'Finish attempt changed')
+      this.db.prepare('INSERT OR IGNORE INTO terminal_attempts VALUES (?,?,?,?)').run(hash, 'finish', invoice, JSON.stringify(current.finish))
+      this.db.prepare('UPDATE key_reveals SET json=? WHERE invoice=?').run(JSON.stringify({secret: current.secret}), invoice)
+    })
+  }
+  private readonly restoredSigners = new Set<string>()
+  pendingSignatures(address: string): import('../server/xrpl.js').Submission[] {
+    // Once per opened journal/address: live signatures already enter the process-wide queue.
+    if (this.restoredSigners.has(address)) return []
+    const finishes = this.db.prepare("SELECT json_extract(json,'$.finish') AS json FROM key_reveals WHERE json_extract(json,'$.finish') IS NOT NULL").all().map(r=>JSON.parse(String(r.json)))
+    const refunds = this.db.prepare('SELECT tx_hash,tx_blob FROM refunds').all().map(r=>({txHash:String(r.tx_hash),txBlob:String(r.tx_blob)}))
+    const pending = [...finishes,...refunds].flatMap(s=>{const tx=decode(s.txBlob); return tx.Account === address ? [{...s,lastLedgerSequence:Number(tx.LastLedgerSequence)}] : []})
+    this.restoredSigners.add(address)
+    return pending
+  }
+  terminalAttempts(identity: string) { return this.db.prepare('SELECT json FROM terminal_attempts WHERE identity=? ORDER BY rowid').all(identity).map(r=>JSON.parse(String(r.json))) }
   close(): void { this.db.close() }
   private transaction<T>(operation: () => T): T {
     this.db.exec('BEGIN IMMEDIATE')
@@ -105,11 +139,16 @@ export class PublisherJournal {
     return row && { originalTxHash: row.original_tx_hash, intentId: row.intent_id, txHash: row.tx_hash, txBlob: row.tx_blob }
   }
   /** Write-once: the first stored refund for a payment wins; a later one is never stored or submitted. */
-  saveRefund(refund: X402Refund): X402Refund {
+  saveRefund(refund: X402Refund, replaceHash?: string): X402Refund {
     return this.transaction(() => {
+      const previous = this.refundByTx(refund.originalTxHash)
+      if (replaceHash && previous?.txHash !== replaceHash) throw new PublisherError(409, 'Refund attempt changed')
+      if (previous) this.db.prepare('INSERT OR IGNORE INTO terminal_attempts VALUES (?,?,?,?)').run(previous.txHash, 'refund', refund.originalTxHash, JSON.stringify(previous))
+      if (replaceHash) this.db.prepare('DELETE FROM refunds WHERE original_tx_hash=? AND tx_hash=?').run(refund.originalTxHash, replaceHash)
       this.db.prepare('INSERT OR IGNORE INTO refunds (original_tx_hash, intent_id, tx_hash, tx_blob) VALUES (?, ?, ?, ?)').run(refund.originalTxHash, refund.intentId, refund.txHash, refund.txBlob)
       const stored = this.refundByTx(refund.originalTxHash)
       if (!stored) throw new PublisherError(409, 'This intent already has a refund for another payment')
+      this.db.prepare('INSERT OR IGNORE INTO terminal_attempts VALUES (?,?,?,?)').run(stored.txHash, 'refund', refund.originalTxHash, JSON.stringify(stored))
       return stored
     })
   }
