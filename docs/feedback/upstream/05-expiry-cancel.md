@@ -1,38 +1,49 @@
-# Escrow expiry does not return funds automatically
+# Escrow tutorials: show EscrowCancel after CancelAfter (expiry does not return funds by itself)
 
-**draft, not filed** — owner-only filing.
+> **Target:** `XRPLF/xrpl-dev-portal` · **Status:** ready to paste, not filed (owner-only, #265 B1) · **Labels:** none.
+> Copy the H1 as the issue title and everything below the rule as the body.
+> If the escrow concept page already states that expired escrows stay until cancelled, narrow the request to carrying it into the tutorials and SDK examples.
 
-## Reproduce
+---
 
-Use Node 22+ and a clean public ResearchAgent checkout pinned to the repro source:
+## Summary
+
+On Testnet an escrow that passed its `CancelAfter` time did **not** return the funds. They stayed locked until a separate `EscrowCancel` was validated. A builder who treats expiry as an automatic refund leaves liquidity and owner reserve locked. The happy-path tutorials we read do not show the cancel step.
+
+## Environment
+
+- XRPL Testnet, 2026-11-03; xrpl.js 4.7.0; XRP escrow with a crypto-condition; 30,000-drop principal, 120 s deadline; synthetic article.
+
+## Steps to reproduce
 
 ```sh
 gh repo clone Collaboration95/theFastandtheFungible researchagent-repro
-cd researchagent-repro
-git checkout d38fe39e
-npm ci
-```
-
-Then run:
-
-```sh
+cd researchagent-repro && git checkout d38fe39e && npm ci
 node scripts/repro/05-expiry-cancel.mjs
 ```
 
-Pinned dependency: x402-xrpl 0.3.4 (lockfile). No wallet, signing, funding or submission.
-Offline only; historical observations are evidence replay, not a fresh network measurement.
+The script replays the committed ledger evidence (offline). To re-observe: `EscrowCreate` with a condition and `CancelAfter` 120 s ahead, never finish it, wait past the deadline, then check the escrow object and the account balance.
 
-## Finding, workaround and proposed change
+## Expected
 
+Either the docs and examples state clearly that expiry only makes cancellation **eligible**, or funds return at expiry.
 
-- Date / class: 2026-11-03; Observed Testnet.
-- Pinned package/source: Committed escrow-273.md and corresponding public JSON at this repository revision; official Testnet issuer rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV where applicable.
-- Evidence / reproduction: [record](https://github.com/Collaboration95/theFastandtheFungible/blob/d38fe39e/docs/evidence/escrow-273.md); Failed-proof escrow stayed locked through 120-second deadline; explicit EscrowCancel returned 29988 of 30000 drops after fee.
-- Workaround: Durable CANCEL_DUE with ledger-time ticks and terminal fee headroom.
-- Suggested fix: Document expiration versus validated cancellation and reserve liquidity.
-- Severity: Medium.
-- Mainnet consequence: Recovery availability and liquidity matter before real-money use; mainnet untested.
+## Actual
 
-## Scope
+- The failed-proof escrow stayed locked through the 120 s deadline.
+- An early `EscrowCancel` and an expired `EscrowFinish` both validated `tecNO_PERMISSION` (fee burned, principal not restored).
+- An explicit `EscrowCancel` after the deadline returned 29,988 of 30,000 drops (12-drop fee).
+- `OwnerCount` went 0→1→0, so the 0.2 XRP reserve was held until cancellation.
+- Evidence: [escrow-273.md](https://github.com/Collaboration95/theFastandtheFungible/blob/d38fe39e/docs/evidence/escrow-273.md).
 
-No mainnet incident claimed. Please document or provide conformance coverage for this boundary.
+## Workaround we use
+
+A durable `CANCEL_DUE` state, ledger-time ticks (compare validated ledger close time with `CancelAfter`), and held terminal-fee headroom for every open escrow.
+
+## Proposed fix
+
+Add an expiry-and-cleanup step to the escrow tutorials: compare against validated ledger time, submit `EscrowCancel`, show the fee-consuming negative cases, and explain that reserve and liquidity stay locked until then.
+
+## Scope and limits
+
+Observed on Testnet only; mainnet not tested. No incident claimed beyond locked funds until cancellation.
