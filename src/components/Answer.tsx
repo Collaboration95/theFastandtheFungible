@@ -47,7 +47,12 @@ export function citationNumbersFor(claims: Claim[]): Map<string, number> {
 }
 export const citationNumbers = (answers: AnswerData[]): Map<string, number> => citationNumbersFor(answers.flatMap(answer => answer.claims))
 /** A finding ends in terminal punctuation, so the superscript that follows never reads as an exponent (58.5%¹). */
-const finding = (text: string) => /[.!?…]["')\]”’]*$/.test(text.trim()) ? text.trim() : `${text.trim()}.`
+/** A finding reads as a sentence: closing punctuation, and a capital when an extract starts mid-sentence ("prompt injection
+ * cannot…", "the only supported…", H5). Identifiers keep their case: only a plain lowercase word is capitalised, never x402 or tesSUCCESS. */
+export const finding = (text: string) => {
+  const trimmed = text.trim().replace(/^([a-z]+)(?=[\s,;:])/, word => word[0].toUpperCase() + word.slice(1))
+  return /[.!?…]["')\]”’]*$/.test(trimmed) ? trimmed : `${trimmed}.`
+}
 
 const GROUPS: [Claim['stance'], string][] = [['SUPPORTS', 'Supports'], ['CHALLENGES', 'Disputes'], ['UNCERTAIN', 'Cited findings']]
 
@@ -55,7 +60,10 @@ export interface AnswerProps { run: RunSnapshot; onCitation?: (citation: Citatio
 export default function Answer({ run, onCitation, view, compare, onCompare, report }: AnswerProps) {
   const answers = validatedAnswers(run), baseline = answers[0], answer = view === 'baseline' ? baseline : answers.at(-1)
   if (!answer && run.phase === 'DONE') {
-    const considered = run.decisions.flatMap(round => round.rows.map((row, i) => ({ key: `${round.round}-${i}`, row })))
+    // Each article once, with its latest verdict: three rounds over the same 12 sources read "36 articles considered" (H5).
+    const latest = new Map<string, { key: string; row: (typeof run.decisions)[number]['rows'][number] }>()
+    for (const round of run.decisions) for (const row of round.rows) { const key = `${row.candidate.profileId}/${row.candidate.resourceId}@${row.candidate.version}`; latest.set(key, { key, row }) }
+    const considered = [...latest.values()]
     // The status line above says "Done in …"; this block carries the one plain sentence for the outcome, then the reasons.
     return <section className="ra-verdict" aria-label="Research answer"><div className="ra-answer-heading"><h2 className="ra-caption">Answer</h2>{report}</div><p>{run.receipts.length ? 'No verified answer is available from these purchases.' : declineSummary(run)}</p>{considered.length > 0 && <details className="ra-why-not" open={considered.length <= 6 || undefined}><summary><span>Why nothing was bought</span><span className="ra-why-count"> · {articleCount(considered.length)} considered</span></summary><ul>{considered.map(({ key, row }) => <li key={key}><b>{row.candidate.title}</b><span className="ra-why-verdict">{plainVerdict(row, run).stamp === 'Would buy' ? 'Would buy' : VERDICT_WORDS[row.verdict] ?? VERDICT_LABEL[row.verdict] ?? row.verdict}</span><p>{row.reason}</p></li>)}</ul></details>}<AnchorStatus run={run} /><ShareProof run={run} /><a href="https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs/publishing.md">Write about this topic →</a></section>
   }

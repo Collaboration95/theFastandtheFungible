@@ -25,7 +25,7 @@ or GCS migration is involved. The front proxy must send the exact public Host.
 | `HOSTED_RESEARCH_INPUT_USD_PER_MILLION`, `HOSTED_RESEARCH_OUTPUT_USD_PER_MILLION` | Conservative upper billing rates for the selected research model, including its peak tier. Missing or invalid rates prevent calls. |
 | `HOSTED_DECISION_INPUT_USD_PER_MILLION`, `HOSTED_DECISION_OUTPUT_USD_PER_MILLION` | Separate conservative upper rates for the selected decision provider/model. |
 | `HOSTED_DECISION_OUTPUT_TOKENS` | Bounded decision-attempt output envelope, default 8192. Qualify the selected provider's bound before enabling admission. |
-| `HOSTED_DECK_URL`, `HOSTED_VIDEO_URL`, `HOSTED_PROGRESS_URL`, `HOSTED_REPLAY_URL` | Public evidence links; replay defaults to the recorded demo. |
+| `HOSTED_DECK_URL`, `HOSTED_VIDEO_URL`, `HOSTED_PROGRESS_URL`, `HOSTED_REPLAY_URL` | Public evidence links. Deck, progress and replay default to the repo's deck PDF and the gh-pages `/progress/` and `/demo/` pages; the video stays hidden until `HOSTED_VIDEO_URL` is set. |
 | `APP_DB`, `REPORT_DIR` | Existing durable buyer journal and private report paths. Never serve either directory as static content. |
 | `WALLET_DAILY_CAP_MINOR` | Existing wallet authority remains an additional ceiling. Provision a suitable sponsored cap explicitly; the local default remains unchanged. |
 
@@ -59,8 +59,11 @@ All run, intent/proof, receipt, JSON report, history, SSE, stop, retry, pin and
 delete paths check the persisted principal before reading payloads. Missing,
 foreign, hidden and expired IDs use the same 404 response. History includes all
 of this visitor's visible runs, without the local four-run limit. Two concurrent
-SSE streams per visitor and 16 globally are allowed; snapshots/backpressure are
-bounded to 256 KiB and streams close at session expiry. All private responses
+SSE streams per visitor and 16 globally are allowed; a visitor's newest stream
+replaces their oldest (a closed tab's stream can stay open behind the proxies), a
+settled run (final payments and its ledger anchor) answers 204 so EventSource stops,
+snapshots/backpressure are bounded to 256 KiB and streams close after 10 minutes or
+at session expiry, whichever is first. All private responses
 use `Cache-Control: private, no-store` and vary on Cookie/Origin.
 
 The public API is an allowlist. Settings, reset reputation, keys/BYOK, wallet
@@ -80,7 +83,7 @@ fault scenario must be bound to a run; there is no public fault endpoint here.
 | Scope | Maximum |
 | --- | --- |
 | Question | 200 minor gross; 2,000 characters; JSON bodies 16 KiB |
-| Session / UTC day | 5 questions, 1,000 minor gross, one outstanding question |
+| Session / UTC day | 5 questions, 1,000 minor gross, one outstanding question (a new question replaces the visitor's own unstarted plan or chat reply, which still counts) |
 | IP / UTC day | 60 questions, 12,000 minor gross; 3 starts/minute |
 | Whole demo / UTC day | 300 admissions, 60,000 minor gross |
 | Whole demo / lifetime | 2,100 admissions, 420,000 minor gross |
@@ -505,9 +508,17 @@ anchor, four Testnet transactions with reachable explorer links, paused probe
 email delivery for the readiness policy, budget thresholds and recipient,
 VM-unreachable paused page and recovery, rollback and teardown dry-runs.
 
+Qualified live on 11 Nov by the H5 sweep ([evidence](evidence/h5-hosted/README.md)): the session
+limit (5th question, then the used-up card), the per-IP start rate (4th start in a
+minute refused), Stop during a live escrow (cancelled after about 2 minutes, S$0.40
+back to the sponsor wallet), reload and offline mid-run, two-context isolation,
+keyboard, 200% zoom and reduced motion. It also found that streamed DeepSeek calls were
+metered at their worst case, so every paid answer fell back to offline extracts; fixed
+in the H5 PR, live after the next release.
+
 Not yet qualified: buyer/writer crash and recovery and snapshot restore in
-cloud, the limit measurements of check 5, zoom/keyboard/reduced motion on the
-served UI, an executed rollback, and deck/video/progress links (empty in status).
+cloud, the per-IP daily question cap (60) on the live URL, an executed rollback,
+and the demo video link (`HOSTED_VIDEO_URL` unset).
 The decision model runs as the labelled fixture until the OpenAI key is
 rotated. The uptime alert fires whenever the service is paused, including
 during every redeploy. The project's auto-created `default` network keeps its

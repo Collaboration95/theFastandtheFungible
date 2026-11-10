@@ -22,7 +22,7 @@ const ANCHOR_WAIT_MS = 120_000
 /** The same refusal the hosted gateway applies to questions: keys and email addresses are never published. */
 export const PRIVATE_QUESTION = /-----BEGIN .*PRIVATE KEY|\b(?:sk-|ra_agent_)[A-Za-z0-9_-]{16,}|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i
 
-export type ProofBlockCode = 'not_finished' | 'purchased' | 'answered' | 'simulated' | 'anchor_pending' | 'anchor_missing' | 'private_question' | 'too_large' | 'verification_failed'
+export type ProofBlockCode = 'not_finished' | 'purchased' | 'no_budget' | 'answered' | 'simulated' | 'anchor_pending' | 'anchor_missing' | 'private_question' | 'too_large' | 'verification_failed'
 export type Eligibility = { ok: true } | { ok: false; code: ProofBlockCode; message: string }
 
 /** Why a run can or cannot be shared as a proof of refusal. Words are for the visitor; codes are for tests and the API. */
@@ -32,6 +32,9 @@ export function refusalEligibility(run: RunSnapshot, now = Date.now()): Eligibil
   if (run.spentMinor > 0 || run.reservedMinor > 0 || run.receipts.length || run.grants.length || run.intents.some(intent => intent.status !== 'SKIPPED')) {
     return no('purchased', 'This run paid a writer, so it is not a refusal.')
   }
+  // A Free question had no spending authority, so there was no purchase to refuse. The public page says the agent
+  // "judged none worth buying", which a S$0 budget can't show (H5: offered live on a Free question).
+  if (run.budgetMinor === 0) return no('no_budget', 'This question had no budget, so there was nothing to refuse. Ask with a budget to share a proof of refusal.')
   if (run.answers.some(answer => answer.claims.length > 0)) return no('answered', 'This run answered from free sources, so there is no refusal to prove.')
   if (run.labels.settlement !== XRPL_LABEL) return no('simulated', 'Simulated payments leave nothing on the ledger, so there is nothing to prove. Use XRPL Testnet to share a refusal.')
   if (PRIVATE_QUESTION.test(run.question)) return no('private_question', 'The question looks like it contains a key or an email address, so it can’t be published.')

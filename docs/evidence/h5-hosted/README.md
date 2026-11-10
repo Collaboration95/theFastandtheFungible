@@ -1,0 +1,34 @@
+# H5 · live hosted sweep and fixes (11 Nov 2026)
+
+The deployed judge demo (`efa5c847`, https://ra-front-651013803640.asia-southeast1.run.app) was audited in Playwright at
+1440×900 and 390×844 with fresh cookie jars, between 21:25 and 21:55 UTC on 10 Nov (05:25–05:55 SGT, 11 Nov). It used
+11 live questions (9 research runs and 2 chat replies) and 4 plan-only starts (3 cancelled, 1 refused by the start-rate limit), all on XRPL Testnet with the shared sponsor wallet (no real value). The fixes
+were then verified on a local `HOSTED=1` stack with live DeepSeek research, the fixture decision model and the
+simulated rail. No cloud resource was changed. They reach the live URL at the next release redeploy.
+
+## What the live demo showed, and what changed
+
+| # | Before (live) | Cause | After (local HOSTED=1) |
+|---|---|---|---|
+| 1 | All 7 runs that bought something answered from offline extracts ("Written from offline extracts: the model was unavailable"). The event came 0.1 s after "Re-answering", and leads such as "XRP pays native ledger fees…" did not answer an x402 question. [before](before-answer-fallback-1440.png) | `meteredFetch` settled an attempt's real usage only in the stream's `flush()`. The LLM reader cancels at `[DONE]`, so `flush()` never ran and every DeepSeek call kept its 3,000-token worst case. After two calls the per-question cap (6,000 output tokens) refused the next one (`question_token_cap`). | The usage is settled at `[DONE]`. 4 research calls recorded 133/129/494/391 output tokens. The answer is `DeepSeek · deepseek-flash`, with no fallback, and the lead names PREIMAGE-SHA-256 first. [after](after-live-q1-done.png) |
+| 2 | The chip said "Shared XRPL Testnet demo · live models · no real value", and details said "Live models plan, judge what to buy and write", while `/api/health` reported `decision: fixture · metadata-fixture`. [before](before-env-1440.png) | `labels.models` looked only at the research model. | "… · live answers, rule-based buying · no real value". Details name the fixture decision model and add a Search line ("Keyword matching… doesn't use embeddings"). The per-answer "Keyword search only" warning is dropped on hosted, because keyword search is the hosted design. [after](after-env-1440.png) |
+| 3 | After a chat reply, the next question was refused: "Your previous question is still being held; it's released within 90 seconds…". [before](before-session-busy-390.png) | A finished scope (chat reply or cancelled plan) stayed a `draft` hold that blocked the visitor for 90 s. | A new question replaces the visitor's own unstarted plan or chat reply. It still counts, but it holds no money. [after](after-chat-then-ask-1440.png) |
+| 4 | Every later event stream for a visitor got `429 stream_limit`, even with no browser open. Pages fell back to 5 s polling and showed console errors. | Closed tabs' streams stayed registered behind Cloud Run and nginx until session expiry, and every view of a finished run opened one. | Settled runs open no stream: the client skips it and the server answers 204. A visitor's newest stream replaces the oldest, and streams end within 10 minutes. Checked: the settled run made no `/events` request, a stale EventSource got 204 and stopped, and the console was clean. |
+| 5 | "Another visitor's question is running" appeared when the queue was held by the visitor's own previous answer, which was still anchoring (about 20 s after "Answer ready"). [before](before-busy-own-anchor-1440.png) | The copy assumed another visitor. | "The demo answers one question at a time and is still finishing the previous one, which can be your own…" [after](after-busy-390.png) |
+| 6 | Stop during a live escrow: "12 sources · 0 read · **1 bought**" next to "Net cost S$0.00". The line read "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet: escrow cancelled." [before](before-stop-390.png) | The escrow-cancel receipt was counted as a purchase, and the stop line used the full provenance string. | A cancelled escrow is not bought, and the line names the writer only (unit tests). |
+| 7 | "Share proof of refusal" was offered on a Free (S$0) question. The public page said the agent "judged none worth buying". [before](before-proof-free-1440.png) | Eligibility ignored the budget. | `no_budget`: "This question had no budget, so there was nothing to refuse." |
+| 8 | Chat replied "The 2026 Singapore Grand Prix is scheduled for October 2026, so it hasn't been held yet" on 11 Nov. [before](before-chat-gp-1440.png) | The model had no date. | Scope gets `today`. The reply is now "I can't check current sports results here…". [after](after-chat-gp-1440.png) |
+| 9 | Leads such as "…reveals the secret.¹ the only supported…", "prompt injection cannot…", "merely accepting…". | Extracts start mid-sentence. | A plain lowercase first word is capitalised; identifiers (x402, tesSUCCESS, r-addresses) are left as written. |
+| 10 | Decline: "12 sources" but "36 articles considered". | Three rounds over the same 12 sources were counted three times. | Each article is counted once, with its latest verdict. |
+| 11 | `deck`, `progress` and `video` were empty in `/api/demo/status`. | No env values and no server defaults. | Deck, progress and replay default to the public URLs. The video stays hidden until `HOSTED_VIDEO_URL` is set. |
+
+## Measured on the live URL (check 5)
+
+- **Session:** the 5th question was accepted. The home screen then showed the "You've used today's questions" card, with no composer. A chat reply counts as a question.
+- **Per-IP start rate:** three plans started from one IP in under a minute. The fourth was refused: "Several questions started from your network in the last minute."
+- **Per-IP daily cap (60):** not exercised, to stay within the question budget.
+- **Stop during a live purchase:** Stop came 7.6 s after Start, 0.3 s after the escrow was created on Testnet. The intent went from `SUBMITTING` to `FAILED_NOT_SETTLED` at +129 s (EscrowCancel validated at +136.7 s), and S$0.40 went back to the sponsor wallet. The run was anchored at +144.9 s.
+- **Reload mid-run:** the run continued, with no second charge. The new stream got 429 (finding 4) and the page polled.
+- **Offline 6 s mid-run:** "Connection lost. Reconnecting…" and an "offline" chip. The run recovered and finished.
+- **Isolation:** a second visitor got 404 on 22 of 22 foreign reads and mutations and on forged owner headers. A mutation without CSRF got 403. Owner routes returned 404. The foreign run link showed "That question isn't available here."
+- **Accessibility:** no horizontal overflow at 1440, 390 or 200% zoom, no running animations under reduced motion, and the plan can be cancelled with Escape. It takes 8 Tabs to reach the composer, and there is no skip link.

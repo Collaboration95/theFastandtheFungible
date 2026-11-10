@@ -47,9 +47,11 @@ export function runsRouter(context: ApiContext) {
     const frame = `event: snapshot\ndata: ${JSON.stringify(snapshot)}\n\n`
     if (Buffer.byteLength(frame) > 256 * 1024) { streams.get(runId)!.delete(res); if (!streams.get(runId)!.size) streams.delete(runId); res.end(); return }
     res.write(frame)
-    const heartbeat = setInterval(() => { if (res.writableEnded || res.destroyed || res.writableLength > 256 * 1024 - 16) res.end(); else res.write(': heartbeat\n\n') }, 15000)
+    const heartbeat = setInterval(() => { if (res.writableEnded || res.destroyed || res.writableLength > 256 * 1024 - 16) { detach(); res.end() } else res.write(': heartbeat\n\n') }, 15000)
     const detach = () => { clearInterval(heartbeat); streams.get(runId)?.delete(res); if (!streams.get(runId)?.size) { streams.delete(runId); context.onStreamEmpty?.(runId) } }
+    // A stream the server ends (hosted lifetime, newest-wins, settled run) detaches too, not only a client disconnect.
     req.on('close', detach)
+    res.on('close', detach)
     res.on('error', () => { detach(); res.destroy() })
   })
   return router

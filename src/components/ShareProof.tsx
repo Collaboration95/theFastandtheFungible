@@ -5,7 +5,7 @@ import { useHosted } from '../hosted'
 import './share-proof.css'
 
 /** Reasons worth saying out loud in the decline view. Everything else (a purchase, a free answer) is not this feature's business. */
-const SAYS = new Set(['simulated', 'anchor_pending', 'anchor_missing', 'private_question', 'too_large', 'verification_failed'])
+const SAYS = new Set(['no_budget', 'simulated', 'anchor_pending', 'anchor_missing', 'private_question', 'too_large', 'verification_failed'])
 const POLL_MS = 3000, POLL_LIMIT = 40
 const ERRORS: Record<string, string> = { proof_limit: 'You’ve shared as many proofs as this session allows today.' }
 

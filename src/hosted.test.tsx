@@ -9,6 +9,7 @@ import type { PurchaseIntent } from '../shared/contracts'
 import { ApiError, type HostedDemoStatus } from './api'
 import { allowanceText, canAsk, environment, homeState, hostedLinks, refusal, type Hosted } from './hosted'
 import { stopLine } from './stopLine'
+import { purchaseCounts } from './format'
 import { ucRuns } from './fixtures/run'
 import BudgetPicker from './components/BudgetPicker'
 import Sidebar from './components/Sidebar'
@@ -20,7 +21,7 @@ const status = (patch: Partial<HostedDemoStatus> = {}): HostedDemoStatus => ({
   questionCapMinor: 200, state: 'ready', csrfToken: 'token', queue: [],
   capabilities: { ask: true, scope: true, history: true, receipts: true, pdf: false, settings: false, faultControls: false },
   remaining: { questions: 5, minor: 1000 },
-  labels: { models: 'live research configured · per-answer fallback labelled', rail: 'Shared XRPL Testnet demo · no real value' },
+  labels: { models: 'live research and purchase decisions · per-answer fallback labelled', rail: 'Shared XRPL Testnet demo · no real value' },
   links: { repo: 'https://github.com/example/repo', deck: '', video: '', progress: '', replay: '' },
   ...patch,
 })
@@ -50,6 +51,10 @@ describe('hosted home state', () => {
     expect(simulated.full).toBe('Shared demo · simulated payments · fixture models · no real value')
     expect(environment(status({ state: 'paused' })).full).toBe('Shared XRPL Testnet demo · paused · no real value')
     expect(environment(status(), 'offline').tone).toBe('off')
+    // H5: the live demo answered with DeepSeek while the fixture decision model chose every purchase, yet the chip said "live models".
+    const ruled = environment(status({ labels: { models: 'live research · fixture purchase decisions · per-answer fallback labelled', rail: 'Shared XRPL Testnet demo · no real value' } }))
+    expect(ruled).toMatchObject({ fixture: false, ruleBuying: true, full: 'Shared XRPL Testnet demo · live answers, rule-based buying · no real value', short: 'Testnet demo · no real value' })
+    expect(environment(status()).ruleBuying).toBe(false)
   })
 
   it('maps every gateway refusal to a plain sentence, and nothing to a generic server error', () => {
@@ -99,6 +104,15 @@ describe('Stop during each payment phase', () => {
     expect(escrow('CANCELLED')).toMatchObject({ tone: 'ok', text: expect.stringContaining('escrow cancelled') })
     expect(line({ status: 'VERIFIED' }, { ...run, labels: { ...run.labels, settlement: 'XRPL TESTNET · no real value' as const } }).text).not.toContain('simulated')
     expect(line({ status: 'REFUNDED', refund: { amountMinor: 90 } } as Partial<PurchaseIntent>, { ...run, labels: { ...run.labels, settlement: 'XRPL TESTNET · no real value' as const } }).text).toContain('the XRPL Testnet ledger')
+  })
+  it('names the writer, not its provenance string, and a cancelled escrow is not a purchase (H5, live Stop)', () => {
+    const provenance = 'ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet'
+    const labelled = { ...run, candidates: run.candidates.map(c => c.resourceId === base.resourceId ? { ...c, publisher: provenance } : c) }
+    const cancelled = { status: 'FAILED_NOT_SETTLED', escrow: { mode: 'key-reveal', state: 'CANCELLED' } } as Partial<PurchaseIntent>
+    expect(line(cancelled, labelled).text).toBe('ResearchAgent builders (team-authored): escrow cancelled. S$0.90 returned to the sponsor wallet.')
+    // The escrow-cancel transaction leaves a receipt; the strip must not count it as bought next to "Net cost S$0.00".
+    const stopped = { ...labelled, intents: [{ ...base, ...cancelled } as PurchaseIntent], receipts: [{ ...run.receipts[0], intentId: base.intentId }] }
+    expect(purchaseCounts(stopped)).toEqual({ paid: 0, refunded: 0 })
   })
 })
 

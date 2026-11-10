@@ -33,6 +33,7 @@ const TECHNICAL = /\b(?:XRPL|XRP|x402|RLUSD|Payment|PAYMENT-SIGNATURE|finality|p
 const CHAT_RULE = `First pick the route. A research question asks about companies, deals, markets, central banks, rates, bonds, prices, an economy, an industry, recent news or analysts' views: anything that needs current, sourced reporting. Use the research JSON for it.
 Technical questions about protocols, payments, XRPL, x402, security, cryptographic conditions and agent spending always need sourced research.
 Other questions may be chat: a greeting or thanks, a question about you, settled general knowledge (science, history, geography, definitions, maths), or help with writing or code. For a chat question return only {"route":"chat","reply":"..."}: answer directly and correctly like a helpful assistant, in plain text, at most 120 words, no headings, no citations, and never claim to have searched, read or bought anything. When unsure, pick research.
+Results, winners, scores, prices and news are never settled knowledge. "today" in the input is the current date: never say an event has not happened yet when its date is before today; say you can't check current events here.
 About you: ${ABOUT}`
 export const SCOPE_PROMPT = `You scope a question before a search. You cannot buy, pay, spend or change any budget, and in the research JSON you never mention prices, budgets or purchases.
 ${CHAT_RULE}
@@ -127,7 +128,8 @@ export async function scope(question: string, options: { clarify?: 'never'; sign
   let label = fixtureLabel
   if (isLlmConfigured()) {
     try {
-      const output = await streamJson(SCOPE_PROMPT, { question }, undefined, 'scope', options.signal)
+      // The date lets a chat reply know what has already happened (H5: "the 2026 Singapore Grand Prix hasn't been held yet", in November).
+      const output = await streamJson(SCOPE_PROMPT, { question, today: new Date().toISOString().slice(0, 10) }, undefined, 'scope', options.signal)
       const chat = z.object({ route: z.literal('chat'), reply: ChatReplySchema.shape.reply }).safeParse(output)
       if (chat.success && !TECHNICAL.test(question)) {
         // A chat question is answered directly: no clarify questions, and the UI never starts a run from it.

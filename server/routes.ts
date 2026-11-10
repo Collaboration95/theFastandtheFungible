@@ -9,6 +9,7 @@ import { hostedRouter } from './hosted/routes.js'
 import { sessionGuard, accessGuard } from './hosted/session.js'
 import { hostedControl, HostedError } from './hosted/control.js'
 import { hostedExecution } from './hosted/execution.js'
+import { runSettled } from '../shared/anchor-status.js'
 import { ownerSettingsRouter } from './owner-settings.js'
 import { localWriterRegistrations } from './local-writer-discovery.js'
 import { AnswerAnchors } from './anchor.js'
@@ -37,6 +38,8 @@ import { resolve } from 'node:path'
 import { z } from 'zod'
 import { SIMULATED_LABEL, XRPL_LABEL, decisionLabel, type ModeLabels, type TraceEvent } from '../shared/contracts/index.js'
 import { XrplPayer } from './xrpl.js'
+/** Longest a hosted run stream stays open; a page still showing the run reconnects with a fresh snapshot (H5). */
+export const HOSTED_STREAM_MS = 10 * 60_000
 import { traceEvent } from './telemetry.js'
 import { Store } from './store.js'
 import { PublisherClient } from './publisher-client.js'
@@ -94,6 +97,9 @@ async function createConfiguredApi(options: ApiOptions = {}) {
     const terminal = ['DONE','STOPPED','FAILED','SNAPSHOT'].includes(event.type)
     if (terminal || Date.now() - (lastSnapshot.get(event.runId) ?? 0) >= 250) {
       clearTimeout(snapshotTimers.get(event.runId)); snapshot(event.runId)
+      // Hosted: once the last snapshot of a settled run is out, close its streams rather than hold them for a tab that
+      // may already be gone behind the proxies. An open page's EventSource reconnects, gets 204 and stops (H5).
+      if (terminal && config.HOSTED === '1' && runSettled(store.getRun(event.runId))) for (const res of streams.get(event.runId) ?? []) res.end()
     } else if (!snapshotTimers.has(event.runId)) snapshotTimers.set(event.runId, setTimeout(() => snapshot(event.runId), 250 - (Date.now() - lastSnapshot.get(event.runId)!)))
   }
   // Every durable event is also mirrored into the active Langfuse trace (a no-op when tracing is off).
@@ -192,14 +198,19 @@ async function createConfiguredApi(options: ApiOptions = {}) {
     app.use(hostedRouter(context,config,hosted,queue,ready,async () => {
       try { store.checkWritable(); return (await client.registry()).length > 0 } catch { return false }
     }))
-    // Per-principal and global SSE connection ceilings include reconnects.
+    // Per-principal and global SSE connection ceilings include reconnects. Behind Cloud Run and nginx a closed tab's
+    // stream stayed registered here, so on the live demo every later stream of that visitor got 429 (H5). Now: a settled
+    // run answers 204 (EventSource stops; the client reads the run once), a visitor's newest stream replaces their
+    // oldest, and every stream ends within 10 minutes (a page still open reconnects on its own).
     app.get('/runs/:id/events',(req,res,next)=>{
       const principal = res.locals.hostedSession.principal
-      const expires = setTimeout(() => res.end(), Math.min(86400000, Math.max(1,res.locals.hostedSession.expires-Date.now())))
-      res.on('close',()=>clearTimeout(expires))
+      if (runSettled(store.getRun(String(req.params.id)))) return res.status(204).end()
+      const own = [...streams].filter(([id])=>store.runPrincipal(id)?.principal===principal).flatMap(([id,set])=>[...set].map(stream=>({id,stream})))
+      for (const { id, stream } of own.slice(0, Math.max(0, own.length - 1))) { streams.get(id)?.delete(stream); if (!streams.get(id)?.size) streams.delete(id); stream.end() }
       const total = [...streams.values()].reduce((n,set)=>n+set.size,0)
-      const own = [...streams].filter(([id])=>store.runPrincipal(id)?.principal===principal).reduce((n,[,set])=>n+set.size,0)
-      if(total>=16 || own>=2) return res.status(429).json({error:'stream_limit'})
+      if(total>=16) return res.status(429).json({error:'stream_limit'})
+      const expires = setTimeout(() => res.end(), Math.min(HOSTED_STREAM_MS, Math.max(1,res.locals.hostedSession.expires-Date.now())))
+      res.on('close',()=>clearTimeout(expires))
       next()
     })
   }
