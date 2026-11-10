@@ -179,8 +179,8 @@ try {
   const host=new URL(url).hostname
   const uptimeName='ra-readyz'
   let uptime = dry ? 'UPTIME_ID' : gc(['monitoring','uptime','list-configs',...p,`--filter=displayName=${uptimeName}`,'--format=value(name)'])
-  if (!uptime) uptime=gc(['monitoring','uptime','create',uptimeName,...p,'--resource-type=uptime-url',`--resource-labels=host=${host},project_id=${project}`,'--protocol=https','--port=443','--path=/readyz','--period=60','--timeout=10','--status-codes=200','--format=value(name)'])
-  if(dry) show(['monitoring','uptime','create',uptimeName,...p,'--resource-type=uptime-url',`--resource-labels=host=${host},project_id=${project}`,'--protocol=https','--port=443','--path=/readyz','--period=60','--timeout=10','--status-codes=200','--format=value(name)'])
+  if (!uptime) uptime=gc(['monitoring','uptime','create',uptimeName,...p,'--resource-type=uptime-url',`--resource-labels=host=${host},project_id=${project}`,'--protocol=https','--port=443','--path=/readyz','--period=1','--timeout=10','--status-codes=200','--format=value(name)'])
+  if(dry) show(['monitoring','uptime','create',uptimeName,...p,'--resource-type=uptime-url',`--resource-labels=host=${host},project_id=${project}`,'--protocol=https','--port=443','--path=/readyz','--period=1','--timeout=10','--status-codes=200','--format=value(name)'])
   const policy={displayName:'ra-readyz-failed',combiner:'OR',notificationChannels:[channel],conditions:[{displayName:'readiness unavailable',conditionThreshold:{filter:`metric.type="monitoring.googleapis.com/uptime_check/check_passed" AND resource.type="uptime_url" AND metric.label.check_id="${uptime.split('/').at(-1)}"`,comparison:'COMPARISON_GT',thresholdValue:1,duration:'120s',aggregations:[{alignmentPeriod:'60s',perSeriesAligner:'ALIGN_NEXT_OLDER',crossSeriesReducer:'REDUCE_COUNT_FALSE',groupByFields:['resource.label.host']}]}}]}
   if (!dry) writeFileSync(join(scratch,'alert.json'),JSON.stringify(policy))
   let alert=dry?'ALERT_ID':gc(['alpha','monitoring','policies','list',...p,'--filter=displayName=ra-readyz-failed','--format=value(name)'])
