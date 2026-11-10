@@ -409,6 +409,7 @@ describe('fixture-mode use cases, end to end (#142)', () => {
     expect(bought(run)).toEqual([`${uc('UC2').expectedPicks.round1}:VERIFIED`])
     expect(verdicts(run, 1)['mp-kestrel-deal-digest']).toBe('SKIP_REWRITE')
     expect(run.spentMinor).toBe(run.intents[0].amountMinor)
+    expect(run.answers.at(-1)?.lead?.[0]?.text).toMatch(/gross margin estimate/)
     expect(run.answers).toHaveLength(2)
     expect(run.impact?.classification).toMatch(/^(QUALIFIES|STRENGTHENS|CONTRADICTS)$/)
     expect(cited(run)).toContain(uc('UC2').expectedPicks.round1)

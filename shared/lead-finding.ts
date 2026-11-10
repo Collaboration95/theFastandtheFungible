@@ -43,7 +43,7 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
   const capability = /^(?:is|are|can|does|do|will|has|have)\b/i.test(firstFact)
   const naming = /^(?:which|what)\b/i.test(firstFact)
   const fieldValue = naming && /\b(?:field|flag|header|setting|permission)s?\b/i.test(firstFact)
-  const latest = /\b(?:last|latest|recent|recently|today|current(?:ly)?)\b/i.test(firstFact)
+  const latest = /\b(?:last|latest|recent|recently|today|current(?:ly)?)\b/i.test(firstFact) && (/^when\b/i.test(firstFact) || /\b(?:meeting|announcement|statement|release|update)\b/i.test(firstFact))
   // Compare dates within the delivered evidence, so the same input has the
   // same ranking regardless of the machine's clock.
   const latestYear = Math.max(0, ...claims.flatMap(c => answerExtracts(c.text).filter(text => !/\b(?:next|scheduled|forecast|projected|expected|planned)\b/i.test(text)).flatMap(text => (text.match(/\b20\d{2}\b/g) ?? []).map(Number))))
@@ -109,7 +109,7 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
     if (/change|meeting/i.test(firstFact)) score += /policy rate|increase from|\brais(?:e|ed)\b|\bvoted\b/.test(lower) ? 28 : 0
     if (/renewable|electricity|grid/i.test(question)) score += /renewable|\bMW\b|commissioned/.test(text) ? 10 : 0
     if (/\d/.test(text)) score += 2
-    if (numericComparison) score += 10
+    if (numericComparison) score += /analyst|outlook|margin/i.test(firstFact) ? 24 : 10
     if (/\bfrom\b.*\bto\b/.test(lower)) score += /lead[- ]times?|shorter/i.test(question) && /weeks?/.test(lower) ? /shorter|shorten|trend|change|improv/i.test(firstFact) ? 50 : 28 : 5
     if (/^(I |My |Here |Speaking |Let me|It |That |These |They |Then )/.test(text)) score -= 12
     if (text.length > 420 || text.length < 30) score -= 8
