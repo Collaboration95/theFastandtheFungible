@@ -76,9 +76,17 @@ describe('hosted operator boundaries',()=>{
   const startup=readFileSync('docker/hosted/startup.sh','utf8')
   expect(startup).toContain('/etc/researchagent/env.local')
   expect(startup).toMatch(/HOSTED_PROVIDERS_READY_UNTIL\|HOSTED_\(RESEARCH\|DECISION\)/)
-  expect(startup).not.toMatch(/env\.local[\s\S]*(SEED|API_KEY|PUBLISHER_SECRET)/)
+  const allowlist=startup.split('\n').find(line=>line.includes('$name =~ ^(HOSTED_PROVIDERS_READY_UNTIL'))!
+  expect(allowlist).not.toMatch(/SEED|API_KEY|SECRET|HMAC/)
   expect(startup).toContain('[[ $name != DECISION_PROVIDER || $value =~ ^(openai|cloudflare|fixture)$ ]] || exit 1')
   expect(startup.lastIndexOf('researchagent-startup.done')).toBeGreaterThan(startup.indexOf('bash /opt/researchagent/update.sh'))
+  // Escrow is offered by the writers whose seeds are deployed (the publisher refuses quotes otherwise).
+  const escrow=startup.slice(startup.indexOf("if ! grep -q '^ESCROW_WRITERS='"),startup.indexOf('chmod 600 /etc/researchagent/env.new'))
+  const map='XRPL_PUBLISHER_THE_FAB_FLOOR_SEED=ra-x\nXRPL_PAYER_SEED=ra-y\nXRPL_PUBLISHER_ALPHALEAK_SEED=ra-z\nDEEPSEEK_API_KEY=ra-k\n'
+  const dir=resources().tempDir('ra-ho-escrow-')
+  writeFileSync(join(dir,'secrets.map'),map); writeFileSync(join(dir,'env.new'),'HOSTED=1\n')
+  execFileSync('bash',['-c',escrow.replaceAll('/opt/researchagent',dir).replaceAll('/etc/researchagent',dir)])
+  expect(readFileSync(join(dir,'env.new'),'utf8')).toBe('HOSTED=1\nESCROW_WRITERS=the-fab-floor,alphaleak\n')
   // A broken current image must not block its replacement: pause falls back to the durable file.
   expect(startup).toMatch(/hosted-control\.mjs pause --local --execute --path \/state\/control\.json --reason deploy \|\| pause_on_disk/)
  })

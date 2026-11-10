@@ -86,6 +86,12 @@ while IFS='=' read -r name secret; do
   printf "%s='%s'\n" "$name" "$value" >>/etc/researchagent/env.new
   unset value
 done </opt/researchagent/secrets.map
+# Key-reveal escrow is offered by exactly the writers whose Testnet seeds are deployed
+# (as scripts/testnet-wallets.ts does locally); without it every escrow quote is refused.
+if ! grep -q '^ESCROW_WRITERS=' /etc/researchagent/env.new; then
+  writers=$(sed -nE 's/^XRPL_PUBLISHER_([A-Z0-9_]+)_SEED=.*/\1/p' /opt/researchagent/secrets.map | tr 'A-Z_' 'a-z-' | paste -sd, -)
+  printf 'ESCROW_WRITERS=%s\n' "$writers" >>/etc/researchagent/env.new
+fi
 chmod 600 /etc/researchagent/env.new
 mv /etc/researchagent/env.new /etc/researchagent/env
 cp /opt/researchagent/images /etc/researchagent/images

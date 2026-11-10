@@ -44,7 +44,7 @@ try {
   } else {
     await b.bootstrap()
     record('distinct hosted sessions',a.cookie&&b.cookie&&a.cookie!==b.cookie,'two independent __Host cookie jars')
-    record('csrf available',a.csrf&&b.csrf,'server-issued tokens')
+    record('csrf available',!!(a.csrf&&b.csrf),'server-issued tokens')
     record('requested rail',offline?/simulat/i.test(status.labels.rail):/testnet/i.test(status.labels.rail),'authoritative rail label')
     if(offline) record('fixture label',/fixture/i.test(status.labels.models),'authoritative model label')
     const ask=async(jar,question)=>{const r=await jar.request('/runs','POST',{question,budgetMinor:200,escrow:true});record('admitted own question',[200,201,202].includes(r.status),'budget 200 minor');return (await r.json()).runId}
