@@ -3,6 +3,12 @@
 set -euo pipefail
 umask 077
 exec >/dev/null 2>&1
+# A reboot clears /run, so the .seen file is absent only on the FIRST run after a boot: the
+# unplanned-restart path. Any later run is an operator deploy or re-render (see boot-state below).
+# Marked first, so even a boot run that fails early counts: a later re-run is then never mistaken for a boot.
+boot_run=1
+[[ -e /run/researchagent-startup.seen ]] && boot_run=0
+: >/run/researchagent-startup.seen
 meta() { curl -fsS -H 'Metadata-Flavor: Google' "http://metadata.google.internal/computeMetadata/v1/$1"; }
 project=$(meta project/project-id)
 registry=$(meta instance/attributes/ra-registry)
@@ -53,6 +59,23 @@ install -d -m 0700 -o 1000 -g 1000 /srv/researchagent/api /srv/researchagent/api
 chown 1000:1000 /srv/researchagent
 chmod 700 /srv/researchagent
 install -d -m 0700 /etc/researchagent /opt/researchagent
+# boot-state: begin (exercised by tests/hosted-autoresume.test.ts)
+# Guarded auto-resume (docker/hosted/autoresume.mjs). On the first run after a boot, keep a raw copy
+# of the control file as it was BEFORE this script pauses it, so the decision can tell a service that
+# was running from one an operator had paused. On any later run (an operator deploy or re-render, which
+# always ends paused), stop a sampling run left over from the boot and drop the qualification marker
+# and the copy: only a fresh operator `hosted-control resume` arms the auto-resume again.
+if (( boot_run )); then
+  rm -f /srv/researchagent/boot-control.json
+  if [[ -f /srv/researchagent/control.json ]] && cp /srv/researchagent/control.json /srv/researchagent/boot-control.json; then
+    chown 1000:1000 /srv/researchagent/boot-control.json
+    chmod 600 /srv/researchagent/boot-control.json
+  fi
+else
+  systemctl stop researchagent-autoresume.service || true
+  rm -f /srv/researchagent/qualified.json /srv/researchagent/boot-control.json
+fi
+# boot-state: end
 # Files are delivered as a local archive by the deploy script, not downloaded from GitHub.
 # Stop before replacing configuration, including secrets.
 if [[ -f /opt/researchagent/compose.yaml && -f /etc/researchagent/images && -f /etc/researchagent/env && -f /srv/researchagent/control.json ]]; then
@@ -104,3 +127,12 @@ chmod 600 /srv/researchagent/control.json
 gcloud auth configure-docker "${registry%%/*}" --quiet
 bash /opt/researchagent/update.sh
 printf '%s %s\n' "$commit" "$origin" >/run/researchagent-startup.done
+# Unplanned restart of a qualified release: let the guarded auto-resume decide. It runs detached so this
+# script (and the deploy script waiting on the marker) never wait for it, logs one plain line to the
+# journal (journalctl -t researchagent-autoresume) and refuses unless every condition holds. Never fatal.
+if (( boot_run )); then
+  systemctl reset-failed researchagent-autoresume.service || true
+  systemd-run --unit=researchagent-autoresume --collect --no-block --setenv=HOME=/root -p SyslogIdentifier=researchagent-autoresume -p RuntimeMaxSec=1800 \
+    /usr/bin/docker compose --env-file /etc/researchagent/images -f /opt/researchagent/compose.yaml exec -T api \
+    node /app/docker/hosted/autoresume.mjs --commit "$commit" || true
+fi
