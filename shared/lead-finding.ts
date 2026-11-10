@@ -7,7 +7,7 @@ const words = (text: string) => [...new Set(text.replace(/([a-z])([A-Z])/g, '$1 
 /** Use Unicode sentence segmentation rather than an uppercase-only boundary rule.
  * Keep source bytes (including identifier punctuation) intact for quotation. */
 const segmenter = new Intl.Segmenter('en', { granularity: 'sentence' })
-export const answerBoilerplate = (text: string) => /\breference (?:defines the operation-specific fields|describes .* as part of a larger)\b|^(?:Author interpretation|Read the|Treat unresolved|Where an amendment|Do not generalize|Creating a pool is not evidence|The public XRPL reference describes|For an agent builder|Test provisioning)\b|\b(?:I recommend|we recommend|my recommendation|integration recommendation)\b/i.test(text)
+export const answerBoilerplate = (text: string) => /\breference (?:defines the operation-specific fields|describes .* as part of a larger)\b|^(?:Author interpretation|Verify|Confirm|Inspect|Retain|Keep|Read|Treat|Report|Include|Test|Where an amendment|Do not|Creating a pool is not evidence|The public XRPL reference describes|For an agent builder)\b|\b(?:I recommend|we recommend|my recommendation|integration recommendation)\b/i.test(text)
 export function sentences(text: string): string[] {
   return Array.from(segmenter.segment(text), part => part.segment.trim()).filter(Boolean)
 }
@@ -42,6 +42,8 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
   const quantity = /^(?:how (?:many|much)|what.*(?:amount|cost|fee|reserve|maximum|minimum))\b/i.test(firstFact)
   const capability = /^(?:is|are|can|does|do|will|has|have)\b/i.test(firstFact)
   const naming = /^(?:which|what)\b/i.test(firstFact)
+  const fieldValue = naming && /\b(?:field|flag|header|setting|permission)s?\b/i.test(firstFact)
+  const transactionName = (name: string) => /(?:Create|Finish|Cancel|Set|Delete|Deposit|Withdraw|Bid|Vote|Accept|Fund|Claim|Cash)$|^Set[A-Z]/.test(name)
   const ranked = claims.flatMap((claim, ci) => {
     const context = words(claim.text)
     return answerExtracts(claim.text).map((text, si) => {
@@ -59,7 +61,7 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
     const contextOverlap = terms.filter(term => context.includes(term)).length
     const identifier = /\b(?:[A-Z][a-z]+){2,}\b|\b[a-z]+[A-Z][A-Za-z]+\b|\b[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+\b/.test(text)
     const identifiers = text.match(/\b(?:[A-Z][a-z]+){2,}\b|\b[a-z]+[A-Z][A-Za-z]+\b|\b[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+\b/g) ?? []
-    const novelIdentifier = identifiers.some(name => !question.includes(name))
+    const novelIdentifier = identifiers.some(name => !question.includes(name) && (!fieldValue || !transactionName(name)))
     const numericComparison = /\bto\s+[\d.,]+%?\s+from\s+[\d.,]+/i.test(text)
     if (/\b(?:I recommend|we recommend|integration recommendation)\b/i.test(text)) return { text, claim, score: 0, ci, si }
     if (/^(?:make |npm |npx |node |python |curl |[A-Z_]+=)/.test(text) && !/\bcommand|CLI|install|invoke\b/i.test(question)) return { text, claim, score: 0, ci, si }
@@ -79,7 +81,7 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
     if (quantity && /\d+(?:[.,]\d+)?\s*(?:XRP|drops?|%|percent|days?|SGD|USD|weeks?)\b/i.test(text)) score += 16
     if (/^when\b/i.test(firstFact) && /\b(?:20\d{2}|before|after|validated|final)\b/i.test(text)) score += 12
     if (naming && /\b(?:is|means|sets|creates|enables|allows|requires|needs|uses|called|named)\b/i.test(text)) score += 8
-    if (!causal && /^(?:[A-Z][a-z]+){2,}\b.{0,40}\b(?:defines|creates|updates|sets|assigns|records|places|redeems|releases|locks)\b/.test(text)) score += 12
+    if (!causal && !(fieldValue && transactionName(identifiers[0] ?? '')) && /^(?:[A-Z][a-z]+){2,}\b.{0,40}\b(?:defines|creates|updates|sets|assigns|records|places|redeems|releases|locks)\b/.test(text)) score += 12
     if (named.some(name => text.includes(name))) score += 20
     // Technical questions ask for a named field/type as well as topical prose.
     // Reward identifiers generically, never a bank-specific answer vocabulary.
