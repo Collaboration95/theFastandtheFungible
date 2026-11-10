@@ -21,7 +21,7 @@ mode, set MCP per-call/daily caps, and pause new requests. Apply restarts the en
 and stops active work. The browser's per-question budget remains its authorization;
 MCP caps are enforced by the engine. The wallet-wide gross daily cap and durable pause apply across web/MCP/SDK (#286).
 Remote HTTPS mode skips the local engine, shows its host in the header and uses the API token saved in Keychain. Its operator configures the publisher, Host allowlist and wallet/MCP limits; the app does not raise remote caps. Save the token before applying a remote URL.
-The SDK currently covers MCP tools; this app reuses Day 1's validated UI API module
+The TypeScript SDK covers ask/read/search/status/receipts/verify/pause plus explicit pay/hire; Python covers ask/read/status/receipts/verify/pause; this app reuses Day 1's validated UI API module
 through a main-process protocol proxy, and uses the SDK for desktop wallet status
 and the packaged MCP adapter. Local generated API tokens stay in main memory; copying the MCP command explicitly persists that token in Keychain so the adapter can reconnect after restart. Offline startup otherwise needs no Keychain access. It adds no second UI fetch implementation.
 
@@ -52,7 +52,9 @@ app's adapter. It needs system Node ≥22.13 and the app open; it uses the same
 engine and durable MCP caps. The research renderer cannot invoke desktop actions:
 main validates both the sender window and its top-level origin.
 
-Build and validate from the clone (no cloud resources):
+Build and validate from the clone (**macOS only**, no cloud resources). Requires Node ≥22.13, npm, Make, authenticated `gh` (`gh auth status`), and Xcode command-line tools (`xcode-select --install`, then `xcrun --find clang`). The Electron downloader uses `gh` and macOS tools. DMGs are unsigned by default; signing/notarization needs explicit owner configuration in SIGNING.md. Asar is intentionally disabled so the engine has a real filesystem cwd.
+
+Commands below use a macOS POSIX shell:
 
 ```sh
 npm ci

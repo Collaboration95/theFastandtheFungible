@@ -1,9 +1,17 @@
 # Publish your own expertise in three steps
 
-Use Node 22.13 or later. `<mcp-tgz>` means the MCP package asset from the release
-that includes `init`; older releases do not include it. No clone is needed.
+Use Node ≥22.13. No clone is needed. These commands work in macOS/Linux shells and Windows PowerShell; start in an empty folder. Release v1.0.2 assets remain pinned.
 
-1. **Create notes.** Run `npx -y <mcp-tgz> init my-notes`. This writes two
+<!-- BEGIN generated:writer-install -->
+```sh
+npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz init my-notes
+npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz publish ./my-notes --testnet
+```
+<!-- END generated:writer-install -->
+
+The second command keeps serving until Ctrl-C. Edit the generated files before publishing your own work; unedited templates stay labelled SYNTHETIC.
+
+1. **Create notes.** Use the `init my-notes` command above. This writes two
    commented, fictional examples. Replace their bodies with your own notes and
    set `synthetic: false`. Every note needs `title`, `abstract`, `tier` and
    `price`. Comments show optional fields too. Use `tier: FREE` with `price: 0`,
@@ -12,7 +20,7 @@ that includes `init`; older releases do not include it. No clone is needed.
    paragraphs. Real-writer notes allow **150–3,000 words**; fictional examples
    and benchmarks retain **600–1,400**. `--relax` explicitly waives only the
    real-writer length check; it never waives privacy, price or passage checks.
-2. **Publish.** Run `npx -y <mcp-tgz> publish my-notes --testnet`. Validation
+2. **Publish.** Use the `publish ./my-notes --testnet` command above. Validation
    reports field errors together before wallet creation, faucet funding or
    provisioning. npm itself must install the package before it can execute
    validation; reuse the same package/cache on retries. The command saves private
@@ -22,7 +30,7 @@ that includes `init`; older releases do not include it. No clone is needed.
    Keep it running. Optional: `--slug my-name`, `--name "My Name"`, `--port N`.
    Port 8790 is reserved and rejected. `--rail simulated` is labelled offline
    settlement and does not register a Testnet origin.
-3. **Find and buy.** Run `npx -y <mcp-tgz> app --testnet`, using the same XDG
+3. **Find and buy.** Run `npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz app --testnet`, using the same XDG
    state directory. Open **Writers · local · Testnet** and ask a question within
    your note's scope. Discovery also picks up writers published after app start
    (reopen the Writers tab to refresh its list). Budget approval authorizes

@@ -65,7 +65,7 @@ Set `RA_BACKEND_URL` to an existing ResearchAgent API for HTTP-backed tools. Tha
 API **must include the MCP routes from #255** and have its own human caps set at
 startup. Client-side cap variables do not override a remote API's caps. The API
 is a trusted operator service; protect network access when hosting it remotely.
-These caps cover MCP runs, not web UI runs. No cloud resource is created by MCP.
+MCP per-call/daily caps cover MCP runs; the wallet-wide daily cap and durable wallet pause also apply across UI and SDK. No cloud resource is created by MCP.
 
 Both caps default to zero. Budgets round down to the existing 5-cent step and
 S$5 engine maximum. Each active run reserves its remaining possible charge;
@@ -82,7 +82,7 @@ Provider credentials stay in the engine environment; tools cannot supply keys,
 rail, provider, plan, article selection or higher caps. Live provider usage can
 incur model fees separately from the article cap. `node scripts/mcp-demo.mjs`
 uses a real authenticated Claude Code session with fixture engine providers,
-only the four MCP tools, and simulated settlement; it saves a sanitized tool
+the MCP tools, and simulated settlement; it saves a sanitized tool
 transcript summary under `eval/mcp/` (or prints manual steps if Claude is absent).
 A separate [Testnet MCP purchase proof](../eval/mcp/testnet-2026-11-03.md) records validated settlement and retry evidence.
 Run `npx vitest run tests/engine.test.ts tests/mcp-policy.test.ts tests/mcp.e2e.test.ts`
@@ -92,8 +92,9 @@ for offline transport, isolation, cap and restart checks.
 ## One-click Claude Desktop extension
 
 Build with `npm ci && npm run build:mcpb`, then open `dist/ResearchAgent.mcpb`
-in Claude Desktop Settings → Extensions → Install extension (or open the release
-asset). Node 22.13+ is required. Choose per-question and UTC daily caps in SGD
+in Claude Desktop **Settings → Desktop app → Manage (Extensions) → Advanced settings → Install Extension…**. Older layouts use Settings → Extensions → Advanced settings → Install Extension. Or select the released MCPB asset there.
+[Current Desktop instructions](https://support.claude.com/en/articles/10949351-getting-started-with-local-mcp-servers-on-claude-desktop).
+Desktop extensions use Claude's built-in Node runtime; no separate Node installation is normally needed. ResearchAgent needs the **selected runtime ≥22.13** for SQLite: check the extension runtime/logs for your installed Desktop version before assuming compatibility. Raw JSON `node`, CLI `npx`, and `mcp-remote` use your system runtime and need Node ≥22.13/npm on PATH. Choose per-question and UTC daily caps in SGD
 cents. Defaults are zero; fixture research and SIMULATED payments need no keys.
 The optional payer seed is a sensitive field stored in the OS credential store
 by Claude Desktop, passed only through the child environment. Never paste seeds
@@ -225,12 +226,12 @@ bearer_token_env_var = "RESEARCHAGENT_TOKEN"
 ```
 
 All transports expose `search_expertise`, `ask_expert`, `get_run`, `wallet_status`,
-`verify_answer` and `hire`. The optional operator-configured `hire_researcher`
+`pause_spending`, `verify_answer` and `hire`. The optional operator-configured `hire_researcher`
 requires separate signing authority and is disabled in the extension.
 These snippets are syntax/contract tested; interactive acceptance in all five
 products is not claimed.
 
-Tool errors from the SDK expose validated `code`, `status`, `retryable`, safe `message` and optional `runId` in structured content. A retained run ID is a recovery handle, not authorization to start another purchase. Verify-export and hire HTTP requests are bounded at 15 seconds. Budget clamps continue free-first and expose `clampReason`. Engine-wide overload admission is deferred; `overloaded` is a supported error category rather than a current cap-of-four guarantee.
+Tool errors from the SDK expose validated `code`, `status`, `retryable`, safe `message` and optional `runId` in structured content. A retained run ID is a recovery handle, not authorization to start another purchase. Verify-export and hire HTTP requests are bounded at 15 seconds. Budget clamps continue free-first and expose `clampReason`. Engine-wide active work is limited by `ACTIVE_WORK_LIMIT` (default 4); saturation returns `overloaded` immediately. There is no durable overload queue.
 
 ## Exact local release artifacts
 
@@ -294,3 +295,48 @@ prints the line for a tag. No clone, no `.env`, no hosted service: the tgz boots
 - **Opt-in acceptance.** `RA_ACCEPT_TESTNET=1 node scripts/check-release-consumers.mjs --testnet` probes the packed bytes over
   stdio with a fresh npm cache, restarts to prove wallet reuse and cap enforcement, and checks each hash on s.altnet.
   Default CI never calls the faucet. Evidence: [round3-a](evidence/round3-a/README.md).
+
+## Cold Testnet calls and client timeouts
+
+Fixture calls can keep Codex's 60-second tool timeout. A first cold TEST-SGD call provisions an issuer and trust lines before research; allow about two minutes, plus the ask's bounded wait. Startup timeout alone does not cover this first **tool** call. For Codex Testnet/IOU use this complete release configuration:
+
+```toml
+[mcp_servers.researchagent]
+command = "npx"
+args = ["-y", "https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz", "--testnet", "--iou"]
+startup_timeout_sec = 60
+tool_timeout_sec = 180
+
+[mcp_servers.researchagent.env]
+MCP_MAX_BUDGET_MINOR = "200"
+MCP_DAILY_CAP_MINOR = "500"
+```
+
+For Claude Code launch the client with `MCP_TOOL_TIMEOUT=180000 claude` (macOS/Linux); PowerShell: `$env:MCP_TOOL_TIMEOUT="180000"; claude`. This is a **client** setting, not an env field on the server. Current Claude Code also accepts `"timeout": 180000` in that server's `.mcp.json` entry (milliseconds). [Claude Code timeout reference](https://code.claude.com/docs/en/mcp#time-limits-on-mcp-tool-calls).
+
+For Claude Desktop, Cursor and other MCP clients, use their documented request timeout if available; there is no portable timeout key to add to `mcpServers`. Pre-provision with the [SDK engine quickstart](sdk.md#start-engine--connect--ask--verify), appending `--testnet --iou`, wait for ready, then stop the app before using stdio with the same default state directory. This moves the slow faucet setup outside the first tool call. Progress is written to stderr during setup. Never assume a warm wallet proves a cold call fits a client timeout.
+
+After a timeout, use `get_run` with the returned run ID or the original idempotency key; a timeout does not cancel a purchase. Do not invent a new purchase identity.
+
+## Platform and client format notes (checked 10 Nov 2026)
+
+- Raw stdio JSON above is also the generic MCP `mcpServers` shape. Claude Code uses project `.mcp.json`, Cursor uses `.cursor/mcp.json`, and Claude Desktop uses its private `claude_desktop_config.json`. [Claude Code](https://code.claude.com/docs/en/mcp) · [Cursor](https://cursor.com/docs/context/mcp).
+- Cursor HTTP only needs `url` and `headers`; remove `type` from the shared Claude Code HTTP example when pasting into Cursor. VS Code instead uses top-level `servers` and an explicit `type`. [VS Code reference](https://code.visualstudio.com/docs/agents/reference/mcp-configuration).
+- On Windows use absolute paths with `/` (or JSON-escaped `\\`) and an absolute `node.exe` path for GUI clients. A JSON command of `npx` can require `command: "cmd"`, `args: ["/c", "npx", "-y", "ASSET_URL", "--testnet"]`; `npx` commands typed directly in PowerShell need no wrapper. Keep the remaining env fields. On macOS/Linux GUI clients may also lack your terminal PATH: resolve `node` in a terminal and use that absolute executable.
+- Clone commands with `$PWD`, `make`, `export` and shell prefix variables use POSIX (Windows: WSL). For PowerShell clone stdio use `node --import "$((Get-Location).Path)/node_modules/tsx/dist/loader.mjs" "$((Get-Location).Path)/mcp/server.ts"` after `npm ci`; the same args work after `--` in `claude mcp add` or `codex mcp add`.
+- Syntax/contract checks and isolated CLI config acceptance are not an actual Desktop/Cursor/VS Code conversation. Native Windows/Linux acceptance remains unmeasured.
+- “Registry-labelled writers” means the source publisher's content registry, **not** publication in the public MCP Registry. Fixture writers/articles are fictional; identity remains unverified.
+
+The local HTTP API also has an [OpenAPI 3.1 contract and plain fetch example](api/README.md). Hire uses x402 HTTP, not the A2A protocol.
+
+### Windows PowerShell MCP registration
+
+Use this Windows child-process wrapper when the client launches `npx.cmd`. Direct `npx ... app` in a PowerShell terminal needs no wrapper.
+
+<!-- BEGIN generated:windows-mcp -->
+```powershell
+claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- cmd /c npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz --testnet
+```
+<!-- END generated:windows-mcp -->
+
+For Codex use `codex mcp add researchagent --env MCP_MAX_BUDGET_MINOR=200 --env MCP_DAILY_CAP_MINOR=500 -- cmd /c npx -y ASSET_URL --testnet`, substituting the exact pinned asset URL above. If using WSL, use the POSIX commands and install Node in WSL. GUI JSON configurations can instead use an absolute `node.exe` with an installed/extracted entry point; do not use POSIX `$PWD` inside JSON.

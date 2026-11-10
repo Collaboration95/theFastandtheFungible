@@ -54,7 +54,7 @@ test.skipIf(!built)('simulated app boots on an ephemeral port, serves the UI, pr
   expect(health.status).toBe(200) // engine bearer added by the proxy, never in the browser
   expect((await fetch(`${url}/data/corpus/v2/x.json`)).status).toBe(403)
   expect((await fetch(`${url}/api/scope`, { method: 'POST', headers: { Origin: 'http://evil.example', 'Content-Type': 'application/json' }, body: '{}' })).status).toBe(403)
-  const tokenFile = out.match(/readFileSync\('([^']+)'/)![1]
+  const tokenFile = out.match(/Token file: (.+?) \(private/)![1]
   expect(statSync(tokenFile).mode & 0o777).toBe(0o600)
   expect(out).not.toContain((await import('node:fs')).readFileSync(tokenFile, 'utf8').trim())
   child.kill('SIGTERM')
@@ -77,7 +77,7 @@ const boot = async (args: string[], env: Record<string, string> = {}) => {
   const deadline = Date.now() + 30_000
   while (!lines.join('\n').includes('ResearchAgent ready') && Date.now() < deadline && !process.exitCode) await new Promise(r => setTimeout(r, 25))
   const out = lines.join('\n')
-  return { out, url: out.match(/ready: (http:\/\/127\.0\.0\.1:\d+)/)?.[1] ?? '', tokenFile: out.match(/readFileSync\('([^']+)'/)?.[1] ?? '', done, stop, restore: () => { process.env = saved } }
+  return { out, url: out.match(/ready: (http:\/\/127\.0\.0\.1:\d+)/)?.[1] ?? '', tokenFile: out.match(/Token file: (.+?) \(private/)?.[1] ?? '', done, stop, restore: () => { process.env = saved } }
 }
 const raw = (url: string, init: { method?: string; host?: string; body?: Buffer } = {}) => new Promise<number>((done, fail) => {
   const target = new URL(url)

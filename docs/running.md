@@ -95,3 +95,25 @@ see [independent verifier evidence](evidence/round2-k/README.md). Minimum suppor
 3.10; hosted artifact acceptance uses those runtimes.
 
 See [release artifact evidence](evidence/round2-d/README.md).
+
+## Platforms and prerequisites
+
+| Entry point | Requirements and limits |
+|---|---|
+| Zero-clone app/MCP and TS SDK | Node ≥22.13/npm, macOS/Linux/Windows PowerShell command variants in SDK/MCP guides; actual native Windows/Linux acceptance not yet measured |
+| Python client / offline verifier | Python ≥3.10; no Node for offline verification; the local research engine still needs Node |
+| Source `make` / shell scripts / Docker recipes | POSIX shell, Git and Make (Windows: WSL); Docker daemon for Docker targets |
+| Native DMG, Keychain, signing, desktop smoke | macOS only; see desktop/README.md prerequisites; no native Windows/Linux desktop package |
+
+For Linux `app --open`, install `xdg-utils` if `xdg-open` is absent, or paste the printed UI URL into a browser. A headless shell does not need an opener. Do not confuse the UI URL with the printed bearer-protected SDK engine URL.
+
+Headless source install (macOS/Linux/WSL): `ELECTRON_SKIP_BINARY_DOWNLOAD=1 npm ci`. PowerShell: `$env:ELECTRON_SKIP_BINARY_DOWNLOAD="1"; npm ci`. This skips Electron's large GUI download, not app dependencies; desktop build uses its verified downloader separately. `npm ci`, `npm run build`, `npm run build:sdk` are shell-neutral; `make` recipes require POSIX. SDK release packaging additionally uses Python ≥3.10 with venv/pip/build; Linux may need its distribution's python3-venv package. The maintainer release-artifacts script is POSIX (uses bin/python); Windows consumers use the published wheel/tgz or WSL for source packaging.
+
+Fresh-install warning ledger (audit, 10 Nov, Node 26/npm 11; counts are historical, not a current security assessment):
+
+- npm reported 31 vulnerabilities including three critical entries in dev test tooling (Vitest/coverage/tinypool). Dependency/security ownership is separate; no dependencies upgraded here. Keep `npm audit` output visible; do not use `audit fix --force` without compatibility work.
+- Deprecated transitive packaging/test dependencies and allowScripts notices for electron-winstaller/protobufjs do not mean installation failed. Do not blindly enable scripts. A source archive can print Husky's `.git can't be found`; use a real clone for development/gates.
+- Node's experimental SQLite warning is expected on supported runtimes. Vite can report removed PURE annotations in zod; npm/pip can show upgrade notices. Preserve real failures and exit codes; these notices are not test evidence.
+- electron-builder warns about missing author metadata, duplicate dependencies, disabled asar and skipped signing. Asar is deliberately off for engine cwd; unsigned builds are labelled. Follow desktop/SIGNING.md for explicit signing.
+
+Codespaces is a separate cloud path, not native Linux acceptance. If a forwarded tab is blank, inspect `/tmp/researchagent-fixture.log` (fixture) or `/tmp/researchagent-testnet.log` (Testnet), check the startup exit/error and the API `/api/health` on the forwarded offset, then rerun the devcontainer startup command. See the exact log paths in `.devcontainer/*/devcontainer.json`; do not infer readiness from an open forwarded tab.
