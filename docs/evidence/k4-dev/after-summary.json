@@ -1,7 +1,7 @@
 {
   "v1": {
     "N": 20,
-    "buyAndCite": 17,
+    "buyAndCite": 19,
     "answersIt": 0,
     "negativeBuys": 0,
     "violations": 0,
@@ -12,11 +12,11 @@
         "question": "How much does EscrowFinish with a fulfillment cost on XRPL Testnet?",
         "phase": "DONE",
         "lead": [],
-        "conclusion": "XRPL escrow locks funds until its time or cryptographic conditions permit release; it does not judge whether purchased prose is useful or true. EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds. A condition can bind release to a cryptographic fulfillment, while FinishAfter and CancelAfter control time windows. According to XRPL documentation, EscrowFinish releases an existing escrow to its predetermined recipient when the escrow's release conditions are satisfied. A conditional escrow needs the matching fulfillment, and time restrictions still apply. Conditional fulfillment increases transaction cost relative to a simple payment.",
+        "conclusion": "According to XRPL documentation, EscrowFinish releases an existing escrow to its predetermined recipient when the escrow's release conditions are satisfied. A conditional escrow needs the matching fulfillment, and time restrictions still apply. Conditional fulfillment increases transaction cost relative to a simple payment. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules.",
         "buyAndCite": true,
         "answersIt": 0,
-        "purchases": 2,
-        "spentMinor": 80,
+        "purchases": 1,
+        "spentMinor": 40,
         "verificationOk": true,
         "violations": []
       },
@@ -39,13 +39,28 @@
                 }
               ]
             }
+          },
+          {
+            "text": "The buyer then checks the key, authenticated encryption, exact delivered bytes and signed passage promises before exposing premium content to the agent.",
+            "claim": {
+              "id": "evidence-[\"product-key-reveal-trust\",\"v1\",\"p2\"]",
+              "text": "The writer encrypts the delivery and signs commitments to its identity, content, price and decryption key. The buyer locks funds under a PREIMAGE-SHA-256 condition. A successful EscrowFinish publishes the fulfillment containing that key while releasing the locked payment. The buyer then checks the key, authenticated encryption, exact delivered bytes and signed passage promises before exposing premium content to the agent. [1] [3]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "product-key-reveal-trust",
+                  "version": "v1",
+                  "spanId": "p2"
+                }
+              ]
+            }
           }
         ],
-        "conclusion": "Key reveal delivers paid research by making the writer publish a decryption key through a validated EscrowFinish. The buyer receives encrypted delivery bytes first, but those bytes stay quarantined. Only after the engine verifies the successful finish, the key binding and the authenticated envelope can premium plaintext become accessible through a verified grant. The writer generates a fresh 32-byte key K and 12-byte IV per buyer and intent, and AES-256-GCM encrypts the delivery JSON (body, passages, salts and identity). The writer signs the escrow quote with its wallet key. A refund after successful key publication is a separate writer-signed Payment. Offline cryptographic checks can authenticate the signed manifest, exact passage hashes, delivered identity and key binding.",
+        "conclusion": "Key reveal delivers paid research by making the writer publish a decryption key through a validated EscrowFinish. The buyer then checks the key, authenticated encryption, exact delivered bytes and signed passage promises before exposing premium content to the agent. According to ResearchAgent documentation, key-reveal escrow makes payment and publication of the article key atomic, but a refund after a completed purchase still requires the writer to sign. The writer encrypts the delivery and signs commitments to its identity, content, price and decryption key. A successful EscrowFinish publishes the fulfillment containing that key while releasing the locked payment. The buyer receives encrypted delivery bytes first, but those bytes stay quarantined. The writer signs the escrow quote with its wallet key.",
         "buyAndCite": true,
         "answersIt": 0,
-        "purchases": 1,
-        "spentMinor": 40,
+        "purchases": 2,
+        "spentMinor": 80,
         "verificationOk": true,
         "violations": []
       },
@@ -142,7 +157,7 @@
             }
           }
         ],
-        "conclusion": "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information. Relevant CAIP-2 network identifiers are xrpl:0 for Mainnet, xrpl:1 for Testnet, and xrpl:2 for Devnet. x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required. The x402 buyer first requests a resource and receives payment requirements rather than premium content. Each writer serves its own payment challenge and receives the buyer's Testnet payment. The buyer checks the named writer, article version, network and exact amount before authorizing the purchase. Some XRPL and older x402 examples use different headers. A restarted buyer reconciles the original purchase before submitting another payment.",
+        "conclusion": "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information. Relevant CAIP-2 network identifiers are xrpl:0 for Mainnet, xrpl:1 for Testnet, and xrpl:2 for Devnet. According to the X402 v2 specification, an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. The x402 buyer first requests a resource and receives payment requirements rather than premium content. Each writer serves its own payment challenge and receives the buyer's Testnet payment. The buyer checks the named writer, article version, network and exact amount before authorizing the purchase. Some XRPL and older x402 examples use different headers.",
         "buyAndCite": true,
         "answersIt": 0,
         "purchases": 2,
@@ -185,41 +200,41 @@
         "phase": "DONE",
         "lead": [
           {
-            "text": "XRPL Credentials attest to writer identity under an operator-trusted issuer.",
+            "text": "XRPL Credentials verify a writer only when an operator-trusted issuer attests to the bound seller wallet and the accepted credential is unexpired.",
             "claim": {
-              "id": "evidence-[\"team-credentials\",\"v3\",\"p1\"]",
-              "text": "XRPL Credentials attest to writer identity under an operator-trusted issuer. The writer accepts the credential, and the engine checks acceptance, expiration and issuer policy against validated Testnet evidence. A Credential does not prove an article is accurate. It does not increase the writer trust weight or change the price or spending policy.",
+              "id": "evidence-[\"product-writer-credentials\",\"v1\",\"p1\"]",
+              "text": "According to ResearchAgent writer-verification documentation, XRPL Credentials verify a writer only when an operator-trusted issuer attests to the bound seller wallet and the accepted credential is unexpired. [2]",
               "stance": "UNCERTAIN",
               "citations": [
                 {
-                  "resourceId": "team-credentials",
-                  "version": "v3",
+                  "resourceId": "product-writer-credentials",
+                  "version": "v1",
                   "spanId": "p1"
                 }
               ]
             }
           },
           {
-            "text": "The displayed application prices do not imply a redeemable SGD balance or a guaranteed conversion into XRP.",
+            "text": "A verified writer receives no automatic change to price, trust weighting or budget policy.",
             "claim": {
-              "id": "lead-[null,\"team-credentials\",\"v3\",\"p7\"]",
-              "text": "Faucet funds and public Testnet endpoints are suitable for reproducing this prototype without real money. Wallet seeds stay in private local storage and never enter model prompts, article text, receipts or public logs. Testnet balances have no real value. The displayed application prices do not imply a redeemable SGD balance or a guaranteed conversion into XRP. Network availability and faucet funding time remain operational dependencies.",
+              "id": "evidence-[\"product-writer-credentials\",\"v1\",\"p4\"]",
+              "text": "Author interpretation: ask who trusts the issuer and what exactly the credential attests before relying on the badge. Identity is separate from content truth, reputation and purchase authorization. A verified writer receives no automatic change to price, trust weighting or budget policy. The built-in explainer writer remains team-authored and is not evidence of an independent contributor or a regulated identity provider. Sources accessed 10 November 2026. [2]",
               "stance": "UNCERTAIN",
               "citations": [
                 {
-                  "resourceId": "team-credentials",
-                  "version": "v3",
-                  "spanId": "p7"
+                  "resourceId": "product-writer-credentials",
+                  "version": "v1",
+                  "spanId": "p4"
                 }
               ]
             }
           }
         ],
-        "conclusion": "XRPL Credentials attest to writer identity under an operator-trusted issuer. The displayed application prices do not imply a redeemable SGD balance or a guaranteed conversion into XRP. The writer accepts the credential, and the engine checks acceptance, expiration and issuer policy against validated Testnet evidence. It does not increase the writer trust weight or change the price or spending policy. Issuer trust is operator policy. Purchase decisions, trust weights, prices, budgets and payment authority are unchanged: only deterministic policy code can spend. A refund after successful key publication is a separate writer-signed Payment. A signed passage promise and a verifiable fraud proof establish responsibility for a broken commitment, but a real writer could refuse a refund.",
+        "conclusion": "XRPL Credentials verify a writer only when an operator-trusted issuer attests to the bound seller wallet and the accepted credential is unexpired. A verified writer receives no automatic change to price, trust weighting or budget policy. The built-in explainer writer remains team-authored and is not evidence of an independent contributor or a regulated identity provider.",
         "buyAndCite": true,
         "answersIt": 0,
-        "purchases": 2,
-        "spentMinor": 80,
+        "purchases": 1,
+        "spentMinor": 40,
         "verificationOk": true,
         "violations": []
       },
@@ -229,37 +244,37 @@
         "phase": "DONE",
         "lead": [
           {
-            "text": "The buyer has reserved budget and submitted an EscrowCreate, but the writer has not yet published a usable key.",
+            "text": "If the writer never completes delivery, policy waits for the validated deadline and submits cancellation of the original object.",
             "claim": {
-              "id": "evidence-[\"team-recovery\",\"v3\",\"p1\"]",
-              "text": "Writer no-show recovery starts with a durable purchase intent. The buyer has reserved budget and submitted an EscrowCreate, but the writer has not yet published a usable key. The principal is locked in an escrow object rather than transferred directly to the writer. The buyer must retain the signed quote, object identity and transaction hash while waiting. A missing HTTP response is not permission to buy the article a second time.",
+              "id": "evidence-[\"product-escrow-no-show\",\"v1\",\"p3\"]",
+              "text": "If the writer never completes delivery, policy waits for the validated deadline and submits cancellation of the original object. Anyone may submit an eligible EscrowCancel, but the locked principal returns to the escrow owner, not the caller who happens to submit it. Creating, finishing or canceling an escrow consumes XRP transaction fees; cancellation does not refund those fees. [1] [2]",
               "stance": "UNCERTAIN",
               "citations": [
                 {
-                  "resourceId": "team-recovery",
-                  "version": "v3",
-                  "spanId": "p1"
+                  "resourceId": "product-escrow-no-show",
+                  "version": "v1",
+                  "spanId": "p3"
                 }
               ]
             }
           },
           {
-            "text": "EscrowCancel returns the original principal when the writer never completes delivery.",
+            "text": "a buyer can recover an unfinished key-reveal escrow with EscrowCancel after CancelAfter; expiry permits cancellation but does not automatically return funds.",
             "claim": {
-              "id": "evidence-[\"team-recovery\",\"v3\",\"p3\"]",
-              "text": "EscrowCancel returns the original principal when the writer never completes delivery. The transaction fees remain spent. In our documented XRP example a cancelled sixty-thousand-drop principal returned in full, while create and cancel fees together consumed twenty-four drops. These figures describe a historical Testnet observation. They do not promise identical fees under future network load and do not express the principal as real SGD.",
+              "id": "evidence-[\"product-escrow-no-show\",\"v1\",\"p1\"]",
+              "text": "According to ResearchAgent documentation, a buyer can recover an unfinished key-reveal escrow with EscrowCancel after CancelAfter; expiry permits cancellation but does not automatically return funds. [2]",
               "stance": "UNCERTAIN",
               "citations": [
                 {
-                  "resourceId": "team-recovery",
-                  "version": "v3",
-                  "spanId": "p3"
+                  "resourceId": "product-escrow-no-show",
+                  "version": "v1",
+                  "spanId": "p1"
                 }
               ]
             }
           }
         ],
-        "conclusion": "The buyer has reserved budget and submitted an EscrowCreate, but the writer has not yet published a usable key. EscrowCancel returns the original principal when the writer never completes delivery. Writer no-show recovery starts with a durable purchase intent. The principal is locked in an escrow object rather than transferred directly to the writer. A writer-signed refund after EscrowFinish is a different operation. Successful finish has already paid the writer and published the key. The writer may voluntarily sign a separate Payment returning money to the buyer. The key-reveal mechanism makes publication of a key atomic with settlement, but it does not make prose true. The writer can sign a promise and deliver content that breaks it.",
+        "conclusion": "If the writer never completes delivery, policy waits for the validated deadline and submits cancellation of the original object. a buyer can recover an unfinished key-reveal escrow with EscrowCancel after CancelAfter; expiry permits cancellation but does not automatically return funds. EscrowCreate supplies a Condition and the expiry window; EscrowFinish supplies the matching Fulfillment, which reveals the secret. Anyone may submit an eligible EscrowCancel, but the locked principal returns to the escrow owner, not the caller who happens to submit it. Once a successful finish has released payment, the old escrow cannot be canceled; a subsequent quality dispute requires a separate writer-signed refund.",
         "buyAndCite": true,
         "answersIt": 0,
         "purchases": 1,
@@ -329,12 +344,28 @@
         "id": "J11",
         "question": "Why is the purchase budget controlled by policy rather than the model?",
         "phase": "DONE",
-        "lead": [],
-        "conclusion": "Matched articles supplied no citable answer · nothing bought",
-        "buyAndCite": false,
+        "lead": [
+          {
+            "text": "prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments.",
+            "claim": {
+              "id": "evidence-[\"product-prompt-injection\",\"v1\",\"p1\"]",
+              "text": "According to ResearchAgent security documentation, prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments. [1] [2]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "product-prompt-injection",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments. The decision model can recommend whether evidence is useful, but recommendations pass through independent spending checks. Policy enforces the admitted budget, source limit, wallet daily authority and one charge per intent. Agent spending controls should be enforced by the component that authorizes and signs payments, because a payment protocol does not supply a user's spending policy. The x402 specification explicitly places client-side budget management outside its scope. This is an architectural recommendation: treat model recommendations as input to a bounded authorization decision.",
+        "buyAndCite": true,
         "answersIt": 0,
-        "purchases": 0,
-        "spentMinor": 0,
+        "purchases": 2,
+        "spentMinor": 80,
         "verificationOk": true,
         "violations": []
       },
@@ -386,12 +417,43 @@
         "id": "J13",
         "question": "How can I independently verify a cited answer against the ledger?",
         "phase": "DONE",
-        "lead": [],
-        "conclusion": "Matched articles supplied no citable answer · nothing bought",
-        "buyAndCite": false,
+        "lead": [
+          {
+            "text": "offline verification checks signatures, delivered passages and audit consistency; an independent ledger lookup is additionally required to establish XRPL settlement and answer anchoring.",
+            "claim": {
+              "id": "lead-[null,\"product-verify-receipt\",\"v1\",\"p1\"]",
+              "text": "According to ResearchAgent receipt documentation, offline verification checks signatures, delivered passages and audit consistency; an independent ledger lookup is additionally required to establish XRPL settlement and answer anchoring. [1] [2]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "product-verify-receipt",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          },
+          {
+            "text": "Verification of a cited answer begins with the exported receipt bundle rather than the displayed summary.",
+            "claim": {
+              "id": "evidence-[\"team-verification\",\"v3\",\"p1\"]",
+              "text": "Verification of a cited answer begins with the exported receipt bundle rather than the displayed summary. Each citation binds an article identifier, version and exact passage identifier. The cited text must occur in the delivered body. A paid citation additionally needs a verified grant associated with the successful purchase intent. A preview is discovery metadata and cannot supply premium evidence merely because its wording sounds relevant.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "team-verification",
+                  "version": "v3",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "offline verification checks signatures, delivered passages and audit consistency; an independent ledger lookup is additionally required to establish XRPL settlement and answer anchoring. Verification of a cited answer begins with the exported receipt bundle rather than the displayed summary. Enable the verifier’s ledger option to query the recorded Testnet transaction hashes independently. It checks validated success, expected accounts, ledger information and relevant payment or escrow fields; anchor checks additionally compare the memo commitment with the exported audit head and answer. The cited text must occur in the delivered body. The answer can summarize the passage, but its citation must still resolve to the authenticated delivered bytes. An answer anchor separately binds the recorded audit head to a ledger transaction.",
+        "buyAndCite": true,
         "answersIt": 0,
-        "purchases": 0,
-        "spentMinor": 0,
+        "purchases": 2,
+        "spentMinor": 80,
         "verificationOk": true,
         "violations": []
       },
@@ -491,7 +553,7 @@
           {
             "text": "A valid payment for another article or another recipient does not unlock this delivery.",
             "claim": {
-              "id": "evidence-[\"team-x402\",\"v3\",\"p2\"]",
+              "id": "lead-[null,\"team-x402\",\"v3\",\"p2\"]",
               "text": "Each writer serves its own payment challenge and receives the buyer's Testnet payment. The buyer checks the named writer, article version, network and exact amount before authorizing the purchase. A valid payment for another article or another recipient does not unlock this delivery. Testnet funds have no real value.",
               "stance": "UNCERTAIN",
               "citations": [
@@ -504,7 +566,7 @@
             }
           }
         ],
-        "conclusion": "x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required. A valid payment for another article or another recipient does not unlock this delivery. The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information. The x402 buyer first requests a resource and receives payment requirements rather than premium content. A model can assess usefulness but cannot initiate payment. Each writer serves its own payment challenge and receives the buyer's Testnet payment. Some XRPL and older x402 examples use different headers. Its specification separates transport representation from payment schemes and network-specific logic. x402 separates payment requirements, authorization, verification and settlement.",
+        "conclusion": "x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required. A valid payment for another article or another recipient does not unlock this delivery. According to the X402 v2 specification, an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. The header carries base64-encoded JSON: x402Version is 2, resource identifies the protected URL, and accepts lists payment options. The retry carries the selected accepted requirements and a scheme-specific payment payload. A successful HTTP response can include PAYMENT-RESPONSE with settlement details. The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information.",
         "buyAndCite": true,
         "answersIt": 0,
         "purchases": 3,
@@ -518,41 +580,26 @@
         "phase": "DONE",
         "lead": [
           {
-            "text": "Trust depends on the issuer and purpose; a credential does not certify every article or grant universal payment-service approval.",
+            "text": "A Credential does not prove an article is accurate.",
             "claim": {
-              "id": "evidence-[\"xrpl-tx-credentialcreate\",\"v1\",\"p2\"]",
-              "text": "CredentialType is issuer-defined binary data encoded as hexadecimal, not a globally unique legal classification. The subject normally must accept the credential before permission checks can rely on it. Expiration and URI can qualify the attestation. Trust depends on the issuer and purpose; a credential does not certify every article or grant universal payment-service approval. [1]",
+              "id": "evidence-[\"team-credentials\",\"v3\",\"p1\"]",
+              "text": "XRPL Credentials attest to writer identity under an operator-trusted issuer. The writer accepts the credential, and the engine checks acceptance, expiration and issuer policy against validated Testnet evidence. A Credential does not prove an article is accurate. It does not increase the writer trust weight or change the price or spending policy.",
               "stance": "UNCERTAIN",
               "citations": [
                 {
-                  "resourceId": "xrpl-tx-credentialcreate",
-                  "version": "v1",
-                  "spanId": "p2"
-                }
-              ]
-            }
-          },
-          {
-            "text": "CredentialType is issuer-defined binary data encoded as hexadecimal, not a globally unique legal classification.",
-            "claim": {
-              "id": "evidence-[\"xrpl-tx-credentialcreate\",\"v1\",\"p2\"]",
-              "text": "CredentialType is issuer-defined binary data encoded as hexadecimal, not a globally unique legal classification. The subject normally must accept the credential before permission checks can rely on it. Expiration and URI can qualify the attestation. Trust depends on the issuer and purpose; a credential does not certify every article or grant universal payment-service approval. [1]",
-              "stance": "UNCERTAIN",
-              "citations": [
-                {
-                  "resourceId": "xrpl-tx-credentialcreate",
-                  "version": "v1",
-                  "spanId": "p2"
+                  "resourceId": "team-credentials",
+                  "version": "v3",
+                  "spanId": "p1"
                 }
               ]
             }
           }
         ],
-        "conclusion": "Trust depends on the issuer and purpose; a credential does not certify every article or grant universal payment-service approval. CredentialType is issuer-defined binary data encoded as hexadecimal, not a globally unique legal classification. According to XRPL documentation, CredentialCreate issues a provisional on-ledger credential to a subject account. The subject normally must accept the credential before permission checks can rely on it.",
+        "conclusion": "A Credential does not prove an article is accurate. The writer accepts the credential, and the engine checks acceptance, expiration and issuer policy against validated Testnet evidence. A credential attests to a seller wallet, not an article, claim, reputation score or investment recommendation. According to ResearchAgent writer-verification documentation, XRPL Credentials verify a writer only when an operator-trusted issuer attests to the bound seller wallet and the accepted credential is unexpired. A credential binds an issuer, subject address and credential type, with optional expiry. A credential for membership, for example, cannot automatically establish professional licensing or the accuracy of every article sold by that wallet. Missing configuration, a missing or expired credential, or an unavailable lookup cannot establish verified identity.",
         "buyAndCite": true,
         "answersIt": 0,
-        "purchases": 1,
-        "spentMinor": 40,
+        "purchases": 3,
+        "spentMinor": 120,
         "verificationOk": true,
         "violations": []
       },
@@ -579,7 +626,7 @@
           {
             "text": "A writer-signed refund after EscrowFinish is a different operation.",
             "claim": {
-              "id": "evidence-[\"team-recovery\",\"v3\",\"p4\"]",
+              "id": "lead-[null,\"team-recovery\",\"v3\",\"p4\"]",
               "text": "A writer-signed refund after EscrowFinish is a different operation. Successful finish has already paid the writer and published the key. A subsequent quality challenge cannot reverse that transaction unilaterally. The writer may voluntarily sign a separate Payment returning money to the buyer. The demonstration uses a cooperative seller. Outside that fixture, repayment depends on the seller's consent and cannot be compelled by this protocol. The receipt must distinguish that cooperative refund from expiry cancellation, even when both leave the buyer with returned principal.",
               "stance": "UNCERTAIN",
               "citations": [
@@ -592,7 +639,7 @@
             }
           }
         ],
-        "conclusion": "EscrowCancel returns the original principal when the writer never completes delivery. A writer-signed refund after EscrowFinish is a different operation. Writer no-show recovery starts with a durable purchase intent. The buyer has reserved budget and submitted an EscrowCreate, but the writer has not yet published a usable key. The principal is locked in an escrow object rather than transferred directly to the writer. The buyer must retain the signed quote, object identity and transaction hash while waiting. Passing that deadline permits an EscrowCancel; it does not automatically move funds back to the buyer. Successful finish has already paid the writer and published the key. The writer may voluntarily sign a separate Payment returning money to the buyer.",
+        "conclusion": "EscrowCancel returns the original principal when the writer never completes delivery. A writer-signed refund after EscrowFinish is a different operation. EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds. A refund after completed release requires a separate mechanism; do not assume cancellation can undo an already finished escrow. Writer no-show recovery starts with a durable purchase intent. The buyer has reserved budget and submitted an EscrowCreate, but the writer has not yet published a usable key. The principal is locked in an escrow object rather than transferred directly to the writer. The buyer must retain the signed quote, object identity and transaction hash while waiting.",
         "buyAndCite": true,
         "answersIt": 0,
         "purchases": 3,
@@ -692,8 +739,8 @@
   },
   "v3": {
     "N": 20,
-    "buyAndCite": 19,
-    "answersIt": 11,
+    "buyAndCite": 20,
+    "answersIt": 13,
     "negativeBuys": 0,
     "violations": 0,
     "verificationFailures": 0,
@@ -768,41 +815,26 @@
         "phase": "DONE",
         "lead": [
           {
-            "text": "a closed XRPL ledger becomes final for a client when the client can establish that trusted validators have validated it.",
+            "text": "an agent should treat a successful payment as final only when its tesSUCCESS result appears in a validated ledger; an initial submit response is provisional.",
             "claim": {
-              "id": "evidence-[\"xrpl-concept-ledger-validation\",\"v1\",\"p1\"]",
-              "text": "According to XRPL documentation, a closed XRPL ledger becomes final for a client when the client can establish that trusted validators have validated it. [1]",
+              "id": "evidence-[\"product-payment-finality\",\"v1\",\"p1\"]",
+              "text": "According to XRPL documentation, an agent should treat a successful payment as final only when its tesSUCCESS result appears in a validated ledger; an initial submit response is provisional. [1]",
               "stance": "UNCERTAIN",
               "citations": [
                 {
-                  "resourceId": "xrpl-concept-ledger-validation",
+                  "resourceId": "product-payment-finality",
                   "version": "v1",
-                  "spanId": "p1"
-                }
-              ]
-            }
-          },
-          {
-            "text": "For XRP Payment settlement, delivered_amount is evidence of what the destination actually received.",
-            "claim": {
-              "id": "evidence-[\"team-settlement\",\"v3\",\"p1\"]",
-              "text": "For XRP Payment settlement, delivered_amount is evidence of what the destination actually received. Checking the requested Amount alone can accept an underpayment when partial-payment semantics apply. Our checks bind destination, currency, amount and invoice identity to the intended purchase. Escrow settlement has its own validation and object checks. Issued-token escrow additionally requires the exact RippleState balance delta, with the correct currency, issuer and sign. A requested amount is never sufficient proof of delivery.",
-              "stance": "UNCERTAIN",
-              "citations": [
-                {
-                  "resourceId": "team-settlement",
-                  "version": "v3",
                   "spanId": "p1"
                 }
               ]
             }
           }
         ],
-        "conclusion": "a closed XRPL ledger becomes final for a client when the client can establish that trusted validators have validated it. For XRP Payment settlement, delivered_amount is evidence of what the destination actually received. A proposed transaction, a server's preliminary result and a closed ledger are distinct stages. Validation authenticates the ledger result; it does not certify the economic value, legal status or editorial truth of an attached document. The network, account, transaction hash and validated state provide the context needed to interpret the result. Checking the requested Amount alone can accept an underpayment when partial-payment semantics apply. The payment receipt should identify the network and exact asset, and distinguish a simulated transaction from a validated Testnet transaction.",
+        "conclusion": "an agent should treat a successful payment as final only when its tesSUCCESS result appears in a validated ledger; an initial submit response is provisional. Ledgers normally advance every few seconds, but a typical close interval is not a guaranteed end-to-end payment deadline. Validation also does not imply success: a ledger may contain a tec failure that consumes a fee without delivering the intended payment. According to ResearchAgent documentation, its x402 XRP Testnet facilitator confirms settlement only after a validated tesSUCCESS and an exact match to the quoted payment. According to XRPL documentation, a closed XRPL ledger becomes final for a client when the client can establish that trusted validators have validated it.",
         "buyAndCite": true,
-        "answersIt": 0,
-        "purchases": 2,
-        "spentMinor": 80,
+        "answersIt": 1,
+        "purchases": 3,
+        "spentMinor": 120,
         "verificationOk": true,
         "violations": []
       },
@@ -814,14 +846,14 @@
         "phase": "DONE",
         "lead": [
           {
-            "text": "Trust-line token escrow requires the issuer's AllowTrustLineLocking permission; MPT escrow has its own capability flags.",
+            "text": "FinishAfter, when present, sets the earliest release time.",
             "claim": {
-              "id": "evidence-[\"xrpl-tx-escrowcreate\",\"v1\",\"p2\"]",
-              "text": "FinishAfter and CancelAfter use ledger time, and a Condition can require a matching fulfillment. Trust-line token escrow requires the issuer's AllowTrustLineLocking permission; MPT escrow has its own capability flags. Holding a token balance alone does not establish escrow eligibility. Creation locks principal but does not pay the recipient. [1]",
+              "id": "evidence-[\"product-escrow-no-show\",\"v1\",\"p2\"]",
+              "text": "XRPL conditional escrow uses PREIMAGE-SHA-256. EscrowCreate supplies a Condition and the expiry window; EscrowFinish supplies the matching Fulfillment, which reveals the secret. FinishAfter, when present, sets the earliest release time. CancelAfter sets the expiration boundary. The timing checks use ledger close time rather than the buyer laptop clock, so a visible countdown alone does not establish eligibility. [1] [2]",
               "stance": "UNCERTAIN",
               "citations": [
                 {
-                  "resourceId": "xrpl-tx-escrowcreate",
+                  "resourceId": "product-escrow-no-show",
                   "version": "v1",
                   "spanId": "p2"
                 }
@@ -829,24 +861,24 @@
             }
           },
           {
-            "text": "EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds.",
+            "text": "CancelAfter sets the expiration boundary.",
             "claim": {
-              "id": "evidence-[\"xrpl-escrow\",\"v1\",\"p1\"]",
-              "text": "XRPL escrow locks funds until its time or cryptographic conditions permit release; it does not judge whether purchased prose is useful or true. EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds. Expiration alone does not submit that cancellation transaction. [1]",
+              "id": "evidence-[\"product-escrow-no-show\",\"v1\",\"p2\"]",
+              "text": "XRPL conditional escrow uses PREIMAGE-SHA-256. EscrowCreate supplies a Condition and the expiry window; EscrowFinish supplies the matching Fulfillment, which reveals the secret. FinishAfter, when present, sets the earliest release time. CancelAfter sets the expiration boundary. The timing checks use ledger close time rather than the buyer laptop clock, so a visible countdown alone does not establish eligibility. [1] [2]",
               "stance": "UNCERTAIN",
               "citations": [
                 {
-                  "resourceId": "xrpl-escrow",
+                  "resourceId": "product-escrow-no-show",
                   "version": "v1",
-                  "spanId": "p1"
+                  "spanId": "p2"
                 }
               ]
             }
           }
         ],
-        "conclusion": "Trust-line token escrow requires the issuer's AllowTrustLineLocking permission; MPT escrow has its own capability flags. EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds. XRPL escrow locks funds until its time or cryptographic conditions permit release; it does not judge whether purchased prose is useful or true. A browser countdown is consequently an estimate of eligibility, not proof that the object was removed or the sender recovered funds. A refund after completed release requires a separate mechanism; do not assume cancellation can undo an already finished escrow. Reconcile the exact escrow owner and sequence before retrying. Holding a token balance alone does not establish escrow eligibility.",
+        "conclusion": "FinishAfter, when present, sets the earliest release time. CancelAfter sets the expiration boundary. According to ResearchAgent documentation, a buyer can recover an unfinished key-reveal escrow with EscrowCancel after CancelAfter; expiry permits cancellation but does not automatically return funds. XRPL conditional escrow uses PREIMAGE-SHA-256. EscrowCreate supplies a Condition and the expiry window; EscrowFinish supplies the matching Fulfillment, which reveals the secret. If the writer never completes delivery, policy waits for the validated deadline and submits cancellation of the original object. Anyone may submit an eligible EscrowCancel, but the locked principal returns to the escrow owner, not the caller who happens to submit it. Creating, finishing or canceling an escrow consumes XRP transaction fees; cancellation does not refund those fees.",
         "buyAndCite": true,
-        "answersIt": 0,
+        "answersIt": 1,
         "purchases": 3,
         "spentMinor": 120,
         "verificationOk": true,
@@ -860,29 +892,29 @@
         "phase": "DONE",
         "lead": [
           {
-            "text": "EscrowCreate locks funds for a specified recipient until the configured time or cryptographic conditions permit release.",
+            "text": "FinishAfter, when present, sets the earliest release time.",
             "claim": {
-              "id": "evidence-[\"xrpl-tx-escrowcreate\",\"v1\",\"p1\"]",
-              "text": "According to XRPL documentation, EscrowCreate locks funds for a specified recipient until the configured time or cryptographic conditions permit release. [1]",
+              "id": "evidence-[\"product-escrow-no-show\",\"v1\",\"p2\"]",
+              "text": "XRPL conditional escrow uses PREIMAGE-SHA-256. EscrowCreate supplies a Condition and the expiry window; EscrowFinish supplies the matching Fulfillment, which reveals the secret. FinishAfter, when present, sets the earliest release time. CancelAfter sets the expiration boundary. The timing checks use ledger close time rather than the buyer laptop clock, so a visible countdown alone does not establish eligibility. [1] [2]",
               "stance": "UNCERTAIN",
               "citations": [
                 {
-                  "resourceId": "xrpl-tx-escrowcreate",
+                  "resourceId": "product-escrow-no-show",
                   "version": "v1",
-                  "spanId": "p1"
+                  "spanId": "p2"
                 }
               ]
             }
           },
           {
-            "text": "Trust-line token escrow requires the issuer's AllowTrustLineLocking permission; MPT escrow has its own capability flags.",
+            "text": "CancelAfter sets the expiration boundary.",
             "claim": {
-              "id": "evidence-[\"xrpl-tx-escrowcreate\",\"v1\",\"p2\"]",
-              "text": "FinishAfter and CancelAfter use ledger time, and a Condition can require a matching fulfillment. Trust-line token escrow requires the issuer's AllowTrustLineLocking permission; MPT escrow has its own capability flags. Holding a token balance alone does not establish escrow eligibility. Creation locks principal but does not pay the recipient. [1]",
+              "id": "evidence-[\"product-escrow-no-show\",\"v1\",\"p2\"]",
+              "text": "XRPL conditional escrow uses PREIMAGE-SHA-256. EscrowCreate supplies a Condition and the expiry window; EscrowFinish supplies the matching Fulfillment, which reveals the secret. FinishAfter, when present, sets the earliest release time. CancelAfter sets the expiration boundary. The timing checks use ledger close time rather than the buyer laptop clock, so a visible countdown alone does not establish eligibility. [1] [2]",
               "stance": "UNCERTAIN",
               "citations": [
                 {
-                  "resourceId": "xrpl-tx-escrowcreate",
+                  "resourceId": "product-escrow-no-show",
                   "version": "v1",
                   "spanId": "p2"
                 }
@@ -890,11 +922,11 @@
             }
           }
         ],
-        "conclusion": "EscrowCreate locks funds for a specified recipient until the configured time or cryptographic conditions permit release. Trust-line token escrow requires the issuer's AllowTrustLineLocking permission; MPT escrow has its own capability flags. XRPL escrow locks funds until its time or cryptographic conditions permit release; it does not judge whether purchased prose is useful or true. EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds. Time-based, conditional and combined escrows express different release constraints. A condition can bind release to a cryptographic fulfillment, while FinishAfter and CancelAfter control time windows. A successful TEST-SGD escrow proves only that this configured stand-in worked on Testnet.",
+        "conclusion": "FinishAfter, when present, sets the earliest release time. CancelAfter sets the expiration boundary. According to ResearchAgent documentation, a buyer can recover an unfinished key-reveal escrow with EscrowCancel after CancelAfter; expiry permits cancellation but does not automatically return funds. XRPL conditional escrow uses PREIMAGE-SHA-256. EscrowCreate supplies a Condition and the expiry window; EscrowFinish supplies the matching Fulfillment, which reveals the secret. Anyone may submit an eligible EscrowCancel, but the locked principal returns to the escrow owner, not the caller who happens to submit it. Creating, finishing or canceling an escrow consumes XRP transaction fees; cancellation does not refund those fees. A missing object without complete history does not prove cancellation or release.",
         "buyAndCite": true,
         "answersIt": 0,
-        "purchases": 3,
-        "spentMinor": 120,
+        "purchases": 1,
+        "spentMinor": 40,
         "verificationOk": true,
         "violations": []
       },
@@ -967,11 +999,11 @@
             }
           }
         ],
-        "conclusion": "RLUSD is issued by Standard Custody & Trust Company under a New York limited-purpose trust charter, according to Ripple's issuer materials; that oversight does not automatically authorize every downstream service worldwide. Ripple describes RLUSD as backed by dollar reserves and publishes independent reserve attestations. They are not a determination that RLUSD is MAS-regulated or that holding it eliminates counterparty, operational or jurisdictional risk.",
+        "conclusion": "RLUSD is issued by Standard Custody & Trust Company under a New York limited-purpose trust charter, according to Ripple's issuer materials; that oversight does not automatically authorize every downstream service worldwide. Ripple describes RLUSD as backed by dollar reserves and publishes independent reserve attestations. They are not a determination that RLUSD is MAS-regulated or that holding it eliminates counterparty, operational or jurisdictional risk. According to ResearchAgent documentation, XRP pays native ledger fees, RLUSD is an issued dollar-denominated token, and TEST-SGD is only a labelled Testnet stand-in used to demonstrate token escrow. An agent choosing XRP avoids an issued-token trust line but bears XRP price exposure when pricing real services. RLUSD supports dollar-denominated accounting, while adding issuer, trust-line and supported-network requirements.",
         "buyAndCite": true,
         "answersIt": 1,
-        "purchases": 1,
-        "spentMinor": 40,
+        "purchases": 2,
+        "spentMinor": 80,
         "verificationOk": true,
         "violations": []
       },
@@ -981,8 +1013,24 @@
         "question": "RLUSD has a five-letter code. How is that currency code represented on the XRP Ledger?",
         "gold": "524C555344",
         "phase": "DONE",
-        "lead": [],
-        "conclusion": "RLUSD is issued by Standard Custody & Trust Company under a New York limited-purpose trust charter, according to Ripple's issuer materials; that oversight does not automatically authorize every downstream service worldwide. Ripple describes RLUSD as backed by dollar reserves and publishes independent reserve attestations. They do not turn a token ticker into verified issuer identity on every network, and they do not establish that a particular agent application has satisfied local licensing or customer-identification requirements. A dedicated issuer creates TEST-SGD tokens on Testnet for experiments; these tokens carry no economic value and substitute for RLUSD only in mechanism tests. It does not change the official RLUSD issuer's permissions or establish a live bank settlement partnership.",
+        "lead": [
+          {
+            "text": "Recheck issuer permissions before enabling another settlement mode; an older Testnet observation is not a current mainnet capability claim.",
+            "claim": {
+              "id": "lead-[null,\"product-rlusd-xrp\",\"v1\",\"p4\"]",
+              "text": "Author interpretation: inspect network, currency and issuer together. A ticker alone cannot identify an issued asset. Demo SGD prices and fixed conversions are display accounting, not live foreign exchange or a redemption right. Recheck issuer permissions before enabling another settlement mode; an older Testnet observation is not a current mainnet capability claim. All demonstrations discussed here use funds without real value. Sources accessed 10 November 2026. [3] [4]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "product-rlusd-xrp",
+                  "version": "v1",
+                  "spanId": "p4"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "Recheck issuer permissions before enabling another settlement mode; an older Testnet observation is not a current mainnet capability claim. According to ResearchAgent documentation, XRP pays native ledger fees, RLUSD is an issued dollar-denominated token, and TEST-SGD is only a labelled Testnet stand-in used to demonstrate token escrow. An agent choosing XRP avoids an issued-token trust line but bears XRP price exposure when pricing real services. RLUSD supports dollar-denominated accounting, while adding issuer, trust-line and supported-network requirements. Ripple describes RLUSD as a dollar stablecoin; that description is not a promise that every application, escrow or facilitator supports every RLUSD operation. Transaction fees on XRPL still require XRP. ResearchAgent distinguishes native XRP, official RLUSD on Testnet, and substitutes in its receipts.",
         "buyAndCite": true,
         "answersIt": 0,
         "purchases": 3,
@@ -1013,26 +1061,26 @@
             }
           },
           {
-            "text": "An XRPL trust line is a relationship between two accounts for a currency code, used to track trust-line tokens rather than native XRP.",
+            "text": "Ripple describes RLUSD as a dollar stablecoin; that description is not a promise that every application, escrow or facilitator supports every RLUSD operation.",
             "claim": {
-              "id": "evidence-[\"xrpl-trust-lines\",\"v1\",\"p1\"]",
-              "text": "An XRPL trust line is a relationship between two accounts for a currency code, used to track trust-line tokens rather than native XRP. A currency code alone does not identify the issuer. Two tokens called USD can represent different counterparties, so a wallet must preserve issuer identity when evaluating balances and payments. [1]",
+              "id": "evidence-[\"product-rlusd-xrp\",\"v1\",\"p2\"]",
+              "text": "An agent choosing XRP avoids an issued-token trust line but bears XRP price exposure when pricing real services. RLUSD supports dollar-denominated accounting, while adding issuer, trust-line and supported-network requirements. Ripple describes RLUSD as a dollar stablecoin; that description is not a promise that every application, escrow or facilitator supports every RLUSD operation. Transaction fees on XRPL still require XRP. [1] [2] [3]",
               "stance": "UNCERTAIN",
               "citations": [
                 {
-                  "resourceId": "xrpl-trust-lines",
+                  "resourceId": "product-rlusd-xrp",
                   "version": "v1",
-                  "spanId": "p1"
+                  "spanId": "p2"
                 }
               ]
             }
           }
         ],
-        "conclusion": "TrustSet creates or changes a trust line for an issuer's fungible tokens. An XRPL trust line is a relationship between two accounts for a currency code, used to track trust-line tokens rather than native XRP. Two tokens called USD can represent different counterparties, so a wallet must preserve issuer identity when evaluating balances and payments. The fungible-token documentation distinguishes trust-line tokens from Multi-Purpose Tokens. Issuer settings and trust-line configuration therefore matter to how a token can be held or transferred. XRP does not become a claim against a token issuer merely because it shares the same ledger. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules.",
+        "conclusion": "TrustSet creates or changes a trust line for an issuer's fungible tokens. Ripple describes RLUSD as a dollar stablecoin; that description is not a promise that every application, escrow or facilitator supports every RLUSD operation. An XRPL trust line is a relationship between two accounts for a currency code, used to track trust-line tokens rather than native XRP. Two tokens called USD can represent different counterparties, so a wallet must preserve issuer identity when evaluating balances and payments. According to ResearchAgent documentation, XRP pays native ledger fees, RLUSD is an issued dollar-denominated token, and TEST-SGD is only a labelled Testnet stand-in used to demonstrate token escrow. Transaction fees on XRPL still require XRP.",
         "buyAndCite": true,
         "answersIt": 1,
-        "purchases": 2,
-        "spentMinor": 80,
+        "purchases": 3,
+        "spentMinor": 120,
         "verificationOk": true,
         "violations": []
       },
@@ -1090,14 +1138,14 @@
         "phase": "DONE",
         "lead": [
           {
-            "text": "CredentialAccept records the subject account's acceptance of a credential issued to it.",
+            "text": "CredentialDelete removes a credential under the issuer, subject or expiration permissions in the reference.",
             "claim": {
-              "id": "evidence-[\"xrpl-tx-credentialaccept\",\"v1\",\"p1\"]",
-              "text": "According to XRPL documentation, CredentialAccept records the subject account's acceptance of a credential issued to it. [1]",
+              "id": "evidence-[\"xrpl-tx-credentialdelete\",\"v1\",\"p1\"]",
+              "text": "According to XRPL documentation, CredentialDelete removes a credential under the issuer, subject or expiration permissions in the reference. [1]",
               "stance": "UNCERTAIN",
               "citations": [
                 {
-                  "resourceId": "xrpl-tx-credentialaccept",
+                  "resourceId": "xrpl-tx-credentialdelete",
                   "version": "v1",
                   "spanId": "p1"
                 }
@@ -1105,14 +1153,14 @@
             }
           },
           {
-            "text": "CredentialType is issuer-defined binary data encoded as hexadecimal, not a globally unique legal classification.",
+            "text": "Applications must check current acceptance and expiry rather than rely on an old screenshot.",
             "claim": {
-              "id": "evidence-[\"xrpl-tx-credentialcreate\",\"v1\",\"p2\"]",
-              "text": "CredentialType is issuer-defined binary data encoded as hexadecimal, not a globally unique legal classification. The subject normally must accept the credential before permission checks can rely on it. Expiration and URI can qualify the attestation. Trust depends on the issuer and purpose; a credential does not certify every article or grant universal payment-service approval. [1]",
+              "id": "evidence-[\"xrpl-tx-credentialdelete\",\"v1\",\"p2\"]",
+              "text": "Deletion revokes the credential's current ledger presence without erasing transaction history. Applications must check current acceptance and expiry rather than rely on an old screenshot. Match issuer, subject and credential type. Removing an attestation is distinct from freezing money, reclaiming a token balance or deleting the subject's account. [1]",
               "stance": "UNCERTAIN",
               "citations": [
                 {
-                  "resourceId": "xrpl-tx-credentialcreate",
+                  "resourceId": "xrpl-tx-credentialdelete",
                   "version": "v1",
                   "spanId": "p2"
                 }
@@ -1120,11 +1168,11 @@
             }
           }
         ],
-        "conclusion": "CredentialAccept records the subject account's acceptance of a credential issued to it. CredentialType is issuer-defined binary data encoded as hexadecimal, not a globally unique legal classification. The issuer, subject and CredentialType identify the credential being accepted. Creation by an issuer alone is not acceptance by the subject. An expired or deleted credential cannot establish a current permission merely because it once appeared in history. Acceptance concerns the attestation's lifecycle, not a guarantee that every statement by the subject is true. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result.",
+        "conclusion": "CredentialDelete removes a credential under the issuer, subject or expiration permissions in the reference. Applications must check current acceptance and expiry rather than rely on an old screenshot. Deletion revokes the credential's current ledger presence without erasing transaction history. Match issuer, subject and credential type. Removing an attestation is distinct from freezing money, reclaiming a token balance or deleting the subject's account. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result.",
         "buyAndCite": true,
-        "answersIt": 1,
-        "purchases": 2,
-        "spentMinor": 80,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
         "verificationOk": true,
         "violations": []
       },
@@ -1184,6 +1232,52 @@
           {
             "text": "x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required.",
             "claim": {
+              "id": "lead-[null,\"xrpl-x402\",\"v1\",\"p1\"]",
+              "text": "x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required. Its specification separates transport representation from payment schemes and network-specific logic. Receiving a 402 response alone does not prove that a client can pay with an arbitrary asset on an arbitrary ledger. [1] [2]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-x402",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          },
+          {
+            "text": "its x402 XRP Testnet facilitator confirms settlement only after a validated tesSUCCESS and an exact match to the quoted payment.",
+            "claim": {
+              "id": "evidence-[\"product-x402-xrpl-settlement\",\"v1\",\"p1\"]",
+              "text": "According to ResearchAgent documentation, its x402 XRP Testnet facilitator confirms settlement only after a validated tesSUCCESS and an exact match to the quoted payment. [2] [3]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "product-x402-xrpl-settlement",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required. its x402 XRP Testnet facilitator confirms settlement only after a validated tesSUCCESS and an exact match to the quoted payment. According to the X402 v2 specification, an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. The header carries base64-encoded JSON: x402Version is 2, resource identifies the protected URL, and accepts lists payment options. Network and asset support must agree across the client, server and facilitator. A facilitator verifies payment terms and submits the authorized transaction; it does not receive authority to invent a different amount or recipient.",
+        "buyAndCite": true,
+        "answersIt": 1,
+        "purchases": 3,
+        "spentMinor": 120,
+        "verificationOk": true,
+        "violations": []
+      },
+      {
+        "id": "V14",
+        "topic": "x402",
+        "question": "What HTTP status code does a server return when payment is required before serving a resource?",
+        "gold": "402",
+        "phase": "DONE",
+        "lead": [
+          {
+            "text": "x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required.",
+            "claim": {
               "id": "evidence-[\"xrpl-x402\",\"v1\",\"p1\"]",
               "text": "x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required. Its specification separates transport representation from payment schemes and network-specific logic. Receiving a 402 response alone does not prove that a client can pay with an arbitrary asset on an arbitrary ledger. [1] [2]",
               "stance": "UNCERTAIN",
@@ -1197,14 +1291,14 @@
             }
           },
           {
-            "text": "The v2 specification defines payment requirements, a client payment payload and settlement responses, with facilitator interfaces for verification and settlement.",
+            "text": "The header carries base64-encoded JSON: x402Version is 2, resource identifies the protected URL, and accepts lists payment options.",
             "claim": {
-              "id": "evidence-[\"xrpl-x402\",\"v1\",\"p2\"]",
-              "text": "The v2 specification defines payment requirements, a client payment payload and settlement responses, with facilitator interfaces for verification and settlement. Its HTTP transport uses PAYMENT-REQUIRED for requirements and PAYMENT-SIGNATURE for authorization. Scheme and network support must match the requested payment; the protocol's extensibility is not universal implementation compatibility. [1] [2]",
+              "id": "evidence-[\"product-x402-response\",\"v1\",\"p2\"]",
+              "text": "The header carries base64-encoded JSON: x402Version is 2, resource identifies the protected URL, and accepts lists payment options. Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details. An optional error explains the refusal, and extensions can advertise additional capabilities. Base64 is an encoding, not encryption or proof that the seller is trustworthy. [1] [2]",
               "stance": "UNCERTAIN",
               "citations": [
                 {
-                  "resourceId": "xrpl-x402",
+                  "resourceId": "product-x402-response",
                   "version": "v1",
                   "spanId": "p2"
                 }
@@ -1212,26 +1306,11 @@
             }
           }
         ],
-        "conclusion": "x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required. The v2 specification defines payment requirements, a client payment payload and settlement responses, with facilitator interfaces for verification and settlement.",
+        "conclusion": "x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required. The header carries base64-encoded JSON: x402Version is 2, resource identifies the protected URL, and accepts lists payment options. According to the X402 v2 specification, an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. The retry carries the selected accepted requirements and a scheme-specific payment payload. A successful HTTP response can include PAYMENT-RESPONSE with settlement details. Network and asset support must agree across the client, server and facilitator. Preserve the original payment identity after a timeout instead of approving a new payment blindly.",
         "buyAndCite": true,
         "answersIt": 1,
-        "purchases": 1,
-        "spentMinor": 40,
-        "verificationOk": true,
-        "violations": []
-      },
-      {
-        "id": "V14",
-        "topic": "x402",
-        "question": "What HTTP status code does a server return when payment is required before serving a resource?",
-        "gold": "402",
-        "phase": "DONE",
-        "lead": [],
-        "conclusion": "Matched articles supplied no citable answer · nothing bought",
-        "buyAndCite": false,
-        "answersIt": 0,
-        "purchases": 0,
-        "spentMinor": 0,
+        "purchases": 2,
+        "spentMinor": 80,
         "verificationOk": true,
         "violations": []
       },
@@ -1276,7 +1355,7 @@
           {
             "text": "XRP remains the default key-reveal asset, while TEST-SGD is a labelled issued-token stand-in for experiments.",
             "claim": {
-              "id": "lead-[null,\"team-asset-provisioning\",\"v3\",\"p4\"]",
+              "id": "evidence-[\"team-asset-provisioning\",\"v3\",\"p4\"]",
               "text": "The available workaround is explicit about substitution. XRP remains the default key-reveal asset, while TEST-SGD is a labelled issued-token stand-in for experiments. TEST-SGD is not official RLUSD and does not demonstrate RLUSD issuer cooperation. Direct RLUSD Testnet payments and conditional token escrow are separate evidence classes. A report should identify which it tested, with the exact transaction hash and issuer, rather than describing every successful token transaction as proof of the same settlement mode. Nothing here is redeemable money or a production stablecoin guarantee.",
               "stance": "UNCERTAIN",
               "citations": [
@@ -1291,7 +1370,7 @@
           {
             "text": "Its observed OwnerCount changed from zero to one and back to zero with a 0.2 XRP increment.",
             "claim": {
-              "id": "lead-[null,\"team-asset-provisioning\",\"v3\",\"p7\"]",
+              "id": "evidence-[\"team-asset-provisioning\",\"v3\",\"p7\"]",
               "text": "Fees and reserves constrain even faucet-funded micropayments. Builder feedback B19 records 12-drop create and cancel fees and a 423-drop conditional finish using the documented client version. Its observed OwnerCount changed from zero to one and back to zero with a 0.2 XRP increment. These are dated measurements, not universal fee quotes. A wallet needs terminal transaction fee headroom and object reserve liquidity as well as purchase principal. The number of concurrent escrow objects can therefore constrain capacity independently of article prices or burned network fees.",
               "stance": "UNCERTAIN",
               "citations": [
@@ -1307,8 +1386,8 @@
         "conclusion": "XRP remains the default key-reveal asset, while TEST-SGD is a labelled issued-token stand-in for experiments. Its observed OwnerCount changed from zero to one and back to zero with a 0.2 XRP increment. That distinction is essential for stablecoins: a successful direct token payment does not prove that the same issuer permits token escrow. A wallet balance does not establish that an agent may spend it, and a price displayed in SGD is not an independently measured foreign exchange rate. XRP uses integer drops, with one million drops per XRP. An issued asset also needs the currency and issuer identity; the currency name alone is insufficient. These are payment validation requirements, not decisions delegated to the language model.",
         "buyAndCite": true,
         "answersIt": 0,
-        "purchases": 2,
-        "spentMinor": 80,
+        "purchases": 1,
+        "spentMinor": 40,
         "verificationOk": true,
         "violations": []
       },
@@ -1473,11 +1552,11 @@
             }
           }
         ],
-        "conclusion": "CheckCash lets the named destination redeem an XRPL Check, subject to the sender's available funds and payment liquidity. CheckCreate writes a deferred payment instruction that its destination can later redeem with CheckCash. A payment integration must credit the validated delivered_amount, because a partial Payment can succeed while delivering less than the transaction's requested amount. Checking only the requested amount creates the partial-payment exploit described in the XRPL documentation. The partial-payment flag changes what counts as success. These are defensive recommendations based on the documented exploit, not a claim that every payment rail or historical transaction exposes identical metadata.",
+        "conclusion": "CheckCash lets the named destination redeem an XRPL Check, subject to the sender's available funds and payment liquidity. CheckCreate writes a deferred payment instruction that its destination can later redeem with CheckCash.",
         "buyAndCite": true,
         "answersIt": 1,
-        "purchases": 3,
-        "spentMinor": 120,
+        "purchases": 2,
+        "spentMinor": 80,
         "verificationOk": true,
         "violations": []
       }
@@ -1485,8 +1564,8 @@
   },
   "v3-dev": {
     "N": 20,
-    "buyAndCite": 14,
-    "answersIt": 3,
+    "buyAndCite": 16,
+    "answersIt": 4,
     "negativeBuys": 0,
     "violations": 0,
     "verificationFailures": 0,
@@ -1575,26 +1654,41 @@
         "phase": "DONE",
         "lead": [
           {
-            "text": "The transaction-cost reference gives a standard minimum of 10 drops before load scaling, with separate formulas for multisigning and conditional EscrowFinish.",
+            "text": "FinishAfter, when present, sets the earliest release time.",
             "claim": {
-              "id": "evidence-[\"xrpl-fees\",\"v1\",\"p1\"]",
-              "text": "XRPL transaction fees destroy XRP to deter spam, and the required fee can rise with load. The transaction-cost reference gives a standard minimum of 10 drops before load scaling, with separate formulas for multisigning and conditional EscrowFinish. A quoted article price, a token transfer charge and the XRP network fee are different costs; none should be inferred from another. [1]",
+              "id": "evidence-[\"product-escrow-no-show\",\"v1\",\"p2\"]",
+              "text": "XRPL conditional escrow uses PREIMAGE-SHA-256. EscrowCreate supplies a Condition and the expiry window; EscrowFinish supplies the matching Fulfillment, which reveals the secret. FinishAfter, when present, sets the earliest release time. CancelAfter sets the expiration boundary. The timing checks use ledger close time rather than the buyer laptop clock, so a visible countdown alone does not establish eligibility. [1] [2]",
               "stance": "UNCERTAIN",
               "citations": [
                 {
-                  "resourceId": "xrpl-fees",
+                  "resourceId": "product-escrow-no-show",
                   "version": "v1",
-                  "spanId": "p1"
+                  "spanId": "p2"
+                }
+              ]
+            }
+          },
+          {
+            "text": "EscrowCreate supplies a Condition and the expiry window; EscrowFinish supplies the matching Fulfillment, which reveals the secret.",
+            "claim": {
+              "id": "evidence-[\"product-escrow-no-show\",\"v1\",\"p2\"]",
+              "text": "XRPL conditional escrow uses PREIMAGE-SHA-256. EscrowCreate supplies a Condition and the expiry window; EscrowFinish supplies the matching Fulfillment, which reveals the secret. FinishAfter, when present, sets the earliest release time. CancelAfter sets the expiration boundary. The timing checks use ledger close time rather than the buyer laptop clock, so a visible countdown alone does not establish eligibility. [1] [2]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "product-escrow-no-show",
+                  "version": "v1",
+                  "spanId": "p2"
                 }
               ]
             }
           }
         ],
-        "conclusion": "The transaction-cost reference gives a standard minimum of 10 drops before load scaling, with separate formulas for multisigning and conditional EscrowFinish. XRPL escrow locks funds until its time or cryptographic conditions permit release; it does not judge whether purchased prose is useful or true. EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds. Time-based, conditional and combined escrows express different release constraints. According to XRPL documentation, EscrowFinish releases an existing escrow to its predetermined recipient when the escrow's release conditions are satisfied. A conditional escrow needs the matching fulfillment, and time restrictions still apply. Conditional fulfillment increases transaction cost relative to a simple payment.",
+        "conclusion": "FinishAfter, when present, sets the earliest release time. EscrowCreate supplies a Condition and the expiry window; EscrowFinish supplies the matching Fulfillment, which reveals the secret. XRPL escrow locks funds until its time or cryptographic conditions permit release; it does not judge whether purchased prose is useful or true. EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds. Time-based, conditional and combined escrows express different release constraints. A refund after completed release requires a separate mechanism; do not assume cancellation can undo an already finished escrow. Reconcile the exact escrow owner and sequence before retrying. XRPL conditional escrow uses PREIMAGE-SHA-256.",
         "buyAndCite": true,
-        "answersIt": 0,
-        "purchases": 3,
-        "spentMinor": 120,
+        "answersIt": 1,
+        "purchases": 2,
+        "spentMinor": 80,
         "verificationOk": true,
         "violations": []
       },
@@ -1711,12 +1805,43 @@
         "question": "Besides the XRP Ledger, which other blockchain was RLUSD launched on?",
         "gold": "Ethereum",
         "phase": "DONE",
-        "lead": [],
-        "conclusion": "Matched articles supplied no citable answer · nothing bought",
-        "buyAndCite": false,
+        "lead": [
+          {
+            "text": "One XRP contains one million drops.",
+            "claim": {
+              "id": "evidence-[\"product-micropayment-pricing\",\"v1\",\"p2\"]",
+              "text": "One XRP contains one million drops. The network destroys transaction fees rather than paying them to the article writer. A conditional finish uses the reference fee multiplied by 33 plus fulfillment bytes divided by 16, before other applicable scaling. Multisigning adds cost. Query current fee conditions instead of treating the minimum as a guaranteed quote for every transaction. [1] [2]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "product-micropayment-pricing",
+                  "version": "v1",
+                  "spanId": "p2"
+                }
+              ]
+            }
+          },
+          {
+            "text": "Preserve gross article spend, refunds, net spend and ledger fees as distinct quantities when evaluating micropayments.",
+            "claim": {
+              "id": "evidence-[\"product-micropayment-pricing\",\"v1\",\"p4\"]",
+              "text": "Author interpretation: compare the total delivery path with the value of the purchase. A low network fee alone does not establish viable economics after quoting, verification, hosting and refund handling. The team-authored explainers use S$0.40 demo accounting and faucet funds, with no live exchange-rate claim. Preserve gross article spend, refunds, net spend and ledger fees as distinct quantities when evaluating micropayments. Sources accessed 10 November 2026. [3] [4] [5]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "product-micropayment-pricing",
+                  "version": "v1",
+                  "spanId": "p4"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "One XRP contains one million drops. Preserve gross article spend, refunds, net spend and ledger fees as distinct quantities when evaluating micropayments. A conditional finish uses the reference fee multiplied by 33 plus fulfillment bytes divided by 16, before other applicable scaling.",
+        "buyAndCite": true,
         "answersIt": 0,
-        "purchases": 0,
-        "spentMinor": 0,
+        "purchases": 1,
+        "spentMinor": 40,
         "verificationOk": true,
         "violations": []
       },
@@ -1787,8 +1912,24 @@
         "question": "Which XRPL feature uses Credentials to decide which senders may pay an account that blocks unknown deposits?",
         "gold": "DepositPreauth",
         "phase": "DONE",
-        "lead": [],
-        "conclusion": "According to XRPL documentation, CredentialCreate issues a provisional on-ledger credential to a subject account. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. According to XRPL documentation, CredentialAccept records the subject account's acceptance of a credential issued to it. According to XRPL documentation, CredentialDelete removes a credential under the issuer, subject or expiration permissions in the reference. Removing an attestation is distinct from freezing money, reclaiming a token balance or deleting the subject's account.",
+        "lead": [
+          {
+            "text": "XRPL Credentials verify a writer only when an operator-trusted issuer attests to the bound seller wallet and the accepted credential is unexpired.",
+            "claim": {
+              "id": "evidence-[\"product-writer-credentials\",\"v1\",\"p1\"]",
+              "text": "According to ResearchAgent writer-verification documentation, XRPL Credentials verify a writer only when an operator-trusted issuer attests to the bound seller wallet and the accepted credential is unexpired. [2]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "product-writer-credentials",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "XRPL Credentials verify a writer only when an operator-trusted issuer attests to the bound seller wallet and the accepted credential is unexpired. According to XRPL documentation, CredentialDelete removes a credential under the issuer, subject or expiration permissions in the reference. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. According to XRPL documentation, CredentialCreate issues a provisional on-ledger credential to a subject account.",
         "buyAndCite": true,
         "answersIt": 0,
         "purchases": 3,
@@ -1833,12 +1974,43 @@
         "question": "In x402 v1, which response header does the server return after settlement with the transaction result?",
         "gold": "X-PAYMENT-RESPONSE",
         "phase": "DONE",
-        "lead": [],
-        "conclusion": "Matched articles supplied no citable answer · nothing bought",
-        "buyAndCite": false,
+        "lead": [
+          {
+            "text": "its x402 XRP Testnet facilitator confirms settlement only after a validated tesSUCCESS and an exact match to the quoted payment.",
+            "claim": {
+              "id": "evidence-[\"product-x402-xrpl-settlement\",\"v1\",\"p1\"]",
+              "text": "According to ResearchAgent documentation, its x402 XRP Testnet facilitator confirms settlement only after a validated tesSUCCESS and an exact match to the quoted payment. [2] [3]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "product-x402-xrpl-settlement",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          },
+          {
+            "text": "In ResearchAgent, the writer hosts the facilitator.",
+            "claim": {
+              "id": "evidence-[\"product-x402-xrpl-settlement\",\"v1\",\"p3\"]",
+              "text": "In ResearchAgent, the writer hosts the facilitator. The invoice binds article, version, signed passage commitment, amount and payee. The native payment commits the invoice through InvoiceID. Policy checks those bindings and refuses partial-payment or unintended conversion behavior. Repeating the same signed transaction retrieves the same delivery rather than authorizing another charge. [2]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "product-x402-xrpl-settlement",
+                  "version": "v1",
+                  "spanId": "p3"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "its x402 XRP Testnet facilitator confirms settlement only after a validated tesSUCCESS and an exact match to the quoted payment. In ResearchAgent, the writer hosts the facilitator. The client signs the quoted transaction and supplies the payment payload on retry. A facilitator verifies payment terms and submits the authorized transaction; it does not receive authority to invent a different amount or recipient. Repeating the same signed transaction retrieves the same delivery rather than authorizing another charge. Check the transaction hash, validated result and delivered value before treating payment as complete.",
+        "buyAndCite": true,
         "answersIt": 0,
-        "purchases": 0,
-        "spentMinor": 0,
+        "purchases": 1,
+        "spentMinor": 40,
         "verificationOk": true,
         "violations": []
       },
@@ -1849,6 +2021,21 @@
         "gold": "exact",
         "phase": "DONE",
         "lead": [
+          {
+            "text": "Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details.",
+            "claim": {
+              "id": "lead-[null,\"product-x402-response\",\"v1\",\"p2\"]",
+              "text": "The header carries base64-encoded JSON: x402Version is 2, resource identifies the protected URL, and accepts lists payment options. Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details. An optional error explains the refusal, and extensions can advertise additional capabilities. Base64 is an encoding, not encryption or proof that the seller is trustworthy. [1] [2]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "product-x402-response",
+                  "version": "v1",
+                  "spanId": "p2"
+                }
+              ]
+            }
+          },
           {
             "text": "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information.",
             "claim": {
@@ -1863,24 +2050,9 @@
                 }
               ]
             }
-          },
-          {
-            "text": "Scheme and network support must match the requested payment; the protocol's extensibility is not universal implementation compatibility.",
-            "claim": {
-              "id": "evidence-[\"xrpl-x402\",\"v1\",\"p2\"]",
-              "text": "The v2 specification defines payment requirements, a client payment payload and settlement responses, with facilitator interfaces for verification and settlement. Its HTTP transport uses PAYMENT-REQUIRED for requirements and PAYMENT-SIGNATURE for authorization. Scheme and network support must match the requested payment; the protocol's extensibility is not universal implementation compatibility. [1] [2]",
-              "stance": "UNCERTAIN",
-              "citations": [
-                {
-                  "resourceId": "xrpl-x402",
-                  "version": "v1",
-                  "spanId": "p2"
-                }
-              ]
-            }
           }
         ],
-        "conclusion": "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information. Scheme and network support must match the requested payment; the protocol's extensibility is not universal implementation compatibility. x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required. Its specification separates transport representation from payment schemes and network-specific logic. The v2 specification defines payment requirements, a client payment payload and settlement responses, with facilitator interfaces for verification and settlement. Its HTTP transport uses PAYMENT-REQUIRED for requirements and PAYMENT-SIGNATURE for authorization. The x402 buyer first requests a resource and receives payment requirements rather than premium content.",
+        "conclusion": "Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details. The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information. According to the X402 v2 specification, an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. The header carries base64-encoded JSON: x402Version is 2, resource identifies the protected URL, and accepts lists payment options. x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required. Its specification separates transport representation from payment schemes and network-specific logic. A model can assess usefulness but cannot initiate payment.",
         "buyAndCite": true,
         "answersIt": 0,
         "purchases": 3,
@@ -2531,37 +2703,37 @@
         "phase": "DONE",
         "lead": [
           {
-            "text": "Its HTTP transport uses PAYMENT-REQUIRED for requirements and PAYMENT-SIGNATURE for authorization.",
+            "text": "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
             "claim": {
-              "id": "evidence-[\"xrpl-x402\",\"v1\",\"p2\"]",
-              "text": "The v2 specification defines payment requirements, a client payment payload and settlement responses, with facilitator interfaces for verification and settlement. Its HTTP transport uses PAYMENT-REQUIRED for requirements and PAYMENT-SIGNATURE for authorization. Scheme and network support must match the requested payment; the protocol's extensibility is not universal implementation compatibility. [1] [2]",
+              "id": "evidence-[\"product-x402-response\",\"v1\",\"p1\"]",
+              "text": "According to the X402 v2 specification, an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. [1] [2]",
               "stance": "UNCERTAIN",
               "citations": [
                 {
-                  "resourceId": "xrpl-x402",
-                  "version": "v1",
-                  "spanId": "p2"
-                }
-              ]
-            }
-          },
-          {
-            "text": "x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required.",
-            "claim": {
-              "id": "evidence-[\"xrpl-x402\",\"v1\",\"p1\"]",
-              "text": "x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required. Its specification separates transport representation from payment schemes and network-specific logic. Receiving a 402 response alone does not prove that a client can pay with an arbitrary asset on an arbitrary ledger. [1] [2]",
-              "stance": "UNCERTAIN",
-              "citations": [
-                {
-                  "resourceId": "xrpl-x402",
+                  "resourceId": "product-x402-response",
                   "version": "v1",
                   "spanId": "p1"
                 }
               ]
             }
+          },
+          {
+            "text": "Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details.",
+            "claim": {
+              "id": "evidence-[\"product-x402-response\",\"v1\",\"p2\"]",
+              "text": "The header carries base64-encoded JSON: x402Version is 2, resource identifies the protected URL, and accepts lists payment options. Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details. An optional error explains the refusal, and extensions can advertise additional capabilities. Base64 is an encoding, not encryption or proof that the seller is trustworthy. [1] [2]",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "product-x402-response",
+                  "version": "v1",
+                  "spanId": "p2"
+                }
+              ]
+            }
           }
         ],
-        "conclusion": "Its HTTP transport uses PAYMENT-REQUIRED for requirements and PAYMENT-SIGNATURE for authorization. x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required. Its specification separates transport representation from payment schemes and network-specific logic. The v2 specification defines payment requirements, a client payment payload and settlement responses, with facilitator interfaces for verification and settlement. Scheme and network support must match the requested payment; the protocol's extensibility is not universal implementation compatibility.",
+        "conclusion": "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details. The header carries base64-encoded JSON: x402Version is 2, resource identifies the protected URL, and accepts lists payment options. The retry carries the selected accepted requirements and a scheme-specific payment payload. A successful HTTP response can include PAYMENT-RESPONSE with settlement details. Network and asset support must agree across the client, server and facilitator. Preserve the original payment identity after a timeout instead of approving a new payment blindly.",
         "buyAndCite": true,
         "answersIt": 0,
         "purchases": 1,
@@ -2593,8 +2765,8 @@
         "conclusion": "The reserve documentation lists Mainnet settings of 1 XRP per account and 0.2 XRP per owned item at access time, and warns that other networks can differ. An XRPL wallet needs a base reserve plus applicable owner reserves, separately from the money it intends to send. Base reserve supports the account's existence; owner reserve constrains ledger objects. Removing an object can release its reserve requirement. Reserves are not payments to validators, and the documentation permits reserved XRP to pay transaction costs. Treating every XRP in a balance as transferable would therefore confuse several distinct accounting concepts. A wallet with enough principal for a purchase may still lack room for the escrow object or transaction fee.",
         "buyAndCite": true,
         "answersIt": 0,
-        "purchases": 2,
-        "spentMinor": 80,
+        "purchases": 1,
+        "spentMinor": 40,
         "verificationOk": true,
         "violations": []
       }

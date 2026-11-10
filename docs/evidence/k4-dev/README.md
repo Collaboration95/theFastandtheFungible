@@ -6,18 +6,17 @@ question and miss is retained; neither scorer nor gold phrases were changed.
 
 ## Before / after
 
-Both sides use the merged C3 corpus (#425), with identical bank hashes and no
-corpus edits by K4. Baseline: `9dfa5212edf17ef0553c898d30639eefc18c95d6`
-(C3 + HM). After: `9d568b5c6ad8d66bd63f097a64c1279ec08fb246`, rebased on
-`9e161c84` (also HG, the environment overlay fix, the standalone key-reveal
-example and W3 hire recovery). Hosted execution is off. Corpus/writer bytes are identical between these
-sources. These matched local baselines differ from K3's earlier published runs.
+Both sides use the merged C3 (#425) and C4 (#437) corpus, with identical bank
+hashes and no corpus edits by K4. Baseline: `cbfc63ab8432b2b3d8c663fc7875c1d1cf963023`.
+After: `d7b36b7d5b72b27e49a8c6c5f4fba8eb14dc7644`, rebased on that baseline. Hosted
+execution is off. Corpus/writer bytes are identical between these sources.
+These matched local baselines differ from K3's earlier published runs.
 
 | Development bank | Buy and cite before → after | Lead `answersIt` before → after | Negative purchases |
 | --- | --- | --- | --- |
-| v1 (20) | 17 → 17 | n/a: no gold strings | n/a |
-| v3 (20) | 11 → 19 | 5 → 11 | n/a |
-| v3-dev (20) | 8 → 14 | 1 → 3 | n/a |
+| v1 (20) | 19 → 19 | n/a: no gold strings | n/a |
+| v3 (20) | 14 → 20 | 5 → 13 | n/a |
+| v3-dev (20) | 10 → 16 | 2 → 4 | n/a |
 | v3-negatives (10) | 2 → 0 | n/a | 2 → **0** |
 
 All 79 runs on each side (70 bank questions, three legacy UC runs, three
@@ -39,7 +38,7 @@ decision, the revised analyst margin estimate, and the complete lead-time change
 The three public preset lead goldens remain substantive assertions: RLUSD starts
 with **AllowTrustLineLocking**; x402 starts with its payment headers; reserves
 starts with the dated XRP amounts and network qualifier. The x402 snapshot was
-re-pinned for the selected delivered header passage. No old failure threshold was
+re-pinned for the C4 delivered header passage. No old failure threshold was
 changed.
 
 ## Reproduction and retained evidence
@@ -78,8 +77,7 @@ unchanged; engine, proof, policy, browser and hard-gate tests remain enabled.
 
 ## Remaining misses
 
-Canonical v3 misses: V02–V06, V08, V14–V16. Canonical v3-dev misses: D01–D14 and
-D16–D18. Some leads express the concept without the exact gold string, while
+Canonical v3 misses: V02, V05, V06, V08, V11, V15, V16. Canonical v3-dev misses: D01, D02, D03, D05, D06, D07, D08, D09, D10, D11, D12, D13, D14, D16, D17, D18. Some leads express the concept without the exact gold string, while
 others still select an incomplete passage or lack a covering source. These remain
 failures; no synonym credit was added to the scorer. Corpus additions belong to
 other lanes. Live-model/Testnet acceptance belongs to the acceptance lane.
