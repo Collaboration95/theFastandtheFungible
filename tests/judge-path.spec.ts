@@ -104,6 +104,28 @@ test('ledger validates 61/61 within six seconds on multiplexed fixture sockets',
   await expect(page.locator('tbody')).toContainText('RLUSD')
   await expect(page.locator('tbody tr').first()).toContainText('key published')
 })
+test('progress page: no console errors, axe clean at 390 and 1440, deep links open a stop, reduced motion keeps final numbers', async ({ browser }) => {
+  for (const width of [390, 1440]) {
+    const context = await browser.newContext({ viewport: { width, height: 900 }, reducedMotion: 'reduce' })
+    const page = await context.newPage()
+    const errors: string[] = []
+    page.on('console', m => { if (m.type() === 'error') errors.push(m.text()) })
+    page.on('pageerror', e => errors.push(String(e)))
+    await page.route('https://fonts.googleapis.com/**', route => route.fulfill({ contentType: 'text/css', body: '' }))
+    await page.goto(`${base}/progress/#stop-v1-0-0`)
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('From prototype to proof')
+    await expect(page.locator('#stop-v1-0-0 details')).toHaveAttribute('open', '')
+    const prs = await page.locator('.stat .num').first().textContent()
+    expect(Number(prs?.replace(/,/g, ''))).toBeGreaterThan(100)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0)
+    await page.getByRole('button', { name: 'Open all' }).click()
+    expect(await page.locator('#rail details:not([open])').count()).toBe(0)
+    const axe = await new AxeBuilder({ page }).analyze()
+    expect(axe.violations.filter(v => ['serious', 'critical'].includes(v.impact ?? '')).map(v => v.id)).toEqual([])
+    expect(errors).toEqual([])
+    await context.close()
+  }
+})
 test('demo proof strip is collapsed by default and expands on demand', async ({ page }) => {
   await page.goto(`${base}/demo/`)
   const strip = page.locator('.demo-transactions')
