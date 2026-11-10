@@ -130,16 +130,17 @@ if (!dry && !existing) {
   try { found=JSON.parse(execFileSync('gcloud',['projects','describe',project,'--format=json'],{encoding:'utf8',stdio:['ignore','pipe','pipe']})) }
   catch(e) { if (!MISSING.test(String(e.stderr))) throw Error('Cannot establish new-project ownership') }
   if (found && !options['adopt-project']) throw Error('Project already exists; refusing adoption (use --adopt-project for a labelled sff-demo project)')
-  if (found && !adoptable(found, JSON.parse(gc(['billing','projects','describe',project,'--format=json'])), billing)) throw Error('Existing project lacks the sff-demo labels or this billing link; refusing adoption')
+  if (found && !adoptable(found, JSON.parse(gc(['billing','projects','describe',project,'--format=json'],{attempts:6})), billing)) throw Error('Existing project lacks the sff-demo labels or this billing link; refusing adoption')
   existing={project,billingAccount:billing,sha,secrets:[],...(found?{adopted:true}:{})}
   writeFileSync(manifestPath,JSON.stringify(existing,null,2)+'\n',{flag:'wx',mode:0o600})
 }
 ensure(['projects','describe',project], ['projects','create',project,'--name=ResearchAgent SFF demo','--labels=purpose=sff-demo,expires=20261120'])
 // Linking is a rate-limited write (HTTP 429 when repeated); only link when it differs.
-if (dry || gc(['billing','projects','describe',project,'--format=value(billingAccountName)']) !== `billingAccounts/${billing}`) gc(['billing','projects','link',project,`--billing-account=${billing}`])
+// Cloud Billing reads share gcloud's per-minute client quota (HTTP 429 seen 11 Nov); retry them.
+if (dry || gc(['billing','projects','describe',project,'--format=value(billingAccountName)'],{attempts:6}) !== `billingAccounts/${billing}`) gc(['billing','projects','link',project,`--billing-account=${billing}`])
 gc(['services','enable','compute.googleapis.com','run.googleapis.com','artifactregistry.googleapis.com','secretmanager.googleapis.com','monitoring.googleapis.com','logging.googleapis.com','iam.googleapis.com','billingbudgets.googleapis.com','cloudresourcemanager.googleapis.com','iap.googleapis.com','oslogin.googleapis.com',...p])
 // Budgets must be denominated in the billing account's currency (e.g. SGD accounts reject USD).
-const currency=dry?'':gc(['billing','accounts','describe',billing,'--format=value(currencyCode)'])
+const currency=dry?'':gc(['billing','accounts','describe',billing,'--format=value(currencyCode)'],{attempts:6})
 if (dry) show(['billing','accounts','describe',billing,'--format=value(currencyCode)'])
 const amount=dry?(options['budget-amount']||'RESOLVED_FROM_BILLING_CURRENCY(USD:50USD,SGD:70SGD)'):budgetAmount(currency,options['budget-amount'])
 const number=dry?'PROJECT_NUMBER':gc(['projects','describe',project,'--format=value(projectNumber)'])
