@@ -12,6 +12,7 @@ import type { Config } from '../config.js'
 export type DemoStatus = {
   state: 'ready' | 'paused' | 'busy' | 'degraded' | 'ended';
   capabilities: { ask: boolean; scope: boolean; history: boolean; receipts: boolean; pdf: false; settings: false; faultControls: false };
+  questionCapMinor: number;
   remaining: { questions: number; minor: number }; labels: { models: string; rail: string };
   links: { repo: string; deck: string; video: string; progress: string; replay: string };
   csrfToken?: string; queue?: { runId: string; position: number | null; expiresAt: string }[]
@@ -30,7 +31,7 @@ export function hostedRouter(context: ApiContext, config: Config, limits: Hosted
     const c = hostedControl(config), ended = Date.now() >= Date.parse(config.HOSTED_ADMISSIONS_UNTIL || '2026-11-19T16:00:00Z')
     const remaining = limits.remaining(principal)
     const state = ended ? 'ended' : c.admissionsPaused || c.spendingPaused ? 'paused' : !(await ready()) || !remaining.questions || !remaining.minor ? 'degraded' : queue.busy ? 'busy' : 'ready'
-    return { state, capabilities: { ask: (state === 'ready' || state === 'busy') && queue.canQueue, scope: state === 'ready', history: true, receipts: true, pdf: false, settings: false, faultControls: false }, remaining,
+    return { state, questionCapMinor: limits.questionMinor, capabilities: { ask: (state === 'ready' || state === 'busy') && queue.canQueue, scope: state === 'ready', history: true, receipts: true, pdf: false, settings: false, faultControls: false }, remaining,
       labels: { models: isLlmConfigured() ? 'live research configured · per-answer fallback labelled' : 'fixture models', rail: context.payer ? 'Shared XRPL Testnet demo · no real value' : 'SIMULATED · no real value' },
       links: { repo: 'https://github.com/Collaboration95/theFastandtheFungible', deck: config.HOSTED_DECK_URL || '', video: config.HOSTED_VIDEO_URL || '', progress: config.HOSTED_PROGRESS_URL || '', replay: config.HOSTED_REPLAY_URL || 'https://collaboration95.github.io/theFastandtheFungible/demo/' } }
   }
@@ -58,7 +59,7 @@ export function hostedRouter(context: ApiContext, config: Config, limits: Hosted
     if (queue.busy) throw new HostedError(429,'busy')
     if (!(await ready())) throw new HostedError(503,'demo_unavailable')
     const question = questionOf(req.body.question), key = keyOf(req.get('Idempotency-Key'))
-    const hold = limits.reserve(res.locals.hostedSession.principal,key,question,res.locals.hostedIp,LIMITS.questionMinor,'scope',req.body)
+    const hold = limits.reserve(res.locals.hostedSession.principal,key,question,res.locals.hostedIp,limits.questionMinor,'scope',req.body)
     if (hold.scope_result) return res.json(JSON.parse(hold.scope_result))
     if (hold.state !== 'draft') throw new HostedError(409,'scope_in_progress')
     requireAdmissions(config)
@@ -83,7 +84,7 @@ export function hostedRouter(context: ApiContext, config: Config, limits: Hosted
     // Reserve after the async readiness probe, then bind and enqueue without another await.
     const hold = limits.reserve(principal,key,input.question,res.locals.hostedIp,input.budgetMinor,'submit',req.body)
     if (hold.run_id) return res.status(200).json(store.getRun(hold.run_id))
-    const admitted = store.admit({surface:'web',principal,question:input.question,requestedMinor:input.budgetMinor,idempotencyKey:key,maxMinor:LIMITS.questionMinor,labels:context.labels})
+    const admitted = store.admit({surface:'web',principal,question:input.question,requestedMinor:input.budgetMinor,idempotencyKey:key,maxMinor:limits.questionMinor,labels:context.labels})
     const runId = admitted.run.runId
     limits.update(hold.id,{run_id:runId,state:admitted.reused?'interrupted':'queued'})
     if (admitted.reused) return res.status(200).json(store.getRun(runId))

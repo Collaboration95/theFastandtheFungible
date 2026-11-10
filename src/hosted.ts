@@ -6,8 +6,8 @@ export type Hosted = { status: HostedDemoStatus; connection?: 'offline' | 'unrea
 export const HostedContext = createContext<Hosted | undefined>(undefined)
 export const useHosted = () => useContext(HostedContext)
 
-/** Every hosted question holds this much of the visitor's daily test-fund allowance while it runs (gateway LIMITS.questionMinor). */
-export const HOSTED_QUESTION_MINOR = 200
+/** The gateway owns this cap; an absent value permits only a free question. */
+export const questionCap = (status: HostedDemoStatus) => status.questionCapMinor ?? 0
 export const HOSTED_DAILY_QUESTIONS = 5
 export const HOSTED_ENDS = '20 November, 00:00 SGT'
 export const REPO_DOCS = 'https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs'
@@ -19,7 +19,7 @@ export function homeState(hosted: Hosted): HomeState {
   if (status.state === 'ended') return 'ended'
   if (connection) return connection
   if (status.state === 'paused') return 'paused'
-  if (status.remaining.questions === 0 || status.remaining.minor < HOSTED_QUESTION_MINOR) return 'allowance'
+  if (status.remaining.questions === 0 || status.remaining.minor < questionCap(status)) return 'allowance'
   if (status.state === 'degraded') return 'degraded'
   if (status.state === 'busy' || !status.capabilities.ask) return 'busy'
   return 'ready'
@@ -64,7 +64,7 @@ export function refusal(error: unknown): Refusal {
     case 'private_input': return { kind: 'message', text: 'That looks like an email address, a key or a token. Remove personal or secret details and ask again.' }
     case 'idempotency_conflict': return { kind: 'retry-new-key', text: 'This question changed after it was planned. Ask it again.' }
     case 'scope_in_progress': return { kind: 'message', text: 'Still planning this question. Try again in a few seconds.' }
-    case 'invalid_budget': return { kind: 'message', text: `Choose a budget up to ${minorText(HOSTED_QUESTION_MINOR)}.` }
+    case 'invalid_budget': return { kind: 'message', text: 'Choose a budget within the current per-question limit.' }
     case 'session_limit': return { kind: 'message', text: 'The demo is at visitor capacity. Try again in a few minutes.' }
     case 'csrf_denied': case 'origin_denied': return { kind: 'message', text: 'Your demo session expired. Reload the page to start a new one; your receipts stay with the old session for 24 hours.' }
   }

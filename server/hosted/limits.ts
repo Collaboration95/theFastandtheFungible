@@ -18,6 +18,7 @@ export class HostedLimits {
       CREATE INDEX IF NOT EXISTS hosted_holds_principal ON hosted_holds(principal,day);
       CREATE INDEX IF NOT EXISTS hosted_holds_ip ON hosted_holds(ip,day);`))
   }
+  get questionMinor() { return Number(this.config.HOSTED_QUESTION_CAP_MINOR ?? LIMITS.questionMinor) }
   session(cookie?: string) {
     const now = this.now()
     return this.store.hostedState(db => {
@@ -55,7 +56,7 @@ export class HostedLimits {
         return this.row(db, principal, key)!
       }
       requireAdmissions(this.config, this.now())
-      if (!Number.isSafeInteger(minor) || minor < 0 || minor > Number(this.config.HOSTED_QUESTION_CAP_MINOR || LIMITS.questionMinor)) throw new HostedError(400, 'invalid_budget')
+      if (!Number.isSafeInteger(minor) || minor < 0 || minor > this.questionMinor) throw new HostedError(400, 'invalid_budget')
       const now = this.now(), day = new Date(now).toISOString().slice(0, 10), ipKey = this.ipKey(ip)
       const tally = (where: string, ...params: (string | number)[]) => db.prepare(`SELECT count(*) AS n, coalesce(sum(minor),0) AS minor FROM hosted_holds WHERE ${where}`).get(...params)!
       const check = (v: ReturnType<typeof tally>, questions: number, cap: number) => { if (Number(v.n) >= questions || Number(v.minor) + minor > cap) throw new HostedError(429, 'allowance_exhausted') }
@@ -137,7 +138,7 @@ export class HostedLimits {
       const pending = Number(db.prepare('SELECT coalesce(sum(model_envelope-model_used),0) AS n FROM hosted_holds').get()!.n)
       const used = Number(db.prepare('SELECT coalesce(sum(reserved),0) AS n FROM hosted_attempts WHERE created>=?').get(Date.parse(day))!.n)
       const total = Number(db.prepare('SELECT coalesce(sum(reserved),0) AS n FROM hosted_attempts').get()!.n)
-      return Number(today.n) < LIMITS.dailyQuestions && Number(today.minor)+200 <= LIMITS.dailyMinor && Number(all.n) < LIMITS.lifetimeQuestions && Number(all.minor)+200 <= LIMITS.lifetimeMinor && used+pending+LIMITS.questionModel <= LIMITS.dailyModel && total+pending+LIMITS.questionModel <= LIMITS.lifetimeModel
+      return Number(today.n) < LIMITS.dailyQuestions && Number(today.minor)+this.questionMinor <= LIMITS.dailyMinor && Number(all.n) < LIMITS.lifetimeQuestions && Number(all.minor)+this.questionMinor <= LIMITS.lifetimeMinor && used+pending+LIMITS.questionModel <= LIMITS.dailyModel && total+pending+LIMITS.questionModel <= LIMITS.lifetimeModel
     })
   }
   update(id: string, change: { state?: string; run_id?: string; scope_result?: string }) { this.store.hostedState(db => { for (const [key,value] of Object.entries(change)) db.prepare(`UPDATE hosted_holds SET ${key}=? WHERE id=?`).run(value!,id) }) }

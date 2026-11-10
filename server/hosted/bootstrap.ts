@@ -11,7 +11,7 @@ export function validateHosted(config: Config) {
   if (!config.HOSTED_IP_HMAC_KEY || config.HOSTED_IP_HMAC_KEY.length < 32 || !isIP(config.HOSTED_TRUSTED_PROXY || '')) throw new Error('Hosted proxy and HMAC key required')
   const end = Date.parse(config.HOSTED_ADMISSIONS_UNTIL || '2026-11-19T16:00:00Z')
   if (!Number.isFinite(end) || end > Date.parse('2026-11-19T16:00:00Z')) throw new Error('Invalid admissions deadline')
-  const minor = Number(config.HOSTED_QUESTION_CAP_MINOR || 200)
+  const minor = Number(config.HOSTED_QUESTION_CAP_MINOR ?? 200)
   if (!Number.isSafeInteger(minor) || minor < 0 || minor > 200) throw new Error('Invalid hosted question cap')
   if (config.SEARCH_EMBEDDINGS === 'live') throw new Error('Hosted remote embedding attempts are not qualified; use keyword discovery')
   if (config.LLM_PROVIDER === 'openai-compatible' || config.DECISION_PROVIDER === 'compatible') throw new Error('Hosted providers must use qualified bounded profiles')
@@ -25,7 +25,7 @@ export function hostedPayer(config: Config) {
 }
 export function pausedShell() {
   const app = express()
-  const body = {state:'paused',capabilities:{ask:false,scope:false,history:false,receipts:false,pdf:false,settings:false,faultControls:false},remaining:{questions:0,minor:0},labels:{models:'unavailable',rail:'Shared XRPL Testnet demo · no real value'},links:{repo:'https://github.com/Collaboration95/theFastandtheFungible',deck:'',video:'',progress:'',replay:'https://collaboration95.github.io/theFastandtheFungible/demo/'}}
+  const body = {questionCapMinor:0,state:'paused',capabilities:{ask:false,scope:false,history:false,receipts:false,pdf:false,settings:false,faultControls:false},remaining:{questions:0,minor:0},labels:{models:'unavailable',rail:'Shared XRPL Testnet demo · no real value'},links:{repo:'https://github.com/Collaboration95/theFastandtheFungible',deck:'',video:'',progress:'',replay:'https://collaboration95.github.io/theFastandtheFungible/demo/'}}
   app.disable('x-powered-by')
   app.use((_req,res,next)=>{res.set('Cache-Control','no-store');next()})
   app.get('/livez',(_req,res)=>res.json({status:'ok'}))

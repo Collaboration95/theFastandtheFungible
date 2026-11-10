@@ -228,3 +228,43 @@ test('a busy shared demo queues the question with a cancel, and reduced motion s
   await expect(question(page)).toHaveValue('How does XRPL escrow release funds?')
   await context.close()
 })
+
+test('hosted writers have public pages, honest earnings and narrow reads in two contexts', async ({ browser }) => {
+  const a = await visitor(browser), b = await visitor(browser, 390, 844)
+  for (const [index, v] of [a, b].entries()) {
+    await v.page.goto('/')
+    if (index) { await openNav(v.page); await v.page.getByRole('button', { name: 'Writers', exact: true }).click() }
+    else await v.page.getByRole('tab', { name: /^Writers/ }).click()
+    const catalogue = v.page.locator('.ra-writer-earnings')
+    await expect(catalogue.getByText('Team-authored', { exact: true }).first()).toBeVisible()
+    await expect(catalogue).toContainText('Your retained history only')
+    await expect(catalogue.getByRole('link', { name: 'Publish your notes ↗' })).toHaveAttribute('href', /docs\/publishing.md$/)
+    await expect(catalogue).not.toContainText('real independent writers')
+    expect(await v.page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+    await v.page.screenshot({ path: evidencePath(`writers-nov11/writers-${index ? 390 : 1440}.png`), fullPage: true })
+    const link = catalogue.locator('.ra-writer-card').filter({hasText:'Team-authored'}).locator('h3 a').first()
+    const path = await link.getAttribute('href')
+    const response = await v.context.request.get(path!)
+    expect(response.status()).toBe(200)
+    expect(await response.text()).toContain('TEAM-AUTHORED')
+    expect((await v.context.request.get(path! + '/.well-known/agent-publisher.json')).status()).toBe(200)
+    for (const suffix of ['/search', '/articles/private', '/facilitator/supported', '/__faults']) expect((await v.context.request.get(path! + suffix)).status()).toBe(404)
+    const articles = catalogue.locator('details').first()
+    await articles.locator('summary').click()
+    const article = await articles.locator('a').first().getAttribute('href')
+    expect((await v.context.request.get(article!)).status()).toBe(200)
+    await v.context.close()
+  }
+})
+
+test('hosted budgets render a smaller server-authoritative question cap', async ({ browser }) => {
+  const { context, page } = await visitor(browser)
+  await statusAs(page, status => ({ ...status, questionCapMinor: 100 }))
+  await page.goto('/')
+  await expect(page.getByText('Up to S$1.00 in test funds')).toBeVisible()
+  await expect(page.locator('.ra-budget-chip')).toContainText('1.00')
+  await page.locator('.ra-budget-chip').click()
+  const slider = page.getByRole('dialog', { name: 'Budget' }).getByRole('spinbutton')
+  await expect(slider).toHaveAttribute('max', '1')
+  await context.close()
+})

@@ -32,7 +32,7 @@ export function admissionGuard(config: Config, store?: Store): RequestHandler {
     const hasAgents = Boolean(store?.agentKeys.list().length)
     const privateAgentData = hasAgents && (path.startsWith('/runs/') || path.startsWith('/api/runs') || path === '/api/wallet/status')
     const protectedRoute = !['GET', 'HEAD', 'OPTIONS'].includes(req.method) || path.startsWith('/api/mcp/')
-      || path.startsWith('/api/audit/') || privateAgentData || path === '/api/metrics' || (path === '/api/health' && req.query.deep === '1')
+      || path.startsWith('/api/audit/') || path === '/api/writers/earnings' || privateAgentData || path === '/api/metrics' || (path === '/api/health' && req.query.deep === '1')
     const tokenOnly = path === '/api/wallet/pause' || path === '/api/spending/pause'
     const supplied = req.get('Authorization')?.match(/^Bearer (.+)$/i)?.[1]
     const valid = Boolean(expected && supplied && Buffer.byteLength(expected) === Buffer.byteLength(supplied)

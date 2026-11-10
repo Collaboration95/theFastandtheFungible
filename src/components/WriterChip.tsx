@@ -12,10 +12,9 @@ export type PublisherCard = z.infer<typeof CardSchema>
 const cards = new Map<string, Promise<PublisherCard | undefined>>()
 export function usePublisherCard(slug?: string): PublisherCard | undefined {
   const [card, setCard] = useState<PublisherCard>()
-  // The hosted gateway keeps writer servers internal (no public /w/ pages), so there is no card to fetch.
   const hosted = !!useHosted()
   useEffect(() => {
-    if (!slug || hosted || typeof fetch !== 'function') return
+    if (!slug || typeof fetch !== 'function') return
     let cancelled = false
     if (!cards.has(slug)) cards.set(slug, fetch(`/w/${encodeURIComponent(slug)}/.well-known/agent-publisher.json`).then(r => r.ok ? r.json() : undefined).then(data => CardSchema.safeParse(data).data).catch(() => undefined))
     void cards.get(slug)!.then(value => { if (!cancelled) setCard(value) })
@@ -41,9 +40,8 @@ export default function WriterChip({ candidate, reputation, variant = 'full' }: 
   const trust = <TrustChip reputation={reputation ?? candidate.reputation} quiet={variant !== 'full'} />
   const hosted = !!useHosted()
   if (variant === 'row') return trust
-  // Hosted: only a public HTTPS writer origin is linkable; the co-hosted writer server is internal.
-  const linkable = !hosted || (!!candidate.source && /^https:\/\/(?!localhost|127\.|\[::1\])/.test(candidate.source.origin))
-  const link = slug && linkable ? <a href={import.meta.env.MODE === 'browser-demo' ? `${import.meta.env.BASE_URL}?writers=1` : candidate.source ? new URL(`/w/${slug}`, candidate.source.origin).href : `/w/${slug}`} target="_blank" rel="noreferrer" className="ra-writer-n" title="Open the writer's site in a new tab">{writer} ↗</a> : <span className="ra-writer-n">{writer}</span>
+  // Hosted links stay on the gateway, which permits only public writer reads.
+  const link = slug ? <a href={import.meta.env.MODE === 'browser-demo' ? `${import.meta.env.BASE_URL}?writers=1` : candidate.source && !hosted ? new URL(`/w/${slug}`, candidate.source.origin).href : `/w/${slug}`} target="_blank" rel="noreferrer" className="ra-writer-n" title="Open the writer's site in a new tab">{writer} ↗</a> : <span className="ra-writer-n">{writer}</span>
   const verification = <WriterVerification value={candidate.verification} />
   const authorship = ['team-builder-notes', 'team-xrpl-explainers'].includes(candidate.publisherSlug ?? '') && <span className="ra-chip" style={{ whiteSpace: 'normal', lineHeight: 1.4 }}>{candidate.publisherSlug === 'team-xrpl-explainers' ? 'team-authored explainer · sources cited · not an independent writer · Testnet' : 'team-authored · real content · not an independent writer · Testnet'}</span>
   const synthetic = candidate.license.kind === 'SYNTHETIC' && <span className="ra-chip is-sim">SYNTHETIC</span>

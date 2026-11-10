@@ -1295,6 +1295,22 @@
         "x-internal": true,
         "description": "Only registered with PUBLISHER_FAULTS=1 and a loopback publisher."
       }
+    },
+    "/api/writers/earnings": {
+      "get": {
+        "summary": "Public writer catalogue with sales and trust from the caller's retained history only",
+        "operationId": "get_api_writers_earnings",
+        "description": "Read-only. Hosted mode requires a visitor session and excludes foreign or expired runs. Returns article titles/prices, authorship, verified credentials where available, confirmed Testnet finish hashes and refunds, and observed trust samples. Never returns premium passages, raw intents, questions, payment keys or owner data.",
+        "responses": {
+          "200": {
+            "description": "Writer catalogue and caller-scoped recorded Testnet activity."
+          },
+          "429": {
+            "description": "Hosted public-read limit reached."
+          }
+        },
+        "x-internal": true
+      }
     }
   },
   "components": {

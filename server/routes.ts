@@ -1,3 +1,5 @@
+import { writersRouter } from './api/writers.js'
+import { hostedWriterPages } from './hosted/writers.js'
 import { requestBodyStatus } from './body-limit.js'
 import openapi from '../docs/api/openapi.json' with { type: 'json' }
 import { validateHosted, hostedPayer, pausedShell } from './hosted/bootstrap.js'
@@ -181,7 +183,7 @@ async function createConfiguredApi(options: ApiOptions = {}) {
           const writers = await client.registry()
           if (!writers.length || !payer) return false
           const b = await payer.balance()
-          return b.ledgerAgeSeconds <= 30 && b.availableDrops > (store.walletStatus().reservedMinor + 200) * 1000 + 2000 &&
+          return b.ledgerAgeSeconds <= 30 && b.availableDrops > (store.walletStatus().reservedMinor + hosted.questionMinor) * 1000 + 2000 &&
             config.HOSTED_PROVIDERS_READY_UNTIL !== undefined && Date.parse(config.HOSTED_PROVIDERS_READY_UNTIL) > Date.now()
         } catch { return false }
       })().then(value => { checkedAt = Date.now(); healthy = value; return value }).finally(() => { probe = undefined })
@@ -200,6 +202,8 @@ async function createConfiguredApi(options: ApiOptions = {}) {
       next()
     })
   }
+  if (hosted) app.use(hostedWriterPages(publisherUrl))
+  app.use(writersRouter(context, !!hosted))
   app.use(providersRouter(work))
   app.use(ownerSettingsRouter(context))
   app.use(walletRouter(context))
