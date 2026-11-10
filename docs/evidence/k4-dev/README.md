@@ -8,7 +8,7 @@ question and miss is retained; neither scorer nor gold phrases were changed.
 
 Both sides use the merged C3 corpus (#425), with identical bank hashes and no
 corpus edits by K4. Baseline: `9dfa5212edf17ef0553c898d30639eefc18c95d6`
-(C3 + HM). After: `4aec5f658a95847a1c2ead722819a575a584d688`, rebased on
+(C3 + HM). After: `9d568b5c6ad8d66bd63f097a64c1279ec08fb246`, rebased on
 `9e161c84` (also HG, the environment overlay fix, the standalone key-reveal
 example and W3 hire recovery). Hosted execution is off. Corpus/writer bytes are identical between these
 sources. These matched local baselines differ from K3's earlier published runs.
@@ -20,13 +20,15 @@ sources. These matched local baselines differ from K3's earlier published runs.
 | v3-dev (20) | 8 → 14 | 1 → 3 | n/a |
 | v3-negatives (10) | 2 → 0 | n/a | 2 → **0** |
 
-All 76 runs on each side (70 bank questions, UC1–UC3 and three public presets)
+All 79 runs on each side (70 bank questions, three legacy UC runs, three
+frozen-requirement UC runs and three public presets)
 finished DONE. **Zero gate violations and zero offline verification failures**
 on both sides. All ten final negative leads are empty, including the fixed-deposit
 and Tokyo-tourism wrong buys. The Singapore Grand Prix mismatch and maximum-model-
 confidence finality/wallet-controls rejection also have synthetic policy tests.
 
-UC1–UC3 keep identical candidate identities, judgments, values, verdicts,
+Both legacy and frozen-requirement UC1–UC3 keep identical candidate identities,
+judgments, values, verdicts,
 selected purchases and refund outcomes. Gross spending stays **0 / 90 / 70 SGD
 minor units**, with the UC3 refund still 30. UC1's entire decision table is
 identical. Some rejected UC2/UC3 rows now explain the topic guard instead of a low
@@ -51,7 +53,7 @@ same harness was copied into the baseline archive without product changes.
 
 - `before-summary.json`, `after-summary.json`: every result, lead and raw miss.
 - `bank-hashes.json`, `sources.json`: input/source identities and archive digest.
-- `runs.tar.gz`: complete before/after runs, receipt bundles and verifier output.
+- `before-runs.tar.gz`, `after-runs.tar.gz`: complete runs, receipt bundles and verifier output.
 - `comparison.json`: bank changes and full UC decision explanation comparisons.
 - `uc-policy-comparison.json`: all UC policy fields, ignoring only explanation
   strings and origin-bound selected-source keys.
