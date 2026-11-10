@@ -8,7 +8,7 @@ question and miss is retained; neither scorer nor gold phrases were changed.
 
 Both sides use the merged C3 corpus (#425), with identical bank hashes and no
 corpus edits by K4. Baseline: `9dfa5212edf17ef0553c898d30639eefc18c95d6`
-(C3 + HM). After: `1ec0deca7a3df5b5bb82d9a303ca3436061c19c5`, rebased on
+(C3 + HM). After: `0ae729e5d09de9764092043ed4001e691b33f22a`, rebased on
 `d63049ac2aea94a2a9d6132da825c095af143a74` (also HG and the environment overlay
 fix). Hosted execution is off. Corpus/writer bytes are identical between these
 sources. These matched local baselines differ from K3's earlier published runs.
@@ -30,7 +30,8 @@ UC1–UC3 keep identical candidate identities, judgments, values, verdicts,
 selected purchases and refund outcomes. Gross spending stays **0 / 90 / 70 SGD
 minor units**, with the UC3 refund still 30. UC1's entire decision table is
 identical. Some rejected UC2/UC3 rows now explain the topic guard instead of a low
-score; no policy field changes. See `uc-policy-comparison.json` and
+score; no policy field changes. Legacy lead regressions also pin the meeting
+decision, the revised analyst margin estimate, and the complete lead-time change. See `uc-policy-comparison.json` and
 `comparison.json` for the exact comparison and explanation changes.
 
 The three public preset lead goldens remain substantive assertions: RLUSD starts

@@ -11,39 +11,8 @@
         "id": "J01",
         "question": "How much does EscrowFinish with a fulfillment cost on XRPL Testnet?",
         "phase": "DONE",
-        "lead": [
-          {
-            "text": "EscrowFinish releases an existing escrow to its predetermined recipient when the escrow's release conditions are satisfied.",
-            "claim": {
-              "id": "evidence-[\"xrpl-tx-escrowfinish\",\"v1\",\"p1\"]",
-              "text": "According to XRPL documentation, EscrowFinish releases an existing escrow to its predetermined recipient when the escrow's release conditions are satisfied. [1]",
-              "stance": "UNCERTAIN",
-              "citations": [
-                {
-                  "resourceId": "xrpl-tx-escrowfinish",
-                  "version": "v1",
-                  "spanId": "p1"
-                }
-              ]
-            }
-          },
-          {
-            "text": "XRPL escrow locks funds until its time or cryptographic conditions permit release; it does not judge whether purchased prose is useful or true.",
-            "claim": {
-              "id": "evidence-[\"xrpl-escrow\",\"v1\",\"p1\"]",
-              "text": "XRPL escrow locks funds until its time or cryptographic conditions permit release; it does not judge whether purchased prose is useful or true. EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds. Expiration alone does not submit that cancellation transaction. [1]",
-              "stance": "UNCERTAIN",
-              "citations": [
-                {
-                  "resourceId": "xrpl-escrow",
-                  "version": "v1",
-                  "spanId": "p1"
-                }
-              ]
-            }
-          }
-        ],
-        "conclusion": "EscrowFinish releases an existing escrow to its predetermined recipient when the escrow's release conditions are satisfied. XRPL escrow locks funds until its time or cryptographic conditions permit release; it does not judge whether purchased prose is useful or true. EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds. A condition can bind release to a cryptographic fulfillment, while FinishAfter and CancelAfter control time windows. A conditional escrow needs the matching fulfillment, and time restrictions still apply. Conditional fulfillment increases transaction cost relative to a simple payment. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules.",
+        "lead": [],
+        "conclusion": "XRPL escrow locks funds until its time or cryptographic conditions permit release; it does not judge whether purchased prose is useful or true. EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds. A condition can bind release to a cryptographic fulfillment, while FinishAfter and CancelAfter control time windows. According to XRPL documentation, EscrowFinish releases an existing escrow to its predetermined recipient when the escrow's release conditions are satisfied. A conditional escrow needs the matching fulfillment, and time restrictions still apply. Conditional fulfillment increases transaction cost relative to a simple payment.",
         "buyAndCite": true,
         "answersIt": 0,
         "purchases": 2,
@@ -1574,39 +1543,8 @@
         "question": "Which public WebSocket host should a developer connect to for XRPL Testnet?",
         "gold": "s.altnet.rippletest.net",
         "phase": "DONE",
-        "lead": [
-          {
-            "text": "The payment receipt should identify the network and exact asset, and distinguish a simulated transaction from a validated Testnet transaction.",
-            "claim": {
-              "id": "evidence-[\"team-settlement\",\"v3\",\"p2\"]",
-              "text": "Faucet funding supplies test assets for experiments and is separate from settling a purchase. A faucet balance is not revenue or evidence of customer adoption. The payment receipt should identify the network and exact asset, and distinguish a simulated transaction from a validated Testnet transaction. Testnet balances have no redeemable value.",
-              "stance": "UNCERTAIN",
-              "citations": [
-                {
-                  "resourceId": "team-settlement",
-                  "version": "v3",
-                  "spanId": "p2"
-                }
-              ]
-            }
-          },
-          {
-            "text": "When a public server cannot find an older transaction, retain its hash and check an appropriate history endpoint.",
-            "claim": {
-              "id": "evidence-[\"team-settlement\",\"v3\",\"p3\"]",
-              "text": "When a public server cannot find an older transaction, retain its hash and check an appropriate history endpoint. Missing history is an availability problem, not proof of failed settlement. A reader should see whether verification succeeded, failed or remains unresolved. Do not replace a missing result with a fresh payment simply to produce a successful receipt.",
-              "stance": "UNCERTAIN",
-              "citations": [
-                {
-                  "resourceId": "team-settlement",
-                  "version": "v3",
-                  "spanId": "p3"
-                }
-              ]
-            }
-          }
-        ],
-        "conclusion": "The payment receipt should identify the network and exact asset, and distinguish a simulated transaction from a validated Testnet transaction. When a public server cannot find an older transaction, retain its hash and check an appropriate history endpoint. Testnet balances have no redeemable value. These boundaries make it possible to inspect a demonstration without confusing Testnet activity with real-world commercial settlement.",
+        "lead": [],
+        "conclusion": "The payment receipt should identify the network and exact asset, and distinguish a simulated transaction from a validated Testnet transaction. Testnet balances have no redeemable value. When a public server cannot find an older transaction, retain its hash and check an appropriate history endpoint. These boundaries make it possible to inspect a demonstration without confusing Testnet activity with real-world commercial settlement.",
         "buyAndCite": true,
         "answersIt": 0,
         "purchases": 1,
@@ -2018,39 +1956,8 @@
         "question": "Which MAS licence category did Ripple obtain in Singapore for its payments business?",
         "gold": "Major Payment Institution",
         "phase": "DONE",
-        "lead": [
-          {
-            "text": "MAS's September 2026 stablecoin announcement describes consultation on legislative amendments, including the framework for qualifying MAS-regulated stablecoins.",
-            "claim": {
-              "id": "evidence-[\"xrpl-singapore\",\"v1\",\"p2\"]",
-              "text": "MAS's September 2026 stablecoin announcement describes consultation on legislative amendments, including the framework for qualifying MAS-regulated stablecoins. It covers Singapore-issued single-currency stablecoins pegged to SGD or a G10 currency and discusses proposals concerning foreign issuance. A consultation proposal should not be reported as a licence already granted to a particular issuer. [1] [2] [3]",
-              "stance": "UNCERTAIN",
-              "citations": [
-                {
-                  "resourceId": "xrpl-singapore",
-                  "version": "v1",
-                  "spanId": "p2"
-                }
-              ]
-            }
-          },
-          {
-            "text": "Singapore payment-service obligations depend on the service and applicable legal scope, not on whether an agent or XRPL submits the transaction.",
-            "claim": {
-              "id": "evidence-[\"xrpl-singapore\",\"v1\",\"p1\"]",
-              "text": "Singapore payment-service obligations depend on the service and applicable legal scope, not on whether an agent or XRPL submits the transaction. MAS describes the Payment Services Act as regulating payment-service providers and payment systems. A token's foreign regulatory status does not establish a Singapore application's permission to provide a regulated service. [1] [2] [3]",
-              "stance": "UNCERTAIN",
-              "citations": [
-                {
-                  "resourceId": "xrpl-singapore",
-                  "version": "v1",
-                  "spanId": "p1"
-                }
-              ]
-            }
-          }
-        ],
-        "conclusion": "MAS's September 2026 stablecoin announcement describes consultation on legislative amendments, including the framework for qualifying MAS-regulated stablecoins. Singapore payment-service obligations depend on the service and applicable legal scope, not on whether an agent or XRPL submits the transaction. MAS describes the Payment Services Act as regulating payment-service providers and payment systems. A token's foreign regulatory status does not establish a Singapore application's permission to provide a regulated service. It covers Singapore-issued single-currency stablecoins pegged to SGD or a G10 currency and discusses proposals concerning foreign issuance. A consultation proposal should not be reported as a licence already granted to a particular issuer. Check current legislation, MAS guidance and the relevant entity's permissions against that flow.",
+        "lead": [],
+        "conclusion": "Singapore payment-service obligations depend on the service and applicable legal scope, not on whether an agent or XRPL submits the transaction. MAS describes the Payment Services Act as regulating payment-service providers and payment systems. A token's foreign regulatory status does not establish a Singapore application's permission to provide a regulated service. MAS's September 2026 stablecoin announcement describes consultation on legislative amendments, including the framework for qualifying MAS-regulated stablecoins. It covers Singapore-issued single-currency stablecoins pegged to SGD or a G10 currency and discusses proposals concerning foreign issuance. A consultation proposal should not be reported as a licence already granted to a particular issuer. Check current legislation, MAS guidance and the relevant entity's permissions against that flow.",
         "buyAndCite": true,
         "answersIt": 0,
         "purchases": 2,
@@ -2341,22 +2248,22 @@
         "phase": "DONE",
         "lead": [
           {
-            "text": "The Bank of Japan's next outright purchase operation for 10-year JGBs is scheduled for 25 September 2026.",
+            "text": "Minutes from the September meeting, released on 25 September 2026, showed that seven members voted to raise the policy rate by 25 bp to 1.00%, while two members preferred to keep it at 0.75%.",
             "claim": {
-              "id": "lead-[null,\"or-jgb-yield-table-2026-09\",\"v1\",\"p5\"]",
-              "text": "The Nikkei 225 index closed at 41,250 on 22 September 2026, down 0.8% from 17 September. The yen traded at 148.20 per dollar on 22 September, compared with 147.50 on 17 September. The Tokyo Stock Exchange's TOPIX bank index fell 1.2% over the same period. The Ministry of Finance is scheduled to auction 10-year JGBs on 1 October 2026 and 30-year JGBs on 8 October 2026. The Bank of Japan's next outright purchase operation for 10-year JGBs is scheduled for 25 September 2026. The Cabinet Office will release its monthly economic report on 30 September 2026. The Bank of Japan's next quarterly Tankan survey is due on 1 October 2026. All figures are as reported by the named sources and are subject to revision.",
+              "id": "evidence-[\"or-jgb-yield-table-2026-09\",\"v1\",\"p3\"]",
+              "text": "The Bank of Japan conducted its regular outright purchase operations for 5-year to 10-year JGBs on 18 September 2026, offering to buy 600 billion yen at fixed-rate and variable-rate auctions. The operation was oversubscribed by a factor of 2.1. On 19 September 2026, the Bank of Japan released its quarterly outlook report, which stated that long-term interest rates would be allowed to \"move more flexibly\" in response to economic and price conditions. The report did not specify a target range for the 10-year yield. The next Monetary Policy Meeting is scheduled for 28-29 October 2026. Minutes from the September meeting, released on 25 September 2026, showed that seven members voted to raise the policy rate by 25 bp to 1.00%, while two members preferred to keep it at 0.75%.",
               "stance": "UNCERTAIN",
               "citations": [
                 {
                   "resourceId": "or-jgb-yield-table-2026-09",
                   "version": "v1",
-                  "spanId": "p5"
+                  "spanId": "p3"
                 }
               ]
             }
           }
         ],
-        "conclusion": "The Bank of Japan's next outright purchase operation for 10-year JGBs is scheduled for 25 September 2026. I spent most of the week before the September meeting staring at the same question every rates strategist was asking: how much of this was already in the curve? The hike was roughly 85% priced by 17 September 2026, so the 9 bp rise in the 10-year yield on 18 September 2026 reflects guidance, not the move itself. The 10-year JGB yield closed at 2.05% on 17 September 2026, 2.14% on 18 September 2026 (+9 bp) and 2.19% on 22 September 2026, according to closing quotes published by the Japan Bond Trading Co. and cross-checked against data from the Ministry of Finance.",
+        "conclusion": "Minutes from the September meeting, released on 25 September 2026, showed that seven members voted to raise the policy rate by 25 bp to 1.00%, while two members preferred to keep it at 0.75%. I spent most of the week before the September meeting staring at the same question every rates strategist was asking: how much of this was already in the curve? The hike was roughly 85% priced by 17 September 2026, so the 9 bp rise in the 10-year yield on 18 September 2026 reflects guidance, not the move itself. The 18 September move represented the largest single-session increase in the benchmark tenor since the Bank of Japan exited its negative-rate policy in March 2024.",
         "buyAndCite": false,
         "answersIt": 0,
         "purchases": 0,
@@ -2369,6 +2276,21 @@
         "question": "What's the analyst outlook on Kestrel Semiconductor's latest deal with TSMC?",
         "phase": "DONE",
         "lead": [
+          {
+            "text": "On 1 October 2026, the average fiscal 2027 gross margin estimate across the five brokers covering the Singapore-based fabless designer fell to 55.2% from 58.5%",
+            "claim": {
+              "id": "evidence-[\"notft-kestrel-tsmc-deal-margins\",\"v1\",\"p1\"]",
+              "text": "Kestrel Semiconductor lost a fifth of its consensus gross margin in a single morning. On 1 October 2026, the average fiscal 2027 gross margin estimate across the five brokers covering the Singapore-based fabless designer fell to 55.2% from 58.5%, after three of the five revised their models to absorb the terms of a new wafer supply agreement with TSMC. The stock closed 4.1% lower in Taipei, its worst session since February.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "notft-kestrel-tsmc-deal-margins",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          },
           {
             "text": "Kestrel Semiconductor lost a fifth of its consensus gross margin in a single morning.",
             "claim": {
@@ -2385,7 +2307,7 @@
             }
           }
         ],
-        "conclusion": "Kestrel Semiconductor lost a fifth of its consensus gross margin in a single morning. On 29 September 2026 Kestrel Semiconductor announced a five-year agreement with TSMC for N3P wafer capacity, 24,000 wafers a month from Q3 2027, plus advanced-packaging slots. Kestrel will pay a US$1.1 billion prepayment and gave no margin guidance. On 1 October 2026, the average fiscal 2027 gross margin estimate across the five brokers covering the Singapore-based fabless designer fell to 55.2% from 58.5%, after three of the five revised their models to absorb the terms of a new wafer supply agreement with TSMC. Under the previous contract, Kestrel paid about US$19,800 for each N3P wafer.",
+        "conclusion": "On 1 October 2026, the average fiscal 2027 gross margin estimate across the five brokers covering the Singapore-based fabless designer fell to 55.2% from 58.5% Kestrel Semiconductor lost a fifth of its consensus gross margin in a single morning. On 29 September 2026 Kestrel Semiconductor announced a five-year agreement with TSMC for N3P wafer capacity, 24,000 wafers a month from Q3 2027, plus advanced-packaging slots. Kestrel will pay a US$1.1 billion prepayment and gave no margin guidance. Under the previous contract, Kestrel paid about US$19,800 for each N3P wafer. That is a rise of 13.6%, and it lands directly on a product line that accounts for the majority of Kestrel's data-center accelerator volume.",
         "buyAndCite": true,
         "answersIt": 0,
         "purchases": 1,
@@ -2399,37 +2321,22 @@
         "phase": "DONE",
         "lead": [
           {
-            "text": "On 1 June 2026, Kestrel's Penang advanced-packaging lead time was 26 weeks.",
+            "text": "So from 1 June 2026 to 15 September 2026, we went from 26 weeks to 18 weeks, a cut of 31%, while capacity grew from 11,000 units to 16,000 units a month.",
             "claim": {
-              "id": "evidence-[\"fab-floor-kestrel-penang-lead-times\",\"v1\",\"p2\"]",
-              "text": "On 1 June 2026, Kestrel's Penang advanced-packaging lead time was 26 weeks. That was the number we built our H2 allocation plan around. It was ugly. It meant anything we booked in June landed in December, which meant our Q4 customer commitments were effectively locked before we had a single wafer out of the foundry. We were quoting our own customers at 30 weeks and padding the back end because we did not trust the 26.",
-              "stance": "UNCERTAIN",
+              "id": "evidence-[\"fab-floor-kestrel-penang-lead-times\",\"v1\",\"lead-times\"]",
+              "text": "By 1 August 2026, the same Penang line was quoting 22 weeks. That is a four-week improvement in eight weeks, which sounds modest until you annualise it. Then on 15 September 2026, the number came in at 18 weeks. So from 1 June 2026 to 15 September 2026, we went from 26 weeks to 18 weeks, a cut of 31%, while capacity grew from 11,000 units to 16,000 units a month. That is eight weeks of lead time gone in fifteen weeks of calendar time. I have been doing this for eleven years and I have never seen a packaging queue compress that fast without a demand shock behind it.",
+              "stance": "SUPPORTS",
               "citations": [
                 {
                   "resourceId": "fab-floor-kestrel-penang-lead-times",
                   "version": "v1",
-                  "spanId": "p2"
-                }
-              ]
-            }
-          },
-          {
-            "text": "I run procurement for a mid-size fabless shop, and I have spent most of 2026 staring at Kestrel Semiconductor's Penang advanced-packaging queue.",
-            "claim": {
-              "id": "evidence-[\"fab-floor-kestrel-penang-lead-times\",\"v1\",\"p1\"]",
-              "text": "I run procurement for a mid-size fabless shop, and I have spent most of 2026 staring at Kestrel Semiconductor's Penang advanced-packaging queue. Here is the blunt version: the queue has been shrinking, and it has been shrinking faster than anyone on the buy side expected. I have the dated numbers, and I have the week counts, because that is the only way to talk about this business without getting lied to.",
-              "stance": "UNCERTAIN",
-              "citations": [
-                {
-                  "resourceId": "fab-floor-kestrel-penang-lead-times",
-                  "version": "v1",
-                  "spanId": "p1"
+                  "spanId": "lead-times"
                 }
               ]
             }
           }
         ],
-        "conclusion": "On 1 June 2026, Kestrel's Penang advanced-packaging lead time was 26 weeks. I run procurement for a mid-size fabless shop, and I have spent most of 2026 staring at Kestrel Semiconductor's Penang advanced-packaging queue. A Kestrel statement dated 2 September 2026 says Phase 2 reached its rated capacity on 28 August 2026. The record states no customer lead times. I have the dated numbers, and I have the week counts, because that is the only way to talk about this business without getting lied to. That is eight weeks of lead time gone in fifteen weeks of calendar time. Kestrel commissioned Phase 2 at Penang on 15 August 2026.",
+        "conclusion": "So from 1 June 2026 to 15 September 2026, we went from 26 weeks to 18 weeks, a cut of 31%, while capacity grew from 11,000 units to 16,000 units a month. A Kestrel statement dated 2 September 2026 says Phase 2 reached its rated capacity on 28 August 2026. The record states no customer lead times. On 1 June 2026, Kestrel's Penang advanced-packaging lead time was 26 weeks. That is eight weeks of lead time gone in fifteen weeks of calendar time. Kestrel commissioned Phase 2 at Penang on 15 August 2026. Phase 2 is the advanced-packaging expansion, the one they have been teasing since 2024.",
         "buyAndCite": true,
         "answersIt": 0,
         "purchases": 2,
