@@ -1,4 +1,4 @@
-import { afterEach, expect, it, vi } from 'vitest'
+import { beforeEach, afterEach, expect, it, vi } from 'vitest'
 import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { once } from 'node:events'
@@ -7,8 +7,9 @@ import { createApiApp } from '../server/routes.js'
 import { HostedLimits } from '../server/hosted/limits.js'
 import { loadConfig } from '../server/config.js'
 import { resources } from './helpers/resource-scope.js'
+beforeEach(() => { vi.spyOn(Date, 'now').mockReturnValue(Date.parse('2026-11-10T12:00:00Z')) })
 const cleanup: (()=>unknown)[] = []
-afterEach(async()=>{ for(const f of cleanup.splice(0).reverse()) await f(); vi.unstubAllEnvs() })
+afterEach(async()=>{ for(const f of cleanup.splice(0).reverse()) await f(); vi.unstubAllEnvs(); vi.restoreAllMocks() })
 const wire = (url:string, method='GET', headers:Record<string,string>={}, body?:unknown) => new Promise<{status:number; headers:import('node:http').IncomingHttpHeaders; text:string; json:<T=Record<string,unknown>>()=>T}>((resolve,reject)=>{
   const req=http(url,{method,headers:{Host:'demo.example','Content-Type':'application/json',...headers}},res=>{let text='';res.on('data',c=>text+=c);res.on('end',()=>resolve({status:res.statusCode!,headers:res.headers,text,json:<T>()=>JSON.parse(text) as T}))});req.on('error',reject);req.end(body===undefined?undefined:JSON.stringify(body))
 })

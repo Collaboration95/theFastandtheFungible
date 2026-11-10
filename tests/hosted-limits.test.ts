@@ -1,4 +1,4 @@
-import { afterEach, expect, it, vi } from 'vitest'
+import { beforeEach, afterEach, expect, it, vi } from 'vitest'
 import { writeFileSync, unlinkSync } from 'node:fs'
 import { join } from 'node:path'
 import { resources } from './helpers/resource-scope.js'
@@ -8,8 +8,9 @@ import { HostedLimits, LIMITS } from '../server/hosted/limits.js'
 import { HostedQueue } from '../server/hosted/queue.js'
 import { readControl, requireAdmissions } from '../server/hosted/control.js'
 import { hostedExecution, meteredFetch } from '../server/hosted/execution.js'
+beforeEach(() => { vi.spyOn(Date, 'now').mockReturnValue(Date.parse('2026-11-10T12:00:00Z')) })
 const cleanup:(()=>unknown)[]=[]
-afterEach(async()=>{for(const f of cleanup.splice(0).reverse()) await f();vi.unstubAllEnvs()})
+afterEach(async()=>{for(const f of cleanup.splice(0).reverse()) await f();vi.unstubAllEnvs();vi.restoreAllMocks()})
 function setup() {
   const dir=resources().tempDir('hg-limits-'), control=join(dir,'control.json'), db=join(dir,'app.db')
   let now=Date.parse('2026-11-10T23:59:00Z')
