@@ -11,10 +11,10 @@ export const MAX_CPUS = 10
 const hash = value => createHash('sha256').update(value).digest('hex')
 const json = value => JSON.stringify(value)
 const split = value => value.split('\0').filter(Boolean)
-const docs = file => /^(?:README|CHANGELOG|CONTRIBUTING|SECURITY|CODE_OF_CONDUCT)\.md$/.test(file) || /^docs\/.*\.md$/.test(file)
+const docs = file => /^(?:README|CHANGELOG)\.md$|^\.github\/(?:CONTRIBUTING|SECURITY|CODE_OF_CONDUCT)\.md$/.test(file) || /^docs\/.*\.md$/.test(file)
 const product = /^(?:src|server|shared|publisher|sdk|mcp|data|eval|desktop|demo|packages|tests)\//
 const browserScripts = /^scripts\/(?:demo(?:-ports)?\.mjs|prepare-e2e-store\.mjs)$/
-const toolConfig = /^(?:package(?:-lock)?\.json|tsconfig[^/]*\.json|(?:vite|vitest|playwright|eslint)[^/]*\.[cm]?[jt]s|\.nvmrc|\.gitignore|\.github\/|\.husky\/)/
+const toolConfig = /^(?:package(?:-lock)?\.json|tsconfig[^/]*\.json|(?:vite|vitest|playwright|eslint)[^/]*\.[cm]?[jt]s|tests\/playwright\/|demo\/vite\.config\.ts|\.nvmrc|\.gitignore|\.github\/(?!(?:CONTRIBUTING|SECURITY|CODE_OF_CONDUCT)\.md$)|\.husky\/)/
 
 export function parseArgs(argv) {
   const options = { base: 'origin/main', full: false, plan: false, publish: false, noCache: false }
@@ -96,13 +96,13 @@ export function makeSteps(route, cpuBudget = MAX_CPUS) {
     // Timing budgets (CLS, input → paint) need an idle host: claim every CPU slot so nothing runs beside it.
     add('browser-perf', process.execPath, ['node_modules/@playwright/test/cli.js', 'test', '--grep', '@perf', '--workers=1', '--reporter=line', '--output=scratch/local-gate-results/perf'], cpuBudget, ['browser-app'], 600000)
     // The hosted judge UI (HOSTED=1) rebuilds dist/, so it waits until the other app suites stop serving it.
-    add('browser-hosted', process.execPath, ['node_modules/@playwright/test/cli.js', 'test', '--config', 'playwright.hosted.config.ts', '--workers=1', '--reporter=line', '--output=scratch/local-gate-results/hosted'], 2, ['browser-perf'], 600000)
+    add('browser-hosted', process.execPath, ['node_modules/@playwright/test/cli.js', 'test', '--config', 'tests/playwright/hosted.config.ts', '--workers=1', '--reporter=line', '--output=scratch/local-gate-results/hosted'], 2, ['browser-perf'], 600000)
   }
   if (route.replay) {
     npm('demo-build', 'build:demo', 2, ['lint'])
-    add('browser-demo', process.execPath, ['node_modules/@playwright/test/cli.js', 'test', '--config', 'playwright.demo.config.ts', '--workers=2', '--reporter=line', '--output=scratch/local-gate-results/demo'], 3, ['demo-build'], 900000)
-    add('browser-judge', process.execPath, ['node_modules/@playwright/test/cli.js', 'test', '--config', 'playwright.judge.config.ts', '--workers=1', '--reporter=line', '--output=scratch/local-gate-results/judge'], 2, ['demo-build'], 900000)
-    add('browser-ledger', process.execPath, ['node_modules/@playwright/test/cli.js', 'test', '--config', 'playwright.ledger.config.ts', '--workers=1', '--reporter=line', '--output=scratch/local-gate-results/ledger'], 2, [], 900000)
+    add('browser-demo', process.execPath, ['node_modules/@playwright/test/cli.js', 'test', '--config', 'tests/playwright/demo.config.ts', '--workers=2', '--reporter=line', '--output=scratch/local-gate-results/demo'], 3, ['demo-build'], 900000)
+    add('browser-judge', process.execPath, ['node_modules/@playwright/test/cli.js', 'test', '--config', 'tests/playwright/judge.config.ts', '--workers=1', '--reporter=line', '--output=scratch/local-gate-results/judge'], 2, ['demo-build'], 900000)
+    add('browser-ledger', process.execPath, ['node_modules/@playwright/test/cli.js', 'test', '--config', 'tests/playwright/ledger.config.ts', '--workers=1', '--reporter=line', '--output=scratch/local-gate-results/ledger'], 2, [], 900000)
   }
   if (route.python) {
     add('python', 'python3', ['-m', 'pytest', 'packages/sdk-python', '-p', 'no:cacheprovider'], 2)
@@ -159,8 +159,8 @@ export function inputsFor(id, files, read, unknown = false) {
   else if (id === 'desktop-loader') match = file => /^desktop\/(?:smoke|recovery-smoke|accept)\.mjs$|^scripts\/(?:record|mcp-demo|local-gate-smoke)\.mjs$|^shared\/resource-scope\.ts$/.test(file)
   else if (id === 'desktop-build') match = file => /^(?:src|server|shared|publisher|sdk|mcp|data|eval\/decisions|desktop)\/|^index\.html$|^vite\.config|^scripts\/local-gate-smoke/.test(file)
   else if (id === 'browser-app' || id === 'browser-perf') match = file => /^(?:src|server|shared|publisher|sdk|mcp|data|eval\/decisions|tests\/fixtures|design\/cast)\/|^index\.html$|^vite\.config|^playwright\.config|^tests\/.*\.spec\.ts$|^scripts\/(?:demo(?:-ports)?|prepare-e2e-store)\.mjs$/.test(file)
-  else if (id === 'browser-hosted') match = file => /^(?:src|server|shared|publisher|sdk|data|public|tests\/fixtures|tests\/helpers)\/|^index\.html$|^vite\.config|^playwright.hosted\.config|^tests\/(?:hosted-ui\.spec|proof-of-refusal\.spec|evidence-path)\.ts$|^scripts\/demo-ports\.mjs$/.test(file)
-  else match = file => /^(?:src|shared|demo|site|design|docs\/evidence)\/|^vite\.demo\.config|^playwright\.(?:demo|judge|ledger)\.config|^tests\/(?:browser-demo|judge-path|ledger-viewer|ledger-sockets)/.test(file)
+  else if (id === 'browser-hosted') match = file => /^(?:src|server|shared|publisher|sdk|data|public|tests\/fixtures|tests\/helpers)\/|^index\.html$|^vite\.config|^tests\/playwright\/(?:paths|hosted)\.|^tests\/(?:hosted-ui\.spec|proof-of-refusal\.spec|evidence-path)\.ts$|^scripts\/demo-ports\.mjs$/.test(file)
+  else match = file => /^(?:src|shared|demo|site|design|docs\/evidence)\/|^demo\/vite\.config|^tests\/playwright\/(?:paths|demo|judge|ledger)\.|^tests\/(?:browser-demo|judge-path|ledger-viewer|ledger-sockets)/.test(file)
   const selected = files.filter(file => common(file) || match(file))
   return scriptClosure(files, read, selected)
 }

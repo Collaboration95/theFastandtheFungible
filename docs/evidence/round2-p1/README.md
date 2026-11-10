@@ -40,7 +40,7 @@ asset equivalent with an explicit no-ledger-transaction label.
 
 All required local checks pass: `npm run check:fast` (131 files, 1,153 tests;
 20 chaos iterations, zero double charges or invariant violations), `npm run hygiene`,
-`npx playwright test --config playwright.ledger.config.ts` (4 tests), and
+`npx playwright test --config tests/playwright/ledger.config.ts` (4 tests), and
 `python3 -m pytest packages/sdk-python` (205 tests). `npm run readme:check` also passes.
 The repository commit hook repeats check:fast. Browser tests bind an ephemeral port.
 

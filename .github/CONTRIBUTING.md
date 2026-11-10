@@ -21,17 +21,17 @@ log API keys and wallet seeds.
 2. Run `npm run check:fast`, commit, then `make ship-check`. Push, then
    `make ship-check PUBLISH=1`. The clean
    PR head must have a successful `local-gate` commit status before merge. See
-   [local gate](docs/contracts/local-gate.md) for change routing and cache rules.
-3. Open a PR with the [template](.github/pull_request_template.md). It starts with the
-   [judging criterion](docs/JUDGING-CRITERIA.md) the change serves. Keep PRs few and
+   [local gate](../docs/contracts/local-gate.md) for change routing and cache rules.
+3. Open a PR with the [template](pull_request_template.md). It starts with the
+   [judging criterion](../docs/JUDGING-CRITERIA.md) the change serves. Keep PRs few and
    larger rather than many tiny ones.
-4. If you ship something notable, add one line to [docs/SFF-PUSH.md](docs/SFF-PUSH.md).
+4. If you ship something notable, add one line to [docs/SFF-PUSH.md](../docs/SFF-PUSH.md).
    The lane that ships a feature day's work cuts its release with
-   `make release TAG=vX.Y.Z` after merging; see [local releases](docs/local-releases.md).
+   `make release TAG=vX.Y.Z` after merging; see [local releases](../docs/local-releases.md).
 
 ## The five hard gates
 
-No change may break these ([README](README.md#hard-guarantees)):
+No change may break these ([README](../README.md#hard-guarantees)):
 
 - no premium bytes before a grant;
 - the budget is the only spending authorization, and only policy code can start a
@@ -80,10 +80,10 @@ Coverage floors (including payments branches ≥85%), 200-episode chaos and the
 builds are local release responsibilities; cross-building x64 does not prove
 native Intel execution. Python's supported-version matrix and Linux/container
 boot are separate portability checks. Testnet network probes require explicit
-opt-in and are distinct from offline fixture evidence. See [local releases](docs/local-releases.md)
-and [acceptance scheduling](docs/contracts/acceptance-scheduling.md).
+opt-in and are distinct from offline fixture evidence. See [local releases](../docs/local-releases.md)
+and [acceptance scheduling](../docs/contracts/acceptance-scheduling.md).
 
 ## Licence
 
-Code and the fictional demo corpus are [MIT](LICENSE). The writers and articles are
+Code and the fictional demo corpus are [MIT](../LICENSE). The writers and articles are
 synthetic and labelled so.

@@ -57,7 +57,7 @@ if [[ "$mode" == --deploy ]]; then
 fi
 printf '%s\n' 'DRY RUN ONLY: commands below are not executed; build/push are human steps.'
 printf 'cd %q\n' "$root"
-printf 'docker build --platform linux/amd64 -f Dockerfile.publisher -t %q .\n' "$IMAGE:$IMAGE_VERSION"
+printf 'docker build --platform linux/amd64 -f docker/Dockerfile.publisher -t %q .\n' "$IMAGE:$IMAGE_VERSION"
 printf 'docker push %q\n' "$IMAGE:$IMAGE_VERSION"
 printf '%s\n' \
   'Deployment WITHHELD: no qualified persistent SQLite WAL volume/config.' \

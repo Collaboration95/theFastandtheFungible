@@ -1,4 +1,4 @@
-// Hosted judge UI (lane HU), in hosted mode: run with `npx playwright test --config playwright.hosted.config.ts`.
+// Hosted judge UI (lane HU), in hosted mode: run with `npx playwright test --config tests/playwright/hosted.config.ts`.
 // Fixture models, the simulated rail and a local HTTPS origin (tests/helpers/hosted-stack.ts). UPDATE_EVIDENCE=1
 // refreshes docs/evidence/hosted-ui/ screenshots at 1440 and 390 px.
 import { test, expect, type Browser, type Page } from '@playwright/test'

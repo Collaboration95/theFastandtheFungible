@@ -39,8 +39,8 @@ AES-GCM decryption plus plaintext SHA-256. It establishes cryptographic delivery
 not article truth. Missing history and mismatches show explicit failures.
 
 Validation: `npm run check:fast`; `npm run build:demo`;
-`npx playwright test --config playwright.demo.config.ts`;
-`npx playwright test --config playwright.ledger.config.ts`;
+`npx playwright test --config tests/playwright/demo.config.ts`;
+`npx playwright test --config tests/playwright/ledger.config.ts`;
 `python3 -m pytest packages/sdk-python`. Python: 222 passed. Replay raw-premium
 and every-prefix grant/citation audits pass, including the new trace. Live browser
 verification also passes against s.altnet. No gate or threshold was loosened.

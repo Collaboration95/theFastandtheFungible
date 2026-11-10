@@ -7,8 +7,8 @@ What a judge sees at the hosted URL. When `GET /api/demo/status` answers (HG, [#
 ## Reproduce
 
 ```sh
-npx playwright test --config playwright.hosted.config.ts                     # 5 tests, about 15 s after the build
-UPDATE_EVIDENCE=1 npx playwright test --config playwright.hosted.config.ts   # refresh the screenshots below
+npx playwright test --config tests/playwright/hosted.config.ts                     # 5 tests, about 15 s after the build
+UPDATE_EVIDENCE=1 npx playwright test --config tests/playwright/hosted.config.ts   # refresh the screenshots below
 ```
 
 The local gate runs the same suite as the `browser-hosted` step. The stack (`tests/helpers/hosted-stack.ts`) uses ephemeral ports, a throwaway certificate and its own state directory. It loads no `.env`. Readiness is the only thing it overrides: a flag file stands in for the funded-payer probe, and pausing uses the real operator control file.

@@ -86,8 +86,8 @@ try {
   } else report.x64='not built locally (use --all-arch); native acceptance pending'
   schedule('browser',()=>run('browser','npx',['playwright','test','--output',join(browserResults,'app')]),['coverage'])
   schedule('demo-build',()=>run('demo-build','npm',['run','build:demo']),[])
-  schedule('browser-demo',()=>run('browser-demo','npx',['playwright','test','--config','playwright.demo.config.ts','--output',join(browserResults,'demo')],{},['demo-build']),['demo-build'])
-  schedule('browser-ledger',()=>run('browser-ledger','npx',['playwright','test','--config','playwright.ledger.config.ts','--output',join(browserResults,'ledger')]),[])
+  schedule('browser-demo',()=>run('browser-demo','npx',['playwright','test','--config','tests/playwright/demo.config.ts','--output',join(browserResults,'demo')],{},['demo-build']),['demo-build'])
+  schedule('browser-ledger',()=>run('browser-ledger','npx',['playwright','test','--config','tests/playwright/ledger.config.ts','--output',join(browserResults,'ledger')]),[])
   report.site=[]
   for(const page of ['demo','ledger']) schedule('site-'+page,()=>step('site-'+page,async()=>{
     const url='https://collaboration95.github.io/theFastandtheFungible/'+page+'/'

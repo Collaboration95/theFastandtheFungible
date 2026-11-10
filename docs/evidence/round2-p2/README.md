@@ -28,8 +28,8 @@ bounded WebSocket verifier. Offline failures retain historical labels. The publi
 faucet fan-out failure and single-buyer workaround are in BUILDER-FEEDBACK.
 
 Verification commands: `npm run check:fast`, `npm run build:demo`,
-`npx playwright test --config playwright.demo.config.ts`,
-`npx playwright test --config playwright.ledger.config.ts`, and
+`npx playwright test --config tests/playwright/demo.config.ts`,
+`npx playwright test --config tests/playwright/ledger.config.ts`, and
 `python3 -m pytest packages/sdk-python`. Raw premium and every replay-prefix grant
 provenance checks cover the new recording as well as all simulated recordings.
 No gate or threshold was loosened. Ledger row assertions increase from 13 to 16.

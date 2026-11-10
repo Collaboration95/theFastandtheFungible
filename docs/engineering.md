@@ -35,5 +35,5 @@ current, query-defined counts.
   and anchor, secret-shaped strings, the shared site header, the generated progress page
   and that every marked fact matches [`submission/facts.json`](submission/facts.json).
 
-[Contributing](../CONTRIBUTING.md) · [Security policy](../SECURITY.md) ·
+[Contributing](../.github/CONTRIBUTING.md) · [Security policy](../.github/SECURITY.md) ·
 [Runbook](RUNBOOK.md).

@@ -45,9 +45,16 @@ test('only allowlisted Markdown can select docs checks; README checks follow the
 test('unknown base, every script, workflows, package and build/test configs select full', () => {
   assert.equal(classify(['README.md'], { knownBase: false }).all, true)
   assert.equal(classify(['docs/note.md'], { full: true }).all, true)
-  for (const path of ['scripts/demo-defaults.mjs', 'scripts/release.mjs', 'scripts/local-gate.mjs', '.github/workflows/ci.yml', 'package.json', 'package-lock.json', 'tsconfig.json', 'playwright.config.ts', 'vitest.config.ts', 'vite.config.ts', 'eslint.config.js', '.nvmrc']) {
+  for (const path of ['scripts/demo-defaults.mjs', 'scripts/release.mjs', 'scripts/local-gate.mjs', '.github/workflows/ci.yml', 'package.json', 'package-lock.json', 'tsconfig.json', 'playwright.config.ts', 'tests/playwright/demo.config.ts', 'tests/playwright/hosted.config.ts', 'demo/vite.config.ts', 'vitest.config.ts', 'vite.config.ts', 'eslint.config.js', '.nvmrc']) {
     assert.equal(classify([path]).all, true, path)
   }
+})
+
+test('community files under .github are documentation only, other .github files stay full', () => {
+  for (const path of ['.github/CONTRIBUTING.md', '.github/SECURITY.md', '.github/CODE_OF_CONDUCT.md']) {
+    const route = classify([path]); assert.equal(route.all, false, path); assert.equal(route.mode, 'docs', path)
+  }
+  for (const path of ['.github/CODEOWNERS', '.github/pull_request_template.md']) assert.equal(classify([path]).all, true, path)
 })
 
 test('every product path keeps the entire unit suite, chaos and key-reveal guarantees blocking', () => {
@@ -63,7 +70,7 @@ test('every product path keeps the entire unit suite, chaos and key-reveal guara
   const outputs = full.filter(step => step.id.startsWith('browser-')).map(step => step.args.find(arg => arg.startsWith('--output=')))
   assert.equal(new Set(outputs).size, 6)
   assert.deepEqual(full.find(step => step.id === 'browser-hosted').deps, ['browser-perf'])
-  assert.ok(full.find(step => step.id === 'browser-hosted').args.includes('playwright.hosted.config.ts'))
+  assert.ok(full.find(step => step.id === 'browser-hosted').args.includes('tests/playwright/hosted.config.ts'))
   const perf = full.find(step => step.id === 'browser-perf')
   assert.equal(perf.cpus, MAX_CPUS); assert.deepEqual(perf.deps, ['browser-app'])
   assert.ok(full.find(step => step.id === 'browser-app').args.includes('--grep-invert'))

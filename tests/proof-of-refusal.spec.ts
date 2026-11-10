@@ -1,4 +1,4 @@
-// Proof of refusal (lane W1) in hosted mode: run with `npx playwright test --config playwright.hosted.config.ts`.
+// Proof of refusal (lane W1) in hosted mode: run with `npx playwright test --config tests/playwright/hosted.config.ts`.
 // Fixture models and the simulated rail, so the anchor is a test stand-in: the stack promotes one finished decline to
 // "anchored" with a synthetic transaction, and the page's read-only Testnet lookups are answered by the same stand-in.
 // UPDATE_EVIDENCE=1 refreshes docs/evidence/w1-proof/hosted-*.png (1440 and 390 px).

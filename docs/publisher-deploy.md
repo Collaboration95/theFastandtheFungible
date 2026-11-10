@@ -41,7 +41,7 @@ for the demo and retain the local publisher.
 
 ## Reproducible build inputs
 
-`Dockerfile.publisher` pins Node 24.0.0 (supports `node:sqlite`) and installs
+`docker/Dockerfile.publisher` pins Node 24.0.0 (supports `node:sqlite`) and installs
 from `package-lock.json`, retaining the existing `tsx` devDependency. No new
 package is added. Root install hooks are skipped; esbuild's install script is
 run explicitly. The image contains only publisher code, shared contracts,
