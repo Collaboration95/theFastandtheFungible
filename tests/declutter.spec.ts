@@ -2,6 +2,7 @@
 import { test, expect, type Page } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import { evidencePath } from './evidence-path'
+import { initialJsGzip } from '../scripts/bundle-budget.mjs'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 const key = JSON.parse(readFileSync('demo/traces/UC3-key-reveal.json', 'utf8'))
 const simulated = JSON.parse(readFileSync('demo/traces/UC2.json', 'utf8'))
@@ -38,6 +39,11 @@ async function keyboardOpen(page: Page, selector: string) {
   for (let i = 0; i < 100 && !await control.evaluate(node => node === document.activeElement); i++) await page.keyboard.press('Tab')
   await expect(control).toBeFocused(); await page.keyboard.press('Enter')
 }
+test('initial JavaScript retains the declutter 160,000-byte target', () => {
+  test.skip(baseline, 'The original bundle predates DEPLOY-FIX.')
+  expect(initialJsGzip().reduce((sum, chunk) => sum + chunk.gzip, 0)).toBeLessThanOrEqual(160_000)
+})
+
 test.describe('after', () => {
 test.skip(baseline, 'Baseline measurements use the original layout.')
 for (const width of [1280, 390]) {

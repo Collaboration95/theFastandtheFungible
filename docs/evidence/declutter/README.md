@@ -35,3 +35,5 @@ For baseline, archive the pinned frontend and its imports to a temporary directo
 Existing browser tests updated only for the intended disclosure navigation: `hosted-ui.spec.ts`, `judges-corner.spec.ts`, `ui-nov11.spec.ts`. Existing component assertion updated: judges' corner now follows examples. **Snapshot/golden updates: none. Thresholds and gates loosened: none.**
 
 Initial JS uses the deploy/performance gate calculation: follow `dist/.vite/manifest.json` imports recursively from `index.html`, gzip each unique JS file with Node's `gzipSync`, sum the byte counts. Final integrated bundle measurement and clean-head gate evidence follow below.
+
+After rebasing onto DEPLOY-FIX #496 (`fdec2adc`), the real production build on Node **22.23.4** measures **158,463 B** initial JS gzip using `scripts/bundle-budget.mjs`, below this lane's **160,000 B** target and the unchanged deploy gate's 170,000 B ceiling. See `bundle.json`. A separate acceptance assertion pins the stricter 160,000 B lane target. No optional chunk sizes are counted as initial imports.
