@@ -36,7 +36,9 @@ S$0.40 and 0.04 XRP (40,000 drops), with no ledger amount for simulated receipts
 `TZ=America/New_York` checks the receipt still reads 11 Nov 2026, 15:06 SGT.
 Source AST and HTML checks cover src/ and demo/ renderers, including deliberately broken
 money and hash examples; recorded source prose and unit fixtures are excluded.
-Account addresses retain the separate 6…4 rule. Wire timestamps and owner
+The guard permits ordinary query-text clipping and KEY’s existing exact
+uppercase 8…8 key-material expression; a changed length fails. Its helper
+consolidation is routed below. Account addresses retain the separate 6…4 rule. Wire timestamps and owner
 wallet balances use the same shared helpers. The 390 px Wire panel has no
 overflow or serious/critical axe violations.
 
@@ -61,10 +63,15 @@ overflow or serious/critical axe violations.
 - KEY: `src/components/KeyRevealLifecycle.tsx`: environment paragraph uses
   `ENV.testnet`; keep “key-reveal escrow” as a separate state description.
   Replace the two success glyphs with the shared `Icon name="check"` when
-  updating the technical details. Preserve all real verification conditions.
+  updating the technical details and the new matched-key result. Preserve all
+  real verification conditions. In `KeyCheckResult`, put the fictional-writer
+  disclosure outside the environment label so “no real value” stays last.
+- KEY: `src/verify/key-on-ledger.ts`: re-export `shortTx` as `shortHex` instead
+  of its duplicate formatter (already uppercase 8…8 for key/condition values).
 - FIN: do not rebuild `site/demo/` while L12 is open; after merge rebuild it
   from the merged app when publishing. Generated `site/demo/` is ignored.
 
 No L1 change was needed in QUAL, H7, X1 or X2-owned files. `Toasts.tsx` and
 `Sidebar.tsx` already used the shared icons on this baseline. No edits to
-`src/styles.css` or `src/App.tsx`. No gate, threshold or test was loosened.
+`src/styles.css` or `src/App.tsx`. No money/hash-format requirement or gate threshold was loosened. The source
+guard’s prose and exact key-material exceptions above are explicit and tested.

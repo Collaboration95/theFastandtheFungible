@@ -56,7 +56,10 @@ function violations(code: string) {
         if (prefix.endsWith('S$') && !/\.toFixed\(2\)$/.test(node.templateSpans[i].expression.getText(source))) found.push('dynamic money must retain two decimals')
       }
       const text = node.getText(source)
-      if (/…|\.\.\./.test(text) && /\.(?:slice|substring|substr)\(/.test(text) && !/^`\$\{address\.slice\(0, 6\)\}…\$\{address\.slice\(-4\)\}`$/.test(text)) found.push('fingerprints must use shortTx')
+      const slicedEnds = (text.match(/\.(?:slice|substring|substr)\(/g) ?? []).length >= 2
+      // KEY owns this existing key/condition formatter; its exact 8…8 rule is already canonical.
+      const canonicalKeyHex = text === '`${upper(hex.slice(0, 8))}…${upper(hex.slice(-8))}`'
+      if (/…|\.\.\./.test(text) && slicedEnds && !canonicalKeyHex && !/^`\$\{address\.slice\(0, 6\)\}…\$\{address\.slice\(-4\)\}`$/.test(text)) found.push('fingerprints must use shortTx')
     }
     ts.forEachChild(node, visit)
   }
@@ -78,6 +81,9 @@ it('rejects bad money and alternative hash rules, including deliberately broken 
   expect(violations('const hash = `${tx.substring(0, 8)}…${tx.substring(56)}`')).toContain('fingerprints must use shortTx')
   expect(violations('<p>{txHash.slice(0, 6)}…{txHash.slice(-5)}</p>')).toContain('fingerprints must use shortTx')
   expect(violations('<p>{h.slice(0, 6)}…{h.slice(-5)}</p>')).toContain('fingerprints must use shortTx')
+  expect(violations('const clippedQuery = `${query.slice(0, 59).trimEnd()}…`')).toEqual([])
+  expect(violations('const shortHex = `${upper(hex.slice(0, 8))}…${upper(hex.slice(-8))}`')).toEqual([])
+  expect(violations('const shortHex = `${upper(hex.slice(0, 6))}…${upper(hex.slice(-8))}`')).toContain('fingerprints must use shortTx')
   expect(violations('<p>{money(price)} {shortTx(hash)}</p>')).toEqual([])
   expect(htmlViolations('<span>S$0.5</span>')).toContain('money: S$0.5')
   expect(htmlViolations('<script>node.textContent = txHash.slice(0, 6)</script>')).toContain('fingerprints must use shortTx')

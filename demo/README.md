@@ -33,13 +33,13 @@ recording's transaction list. When in-app navigation changes runs, the old live
 ledger sockets close and its proof panel is removed; only the newly displayed
 Testnet run starts a check. The header reuses the app's preloaded Geist font
 with `font-display: swap`, avoiding a second font request.
-Replay money, hashes and commands use a 15 KiB subset of the same variable
+Replay money, hashes and commands use a 14 KiB subset of the same variable
 Geist Mono (all weights retained); other characters fall back to the app's
 complete font. The font's SIL OFL is in `fonts/LICENSE`. To reproduce it with
 FontTools and Brotli installed:
 
 ```sh
-pyftsubset node_modules/@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2 --output-file=demo/fonts/geist-mono-replay.woff2 --flavor=woff2 --unicodes=U+0020-007E,U+00A0,U+00B7,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD --layout-features='*' --no-recalc-timestamp
+pyftsubset node_modules/@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2 --output-file=demo/fonts/geist-mono-replay.woff2 --flavor=woff2 --unicodes=U+0020-007E,U+00A0,U+00B7,U+2026,U+FEFF,U+FFFD --layout-features='*' --no-recalc-timestamp
 ```
 
 The build stores repeated JSON subtrees once before gzip; the decoder restores
