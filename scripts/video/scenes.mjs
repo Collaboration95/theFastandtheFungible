@@ -1,10 +1,10 @@
 // The scenes of the demo video, one clip each. Every wait is a condition on what is on screen, never a fixed guess;
 // every interaction is a gentle glide or an eased scroll. `marks` name the moments the cut (shots.json) refers to.
-import { existsSync, mkdirSync, rmSync } from 'node:fs'
+import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
-import { HOSTED_URL, QUESTIONS, REPO, RECEIPTS, RELEASE, ROOT, SITE, TGZ, WHEEL, scratchDir, sleep } from './config.mjs'
-import { closeCardHtml, titleCardHtml } from './lib/cards.mjs'
+import { HOSTED_URL, QUESTIONS, REPO, RECEIPTS, RELEASE, ROOT, SITE, scratchDir, sleep } from './config.mjs'
+import { closeCardHtml, titleCardHtml, dryRunCardHtml } from './lib/cards.mjs'
 import { run as runCommand } from './lib/proc.mjs'
 
 const PROMPT_RE = /\$ \s*$/
@@ -94,6 +94,70 @@ const hostedLabels = target => target.kind === 'hosted'
 
 export const SCENES = [
   {
+    id: 'judges-corner', kind: 'browser', local: true, liveQuestions: 0,
+    labels: () => ({ env: 'Local HOSTED=1 · recorded sandbox run, 11 Nov · public XRPL Testnet reads · no real value', caption: 'Local acceptance · recorded sandbox run, 11 Nov · public XRPL Testnet reads · no question used', backend: 'local' }),
+    contextOptions: hostedContext,
+    async run(rec, target) {
+      await openHome(rec, target)
+      const calls = []
+      rec.page.on('request', r => { if (/\/api\/(?:runs|scope|admission)/.test(r.url())) calls.push(r.url()) })
+      await rec.click(rec.page.locator('.ra-hwork > summary'))
+      const corner = rec.page.getByRole('region', { name: 'Check our work without asking a question' })
+      await rec.scrollIntoView(corner, 1000, 140)
+      rec.mark('corner_check_started')
+      await rec.click(corner.getByRole('button', { name: 'Run the checks' }))
+      const result = corner.locator('.ra-hv-head')
+      await result.waitFor({ timeout: 90000 })
+      const text = await result.innerText()
+      if (!/^(?:All \d+ checks passed|\d+ passed · \d+ not checked)$/.test(text)) throw new Error(`corner check: ${text}`)
+      if (calls.length) throw new Error('corner consumed an admission/run request')
+      rec.labels.result = text; rec.labels.questionRequests = calls.length
+      rec.mark('corner_check_done'); await rec.hold(7000)
+    },
+  },
+  {
+    id: 'key-check', kind: 'browser', localReplay: true, source: 'replay',
+    labels: () => ({ env: 'Local replay · recorded XRPL Testnet run · fictional writer · public node reads · no real value', caption: 'Local replay · fictional writer · real recorded Testnet escrow · browser key check', backend: 'replay' }),
+    async run(rec, target) {
+      await rec.page.goto(target.base, { waitUntil: 'domcontentloaded' })
+      await rec.page.waitForFunction(() => document.title.includes('Answer ready'), null, { timeout: 90000 })
+      await rec.click(rec.page.locator('.ra-spend:visible .ra-spending-proof > summary'))
+      const button = rec.page.getByRole('button', { name: 'Check the key yourself' }).first()
+      await button.waitFor({ timeout: 90000 })
+      await rec.scrollIntoView(button, 1000, 320)
+      rec.mark('key_check_started'); await rec.glideTo(button); await button.click()
+      const result = rec.page.getByText('sha256(key) = lock ✓', { exact: true }).first()
+      await result.waitFor({ timeout: 60000 })
+      rec.labels.result = await result.innerText()
+      rec.mark('key_check_done'); await rec.hold(6500)
+    },
+  },
+  {
+    id: 'writer-credentials', kind: 'browser', local: true, liveQuestions: 0,
+    labels: () => ({ env: 'Local HOSTED=1 · live Testnet identity · fixture models · simulated buyer rail · no real value', caption: 'Local UI · live Testnet identity · operator-issued, not KYC · simulated buyer rail · no real value', backend: 'local' }),
+    contextOptions: hostedContext,
+    async run(rec, target) {
+      await openHome(rec, target)
+      // Identity requires signed search metadata. A local zero-budget question supplies it without any purchase.
+      await rec.page.locator('.ra-budget-chip').click()
+      await rec.page.getByRole('button', { name: 'Free', exact: true }).click()
+      await rec.page.keyboard.press('Escape')
+      await rec.page.getByRole('textbox', { name: 'Your question' }).fill('When an agent gets an HTTP 402, what does it send next to pay over x402, and what unlocks the article?')
+      await rec.page.getByRole('button', { name: 'Ask free', exact: true }).click()
+      const start = rec.page.getByRole('button', { name: 'Start now' })
+      await watch(rec, { done: async () => await start.isVisible() || (await rec.page.title()).includes('Answer ready'), timeout: 60000, label: 'local free plan or answer' })
+      if (await start.isVisible()) await start.click()
+      await rec.page.waitForFunction(() => document.title.includes('Answer ready'), null, { timeout: 60000 })
+      await rec.page.keyboard.press('Meta+2')
+      await rec.page.getByRole('heading', { name: 'Writers', exact: true }).waitFor()
+      const badges = rec.page.getByRole('link', { name: /XRPL Credential · issued by ResearchAgent operator/ })
+      await badges.nth(2).waitFor({ timeout: 60000 })
+      if (await badges.count() !== 3) throw new Error('expected three live identity badges')
+      rec.labels.verifiedWriters = 3
+      rec.mark('writer_identity'); await rec.hold(9000)
+    },
+  },
+  {
     id: 'title-card', kind: 'card', seconds: 12,
     html: () => titleCardHtml({ mark: join(ROOT, 'design/brand/mark.svg') }),
   },
@@ -102,11 +166,13 @@ export const SCENES = [
     html: () => closeCardHtml({ lockup: join(ROOT, 'design/brand/lockup.svg'), repo: REPO.replace('https://', '') }),
   },
   {
-    id: 'hosted-ask', kind: 'browser', hosted: true, liveQuestions: 1,
+    id: 'hosted-ask', defer: 'record after redeploy', kind: 'browser', hosted: true, liveQuestions: 1,
     labels: hostedLabels, contextOptions: hostedContext,
     async run(rec, target) {
       const { page } = rec
       const pill = await openHome(rec, target)
+      // This body stays deferred until redeploy; reuse the same real, zero-question corner check first.
+      await SCENES.find(scene => scene.id === 'judges-corner').run(rec, target)
       await rec.hold(1500)
       await rec.glideTo(pill, 1000)       // the one environment indicator
       await rec.hold(1800)
@@ -124,20 +190,25 @@ export const SCENES = [
       await rec.glide(1100, 600, 800)
       const answer = page.getByRole('region', { name: 'Research answer' })
       if (await answer.count()) { await rec.scrollIntoView(answer, 1300, 100); rec.mark('answer_read'); await rec.hold(3200) }
-      const verify = page.getByRole('heading', { name: /Verify (on XRPL )?in your browser/ })
-      await rec.scrollIntoView(verify, 1500, 140)
-      rec.mark('verify_in_view')
-      await rec.hold(900)
-      await rec.click(page.getByRole('button', { name: 'Run the checks' }))
-      rec.mark('verify_started')
-      // "All N checks passed", or "N passed · K not checked" when a group (writer identity) is skipped. Never "checks failed".
-      await page.getByRole('status').filter({ hasText: /^(?:All \d+ checks passed|\d+ passed · \d+ not checked)/ }).first().waitFor({ timeout: 90_000 })
-      rec.mark('verify_done')
-      await rec.hold(3500)
+      await rec.click(page.locator('.ra-spend:visible .ra-spending-proof > summary'))
+      const key = page.getByRole('button', { name: 'Check the key yourself' }).first()
+      await rec.glideTo(key); await key.click()
+      await page.getByText('sha256(key) = lock ✓', { exact: true }).first().waitFor({ timeout: 60000 })
+      rec.mark('key_check_done'); await rec.hold(6000)
+      await page.getByRole('button', { name: 'Show work', exact: true }).click()
+      const work = page.getByRole('dialog', { name: 'Show work' })
+      await work.getByRole('tab', { name: 'Trace', exact: true }).click()
+      await work.locator('.ra-plan-check').waitFor()
+      rec.labels.planComparison = await work.locator('.ra-plan-check').innerText()
+      rec.mark('plan_check'); await rec.hold(6500)
+      await page.getByRole('button', { name: 'Close show work' }).click()
+      await page.keyboard.press('Meta+2')
+      await page.getByRole('link', { name: /XRPL Credential · issued by ResearchAgent operator/ }).nth(2).waitFor({ timeout: 60000 })
+      rec.mark('writer_identity'); await rec.hold(9500)
     },
   },
   {
-    id: 'hosted-decline', kind: 'browser', hosted: true, liveQuestions: 1,
+    id: 'hosted-decline', defer: 'record after redeploy', kind: 'browser', hosted: true, liveQuestions: 1,
     labels: hostedLabels, contextOptions: hostedContext,
     async run(rec, target) {
       const { page } = rec
@@ -177,49 +248,22 @@ export const SCENES = [
     },
   },
   {
-    id: 'replay-key-reveal', kind: 'browser', source: 'replay',
+    id: 'replay-key-reveal', kind: 'browser', source: 'replay', localReplay: true,
     labels: () => ({ env: 'Replay of a recorded Testnet run · no backend', backend: 'replay' }),
-    async run(rec) {
+    async run(rec, target) {
       const { page } = rec
-      await page.goto(`${SITE}/demo/`, { waitUntil: 'domcontentloaded' })
+      await page.goto(target.base, { waitUntil: 'domcontentloaded' })
       await page.getByText(/^Replay · recorded/).first().waitFor({ timeout: 45_000 })
       await page.evaluate(() => document.fonts.ready)
       rec.mark('replay_start')
-      await page.getByText(/Done in [\d.]+ s/).first().waitFor({ timeout: 60_000 })
+      await page.waitForFunction(() => document.title.includes('Answer ready'), null, { timeout: 60000 })
       rec.mark('replay_done')
       await rec.hold(1200)
+      await rec.click(page.locator('.ra-spend:visible .ra-spending-proof > summary'))
       const card = page.getByText(/Payment unlocked by the writer/).filter({ visible: true }).first()
       await rec.glideTo(card, 1000)
       rec.mark('card_in_view')
       await rec.hold(2600)
-      // Step 2 of the payment card is the EscrowFinish: the key published on the ledger.
-      const keyRow = page.getByText('Writer released the key').filter({ visible: true }).first()
-      const link = keyRow.locator('a[href*="testnet.xrpl.org"]').first()
-      await rec.glideTo(link, 900)
-      await rec.hold(900)
-      rec.mark('tx_hover')
-      const href = await link.getAttribute('href')
-      await rec.click(link, 300)
-      await page.goto(href, { waitUntil: 'domcontentloaded' })
-      // The explorer asks about cookies first; the cut starts after the banner is gone.
-      const reject = page.getByRole('button', { name: /Reject Non-Essential/i })
-      await reject.waitFor({ timeout: 25_000 }).then(() => reject.click(), () => undefined)
-      await page.getByText('Escrow Fulfillment').first().waitFor({ timeout: 45_000 })
-      await rec.hold(500)
-      rec.mark('explorer_ready')
-      await page.evaluate(() => {
-        for (const el of document.querySelectorAll('*')) {
-          if (el.children.length === 0 && /^(EscrowFinish|Escrow Fulfillment|Success)$/.test(el.textContent?.trim() ?? '')) {
-            const target = el.closest('div') ?? el
-            target.style.cssText += ';outline:3px solid rgba(47,122,58,.55);outline-offset:6px;border-radius:6px'
-          }
-        }
-      })
-      await rec.hold(3600)
-      rec.mark('explorer_done')
-      // Back to the replay for the refund: the writer-signed refund line and the promise it failed.
-      await page.goBack({ waitUntil: 'domcontentloaded' })
-      await page.getByText(/Done in [\d.]+ s/).first().waitFor({ timeout: 60_000 })
       rec.mark('replay_back')
       const refund = page.getByText(/Refund signed by the writer/).filter({ visible: true }).first()
       await rec.glideTo(refund, 900)
@@ -228,7 +272,7 @@ export const SCENES = [
     },
   },
   {
-    id: 'ledger', kind: 'browser', source: 'site',
+    id: 'ledger', defer: 'record after redeploy', kind: 'browser', source: 'site',
     labels: () => ({ env: 'XRPL Testnet · no real value', backend: 'site' }),
     async run(rec) {
       const { page } = rec
@@ -255,24 +299,10 @@ export const SCENES = [
     },
   },
   {
-    id: 'builder-feedback', kind: 'browser', source: 'github',
-    labels: () => ({ env: 'XRPL Testnet · no real value', backend: 'github' }),
-    async run(rec) {
-      const { page } = rec
-      await page.goto(`${REPO}/blob/main/docs/BUILDER-FEEDBACK.md`, { waitUntil: 'domcontentloaded' })
-      const doc = page.locator('article.markdown-body, .markdown-body').first()
-      await doc.waitFor({ timeout: 45_000 })
-      await page.evaluate(() => document.fonts.ready)
-      // The file tree beside the page is noise in a video: fold it away, as a reader would.
-      const collapse = page.getByRole('button', { name: /collapse file tree/i })
-      if (await collapse.count()) await rec.click(collapse.first(), 700)
-      rec.mark('feedback_loaded')
-      await rec.hold(1800)
-      const table = page.locator('.markdown-body table').first()
-      if (await table.count()) { await rec.scrollIntoView(table, 1400, 180); rec.mark('table_in_view'); await rec.hold(7200) }
-      const mainnet = page.locator('.markdown-body h2, .markdown-body h3').filter({ hasText: /mainnet/i }).first()
-      if (await mainnet.count()) { await rec.scrollIntoView(mainnet, 1800, 160); rec.mark('mainnet_in_view'); await rec.hold(3200) }
-    },
+    id: 'builder-feedback', kind: 'card', seconds: 23,
+    labels: () => ({ env: 'Recorded unsigned simulate results · Testnet + Mainnet reads · nothing signed/submitted', backend: 'recorded-rpc' }),
+    html: () => dryRunCardHtml(JSON.parse(readFileSync(join(ROOT, 'docs/evidence/dry-run-nov12/result.json'), 'utf8'))),
+    marks: { feedback_loaded: 0, dry_run_verdict: 0, table_in_view: 0, mainnet_in_view: 18000 },
   },
   {
     id: 'claude-mcp', kind: 'terminal', theme: 'dark', cwd: 'claude',
@@ -282,7 +312,7 @@ export const SCENES = [
     async run(t) {
       await t.waitFor(atPrompt, { timeout: 20_000, label: 'the shell prompt' })
       await t.sleep(900)
-      await t.type('claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y $TGZ --testnet')
+      await t.type('claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y --package $TGZ researchagent-mcp --testnet')
       t.mark('add_typed'); await t.sleep(500); await t.enter()
       await t.waitFor(/Added stdio MCP server researchagent/, { timeout: 90_000, label: 'claude mcp add' })
       t.mark('add_done'); await t.sleep(1300)
@@ -293,9 +323,10 @@ export const SCENES = [
       await t.type(CLAUDE_PROMPT, { pace: 16 })
       t.mark('prompt_typed'); await t.sleep(700); await t.enter()
       t.mark('asked')
-      await t.waitFor(/testnet\.xrpl\.org\/transactions\//, { timeout: 300_000, label: 'explorer links', approve: [/Do you want to proceed\?/, /❯ 1\. Yes/] })
+      await t.waitFor(screen => { if (/failed to connect|CONNECTION_CLOSED/.test(screen)) throw new Error('MCP did not connect'); return /testnet\.xrpl\.org\/transactions\//.test(screen) }, { timeout: 300_000, label: 'explorer links', approve: [/Do you want to proceed\?/, /❯ 1\. Yes/] })
       t.mark('links_visible')
       await t.waitFor(screen => /for (?:\d+m )?\d+s\s*·\s*done/.test(screen), { timeout: 240_000, stableMs: 2500, label: 'Claude to finish' })
+      if (!hasTeamAuthoredResult(t.screen())) throw new Error('MCP result must visibly say team-authored')
       t.mark('done')
       await t.sleep(4000)
     },
@@ -303,6 +334,7 @@ export const SCENES = [
   },
   {
     id: 'python-verify', kind: 'terminal', theme: 'dark', cwd: 'temp',
+    async prepare(cwd) { copyFileSync(RECEIPTS, join(cwd, 'recorded.receipts.json')) },
     labels: () => ({ env: 'Python verifier · no Node · read-only XRPL Testnet lookups', backend: 'terminal' }),
     async run(t) {
       await t.waitFor(atPrompt, { timeout: 20_000, label: 'the shell prompt' })
@@ -311,14 +343,11 @@ export const SCENES = [
       await t.type('python3 -m venv ra && . ra/bin/activate'); await t.sleep(400); await t.enter()
       await t.waitFor(screen => prompt.test(lastLine(screen) + ' '), { timeout: 90_000, label: 'the venv prompt' })
       await t.sleep(700)
-      await t.type('pip install -q $REL/researchagent-1.1.0-py3-none-any.whl'); await t.sleep(400); await t.enter()
+      await t.type('pip install -q $WHEEL'); await t.sleep(400); await t.enter()
       t.mark('pip_started')
       await t.waitFor(screen => prompt.test(lastLine(screen) + ' '), { timeout: 240_000, label: 'pip to finish' })
       await t.sleep(700)
-      await t.type('curl -sLO https://raw.githubusercontent.com/Collaboration95/theFastandtheFungible/v1.1.0/docs/evidence/lane-b3/UC3.receipts.json'); await t.sleep(400); await t.enter()
-      await t.waitFor(screen => prompt.test(lastLine(screen) + ' '), { timeout: 60_000, label: 'curl to finish' })
-      await t.sleep(700)
-      await t.type('researchagent verify UC3.receipts.json --ledger'); await t.sleep(400); await t.enter()
+      await t.type('researchagent verify recorded.receipts.json --ledger'); await t.sleep(400); await t.enter()
       t.mark('verify_started')
       await t.waitFor(/RESULT PASS/, { timeout: 180_000, label: 'RESULT PASS' })
       t.mark('verify_done')
@@ -331,7 +360,7 @@ export const SCENES = [
     async run(t) {
       await t.waitFor(atPrompt, { timeout: 20_000, label: 'the shell prompt' })
       await t.sleep(900)
-      await t.type('npx -y $TGZ try --testnet'); await t.sleep(500); await t.enter()
+      await t.type('npx -y --package $TGZ researchagent-mcp try --testnet'); await t.sleep(500); await t.enter()
       t.mark('try_started')
       await t.waitFor(/RESULT PASS/, { timeout: 420_000, label: 'RESULT PASS' })
       t.mark('try_done')
@@ -341,11 +370,16 @@ export const SCENES = [
 ]
 
 // The typed prompt asks for a short report so the final screen fits; everything it prints is Claude's own output.
-export const CLAUDE_PROMPT = 'Use researchagent: ask_expert \'What does an x402 402 Payment Required response contain?\' with budget_sgd=2. Reply briefly: the answer in two sentences, the explorer links, and the labels on one line.'
+export const CLAUDE_PROMPT = 'Use researchagent: ask_expert \'What does an x402 402 Payment Required response contain?\' with budget_sgd=2. Reply briefly: the answer in two sentences, the explorer links, and the labels on one line, including the exact team-authored label returned by the tool.'
+
+/** Match the returned labels, rather than the instruction visible above them. */
+export function hasTeamAuthoredResult(screen) {
+  return /\b(?:labels?|writers?)\s*:[\s\S]*?\bteam-authored\b/i.test(screen)
+}
 
 /** What each terminal scene needs in its shell (variables only; nothing secret). */
 export function terminalEnv(fresh) {
-  return { REL: RELEASE, TGZ, WHEEL, RECEIPTS, npm_config_cache: join(fresh, 'npm-cache'), XDG_STATE_HOME: join(fresh, 'state'), PIP_DISABLE_PIP_VERSION_CHECK: '1', npm_config_update_notifier: 'false' }
+  return { REL: RELEASE, TGZ: join(fresh, 'researchagent-mcp-1.1.1.tgz'), WHEEL: join(fresh, 'researchagent-1.1.1-py3-none-any.whl'), RECEIPTS, npm_config_cache: join(fresh, 'npm-cache'), XDG_STATE_HOME: join(fresh, 'state'), PIP_DISABLE_PIP_VERSION_CHECK: '1', npm_config_update_notifier: 'false' }
 }
 export const cleanEnv = () => ({ PATH: process.env.PATH, HOME: process.env.HOME, TERM: 'xterm-256color' })
 

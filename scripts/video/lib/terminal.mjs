@@ -131,10 +131,10 @@ export async function renderTranscript({ transcriptPath, outFile, theme = 'dark'
   await browser.close()
   for (let i = 0; i < list.length; i++) list[i].dur = Math.max(0.04, ((frames[i + 1]?.t ?? transcript.durationMs) - frames[i].t) / 1000)
   // The clip starts at the first frame, t = 0 of the transcript (the first sample is at ≈ 0 ms).
-  const lines = list.flatMap(({ file, dur }) => [`file '${file}'`, `duration ${dur.toFixed(3)}`])
-  lines.push(`file '${list.at(-1).file}'`)
+  const lines = list.flatMap(({ file, dur }) => [`file '${file}'`, 'option framerate 1000', `duration ${dur.toFixed(3)}`])
+  lines.push(`file '${list.at(-1).file}'`, 'option framerate 1000')
   writeFileSync(join(work, 'frames.txt'), lines.join('\n') + '\n')
-  await must('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', join(work, 'frames.txt'), '-vf', `fps=${FPS},format=yuv420p`, '-c:v', 'libx264', '-preset', 'fast', '-crf', '16', '-movflags', '+faststart', outFile])
+  await must('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', join(work, 'frames.txt'), '-vf', `fps=${FPS},format=yuv420p`, '-t', (transcript.durationMs / 1000).toFixed(3), '-c:v', 'libx264', '-preset', 'fast', '-crf', '16', '-movflags', '+faststart', outFile])
   rmSync(work, { recursive: true, force: true })
   return { frames: frames.length }
 }

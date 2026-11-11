@@ -1,26 +1,26 @@
-# s1-title · Title · start at 00:00
-This is ResearchAgent: research with a wallet. It pays writers for the articles it's missing, inside your budget, on the XRP Ledger.
+# s1-title · Title
+ResearchAgent: research with a wallet on XRPL Testnet. Paid on delivery. Proven on the ledger.
 
-# s2-sandbox · The live sandbox: ask, plan, pay · start at 00:09
-Open the link, ask a question, set a budget. A five-second plan shows what it will do: free sources first, then at most one article per round. It decides by fixed rules here whether an article fills a gap, and only policy code can pay. Each payment sits in a native XRPL escrow, and the writer is paid by publishing the article's key on the ledger.
+# s2-sandbox · Ask, plan and buy · record after redeploy
+How does the writer get paid, and what stops the agent from reading the article and then refusing to pay? Set a budget. This run bought one S$0.40 article. Only policy code pays. The answer says: the writer gets paid by publishing the article's key on the XRP Ledger: the payment waits in an escrow that only that key can open, so an agent cannot read the article unless the writer is paid. Show work compares the searches with the confirmed plan.
 
-# s3-refund · Refund and key reveal, on the ledger · start at 00:54
-Here's the key, on the ledger, in the fulfilment. Delivery and payment are one event. This article broke its promise, so the writer signed a refund and its trust score dropped. A real writer could refuse; then the buyer keeps a fraud proof anyone can check.
+# s3-refund · Check the key; know the refund limit
+The writer collects by publishing the article key. Check it yourself: this browser reads the create and finish from a public node and hashes the key. It matches. That proves the key reveal, not quality. This recorded refund needed the writer's signature; a real writer could refuse.
 
-# s3b-refusal · It can say no, and prove it · start at 01:10
-It can also say no. Here no source covered the question, so it bought nothing, and the refusal is anchored on XRPL Testnet. Anyone can open the proof page and check it.
+# s3b-refusal · Verify without a question
+Here is our local acceptance of recorded-run verification. This button verifies signatures, passage hashes, the audit chain and payments against public Testnet data. Paused research doesn't prevent that check while the page and public node remain reachable.
 
-# s4-claude · The same product inside Claude Code (MCP) · start at 01:28
-Any agent can use it. Claude Code adds it with one line, and the spending caps live in the environment, where the model can't raise them. Ask about XRPL and it buys from our own build notes, labelled as ours, and answers with citations and ledger links.
+# s4-claude · Claude Code over MCP
+Claude Code can use the same research tools over MCP. The spending caps come from the environment; the calling model can't raise them. This result cites our own labelled notes and links its Testnet payments.
 
-# s5-verify · Don't trust us, verify it · start at 01:56
-Don't trust us. A Python verifier, written separately from our TypeScript one, re-checks every receipt against the ledger. Our ledger page re-validates every recorded transaction from your browser.
+# s5-verify · Verify outside the app
+Export the receipts and check them outside the app. Our TypeScript and Python verifiers were written separately. Read the passed and skipped checks; a receipt verification result does not certify a writer's identity.
 
-# s6-try · One line, no clone: try --testnet · start at 02:15
-For builders: one line, no clone, no account. It buys, catches a broken promise, gets refunded, re-buys, anchors the answer and verifies all six transactions against the ledger.
+# s6-try · Writer identity on the ledger
+Three operator-run writers now hold accepted Testnet Credentials. A Permissioned Domain lists the credential issuer and type accepted for identity display. It's our attestation: not KYC, quality certification or payment permission.
 
-# s7-feedback · Builder feedback and honest limits · start at 02:30
-We wrote down what fought us: seven ranked findings, each with a script that reproduces it. The top one: the RLUSD issuer lacks the flag token escrow needs, so we use a labelled Testnet token. Mainnet is a checklist, not a claim.
+# s7-feedback · Unsigned ledger verdicts
+We ask rippled before signing. In recorded unsigned probes, RLUSD escrow returned no permission on Testnet and Mainnet. The matched TEST-SGD control succeeded on Testnet. Nothing was submitted. Our browser sandbox pays in Testnet XRP; TEST-SGD is a labelled stand-in, and mainnet spending remains disabled.
 
-# s8-close · Close · start at 02:46
-ResearchAgent. Writers are paid the moment they deliver, and anyone can check it on the ledger. Thank you.
+# s8-close · Close
+Check the recorded proof, then ask your question. ResearchAgent: paid on delivery, proven on the ledger.

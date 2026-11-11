@@ -1,345 +1,203 @@
 {
-  "$comment": "The cut of the demo video. Source of truth for voice-over text, on-screen labels and timing; docs/submission/demo-video-script.md is the owner-facing description of the same shots (tests/video-kit.test.js checks they agree). Segments say which part of which recorded scene plays, at what speed. 'maxSeconds' compresses a long wait to at most that long and the assembler labels it 'Sped up xN, real time shown' with a real-time clock. Marks are the names the recorder writes into scratch/video/clips/<scene>.json.",
-  "version": 1,
   "width": 1920,
   "height": 1080,
   "fps": 30,
-  "voice": {
-    "name": "Samantha",
-    "rate": 168
-  },
   "shots": [
     {
       "id": "s1-title",
       "title": "Title",
       "enabled": true,
-      "voStart": 0.5,
-      "minSeconds": 7,
-      "label": "XRPL Testnet · no real value",
-      "vo": "This is ResearchAgent: research with a wallet. It pays writers for the articles it's missing, inside your budget, on the XRP Ledger.",
+      "voStart": 0.4,
+      "minSeconds": 8,
+      "label": "XRPL Testnet \u00b7 no real value",
+      "vo": "ResearchAgent: research with a wallet on XRPL Testnet. Paid on delivery. Proven on the ledger.",
       "segments": [
         {
           "scene": "title-card",
           "from": 0,
-          "to": 7
+          "to": 8
         }
       ]
     },
     {
       "id": "s2-sandbox",
-      "title": "The live sandbox: ask, plan, pay",
+      "title": "Ask, plan and buy",
       "enabled": true,
-      "voStart": 0.8,
-      "minSeconds": 36,
-      "label": "{scenes.hosted-ask.labels.caption}",
-      "vo": "Open the link, ask a question, set a budget. A five-second plan shows what it will do: free sources first, then at most one article per round. It decides by fixed rules here whether an article fills a gap, and only policy code can pay. Each payment sits in a native XRPL escrow, and the writer is paid by publishing the article's key on the ledger.",
+      "voStart": 0.4,
+      "minSeconds": 26,
+      "label": "Live sandbox \u00b7 XRPL Testnet \u00b7 live answers, rule-based buying \u00b7 team-authored writers \u00b7 no real value",
+      "vo": "How does the writer get paid, and what stops the agent from reading the article and then refusing to pay? Set a budget. This run bought one S$0.40 article. Only policy code pays. The answer says: the writer gets paid by publishing the article's key on the XRP Ledger: the payment waits in an escrow that only that key can open, so an agent cannot read the article unless the writer is paid. Show work compares the searches with the confirmed plan.",
       "segments": [
-        {
-          "scene": "hosted-ask",
-          "from": "orientation",
-          "to": "typed",
-          "maxSeconds": 9
-        },
         {
           "scene": "hosted-ask",
           "from": "typed",
           "to": "plan_ready",
-          "maxSeconds": 6,
-          "clockOrigin": "asked"
+          "maxSeconds": 3
         },
         {
           "scene": "hosted-ask",
           "from": "plan_ready",
-          "to": "plan_confirmed",
-          "maxSeconds": 6
+          "to": "plan_confirmed"
         },
         {
           "scene": "hosted-ask",
           "from": "plan_confirmed",
-          "to": "answer_ready",
-          "maxSeconds": 11,
-          "clockOrigin": "asked"
+          "to": "answer_read",
+          "maxSeconds": 11
         },
         {
           "scene": "hosted-ask",
-          "from": "answer_ready",
-          "to": "answer_read+1.5",
-          "maxSeconds": 6
-        },
-        {
-          "scene": "hosted-ask",
-          "from": "verify_in_view",
-          "to": "verify_done",
-          "maxSeconds": 6,
-          "clockOrigin": "verify_started"
-        },
-        {
-          "scene": "hosted-ask",
-          "from": "verify_done",
-          "to": "verify_done+2"
+          "from": "plan_check",
+          "to": "plan_check+6"
         }
       ],
-      "voAt": [
-        0.8,
-        12.9,
-        19.9,
-        23.9
-      ]
+      "deferred": "record after redeploy"
     },
     {
       "id": "s3-refund",
-      "title": "Refund and key reveal, on the ledger",
+      "title": "Check the key; know the refund limit",
       "enabled": true,
-      "voStart": 0.6,
-      "minSeconds": 18,
-      "label": "Replay of a recorded Testnet run · fictional writers · no backend",
-      "vo": "Here's the key, on the ledger, in the fulfilment. Delivery and payment are one event. This article broke its promise, so the writer signed a refund and its trust score dropped. A real writer could refuse; then the buyer keeps a fraud proof anyone can check.",
+      "voStart": 0.4,
+      "minSeconds": 22,
+      "label": "Local replay \u00b7 recorded Testnet escrow \u00b7 fictional writers \u00b7 browser key check \u00b7 no real value",
+      "vo": "The writer collects by publishing the article key. Check it yourself: this browser reads the create and finish from a public node and hashes the key. It matches. That proves the key reveal, not quality. This recorded refund needed the writer's signature; a real writer could refuse.",
       "segments": [
         {
-          "scene": "replay-key-reveal",
-          "from": "card_in_view+1.5",
-          "to": "tx_hover",
-          "maxSeconds": 4
+          "scene": "key-check",
+          "from": "key_check_started",
+          "to": "key_check_done",
+          "maxSeconds": 7
         },
         {
-          "scene": "replay-key-reveal",
-          "from": "tx_hover",
-          "to": "tx_hover+0.8"
-        },
-        {
-          "scene": "replay-key-reveal",
-          "from": "explorer_ready",
-          "to": "explorer_done",
-          "label": "XRPL Testnet · the Fulfillment is the article key · no real value"
+          "scene": "key-check",
+          "from": "key_check_done",
+          "to": "key_check_done+5"
         },
         {
           "scene": "replay-key-reveal",
           "from": "refund_in_view",
-          "to": "end",
-          "label": "Refund is writer-signed: our fixture writer cooperates; a real writer could refuse · replay of a recorded Testnet run · fictional writers"
+          "to": "refund_in_view+4",
+          "label": "Replay of a recorded Testnet run \u00b7 fictional writers \u00b7 writer-signed refund \u00b7 no real value"
         }
-      ],
-      "voAt": [
-        3.8,
-        6.8,
-        9.0,
-        14.2
       ]
     },
     {
       "id": "s3b-refusal",
-      "title": "It can say no, and prove it",
+      "title": "Verify without a question",
       "enabled": true,
-      "voStart": 0.5,
-      "minSeconds": 13,
-      "label": "{scenes.hosted-decline.labels.caption}",
-      "vo": "It can also say no. Here no source covered the question, so it bought nothing, and the refusal is anchored on XRPL Testnet. Anyone can open the proof page and check it.",
+      "voStart": 0.4,
+      "minSeconds": 18,
+      "label": "Local acceptance \u00b7 recorded sandbox run, 11 Nov \u00b7 public XRPL Testnet reads \u00b7 no question used",
+      "vo": "Here is our local acceptance of recorded-run verification. This button verifies signatures, passage hashes, the audit chain and payments against public Testnet data. Paused research doesn't prevent that check while the page and public node remain reachable.",
       "segments": [
         {
-          "scene": "hosted-decline",
-          "from": "typed",
-          "to": "plan_ready",
-          "maxSeconds": 3,
-          "clockOrigin": "asked"
+          "scene": "judges-corner",
+          "from": "corner_check_started",
+          "to": "corner_check_done",
+          "maxSeconds": 9
         },
         {
-          "scene": "hosted-decline",
-          "from": "plan_ready",
-          "to": "answer_ready",
-          "maxSeconds": 3,
-          "clockOrigin": "asked"
-        },
-        {
-          "scene": "hosted-decline",
-          "from": "answer_ready",
-          "to": "answer_ready+2"
-        },
-        {
-          "scene": "hosted-decline",
-          "from": "answer_ready+2",
-          "to": "share_available",
-          "maxSeconds": 2,
-          "clockOrigin": "asked"
-        },
-        {
-          "scene": "hosted-decline",
-          "from": "share_confirm",
-          "to": "share_confirm+2.8"
-        },
-        {
-          "scene": "hosted-decline",
-          "from": "proof_ready",
-          "to": "proof_ready+1.2"
-        },
-        {
-          "scene": "hosted-decline",
-          "from": "proof_page",
-          "to": "proof_page+3.5"
+          "scene": "judges-corner",
+          "from": "corner_check_done",
+          "to": "corner_check_done+7"
         }
-      ],
-      "voAt": [
-        0.5,
-        5.0,
-        12.0
       ]
     },
     {
       "id": "s4-claude",
-      "title": "The same product inside Claude Code (MCP)",
+      "title": "Claude Code over MCP",
       "enabled": true,
-      "voStart": 0.8,
-      "minSeconds": 26,
-      "label": "Claude Code over MCP · XRPL Testnet · no real value · team-authored writer · real content · not an independent writer",
-      "vo": "Any agent can use it. Claude Code adds it with one line, and the spending caps live in the environment, where the model can't raise them. Ask about XRPL and it buys from our own build notes, labelled as ours, and answers with citations and ledger links.",
+      "voStart": 0.4,
+      "minSeconds": 18,
+      "label": "Claude Code + MCP \u00b7 XRPL Testnet \u00b7 team-authored writer \u00b7 real content \u00b7 not an independent writer \u00b7 no real value",
+      "vo": "Claude Code can use the same research tools over MCP. The spending caps come from the environment; the calling model can't raise them. This result cites our own labelled notes and links its Testnet payments.",
       "segments": [
         {
           "scene": "claude-mcp",
-          "from": "start",
+          "from": "add_typed",
           "to": "add_done",
-          "maxSeconds": 8
-        },
-        {
-          "scene": "claude-mcp",
-          "from": "claude_started",
-          "to": "prompt_typed",
-          "maxSeconds": 7.5
+          "maxSeconds": 3
         },
         {
           "scene": "claude-mcp",
           "from": "asked",
-          "to": "links_visible",
-          "maxSeconds": 6,
-          "clockOrigin": "asked"
-        },
-        {
-          "scene": "claude-mcp",
-          "from": "links_visible",
           "to": "done",
-          "maxSeconds": 3,
-          "clockOrigin": "asked"
+          "maxSeconds": 9
         },
         {
           "scene": "claude-mcp",
           "from": "done",
-          "to": "end",
-          "maxSeconds": 4
+          "to": "done+4"
         }
       ]
     },
     {
       "id": "s5-verify",
-      "title": "Don't trust us, verify it",
+      "title": "Verify outside the app",
       "enabled": true,
-      "voStart": 0.6,
-      "minSeconds": 17,
-      "label": "Python verifier · no Node · read-only XRPL Testnet lookups",
-      "vo": "Don't trust us. A Python verifier, written separately from our TypeScript one, re-checks every receipt against the ledger. Our ledger page re-validates every recorded transaction from your browser.",
+      "voStart": 0.4,
+      "minSeconds": 14,
+      "label": "Published v1.1.1 Python verifier \u00b7 recorded sandbox receipts \u00b7 read-only XRPL Testnet checks",
+      "vo": "Export the receipts and check them outside the app. Our TypeScript and Python verifiers were written separately. Read the passed and skipped checks; a receipt verification result does not certify a writer's identity.",
       "segments": [
         {
           "scene": "python-verify",
-          "from": "start",
-          "to": "pip_started",
-          "maxSeconds": 4
-        },
-        {
-          "scene": "python-verify",
-          "from": "pip_started",
-          "to": "verify_started",
-          "maxSeconds": 3,
-          "clockOrigin": "pip_started"
-        },
-        {
-          "scene": "python-verify",
           "from": "verify_started",
-          "to": "verify_done+2.5",
+          "to": "verify_done",
           "maxSeconds": 9
         },
         {
-          "scene": "ledger",
-          "from": "check_started",
-          "to": "check_done+1.5",
-          "maxSeconds": 5,
-          "clockOrigin": "check_started",
-          "label": "{facts.transactions} Testnet transactions · checked live from your browser · no real value"
+          "scene": "python-verify",
+          "from": "verify_done",
+          "to": "verify_done+3"
         }
-      ],
-      "voAt": [
-        0.6,
-        1.7,
-        12.6
       ]
     },
     {
       "id": "s6-try",
-      "title": "One line, no clone: try --testnet",
+      "title": "Writer identity on the ledger",
       "enabled": true,
-      "voStart": 0.6,
-      "minSeconds": 14,
-      "label": "XRPL Testnet · no real value · fixture models · fictional writers",
-      "vo": "For builders: one line, no clone, no account. It buys, catches a broken promise, gets refunded, re-buys, anchors the answer and verifies all six transactions against the ledger.",
+      "voStart": 0.4,
+      "minSeconds": 13,
+      "label": "Local HOSTED=1 \u00b7 live Testnet identity \u00b7 operator-issued, not KYC \u00b7 simulated buyer rail \u00b7 no real value",
+      "vo": "Three operator-run writers now hold accepted Testnet Credentials. A Permissioned Domain lists the credential issuer and type accepted for identity display. It's our attestation: not KYC, quality certification or payment permission.",
       "segments": [
         {
-          "scene": "try-testnet",
-          "from": "start",
-          "to": "try_started+1.2",
-          "maxSeconds": 3
-        },
-        {
-          "scene": "try-testnet",
-          "from": "try_started+1.2",
-          "to": "try_done",
-          "maxSeconds": 9,
-          "clockOrigin": "try_started"
-        },
-        {
-          "scene": "try-testnet",
-          "from": "try_done",
-          "to": "end",
-          "maxSeconds": 3
+          "scene": "writer-credentials",
+          "from": "writer_identity",
+          "to": "writer_identity+9"
         }
       ]
     },
     {
       "id": "s7-feedback",
-      "title": "Builder feedback and honest limits",
+      "title": "Unsigned ledger verdicts",
       "enabled": true,
-      "voStart": 0.6,
-      "minSeconds": 14,
-      "label": "{facts.feedback_line}",
-      "vo": "We wrote down what fought us: seven ranked findings, each with a script that reproduces it. The top one: the RLUSD issuer lacks the flag token escrow needs, so we use a labelled Testnet token. Mainnet is a checklist, not a claim.",
+      "voStart": 0.4,
+      "minSeconds": 23,
+      "label": "Recorded unsigned simulate results \u00b7 Testnet + Mainnet reads \u00b7 nothing signed/submitted",
+      "vo": "We ask rippled before signing. In recorded unsigned probes, RLUSD escrow returned no permission on Testnet and Mainnet. The matched TEST-SGD control succeeded on Testnet. Nothing was submitted. Our browser sandbox pays in Testnet XRP; TEST-SGD is a labelled stand-in, and mainnet spending remains disabled.",
       "segments": [
         {
           "scene": "builder-feedback",
-          "from": "feedback_loaded",
-          "to": "table_in_view+7",
-          "maxSeconds": 11
-        },
-        {
-          "scene": "builder-feedback",
-          "from": "mainnet_in_view",
-          "to": "mainnet_in_view+3",
-          "maxSeconds": 4
+          "from": 0,
+          "to": 23
         }
-      ],
-      "voAt": [
-        0.6,
-        6.0,
-        11.0
       ]
     },
     {
       "id": "s8-close",
       "title": "Close",
       "enabled": true,
-      "voStart": 0.5,
-      "minSeconds": 9,
-      "label": "github.com/Collaboration95/theFastandtheFungible · XRPL Testnet only · no real value",
-      "vo": "ResearchAgent. Writers are paid the moment they deliver, and anyone can check it on the ledger. Thank you.",
+      "voStart": 0.4,
+      "minSeconds": 8,
+      "label": "XRPL Testnet only \u00b7 no real value",
+      "vo": "Check the recorded proof, then ask your question. ResearchAgent: paid on delivery, proven on the ledger.",
       "segments": [
         {
           "scene": "close-card",
           "from": 0,
-          "to": 9
+          "to": 8
         }
       ]
     }

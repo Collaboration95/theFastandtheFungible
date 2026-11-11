@@ -1,13 +1,13 @@
 #!/usr/bin/env node
-// Assemble the demo video from the recorded clips (scratch/video/clips) and the cut in docs/submission/video/shots.json.
+// Assemble the demo video from the recorded clips (video-out/vid-3/clips) and the cut in docs/submission/video/shots.json.
 //
-//   node scripts/video/assemble.mjs                       draft cut (synthetic voice), no-voice cut, no-voice cut with cues
-//   node scripts/video/assemble.mjs --voice owner         use your own per-shot recordings: scratch/video/voice/owner/<shot-id>.wav
+//   node scripts/video/assemble.mjs                       silent partial cut and a silent cut with owner cues
+//   node scripts/video/assemble.mjs --voice owner         use your own per-shot recordings: video-out/vid-3/voice/owner/<shot-id>.wav
 //   node scripts/video/assemble.mjs --voice-file take.wav one continuous voice track laid over the no-voice cut
 //   node scripts/video/assemble.mjs --only s2-sandbox,s4-claude   rebuild just those shots (fast iteration)
 //   node scripts/video/assemble.mjs --without s6-try      leave a shot out (or set "enabled": false in shots.json)
 //
-// Writes MP4s to scratch/video/out (gitignored) and, on a full build, captions.srt, timing.json, timing.csv and
+// Writes MP4s to video-out/vid-3/out (gitignored) and, on a full build, captions.srt, timing.json, timing.csv and
 // voiceover.txt next to shots.json. Nothing is uploaded anywhere.
 import { createHash } from 'node:crypto'
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
@@ -15,7 +15,7 @@ import { join } from 'node:path'
 import { CLIPS, FPS, KIT_DOCS, OUT, PAPER, ROOT, SCRATCH, VOICE } from './config.mjs'
 import { overlayRenderer } from './lib/overlays.mjs'
 import { durationOf, must } from './lib/proc.mjs'
-import { clockText, fillTokens, placeSentences, planShot, speechText, splitSentences, splitSubtitles, srtTime, timeCues, timecode, toSrt, wordCount } from './lib/timeline.mjs'
+import { clockText, fillTokens, planShot, splitSubtitles, srtTime, timeCues, timecode, toSrt, wordCount } from './lib/timeline.mjs'
 
 const args = process.argv.slice(2)
 const flag = name => args.includes(`--${name}`)
@@ -26,13 +26,14 @@ const spec = JSON.parse(readFileSync(join(KIT_DOCS, 'shots.json'), 'utf8'))
 const facts = Object.fromEntries(Object.entries(JSON.parse(readFileSync(join(ROOT, 'docs/submission/facts.json'), 'utf8')).facts).map(([k, v]) => [k, v.value]))
 const only = list('only'), without = list('without')
 const full = only.length === 0 && without.length === 0
-const voiceMode = flag('voice-file') || option('voice-file') ? 'file' : (option('voice') ?? 'tts')
+const deferred = spec.shots.filter(s => s.deferred)
+const voiceMode = flag('voice-file') || option('voice-file') ? 'file' : (option('voice') ?? 'none')
 const WORK = join(SCRATCH, 'work')
 const W = spec.width, H = spec.height
 const encode = ['-c:v', 'libx264', '-preset', 'fast', '-pix_fmt', 'yuv420p', '-profile:v', 'high', '-level', '4.1', '-r', String(FPS), '-movflags', '+faststart']
 mkdirSync(OUT, { recursive: true }); mkdirSync(WORK, { recursive: true })
 
-const shots = spec.shots.filter(s => s.enabled !== false && (!only.length || only.includes(s.id)) && !without.includes(s.id))
+const shots = spec.shots.filter(s => s.enabled !== false && !s.deferred && (!only.length || only.includes(s.id)) && !without.includes(s.id))
 if (!shots.length) { console.error('no shots selected'); process.exit(2) }
 
 // ── Sidecars of the recorded scenes the selected shots use.
@@ -47,29 +48,7 @@ for (const shot of shots) for (const segment of shot.segments) {
 const tokens = { facts, scenes: Object.fromEntries(Object.entries(sidecars).map(([id, s]) => [id, s])) }
 const resolved = shots.map(shot => ({ ...shot, label: fillTokens(shot.label, tokens), segments: shot.segments.map(s => ({ ...s, label: s.label === undefined ? undefined : fillTokens(s.label, tokens) })) }))
 
-// ── Voice: synthetic (macOS `say`, cached), the owner's per-shot recordings, or none.
-async function speak(id, text) {
-  const spoken = speechText(text)
-  const key = createHash('sha1').update(`${spec.voice.name}|${spec.voice.rate}|${spoken}`).digest('hex').slice(0, 10)
-  const wav = join(VOICE, 'tts', `${id}.${key}.wav`)
-  if (!existsSync(wav)) {
-    mkdirSync(join(VOICE, 'tts'), { recursive: true })
-    const textFile = join(WORK, `${id}.txt`), aiff = join(WORK, `${id}.aiff`)
-    writeFileSync(textFile, spoken)
-    await must('say', ['-v', spec.voice.name, '-r', String(spec.voice.rate), '-o', aiff, '-f', textFile])
-    await must('ffmpeg', ['-y', '-loglevel', 'error', '-i', aiff, '-ar', '44100', '-ac', '1', '-af', 'silenceremove=start_periods=1:start_threshold=-50dB,areverse,silenceremove=start_periods=1:start_threshold=-50dB,areverse', wav])
-    rmSync(textFile, { force: true }); rmSync(aiff, { force: true })
-  }
-  return { file: wav, duration: await durationOf(wav) }
-}
-/** The synthetic read: one clip per sentence, placed by voAt. */
-async function synthesize(shot) {
-  const sentences = splitSentences(shot.vo)
-  const parts = await Promise.all(sentences.map(async (text, i) => ({ text, ...(await speak(`${shot.id}.${i}`, text)) })))
-  const placed = placeSentences(shot, parts.map(p => p.duration))
-  parts.forEach((part, i) => Object.assign(part, placed[i]))
-  return { kind: 'tts', parts, start: parts[0].start, duration: parts.at(-1).end - parts[0].start }
-}
+// ── Voice: owner recordings only, or text estimates for a silent cut.
 function ownerTake(shot) {
   const dir = join(VOICE, 'owner')
   if (!existsSync(dir)) return null
@@ -78,15 +57,15 @@ function ownerTake(shot) {
 }
 const voices = {}
 for (const shot of resolved) {
-  if (voiceMode === 'tts') voices[shot.id] = await synthesize(shot)
-  else if (voiceMode === 'owner') {
+  if (voiceMode === 'owner') {
     const file = ownerTake(shot)
     if (!file) { console.error(`no owner recording for ${shot.id}: put it at ${join(VOICE, 'owner', `${shot.id}.wav`)}`); process.exit(2) }
     voices[shot.id] = { file, duration: await durationOf(file), kind: 'owner', start: shot.voStart ?? 0.6 }
   } else voices[shot.id] = null
 }
-// Timing is planned with the voice that will be heard; the no-voice cuts reuse the synthetic read so cue times match the draft.
-const planningVoices = voiceMode === 'tts' || voiceMode === 'owner' ? voices : Object.fromEntries(await Promise.all(resolved.map(async s => [s.id, await synthesize(s)])))
+// Silent timings estimate the supplied text; owner recordings determine actual voiced timing.
+if (!['none', 'owner', 'file'].includes(voiceMode)) throw new Error('Use --voice none or --voice owner; synthetic voice is not part of the final kit')
+const planningVoices = voiceMode === 'owner' ? voices : Object.fromEntries(resolved.map(s => [s.id, { kind: 'text-estimate', start: s.voStart ?? 0.4, duration: wordCount(s.vo) / 2.5 }]))
 
 // ── Plan every shot and place it on the global timeline.
 const plans = []
@@ -165,7 +144,7 @@ async function buildClean(plan) {
 async function subtitleCues(plan) {
   const voice = plan.planningVoice
   if (!voice) return []
-  // One cue group per sentence of the synthetic read, timed inside that sentence's window.
+  // Use owner audio timing, or a text-only estimate for the silent cut.
   const parts = voice.parts ?? [{ text: plan.shot.vo, start: voice.start, end: voice.start + voice.duration }]
   return parts.flatMap(part => timeCues(splitSubtitles(part.text), plan.start + part.start, part.end - part.start))
 }
@@ -230,12 +209,11 @@ async function concat(files, out, withAudio) {
 
 // ── Build.
 console.log(`${plans.length} shots · ${voiceMode} voice · ${timecode(total)} total`)
-const clean = [], subs = [], cues = [], voiced = [], silentBase = []
+const clean = [], cues = [], voiced = [], silentBase = []
 for (const plan of plans) {
   const t0 = Date.now()
   const c = await buildClean(plan)
   clean.push(c)
-  if (voiceMode === 'tts') subs.push(await buildVariant(plan, c, { mode: 'subs', voice: true }))
   if (voiceMode === 'owner') voiced.push(await buildVariant(plan, c, { mode: flag('subs') ? 'subs' : 'plain', voice: true }))
   cues.push(await buildVariant(plan, c, { mode: 'cues', voice: false }))
   silentBase.push(c)
@@ -244,11 +222,10 @@ for (const plan of plans) {
 await overlays.close()
 
 const base = 'ResearchAgent-demo'
-const suffix = full ? '' : `-PARTIAL-${plans.map(p => p.id.split('-')[0]).join('+')}`
+const suffix = full && !deferred.length ? '' : `-PARTIAL-${plans.map(p => p.id.split('-')[0]).join('+')}`
 const outputs = {}
 await concat(silentBase, join(OUT, `${base}-NOVOICE-clean${suffix}.mp4`), false); outputs.noVoice = join(OUT, `${base}-NOVOICE-clean${suffix}.mp4`)
 await concat(cues, join(OUT, `${base}-NOVOICE-cues${suffix}.mp4`), false); outputs.cues = join(OUT, `${base}-NOVOICE-cues${suffix}.mp4`)
-if (voiceMode === 'tts') { outputs.draft = join(OUT, `${base}-DRAFT-synthetic-voice${suffix}.mp4`); await concat(subs, outputs.draft, true) }
 if (voiceMode === 'owner') { outputs.owner = join(OUT, `${base}-OWNER-voice${suffix}.mp4`); await concat(voiced, outputs.owner, true) }
 const fileVoice = option('voice-file')
 if (fileVoice) {
@@ -260,8 +237,8 @@ if (fileVoice) {
 const srtCues = []
 for (const plan of plans) for (const cue of await subtitleCues(plan)) srtCues.push(cue)
 const timing = {
-  note: 'Generated by scripts/video/assemble.mjs. Times are seconds in the no-voice cut. voStart/voEnd are the synthetic read; your own read just has to start at voStart and finish before the shot ends.',
-  total: Number(total.toFixed(2)), voice: voiceMode === 'tts' ? `${spec.voice.name} (macOS say, rate ${spec.voice.rate})` : voiceMode,
+  note: 'Generated from recorded clips and owner text. Silent timing estimates 150 words/minute; retime with actual owner audio. Deferred hosted scenes are omitted.',
+  deferred: deferred.map(s => ({ id: s.id, reason: s.deferred })), total: Number(total.toFixed(2)), voice: voiceMode,
   sources: Object.fromEntries(Object.entries(sidecars).map(([id, s]) => [id, s.source])),
   shots: plans.map(plan => ({
     id: plan.id, title: plan.shot.title, start: Number(plan.start.toFixed(2)), end: Number(plan.end.toFixed(2)), length: Number(plan.length.toFixed(2)),
@@ -275,7 +252,7 @@ if (full) {
   writeFileSync(join(KIT_DOCS, 'captions.srt'), toSrt(srtCues))
   writeFileSync(join(KIT_DOCS, 'timing.json'), JSON.stringify(timing, null, 2) + '\n')
   writeFileSync(join(KIT_DOCS, 'timing.csv'), ['shot,title,start,end,vo_start,vo_end,words', ...timing.shots.map(s => [s.id, `"${s.title}"`, srtTime(s.start).slice(3, 8), srtTime(s.end).slice(3, 8), srtTime(s.voStart).slice(3, 8), s.voEnd === null ? '' : srtTime(s.voEnd).slice(3, 8), s.words].join(','))].join('\n') + '\n')
-  writeFileSync(join(KIT_DOCS, 'voiceover.txt'), plans.map(p => `# ${p.id} · ${p.shot.title} · start at ${timecode(p.start + p.voStart)}\n${p.shot.vo}\n`).join('\n'))
+  writeFileSync(join(KIT_DOCS, 'voiceover.txt'), spec.shots.map(s => `# ${s.id} · ${s.title}${s.deferred ? ' · record after redeploy' : ''}\n${s.vo}\n`).join('\n'))
 }
 writeFileSync(join(OUT, 'last-build.json'), JSON.stringify({ at: new Date().toISOString(), ...timing, outputs }, null, 2) + '\n')
 

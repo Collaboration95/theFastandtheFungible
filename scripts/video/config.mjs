@@ -5,8 +5,8 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
-/** Large media lives here (gitignored with /scratch/). Override with VIDEO_DIR. */
-export const SCRATCH = resolve(process.env.VIDEO_DIR ?? join(ROOT, 'scratch/video'))
+/** Media stays outside git. Override with VIDEO_DIR for a separate take. */
+export const SCRATCH = resolve(process.env.VIDEO_DIR ?? '/Users/speedpowermac/Documents/ChatGPT/tftf-wt/video-out/vid-3')
 export const CLIPS = join(SCRATCH, 'clips')
 export const VOICE = join(SCRATCH, 'voice')
 export const OUT = join(SCRATCH, 'out')
@@ -15,23 +15,21 @@ export const KIT_DOCS = join(ROOT, 'docs/submission/video')
 export const HOSTED_URL = (process.env.HOSTED_URL ?? 'https://ra-front-651013803640.asia-southeast1.run.app').replace(/\/$/, '')
 export const SITE = 'https://collaboration95.github.io/theFastandtheFungible'
 export const REPO = 'https://github.com/Collaboration95/theFastandtheFungible'
-export const RELEASE = `${REPO}/releases/download/v1.1.0`
-export const TGZ = `${RELEASE}/researchagent-mcp-1.1.0.tgz`
-export const WHEEL = `${RELEASE}/researchagent-1.1.0-py3-none-any.whl`
-export const RECEIPTS = 'https://raw.githubusercontent.com/Collaboration95/theFastandtheFungible/v1.1.0/docs/evidence/lane-b3/UC3.receipts.json'
+export const RELEASE_TAG = 'v1.1.1'
+export const RELEASE = `${REPO}/releases/download/${RELEASE_TAG}`
+export const TGZ = `${RELEASE}/researchagent-mcp-1.1.1.tgz`
+export const WHEEL = `${RELEASE}/researchagent-1.1.1-py3-none-any.whl`
+export const RECEIPTS = join(ROOT, 'public/judge/hosted-run-nov11.receipts.json')
 
 export const VIEWPORT = { width: 1920, height: 1080 }
 export const FPS = 30
 /** Page background of the app and the site; cards and fades use it so cuts stay calm. */
 export const PAPER = '#FAF8F3'
 
-/**
- * The hosted questions. The first buys from the team-authored writers (the x402 question: right article, one purchase, a
- * lead that names PAYMENT-REQUIRED and PAYMENT-SIGNATURE; the RLUSD preset regressed on hosted, mock-judge round 9, H9-01).
- * The second is declined.
- */
+/** The prepared hosted run follows the third preset introduced by #499. */
+export const HISTORICAL_MCP_QUESTION = 'What does an x402 402 Payment Required response contain?'
 export const QUESTIONS = {
-  buy: 'What does an x402 402 Payment Required response contain?',
+  buy: "How does the writer get paid, and what stops the agent from reading the article and then refusing to pay?",
   // A news question (so it is planned, not chatted) that shares no vocabulary with any writer or free source: nothing is
   // answerable from free sources, so the decline is a clean refusal that can be shared. (Macro words such as "outlook" and
   // "prices" match the open central-bank records and get a free answer instead.)

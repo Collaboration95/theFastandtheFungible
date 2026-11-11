@@ -1,10 +1,12 @@
-// Where the browser scenes get their product: the hosted judge demo, or a local HOSTED=1 stack as the fallback.
+// Local HOSTED=1 product and replay builds for the browser scenes.
 // The local stack is the same one the hosted UI tests use (tests/helpers/hosted-stack.ts): fixture models, the
 // simulated rail, a throwaway HTTPS origin, ephemeral ports. It never touches 5100, 8788 or 8790.
 import { spawn } from 'node:child_process'
-import { existsSync, rmSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs'
 import { request } from 'node:https'
-import { join } from 'node:path'
+import { homedir } from 'node:os'
+import { createServer } from 'node:http'
+import { extname, join, resolve, sep } from 'node:path'
 import { ROOT, HOSTED_URL, scratchDir, sleep } from '../config.mjs'
 import { allocateDemoPorts } from '../../demo-ports.mjs'
 import { must } from './proc.mjs'
@@ -18,6 +20,12 @@ export async function probeHosted(url = HOSTED_URL) {
   } catch (error) { return { reachable: false, httpStatus: 0, state: 'unreachable', labels: {}, remaining: {}, error: String(error.message ?? error) } }
 }
 
+function privateWriterKey(key) {
+  const file = join(homedir(), '.config/researchagent-hosted/wallets', key)
+  if ((statSync(file).mode & 0o777) !== 0o600) throw new Error('Writer key file must be mode 0600')
+  return readFileSync(file, 'utf8').trim()
+}
+
 function livez(port) {
   return new Promise(done => {
     const req = request({ host: 'localhost', port, path: '/livez', rejectUnauthorized: false, timeout: 2000 }, res => { res.resume(); done(res.statusCode === 200) })
@@ -25,9 +33,9 @@ function livez(port) {
   })
 }
 
-/** Start the local HOSTED=1 stack. Returns { url, stackDir, close() }. Builds the web app first if dist/ is missing. */
+/** Build and start local HOSTED=1, waiting for real advisory identity observations. */
 export async function startLocalStack() {
-  if (!existsSync(join(ROOT, 'dist/index.html'))) await must('npm', ['run', 'build'], { cwd: ROOT })
+  await must('npm', ['run', 'build'], { cwd: ROOT })
   const ports = await allocateDemoPorts()
   const stackDir = scratchDir('stack-')
   const env = {
@@ -35,15 +43,23 @@ export async function startLocalStack() {
     HOSTED_WEB_PORT: String(ports.web), HOSTED_API_PORT: String(ports.api), HOSTED_PUBLISHER_PORT: String(ports.pub),
     HOSTED_STACK_DIR: stackDir, DOTENV_CONFIG_PATH: '.video-no-env',
   }
-  const child = spawn(process.execPath, ['--import', 'tsx', 'tests/helpers/hosted-stack.ts'], { cwd: ROOT, env, stdio: ['ignore', 'ignore', 'pipe'] })
-  let stderr = ''
-  child.stderr.on('data', d => { stderr += d })
+  // Reuse X2's local harness: real writer identity, fixture models, simulated buyer. No setup transactions.
+  const { Wallet } = await import('xrpl')
+  env.WRITER_CREDENTIAL_DOMAIN = 'D0B5DB2A87E03E375B3CF519B2323971C9E4D0300D31F93F8EAA927F0680B998'
+  for (const file of readdirSync(join(ROOT, 'data/writers')).filter(f => f.endsWith('.json'))) {
+    const slug = JSON.parse(readFileSync(join(ROOT, 'data/writers', file), 'utf8')).publisher.slug
+    const key = `XRPL_PUBLISHER_${slug.toUpperCase().replaceAll('-', '_')}_SEED`
+    env[key] = ['team-builder-notes', 'team-xrpl-explainers', 'open-records'].includes(slug)
+      ? privateWriterKey(key) : Wallet.generate().seed
+  }
+  const child = spawn(process.execPath, ['--import', 'tsx', 'scripts/video/lib/local-stack.mjs'], { cwd: ROOT, env, stdio: ['ignore', 'ignore', 'pipe'] })
+  child.stderr.on('data', () => {})
   for (let i = 0; i < 300; i++) {
-    if (child.exitCode !== null) throw new Error(`local stack exited early:\n${stderr.slice(-800)}`)
-    if (await livez(ports.web)) break
+    if (child.exitCode !== null) throw new Error('local identity stack exited early; no private child diagnostics are printed')
+    if (existsSync(join(stackDir, 'identity-ready.json')) && await livez(ports.web)) break
     await sleep(300)
   }
-  if (!(await livez(ports.web))) { child.kill('SIGTERM'); throw new Error('local stack never became live') }
+  if (!existsSync(join(stackDir, 'identity-ready.json')) || !(await livez(ports.web))) { child.kill('SIGTERM'); throw new Error('local stack identity checks did not become ready; no success label substituted') }
   return {
     url: `https://localhost:${ports.web}`, stackDir,
     async close() {
@@ -52,4 +68,19 @@ export async function startLocalStack() {
       rmSync(stackDir, { recursive: true, force: true })
     },
   }
+}
+
+/** Serve the current built replay locally, with its real recorded Testnet transactions. */
+export async function startReplay() {
+  await must('npm', ['run', 'build:demo'], { cwd: ROOT })
+  const root = join(ROOT, 'site/demo'), prefix = '/theFastandtheFungible/demo/'
+  const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.woff2': 'font/woff2' }
+  const server = createServer((req, res) => {
+    const pathname = new URL(req.url, 'http://localhost').pathname
+    const file = resolve(root, pathname.startsWith(prefix) ? pathname.slice(prefix.length) || 'index.html' : 'index.html')
+    if (!file.startsWith(root + sep) || !existsSync(file)) { res.writeHead(404); res.end(); return }
+    res.setHeader('Content-Type', types[extname(file)] ?? 'application/octet-stream'); res.end(readFileSync(file))
+  })
+  await new Promise(done => server.listen(0, '127.0.0.1', done))
+  return { url: `http://127.0.0.1:${server.address().port}${prefix}`, close: () => new Promise(done => server.close(done)) }
 }

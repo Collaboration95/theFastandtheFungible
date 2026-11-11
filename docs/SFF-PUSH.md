@@ -10,6 +10,7 @@ something significant: a feature, a metric move, a finished deliverable. Don't
 add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
+- 12 Nov: VID-3 pins the video kit to published v1.1.1, adds local browser key/corner/credential proof and recorded unsigned ledger verdicts, and supplies the final owner voice text; media stays in video-out, hosted-URL footage is record after redeploy.
 - 12 Nov: T3 replaces the reserves preset with “How writers get paid”: three fresh local HOSTED=1 live-DeepSeek asks each buy one S$0.40 explainer through real Testnet key-reveal escrow and pass browser verification with zero failures; x402 and RLUSD each retain one purchase in two fresh runs. Reserves remains answerable. [Measurements](evidence/t3-presets/README.md).
 - 12 Nov: M1 makes proof pages and downloaded cards label recorded buying and answer provenance; old snapshots make no answer-source claim, and receipts stay compatible with v1.1.1.
 - 12 Nov: DEPLOY-FIX defers receipt, Show work, passage, Writers and conversation code; Node 22 initial JS gzip falls 170,326 → 159,261 bytes. Production builds and deploy now share the unchanged <170,000-byte check; startup accepts only a 64-hex writer credential domain. [Evidence](evidence/deploy-fix/README.md).
