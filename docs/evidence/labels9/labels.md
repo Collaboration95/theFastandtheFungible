@@ -44,6 +44,7 @@ Display only. The event and reason codes are unchanged in saved runs.
 | `QUOTED` | Price received |
 | `RESERVED` | Budget reserved |
 | `SUBMITTING` | Payment being confirmed |
+| `tesSUCCESS` | Ledger checks passed |
 | `NOT_FOUND` | Not found |
 | `SETTLED` | Payment settled |
 | `DELIVERY_PENDING` | Waiting for the article |
