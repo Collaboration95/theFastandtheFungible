@@ -1,0 +1,190 @@
+{
+  "method": "Lighthouse 12.8.2, local gzip-6 mirror, 390x844 DPR3, simulated slow 4G 150ms/1.6384Mbps and 4x CPU, fresh Chrome each run; one diagnostic sample per tree, not hosted performance",
+  "before": {
+    "lighthouseVersion": "12.8.2",
+    "fetchTime": "2026-11-11T15:58:09.837Z",
+    "url": "http://127.0.0.1:64491/before/",
+    "source": "2f2edf58 (judge pack before F)",
+    "scores": {
+      "performance": 95,
+      "accessibility": 100,
+      "best-practices": 100
+    },
+    "fcpMs": 2315.4837500000003,
+    "lcpMs": 2315.4837500000003,
+    "tbtMs": 0,
+    "cls": 0.000396258550416139,
+    "transferBytes": 57019,
+    "fontRequests": [
+      {
+        "url": "https://fonts.gstatic.com/s/geist/v5/gyByhwUxId8gMEwcGFWNOITd.woff2",
+        "transferBytes": 29831
+      }
+    ],
+    "thirdPartyFontRequests": [
+      "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Geist:wght@400..700&family=Geist+Mono:wght@400..600&display=swap",
+      "https://fonts.gstatic.com/s/geist/v5/gyByhwUxId8gMEwcGFWNOITd.woff2"
+    ],
+    "fontDisplay": {
+      "id": "font-display",
+      "title": "All text remains visible during webfont loads",
+      "description": "Leverage the `font-display` CSS feature to ensure text is user-visible while webfonts are loading. [Learn more about `font-display`](https://developer.chrome.com/docs/lighthouse/performance/font-display/).",
+      "score": 1,
+      "scoreDisplayMode": "metricSavings",
+      "warnings": [],
+      "details": {
+        "type": "table",
+        "headings": [
+          {
+            "key": "url",
+            "valueType": "url",
+            "label": "URL"
+          },
+          {
+            "key": "wastedMs",
+            "valueType": "ms",
+            "label": "Est Savings"
+          }
+        ],
+        "items": []
+      },
+      "guidanceLevel": 3
+    },
+    "renderBlocking": {
+      "id": "render-blocking-resources",
+      "title": "Eliminate render-blocking resources",
+      "description": "Resources are blocking the first paint of your page. Consider delivering critical JS/CSS inline and deferring all non-critical JS/styles. [Learn how to eliminate render-blocking resources](https://developer.chrome.com/docs/lighthouse/performance/render-blocking-resources/).",
+      "score": 0,
+      "scoreDisplayMode": "metricSavings",
+      "numericValue": 1714,
+      "numericUnit": "millisecond",
+      "displayValue": "Est savings of 1,710 ms",
+      "metricSavings": {
+        "FCP": 1700,
+        "LCP": 1700
+      },
+      "details": {
+        "type": "opportunity",
+        "headings": [
+          {
+            "key": "url",
+            "valueType": "url",
+            "label": "URL"
+          },
+          {
+            "key": "totalBytes",
+            "valueType": "bytes",
+            "label": "Transfer Size"
+          },
+          {
+            "key": "wastedMs",
+            "valueType": "timespanMs",
+            "label": "Duration"
+          }
+        ],
+        "items": [
+          {
+            "url": "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Geist:wght@400..700&family=Geist+Mono:wght@400..600&display=swap",
+            "totalBytes": 1296,
+            "wastedMs": 799
+          }
+        ],
+        "overallSavingsMs": 1714
+      },
+      "guidanceLevel": 2
+    },
+    "warnings": []
+  },
+  "after": {
+    "lighthouseVersion": "12.8.2",
+    "fetchTime": "2026-11-11T15:58:19.741Z",
+    "url": "http://127.0.0.1:64491/after/",
+    "source": "3b2a51849e89cdbf3e84888785dd285ab7160d5e",
+    "scores": {
+      "performance": 100,
+      "accessibility": 100,
+      "best-practices": 100
+    },
+    "fcpMs": 1051.2498,
+    "lcpMs": 1201.2498,
+    "tbtMs": 0,
+    "cls": 0,
+    "transferBytes": 55314,
+    "fontRequests": [
+      {
+        "url": "http://127.0.0.1:64491/after/brand/geist-latin-wght-normal.woff2",
+        "transferBytes": 29588
+      }
+    ],
+    "thirdPartyFontRequests": [],
+    "fontDisplay": {
+      "id": "font-display",
+      "title": "All text remains visible during webfont loads",
+      "description": "Leverage the `font-display` CSS feature to ensure text is user-visible while webfonts are loading. [Learn more about `font-display`](https://developer.chrome.com/docs/lighthouse/performance/font-display/).",
+      "score": 1,
+      "scoreDisplayMode": "metricSavings",
+      "warnings": [],
+      "details": {
+        "type": "table",
+        "headings": [
+          {
+            "key": "url",
+            "valueType": "url",
+            "label": "URL"
+          },
+          {
+            "key": "wastedMs",
+            "valueType": "ms",
+            "label": "Est Savings"
+          }
+        ],
+        "items": []
+      },
+      "guidanceLevel": 3
+    },
+    "renderBlocking": {
+      "id": "render-blocking-resources",
+      "title": "Eliminate render-blocking resources",
+      "description": "Resources are blocking the first paint of your page. Consider delivering critical JS/CSS inline and deferring all non-critical JS/styles. [Learn how to eliminate render-blocking resources](https://developer.chrome.com/docs/lighthouse/performance/render-blocking-resources/).",
+      "score": 0,
+      "scoreDisplayMode": "metricSavings",
+      "numericValue": 450,
+      "numericUnit": "millisecond",
+      "displayValue": "Est savings of 450 ms",
+      "metricSavings": {
+        "FCP": 450,
+        "LCP": 450
+      },
+      "details": {
+        "type": "opportunity",
+        "headings": [
+          {
+            "key": "url",
+            "valueType": "url",
+            "label": "URL"
+          },
+          {
+            "key": "totalBytes",
+            "valueType": "bytes",
+            "label": "Transfer Size"
+          },
+          {
+            "key": "wastedMs",
+            "valueType": "timespanMs",
+            "label": "Duration"
+          }
+        ],
+        "items": [
+          {
+            "url": "http://127.0.0.1:64491/after/brand/fonts.css",
+            "totalBytes": 403,
+            "wastedMs": 150
+          }
+        ],
+        "overallSavingsMs": 450
+      },
+      "guidanceLevel": 2
+    },
+    "warnings": []
+  }
+}

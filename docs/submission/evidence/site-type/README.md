@@ -36,3 +36,27 @@ release-URL suites passed. Site contracts now pin the requested footer, canonica
 pill and working replay destination, and reject third-party font references.
 The existing proof/tampering expectations remain intact. No gate, threshold or
 budget was loosened. Full local verification is required on the final PR head.
+
+## Mobile font and tap-target check
+
+The before tree is 2f2edf58, after judge-copy correction and before design F.
+The after tree is 3b2a51849e89cdbf3e84888785dd285ab7160d5e. Lighthouse 12.8.2 used a local gzip-6
+mirror, 390×844 at DPR 3, simulated 150 ms / 1.6384 Mbps and 4× CPU, with a
+fresh headless Chrome for each sample. These are one-pair diagnostics on this
+Mac, not hosted-demo measurements or a statistical performance claim.
+
+| Tree | Performance | Accessibility | Best practices | FCP | LCP | TBT | CLS | Transfer | Font requests |
+|---|---:|---:|---:|---|---|---|---:|---:|---:|
+| before | 95 | 100 | 100 | 2.32 s | 2.32 s | 0 ms | 0.000 | 55.7 KiB | 1 |
+| after | 100 | 100 | 100 | 1.05 s | 1.20 s | 0 ms | 0.000 | 54.0 KiB | 1 |
+
+[Summary](lighthouse-summary.json), [before raw report](lighthouse-before.json.gz),
+[after raw report](lighthouse-after.json.gz). The after page made zero Google
+Fonts requests. Site font declarations use swap; replay navigation reuses the
+app's Geist Variable face instead of loading a second brand font. The generated
+replay header's font references changed; its layout and height did not.
+
+The phone browser contract checks all four footer links at least 44×44 px,
+no horizontal overflow, a visible home heading with Google font domains blocked,
+and exactly one local Geist download. The built replay contract checks one Geist
+download and no brand-font request. Both passed before these measurements.
