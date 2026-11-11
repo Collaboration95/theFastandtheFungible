@@ -15,6 +15,12 @@ const visitor = async (browser: Browser, width = 1440, height = 900) => {
   const context = await browser.newContext({ ignoreHTTPSErrors: true, viewport: { width, height } })
   return { context, page: await context.newPage() }
 }
+/** Run checks share Spend; phones use its existing sheet. */
+const openRunChecks = async (page: Page) => {
+  if ((page.viewportSize()?.width ?? 1440) <= 780) await page.locator('.ra-mobile-spend > button').click()
+  await page.locator('.ra-spend:visible .ra-spending-proof > summary').click()
+  await page.locator('.ra-spend:visible .ra-run-proof > summary').click()
+}
 /** Rewrites what the gateway reports, to show a state the local stack can't reach on its own. */
 const statusAs = (page: Page, patch: (status: Record<string, unknown>) => Record<string, unknown>) => page.route('**/api/demo/status', async route => {
   const response = await route.fetch()
@@ -77,6 +83,7 @@ test('first visit: orientation, the visitor’s own question first, one environm
   for (const hidden of [/Record/i, /Presenter/i, /Settings/i, /Connect/i]) await expect(palette.getByRole('option', { name: hidden })).toHaveCount(0)
   await page.keyboard.press('Escape')
   // Footer links open the public pages.
+  await page.locator('.ra-hwork > summary').click()
   const links = page.getByRole('navigation', { name: 'Project links' })
   for (const name of ['Source code', 'Pitch deck', 'Progress since SingHacks', 'Recorded walkthrough: writer no-show and refund', 'How to verify a receipt']) await expect(links.getByRole('link', { name: new RegExp(name) })).toHaveAttribute('href', /^https:\/\//)
   await expect(links.getByRole('link', { name: /Demo video/ })).toHaveCount(0)
@@ -123,6 +130,7 @@ test('a visitor asks, gets a verified answer and checks it in the browser; anoth
   await expect(page).toHaveTitle(/Answer ready/, { timeout: 60000 })
   const runUrl = page.url()
   // Receipts and their marker stay labelled; the shared-demo footer is gone from the run screen.
+  await openRunChecks(page)
   const verify = page.getByRole('region', { name: 'Verify in your browser' })
   await expect(verify).toBeVisible()
   await verify.getByRole('button', { name: 'Run the checks' }).click()
@@ -146,7 +154,7 @@ test('a visitor asks, gets a verified answer and checks it in the browser; anoth
   await expect(b.page.getByText('That question isn’t available here.', { exact: false })).toBeVisible()
   // The public recorded run is available to everyone; A's private run verifier is not.
   await expect(b.page.getByRole('region', { name: 'Verify in your browser', exact: true })).toHaveCount(0)
-  await expect(b.page.getByRole('region', { name: 'Check our work without asking a question', exact: true })).toBeVisible()
+  await expect(b.page.locator('.ra-hwork')).toBeVisible()
   await b.context.close()
 
   // The visitor's own allowance went down by one; Clear my history hides the finished run.
@@ -355,6 +363,7 @@ test('A11Y keyboard Ask → plan → result → verify, idle prefetch, offline r
   expect(await smallTargets()).toEqual([])
   expect(await serious(page)).toEqual([])
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await openRunChecks(page)
   const verify = page.getByRole('region', { name: 'Verify in your browser' })
   await context.setOffline(true)
   await expect(page.locator('.ra-banner')).toContainText("You're offline. This result is final")
@@ -419,7 +428,8 @@ test('A11Y an unreachable XRPL node reports infrastructure failure without a che
   const chip = page.getByRole('button', { name: 'pricing & margins' }), start = page.getByRole('button', { name: 'Start now' })
   await expect(chip.or(start).first()).toBeVisible(); if (await chip.isVisible()) await chip.click(); await start.click()
   await expect(page).toHaveTitle(/Answer ready/, { timeout: 60000 })
-  const verify = page.locator('.ra-hv'); await verify.getByRole('button', { name: 'Run the checks' }).click()
+  await openRunChecks(page)
+  const verify = page.locator('.ra-spend:visible .ra-hv'); await verify.getByRole('button', { name: 'Run the checks' }).click()
   await expect(verify.getByRole('alert')).toContainText("Couldn't reach a public XRPL node")
   await expect(verify.locator('.is-ok, .is-pass')).toHaveCount(0)
   expect(await page.evaluate(() => document.activeElement !== document.body)).toBe(true)
@@ -440,7 +450,8 @@ test('A11Y a failed speculative checker download can recover without asking anot
   await expect(page).toHaveTitle(/Answer ready/, { timeout: 60000 })
   await expect.poll(() => loads).toBeGreaterThan(0)
   await page.unroute('**/assets/browser-*.js')
-  const verify = page.locator('.ra-hv')
+  await openRunChecks(page)
+  const verify = page.locator('.ra-spend:visible .ra-hv')
   await verify.getByRole('button', { name: 'Run the checks' }).click()
   await expect(verify.getByRole('alert')).toContainText('The checker couldn’t load')
   await expect(verify.locator('.is-ok, .is-pass')).toHaveCount(0)
@@ -449,7 +460,8 @@ test('A11Y a failed speculative checker download can recover without asking anot
   const before = admissions
   await Promise.all([page.waitForEvent('load'), reload.click()])
   await expect(page).toHaveTitle(/Answer ready/, { timeout: 30000 })
-  await page.locator('.ra-hv').getByRole('button', { name: 'Run the checks' }).click()
+  await openRunChecks(page)
+  await page.locator('.ra-spend:visible .ra-hv').getByRole('button', { name: 'Run the checks' }).click()
   await expect(page.locator('.ra-hv').getByRole('status')).toContainText(/passed/, { timeout: 30000 })
   expect(admissions).toBe(before)
   await context.close()

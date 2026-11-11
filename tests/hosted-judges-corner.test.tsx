@@ -61,12 +61,12 @@ describe('the strip', () => {
     expect(within(strip).getByText(JUDGE_RUN.caption)).toBeTruthy()
     expect(within(strip).queryByText('See it refuse to spend')).toBeNull()
   })
-  it('sits between the composer and the examples while the demo takes questions, and in the intro (no composer) when it does not', () => {
+  it('sits after the composer and examples while the demo takes questions, and in the intro (no composer) when it does not', () => {
     render(home(hosted(), 'ready'))
     const order = (node: Element | null) => node!.compareDocumentPosition.bind(node)
     const strip = screen.getByRole('region', { name: 'Check our work without asking a question' }), composer = screen.getByRole('textbox', { name: 'Your question' }), examples = screen.getByRole('group', { name: 'Demo questions' })
     expect(order(composer)(strip) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-    expect(order(strip)(examples) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(order(examples)(strip) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     cleanup()
     render(home(hosted({ state: 'paused' }), 'paused'))
     expect(screen.queryByRole('textbox', { name: 'Your question' })).toBeNull()

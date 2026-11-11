@@ -21,10 +21,12 @@ export function HostedIntro({ hosted, state }: { hosted: Hosted; state: HomeStat
   const testnet = /testnet/i.test(hosted.status.labels.rail) && !/simulat/i.test(hosted.status.labels.rail)
   return <>
     <h1 className="ra-hero ra-hhero">Research with a wallet.</h1>
-    <p className="ra-home-description ra-hlede">Ask a question and set a budget. The agent answers from free sources first, then pays writers for missing evidence over x402 {testnet ? 'on XRPL Testnet' : 'with simulated payments'}, never beyond your budget. Every payment comes with a receipt you can verify.</p>
+    <p className="ra-hpromise">{testnet ? 'Paid on delivery. Proven on the ledger.' : 'Simulated payments. Receipts you can check.'}</p>
+    <p className="ra-home-description ra-hlede">Free sources first. Pay writers for missing evidence, within your budget.</p>
+    <p className="ra-hprovenance">{hosted.status.labels.models.includes('fixture') ? 'Rule-based buying' : 'Live-model buying'} · team-authored notes and fictional demo writers</p>
     <ol className="ra-hsteps" aria-label="How it works">
       <li>{icons.ask}<span><b>Ask with a budget</b><small>Up to {minorText(questionCap(hosted.status))} in test funds</small></span></li>
-      <li>{icons.pay}<span><b>It buys only to fill a gap</b><small>One article at a time, only to fill a gap</small></span></li>
+      <li>{icons.pay}<span><b>It buys only to fill a gap</b><small>One article at a time</small></span></li>
       <li>{icons.verify}<span><b>Verify every receipt</b><small>{testnet ? 'On XRPL Testnet, in your browser' : 'Signatures and hashes, in your browser'}</small></span></li>
     </ol>
     <HostedState hosted={hosted} state={state} />
@@ -36,15 +38,21 @@ export function HostedIntro({ hosted, state }: { hosted: Hosted; state: HomeStat
  * paused or closed: a recorded run re-checked in this browser, the key on the public ledger, and (when one is published) a refusal. */
 export function HostedJudgesCorner({ hosted }: { hosted: Hosted }) {
   const proof = proofLink(hosted)
-  return <section className="ra-hjc" aria-label="Check our work without asking a question">
+  const [opened, setOpened] = useState(false)
+  return <details className="ra-hwork" onToggle={event => setOpened(event.currentTarget.open)}>
+    <summary>Check our work · recorded run and ledger</summary>
+    <section className="ra-hjc" aria-label="Check our work without asking a question">
     <p className="ra-hjc-label" aria-hidden="true">Check our work without asking a question</p>
     <ul className={proof ? 'ra-hjc-list' : 'ra-hjc-list is-two'}>
       <li className="ra-hjc-verify">{icons.verify}<VerifyInBrowser bundleUrl={JUDGE_RUN.bundleUrl} caption={JUDGE_RUN.caption} title="Verify a real run from this sandbox in your browser" /></li>
       <li>{icons.key}<div><h2>See the key on the ledger</h2><p>The Fulfillment field is the article key.</p><Out href={explorerTx(JUDGE_RUN.keyTx)}>Open the EscrowFinish</Out></div></li>
       {proof && <li>{icons.refuse}<div><h2>See it refuse to spend</h2><p>A question it declined to pay for, S$0.00 spent, anchored on the ledger.</p><Out href={proof}>Open the proof of refusal</Out></div></li>}
     </ul>
-    <SharedPayer />
+    {opened && <SharedPayer />}
   </section>
+    <BuildersCorner hosted={hosted} />
+    <HostedFooter hosted={hosted} />
+  </details>
 }
 
 /** A collapsed row under the examples for the developer who wants this in their own agent: three lines to copy, pinned to a published release. */
@@ -115,7 +123,6 @@ export function HostedWaiting({ hosted, onCancel }: { hosted: Hosted; onCancel: 
 export function HostedFooter({ hosted }: { hosted: Hosted }) {
   const links = hostedLinks(hosted)
   return <>
-    <BuildersCorner hosted={hosted} />
     <footer className="ra-hfoot" aria-label="About this project">
       <nav aria-label="Project links"><ul>
         <li><Out href={links.repo}>Source code</Out></li>

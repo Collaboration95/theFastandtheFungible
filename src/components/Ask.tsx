@@ -50,7 +50,7 @@ export default function Ask({ onAsk, busy = false, settlement, above, universalM
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const disabled = busy || submitting
-  // On the hosted demo, "check our work without asking a question" sits between the composer and the examples. A closed demo has no
+  // Hosted proof and builder tools follow the examples. A closed demo has no
   // composer, so there the hosted intro carries it instead.
   const hosted = useHosted()
   return <section className="ra-home" aria-label="Ask a research question">
@@ -79,12 +79,13 @@ export default function Ask({ onAsk, busy = false, settlement, above, universalM
       {composerNote}
       {error && <div className="ra-comp-foot"><span className="ra-err" role="alert">{error}</span></div>}
     </form>}
-    {!above && !closed && (note ?? (hosted && <HostedJudgesCorner hosted={hosted} />))}
+    {!above && !closed && note}
     {/* The demo questions sit under the composer, one per row; a click fills the box. */}
     {!above && !closed && <div className="ra-presets" role="group" aria-label="Demo questions">
       <p className="ra-presets-h" aria-hidden="true">{examplesLabel}</p>
       {exampleQuestions(import.meta.env.MODE === 'browser-demo' ? undefined : settlement).map((preset) => <button key={preset.id} type="button" className={`ra-preset${question === preset.text ? ' is-on' : ''}`} aria-pressed={question === preset.text} title={preset.text} disabled={disabled} onClick={() => setQuestion(preset.text)}>
         <i aria-hidden="true">?</i><b>{preset.label}</b><span>{preset.text}</span></button>)}
     </div>}
+    {!above && !closed && hosted && <HostedJudgesCorner hosted={hosted} />}
   </section>
 }

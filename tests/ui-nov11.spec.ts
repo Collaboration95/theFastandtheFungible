@@ -32,7 +32,7 @@ for (const mode of ['local','hosted']) for (const width of [1440,390]) test(`${m
  await expect(page.getByRole('timer')).toContainText('paused');await page.waitForTimeout(5200)
  await expect(page.getByRole('button',{name:'Start now'})).toBeVisible() // reduced motion never starts silently
  await page.getByRole('button',{name:'Cancel',exact:true}).click()
- await page.goto(`/?run=${recording.run.runId}`);await expect(page.locator('.ra-q')).toBeVisible();await capture('answer');await expect(page.getByRole('heading',{name:'Verify on XRPL in your browser'})).toBeVisible()
+ await page.goto(`/?run=${recording.run.runId}`);await expect(page.locator('.ra-q')).toBeVisible();await capture('answer')
  if(width===390){await page.locator('.ra-mobile-spend > button').click();await capture('mobile-spend')}
  await page.getByRole('button',{name:/Receipt/}).first().click();await capture('receipt');await page.keyboard.press('Escape')
  await page.locator('.ra-cite').first().click();await capture('citation');await expect.soft(page.locator('.ra-dr-b')).toHaveAttribute('tabindex','0');await page.keyboard.press('Escape')
