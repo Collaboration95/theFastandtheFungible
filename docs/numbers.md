@@ -56,7 +56,7 @@ value; the projection row is a projection, not a measurement
 
 | Item | Observed |
 |---|---|
-| Key-reveal purchase (EscrowCreate + EscrowFinish) | <!--f:fee_drops-->435<!--/f--> drops (<!--f:fee_create-->12<!--/f--> + <!--f:fee_finish-->423<!--/f-->) |
+| Key-reveal purchase | <!--f:fee_drops-->435<!--/f--> drops as we sign: <!--f:fee_create-->12<!--/f--> paid by the buyer to lock (EscrowCreate) + <!--f:fee_finish-->423<!--/f--> paid by the writer to reveal the key (EscrowFinish). rippled's own minimum is 360 (10 + 350 for a 36-byte fulfilment); the network base fee is 10 drops |
 | Answer anchor (AccountSet) | 12 drops |
 | Plain payment / writer-signed refund | 12 / 12 drops (earlier runs) |
 | MCP initialize · cold wallet provisioning | 1.5 s initialize · 20.8 s XRP provisioning (7 Nov review; cached timings vary) |
@@ -77,7 +77,7 @@ MCP package <!--f:mcp_mb-->3.4<!--/f--> MB (was 21.4 MB), cold MCP initialize
 
 ## Progress since SingHacks
 
-<!--f:progress_line-->248 pull requests merged since 21 Sep (counted at 329b64f7 on 11 Nov) · 13 releases · 61 Testnet transactions you can re-check<!--/f-->.
+<!--f:progress_line-->270 pull requests merged since 21 Sep (counted at bd52beff on 11 Nov) · 15 releases · 61 Testnet transactions you can re-check<!--/f-->.
 The queries behind every count, the release rail and the misses we kept are on the
 [progress page](https://collaboration95.github.io/theFastandtheFungible/progress/)
 (data: [`site/progress/data.json`](../site/progress/data.json)).

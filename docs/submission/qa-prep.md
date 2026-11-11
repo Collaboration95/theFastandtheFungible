@@ -17,7 +17,7 @@ fintech operator; **Y**, a YC-style partner. Their hardest questions come first.
 | **<!--f:try_s-->84.2<!--/f--> s** | `try --testnet`: empty npm cache → six Testnet links → `RESULT PASS` | Testnet, fixture models, one Mac, 7 Nov; <!--f:try_misses-->2 of 4<!--/f--> cold attempts overran 90 s | [#387](https://github.com/Collaboration95/theFastandtheFungible/pull/387), [round4-j2](../evidence/round4-j2/README.md) |
 | **<!--f:mcp_mb-->3.4<!--/f--> MB / <!--f:mcp_init_s-->6.3<!--/f--> s** | MCP package size / cold initialize (was 21.4 MB / 56.5 s) | local packed build, fresh npm cache | same |
 | **<!--f:app_ready_s-->27.0<!--/f--> s** | zero-clone app ready (was 134 s) | same | same |
-| **<!--f:fee_drops-->435<!--/f--> drops** | fees per key-reveal purchase (<!--f:fee_create-->12<!--/f--> create + <!--f:fee_finish-->423<!--/f--> finish) | Testnet, measured | [cost card](../numbers.md#testnet-cost-and-latency), [round3-a](../evidence/round3-a/README.md) |
+| **<!--f:fee_drops-->435<!--/f--> drops** | fees per key-reveal purchase as we sign: <!--f:fee_create-->12<!--/f--> paid by the buyer to create, <!--f:fee_finish-->423<!--/f--> paid by the writer to finish (rippled's own minimum: 360) | Testnet, measured | [cost card](../numbers.md#testnet-cost-and-latency), [round3-a](../evidence/round3-a/README.md) |
 | **894 drops** | all six UC3 transactions (two buys, refund, anchor) | Testnet, measured | [judge-path.md](../evidence/round4-l4/judge-path.md) |
 | **S$0.00087** | fees per purchase at an assumed S$2.00/XRP | **projection**, not a quote | [cost card](../numbers.md#testnet-cost-and-latency) |
 | **US$0.0026** | model cost per question | LIVE models, 48 fresh questions, 3 Nov | [scorecard](../numbers.md#synthetic-corpus-scorecard-3-nov) |
@@ -27,8 +27,8 @@ fintech operator; **Y**, a YC-style partner. Their hardest questions come first.
 | **<!--f:writer_s-->33.9<!--/f--> s** | `init` + `publish`: Markdown folder → writer Credential validated on Testnet | generated starter note, public faucet, one measurement | [#389](https://github.com/Collaboration95/theFastandtheFungible/pull/389) |
 | **0** | gate-audit violations: 10 runs, 568 observations | fresh-set eval, simulated payments, 3 Nov | [scorecard](../numbers.md#synthetic-corpus-scorecard-3-nov) |
 | **93.15%** | gross article spend that bought a fact in the final answer (CI 81.25–100.00) | LIVE decisions, fixture research, simulated payments | [fresh-results.json](../../eval/scorecard/fresh-results.json) |
-| **<!--f:prs-->248<!--/f--> / <!--f:releases-->13<!--/f-->** | PRs merged into `main` since <!--f:since-->21 Sep<!--/f--> / published releases | counted at <!--f:sha-->329b64f7<!--/f--> on <!--f:as_of-->11 Nov 2026<!--/f--> | [facts.json](facts.json), [progress page](https://collaboration95.github.io/theFastandtheFungible/progress/) |
-| **Held-out <!--f:heldout-->16/20<!--/f-->; <!--f:offtopic-->0/10<!--/f--> off-topic buys** | <!--f:heldout_line-->v5 blind held-out: 16/20 bought and cited, 0/10 off-topic purchases (run once, 11 Nov, on XRPL Testnet: fixture research and decision models with answers written offline, team-authored writers)<!--/f-->; the key fact leads the answer in <!--f:answers_it-->7/20<!--/f-->; 0 gate violations. Dev (not held-out): v1 <!--f:dev_v1-->16/20<!--/f-->, v3 <!--f:dev_v3-->7/20<!--/f--> | as stated | [evidence](../evidence/v4-heldout/README.md) |
+| **<!--f:prs-->270<!--/f--> / <!--f:releases-->15<!--/f-->** | PRs merged into `main` since <!--f:since-->21 Sep<!--/f--> / published releases | counted at <!--f:sha-->bd52beff<!--/f--> on <!--f:as_of-->11 Nov 2026<!--/f--> | [facts.json](facts.json), [progress page](https://collaboration95.github.io/theFastandtheFungible/progress/) |
+| **Held-out <!--f:heldout-->16/20<!--/f-->; <!--f:offtopic-->0/10<!--/f--> off-topic buys** | <!--f:heldout_line-->v5 blind held-out: 16/20 bought and cited, 0/10 off-topic purchases (run once, 11 Nov, on XRPL Testnet: fixture research and decision models with answers written offline, team-authored writers)<!--/f-->; the key fact leads the answer in <!--f:answers_it-->7/20<!--/f-->; 0 gate violations. Dev (not held-out): v1 <!--f:dev_v1-->16/20<!--/f-->, v3 <!--f:dev_v3-->7/20<!--/f--> | as stated | [evidence](../evidence/v5-heldout/README.md) |
 | **SingHacks baseline** | <!--f:singhacks_then-->At SingHacks a language model proposed each purchase and a person approved every quote before payment; payment was a fixture by default, with optional Testnet settlement.<!--/f--> | tag `hackathon-baseline` (7 Sep commit) | [prototype README](https://github.com/Collaboration95/theFastandtheFungible/blob/hackathon-baseline/prototypes/ResearchAgent/README.md) |
 
 ---
@@ -54,16 +54,17 @@ Node ≥ 22.13.
 
 ### 2. Are the writers real?
 
-**Say:** "Three kinds, and we label each one. The research writers in the demo,
-like Kestrel and AlphaLeak, are fictional. A team-authored writer is our own
-real build notes about XRPL and x402, labelled as ours and not independent.
-Independent writers: none yet. That list is empty until a real person consents.
-What we can show is that a Markdown folder becomes a Testnet writer with an XRPL
+**Say:** "Three kinds, and we label each one. The demo's research writers, like
+Kestrel and AlphaLeak, are fictional. Our two team-authored writers are our own
+real notes and sourced explainers about XRPL and x402, labelled as ours and not
+independent. Independent writers: none yet. That list is empty until a real
+person consents. What we can show is that a Markdown folder becomes a Testnet writer with an XRPL
 Credential in about <!--f:writer_s-->33.9<!--/f--> seconds."
 
 **Behind it:** `docs/evidence/real-writers.json` is empty by design. The
 team-authored label is "team-authored · real content · not an independent writer
-· Testnet" (J1, #390). Writer onboarding: [round3-c](../evidence/round3-c/README.md);
+· Testnet" (J1, #390); the two writers are "ResearchAgent builders" (build notes)
+and "ResearchAgent builders · XRPL explainers" ([x-explainers](../evidence/x-explainers/README.md)). Writer onboarding: [round3-c](../evidence/round3-c/README.md);
 first-try `init` + `publish` is <!--f:writer_s-->33.9<!--/f--> s (J3, #389).
 
 ### 3. I asked my own question. What happens?
@@ -77,7 +78,7 @@ the decline now lists each policy reason in 'Why'. Discovery does not guarantee
 a purchase. Development sets, which we tuned on, are separate: v1
 <!--f:dev_v1-->16/20<!--/f--> and v3 <!--f:dev_v3-->7/20<!--/f-->."
 
-**Behind it:** [v4 evidence](../evidence/v4-heldout/README.md): <!--f:heldout_line-->v5 blind held-out: 16/20 bought and cited, 0/10 off-topic purchases (run once, 11 Nov, on XRPL Testnet: fixture research and decision models with answers written offline, team-authored writers)<!--/f-->; answers-it <!--f:answers_it-->7/20<!--/f-->, <!--f:heldout_violations-->0<!--/f--> gate violations. Run once on `main` `bdc30f97`, fixture decision model at threshold 0.20, team-authored writers, Testnet. v4 is now used; a new held-out claim needs a new blind bank (v5). Dev, not held-out: v1 16/20, v3 7/20 (answers-it 4/20 after #410); v2 is observed dev data. DONE Testnet abstentions are anchored (#403), so every DONE run verifies. Policy misses remain: 13 of 20 held-out questions did not end in a cited purchase. This is fixture-model mechanism evidence, not live-model answer quality.
+**Behind it:** [v5 evidence](../evidence/v5-heldout/README.md): <!--f:heldout_line-->v5 blind held-out: 16/20 bought and cited, 0/10 off-topic purchases (run once, 11 Nov, on XRPL Testnet: fixture research and decision models with answers written offline, team-authored writers)<!--/f-->; answers-it <!--f:answers_it-->7/20<!--/f-->, <!--f:heldout_violations-->0<!--/f--> gate violations. Run once on `main` `a9584014`, fixture research and decision models (answers written offline) at threshold 0.20, team-authored writers, Testnet. Some v5 questions resemble v4 ones; leaving out the two closest pairs gives 15/18 (the evidence README lists them). v4 and v5 are now used, so a new held-out claim needs a new blind bank. Dev, not held-out: v1 16/20, v3 7/20 (answers-it 4/20 after #410); v2 is observed dev data. DONE Testnet abstentions are anchored (#403), so every DONE run verifies. Policy misses remain: the other held-out questions did not end in a cited purchase. This is fixture-model mechanism evidence, not live-model answer quality: the hosted sandbox writes answers live and decides purchases with the rule-based model.
 
 ### 4. Who pays for this, and who is writer number one?
 
@@ -96,8 +97,8 @@ next are people who consent."
 **Say:** "Most show that an agent *can* pay. We focus on whether it *should*,
 and on what happens when the seller lies. The model never holds spending
 authority. The writer is paid only by publishing the key on the ledger. Every
-receipt can be re-checked by a verifier that isn't ours, in a language that
-isn't ours."
+receipt can be re-checked by two verifiers, written separately in two languages,
+and they agree on every test vector."
 
 ---
 
@@ -106,7 +107,9 @@ isn't ours."
 ### 6. What are the unit economics?
 
 **Say:** "Network fees are <!--f:fee_drops-->435<!--/f--> drops per key-reveal
-purchase, <!--f:fee_create-->12<!--/f--> to create and <!--f:fee_finish-->423<!--/f--> to finish, because the finish carries the key. That is about S$0.0009 at an
+purchase as we sign today: <!--f:fee_create-->12<!--/f--> paid by the buyer to lock the
+escrow and <!--f:fee_finish-->423<!--/f--> paid by the writer to reveal the key, because
+the finish carries it. rippled's own minimum is 360. That is about S$0.0009 at an
 assumed two dollars per XRP. The answer anchor is 12 drops, and a Testnet run that
 buys nothing is anchored too. Models cost about a quarter of a US cent per question.
 Writers set article prices, S$0.10 to S$0.90 in our corpus, capped at S$1 per
@@ -123,10 +126,11 @@ labelled demo rate, not FX (B11).
 
 **Say:** "Official RLUSD payments do work on Testnet: on 3 November a writer was
 paid 0.90 RLUSD and a broken promise was refunded. But RLUSD can't go into a
-token escrow yet. The network has TokenEscrow enabled, but the RLUSD issuer
-account doesn't have the AllowTrustLineLocking flag. So we issued our own
-Testnet token, TEST-SGD, to prove the key-reveal escrow end to end, and we
-label it as a stand-in everywhere. When Ripple sets that one flag, it's a config
+token escrow yet. Testnet and Mainnet both have TokenEscrow enabled, but the
+RLUSD issuer account on each doesn't have the AllowTrustLineLocking flag. So we
+issued our own Testnet token, TEST-SGD, to prove the key-reveal escrow end to end
+(from the command line, with evidence; the live sandbox pays in Testnet XRP), and
+we label it as a stand-in everywhere. When Ripple sets that one flag, it's a config
 change."
 
 **Behind it:** [rlusd.md](../evidence/rlusd.md) (official RLUSD, faucet 401
@@ -142,9 +146,12 @@ TEST-SGD evidence: [#381](https://github.com/Collaboration95/theFastandtheFungib
 Testnet transaction you can click. That covers escrows, refunds, anchors,
 TEST-SGD, writer credentials and the hire chain. Simulated: the offline app and
 Mac app use a labelled simulated rail, and our quality evaluation simulated its
-payments. Fixture: the decision and research models in the Testnet demos.
-Fictional: the research writers. Substituted: TEST-SGD for RLUSD. The app shows
-one environment indicator, and every receipt carries its label."
+payments. Fixture: the research and decision models in the held-out runs and the
+zero-clone demos; the hosted sandbox writes answers live and decides purchases
+with the rule-based model, as its header says.
+Fictional: the demo's research writers. Team-authored: our two labelled writers.
+Substituted: TEST-SGD for RLUSD. The app shows one environment indicator, and
+every receipt carries its label."
 
 **Behind it:** hard gate 5; `scripts/gate-audit.ts` rule `missing_rail_label`.
 
@@ -218,16 +225,20 @@ show the links in BUILDER-FEEDBACK's top-7 table.
 
 **Say:** "Four native features we'd otherwise need contracts for. Escrow with a
 crypto-condition carries the article key. Token escrow lets that work in a
-stablecoin. InvoiceID and memos bind each payment to its quote. Credentials
-identify writers. Fees are drops and ledgers close in seconds, which is what
+stablecoin (from the command line; the live sandbox pays in Testnet XRP). InvoiceID
+and memos bind each payment to its quote. Credentials identify writers who publish
+with `publish --testnet`; the sandbox's team writers are unverified. Fees are drops and ledgers close in seconds, which is what
 makes paying per article viable. There's no contract to deploy or audit."
 
 ### 15. Why does EscrowFinish cost 423 drops?
 
 **Say:** "Because the fee scales with the fulfilment size, and our fulfilment
-is the 32-byte article key wrapped as a preimage condition. Create and cancel
-are 12 drops. It's the same for XRP and for the token escrow. We logged it as
-builder feedback, because base-fee examples understate it."
+is the 32-byte article key wrapped as a preimage condition. We sign it at 423
+drops with a 12-drop floor; rippled's own minimum for this finish is 350. The
+writer pays it, because the writer submits the finish. The buyer pays 12 to
+lock the escrow, and the network's base fee is 10. It's the same for XRP and for
+the token escrow. We logged it as builder feedback, because base-fee examples
+understate it."
 
 **Behind it:** B19; [round3-e/xrp-fee.json](../evidence/round3-e/xrp-fee.json).
 

@@ -66,12 +66,20 @@ export function cleanBullet(raw) {
     .replace(/([.!?])(?:[\s,;]*)$/, '$1')
     .replace(/\s+([.,;:])/g, '$1')
     .replace(/\s+/g, ' ').trim()
-  const sentence = text.match(/^(.{40,}?[.!?])(?:\s|$)/)
-  text = sentence ? sentence[1] : text
+  // Never stop inside a quote or a bracket: a cut there reads as a broken sentence on the page.
+  const closed = s => (s.match(/"/g) ?? []).length % 2 === 0 && (s.match(/\(/g) ?? []).length === (s.match(/\)/g) ?? []).length
+  const ends = [...text.matchAll(/[.!?](?=\s|$)/g)].map(m => m.index + 1)
+  // The first sentence of 40+ characters that is closed.
+  const stop = ends.find(i => i > 40 && closed(text.slice(0, i)))
+  text = stop ? text.slice(0, stop) : text
   if (text.length > 170) {
-    // Cut at the first clause boundary that still reads as a sentence.
-    const cut = [/: /g, /; /g, / — /g, /, (?:and |plus )?/g].map(re => [...text.matchAll(re)].map(m => m.index).find(i => i >= 30 && i <= 165)).find(i => i !== undefined)
-    text = cut !== undefined ? text.slice(0, cut).replace(/[\s,;:]+$/, '') + '.' : text.slice(0, text.lastIndexOf(' ', 160)) + '…'
+    // Cut at the first closed clause boundary that still reads as a sentence.
+    const cut = [/: /g, /; /g, / — /g, /, (?:and |plus )?/g].map(re => [...text.matchAll(re)].map(m => m.index).find(i => i >= 30 && i <= 165 && closed(text.slice(0, i)))).find(i => i !== undefined)
+    // Otherwise a closed sentence that fits, and only then a word-boundary cut that backs out of any open quote or bracket.
+    const first = ends.find(i => i <= 170 && closed(text.slice(0, i)))
+    let word = text.slice(0, text.lastIndexOf(' ', 160))
+    while (!closed(word)) word = word.slice(0, Math.max(word.lastIndexOf('('), word.lastIndexOf('"'))).trimEnd()
+    text = cut !== undefined ? text.slice(0, cut).replace(/[\s,;:]+$/, '') + '.' : first ? text.slice(0, first) : word + '…'
   }
   text = text.replace(/[:;,]$/, '.').replace(/\.\.$/, '.')
   if (!/[.!?…]$/.test(text)) text += '.'
@@ -330,7 +338,7 @@ export function build({ at = 'HEAD' } = {}) {
   const over = tryRuns.filter(r => !r.pass)
   const measures = {
     'try-cold': `${over.length} of ${tryRuns.length} cold runs over ${tryLimit} s: ${tryRuns.map(r => r.note === 'deadline exceeded' ? `stopped at the ${tryLimit} s deadline` : `${r.seconds.toFixed(1)} s ${r.pass ? 'pass' : r.note}`).join(' · ')}`,
-    heldout: `${v4.buyAndCite.N - v4.buyAndCite.n} of ${v4.buyAndCite.N} held-out questions ended without a cited purchase; the key fact led the answer in ${v4.answersIt.n} of ${v4.answersIt.N}`,
+    heldout: `v4: ${v4.buyAndCite.N - v4.buyAndCite.n} of ${v4.buyAndCite.N} held-out questions ended without a cited purchase; the key fact led the answer in ${v4.answersIt.n} of ${v4.answersIt.N}`,
     'v2-superseded': `v2 held-out ${need(v2.buyAndCite, 'v2')}/${need(v2.questions, 'v2 N')} → blind v4 ${v4.buyAndCite.n}/${v4.buyAndCite.N}`,
     soak: `Loop delay p99 ${need(soakLoaded?.value, 'loaded p99').toFixed(1)} ms against a ${soakLoaded.limit} ms limit on a busy host; ${need(soakQuiet?.value, 'quiet p99').toFixed(1)} ms when quiet`,
     'iou-cold': `${need(iou['iou-cold'], 'iou cold').toFixed(1)} s cold against a ${iouTarget} s target; ${need(iou['iou-warm'], 'iou warm').toFixed(1)} s warm`,

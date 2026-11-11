@@ -22,6 +22,7 @@
     "site:progress": "node scripts/build-progress-data.mjs",
     "facts": "node scripts/facts.mjs",
     "site:publish": "python3 scripts/site-publish.py",
+    "check:release-urls": "node scripts/check-release-urls.mjs",
     "hygiene": "npm run check:naming && node scripts/repo-hygiene.mjs && node scripts/check-feedback-ids.mjs && node scripts/site-header.mjs --check && node scripts/render-progress.mjs --check && node scripts/facts.mjs --check",
     "release": "node scripts/release.mjs",
     "check:fast": "npm run hygiene && npm run check:paid-bodies && npm run lint && npm run typecheck && npm run test:unit && npm run chaos:smoke",

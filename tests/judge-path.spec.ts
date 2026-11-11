@@ -60,6 +60,43 @@ test('landing points at the release, never the stale Latest', async ({ page }) =
   expect(page.url()).toBe(TAG)
 })
 
+test('site home uses one local Geist download and 44 px footer targets on a phone', async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })
+  const page = await context.newPage()
+  const fonts: string[] = [], thirdParty: string[] = []
+  page.on('request', request => {
+    if (request.resourceType() === 'font') fonts.push(request.url())
+    if (/fonts\.(googleapis|gstatic)\.com/.test(request.url())) thirdParty.push(request.url())
+  })
+  await page.route(/https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/, route => route.abort())
+  await page.goto(`${base}/`)
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  await page.evaluate(() => document.fonts.ready)
+  expect(thirdParty).toEqual([])
+  expect(fonts.filter(url => /geist-latin-wght-normal/.test(url))).toHaveLength(1)
+  const faces = await page.evaluate(() => Array.from(document.fonts).map(face => ({ family: face.family, display: face.display })))
+  expect(faces.filter(face => /Geist/.test(face.family)).every(face => face.display === 'swap')).toBe(true)
+  for (const link of await page.locator('.ra-ftr a').all()) {
+    const box = await link.boundingBox()
+    expect(box?.width).toBeGreaterThanOrEqual(44)
+    expect(box?.height).toBeGreaterThanOrEqual(44)
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390)
+  await context.close()
+})
+
+test('replay header reuses the app font without a second brand download', async ({ page }) => {
+  const fonts: string[] = []
+  page.on('request', request => { if (request.resourceType() === 'font') fonts.push(request.url()) })
+  await page.goto(`${base}/demo/`)
+  // Count fonts after the replay renders, including when its app module loads lazily.
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  await page.evaluate(() => document.fonts.ready)
+  expect(await page.locator('.ra-hdr').evaluate(node => getComputedStyle(node).fontFamily)).toContain('Geist Variable')
+  expect(fonts.filter(url => /geist-latin-wght-normal/.test(url))).toHaveLength(1)
+  expect(fonts.some(url => url.includes('/brand/'))).toBe(false)
+})
+
 for (const tab of TABS) {
   test(`demo tab "${tab}": never shows Failed, stale or spelled-out text, and finishes`, async ({ page }) => {
     test.setTimeout(120_000)

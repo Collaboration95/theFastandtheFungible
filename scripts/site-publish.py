@@ -38,6 +38,9 @@ def push_with_retry(work, attempts=3):
 def main():
     if git('status', '--porcelain', '--', 'site'):
         raise SystemExit('site/ has uncommitted changes; commit them first')
+    # A pinned install or verify link that 404s breaks a judge's first command: stop before publishing it.
+    if subprocess.run(['node', 'scripts/check-release-urls.mjs'], cwd=root).returncode:
+        raise SystemExit('Site publish stopped: a pinned release link does not resolve (listed above). Publish the release or re-pin the links.')
     subprocess.run(['npm', 'run', 'build:demo'], cwd=root, check=True)
     git('fetch', 'origin', 'gh-pages')
     files = [p for p in (root / 'site').rglob('*') if p.is_file() and p.relative_to(root / 'site').as_posix() not in ('SOURCE.md', 'evolution/data.js')]

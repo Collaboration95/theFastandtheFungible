@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "generated_at": "2026-11-10T21:27:22.741Z",
-  "source_sha": "329b64f745f54dce78390f2be643e9f9938888fa",
-  "source_date": "2026-11-11T05:20:44+08:00",
+  "generated_at": "2026-11-11T14:34:24.982Z",
+  "source_sha": "bd52beff55589f026e71cef3c73cf84984bc516e",
+  "source_date": "2026-11-11T15:42:59+08:00",
   "as_of": "2026-11-11",
   "since": {
     "date": "2026-09-21",
@@ -30,19 +30,19 @@
     }
   },
   "today": {
-    "sha": "329b64f745f54dce78390f2be643e9f9938888fa",
-    "date": "2026-11-11T05:20:44+08:00",
-    "files": 3923,
-    "codeFiles": 755,
-    "codeLines": 64359,
-    "tests": 1284,
-    "release": "v1.0.2",
-    "releaseDay": "2026-11-08"
+    "sha": "bd52beff55589f026e71cef3c73cf84984bc516e",
+    "date": "2026-11-11T15:42:59+08:00",
+    "files": 4085,
+    "codeFiles": 799,
+    "codeLines": 70650,
+    "tests": 1513,
+    "release": "v1.1.1",
+    "releaseDay": "2026-11-11"
   },
   "headline": {
     "days": 52,
-    "prs": 248,
-    "releases": 13,
+    "prs": 270,
+    "releases": 15,
     "transactions": 61,
     "heldout": {
       "bank": "v5",
@@ -64,8 +64,8 @@
       "seconds": 84.190952542,
       "limit": 90
     },
-    "tests": 1284,
-    "commits": 303
+    "tests": 1513,
+    "commits": 326
   },
   "activity": [
     {
@@ -335,8 +335,8 @@
     },
     {
       "day": "2026-11-11",
-      "prs": 25,
-      "commits": 25
+      "prs": 47,
+      "commits": 48
     }
   ],
   "rail": [
@@ -431,7 +431,7 @@
         },
         {
           "label": "Design record",
-          "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/329b64f745f54dce78390f2be643e9f9938888fa/docs/FINAL-PUSH.md"
+          "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/bd52beff55589f026e71cef3c73cf84984bc516e/docs/FINAL-PUSH.md"
         }
       ]
     },
@@ -485,7 +485,7 @@
       "image": null,
       "snippet": {
         "lines": [
-          "claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y …/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz"
+          "claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y …/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz"
         ],
         "caption": "Connect Claude Code (docs/mcp.md, current release line)",
         "from": "docs/mcp.md"
@@ -1042,6 +1042,91 @@
           "url": "https://github.com/Collaboration95/theFastandtheFungible/pull/403"
         }
       ]
+    },
+    {
+      "id": "v1.1.0",
+      "kind": "release",
+      "tag": "v1.1.0",
+      "prerelease": false,
+      "day": "2026-11-11",
+      "label": "11 Nov",
+      "title": "A hosted demo for judges, and receipts that verify from it",
+      "summary": null,
+      "bullets": [
+        "A live sandbox with nothing to install: https://ra-front-651013803640.asia-southeast1.run.app, open 13–19 Nov 2026.",
+        "Receipts from the sandbox verify with the published tools.",
+        "It buys the right article, and fewer of them."
+      ],
+      "image": {
+        "src": "img/v1-1-0.png",
+        "alt": "A hosted-demo answer on XRPL Testnet next to its payment card: each article paid by key reveal, every step linked to its transaction",
+        "caption": "Hosted demo, XRPL Testnet, 11 Nov",
+        "from": "docs/media/readme-answer.png",
+        "captured": "2026-11-11",
+        "sha256": "b20519b8167026a1bf59d5a0e3aa8ca8582f7c5eef4e53462b1e1b8603e04a6a",
+        "width": 2880,
+        "height": 1920
+      },
+      "snippet": null,
+      "proofs": [
+        {
+          "label": "Release notes",
+          "url": "https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.1.0"
+        },
+        {
+          "label": "PR #432",
+          "url": "https://github.com/Collaboration95/theFastandtheFungible/pull/432"
+        },
+        {
+          "label": "PR #438",
+          "url": "https://github.com/Collaboration95/theFastandtheFungible/pull/438"
+        },
+        {
+          "label": "PR #441",
+          "url": "https://github.com/Collaboration95/theFastandtheFungible/pull/441"
+        }
+      ]
+    },
+    {
+      "id": "v1.1.1",
+      "kind": "release",
+      "tag": "v1.1.1",
+      "prerelease": false,
+      "day": "2026-11-11",
+      "label": "11 Nov",
+      "title": "First-click fixes and hosted receipt verification",
+      "summary": null,
+      "bullets": [
+        "The first click buys one article and leads with the answer.",
+        "The plan you confirm is the plan that runs.",
+        "Every exported receipt verifies."
+      ],
+      "image": null,
+      "snippet": {
+        "lines": [
+          "PASS checks: 46 passed, 0 failed, 2 skipped",
+          "PASS audit anchor: Validated XRPL Testnet ledger 22228575",
+          "PASS testnet 11/11 (read-only, s.altnet)",
+          "Skipped is not failed. PASS does not prove who a writer is.",
+          "RESULT PASS"
+        ],
+        "caption": "Published v1.1.1 Python wheel checking the committed hosted export, read-only Testnet, 11 Nov",
+        "from": "docs/submission/evidence/v1.1.1/verify-python.txt"
+      },
+      "proofs": [
+        {
+          "label": "Release notes",
+          "url": "https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.1.1"
+        },
+        {
+          "label": "PR #473",
+          "url": "https://github.com/Collaboration95/theFastandtheFungible/pull/473"
+        },
+        {
+          "label": "PR #472",
+          "url": "https://github.com/Collaboration95/theFastandtheFungible/pull/472"
+        }
+      ]
     }
   ],
   "capabilities": [
@@ -1389,9 +1474,9 @@
       {
         "label": "11 Nov · today",
         "day": "2026-11-11",
-        "typescript": 1259,
+        "typescript": 1488,
         "python": 25,
-        "total": 1284
+        "total": 1513
       }
     ],
     "code": [
@@ -1428,7 +1513,7 @@
       {
         "label": "11 Nov · today",
         "day": "2026-11-11",
-        "lines": 64359
+        "lines": 70650
       }
     ],
     "executedTests": {
@@ -1811,23 +1896,23 @@
       "kind": "Missed",
       "title": "Two of four cold first-try runs overran 90 seconds",
       "did": "Kept the timeouts beside the passes; the 90 s limit stayed unchanged.",
-      "source": "https://github.com/Collaboration95/theFastandtheFungible/blob/329b64f745f54dce78390f2be643e9f9938888fa/docs/evidence/round4-j2/README.md",
+      "source": "https://github.com/Collaboration95/theFastandtheFungible/blob/bd52beff55589f026e71cef3c73cf84984bc516e/docs/evidence/round4-j2/README.md",
       "measure": "2 of 4 cold runs over 90 s: 73.8 s pass · 90.2 s timed out · stopped at the 90 s deadline · 84.2 s pass"
     },
     {
       "id": "heldout",
       "kind": "Measured",
-      "title": "Most blind held-out questions did not end in a purchase",
-      "did": "Reported the blind number instead of the dev bank, and froze a new blind bank (v5).",
-      "source": "https://github.com/Collaboration95/theFastandtheFungible/blob/329b64f745f54dce78390f2be643e9f9938888fa/docs/evidence/v4-heldout/README.md",
-      "measure": "13 of 20 held-out questions ended without a cited purchase; the key fact led the answer in 2 of 20"
+      "title": "Most v4 blind held-out questions did not end in a purchase",
+      "did": "Reported the blind number instead of the dev bank, then froze and ran a new blind bank (v5, 11 Nov).",
+      "source": "https://github.com/Collaboration95/theFastandtheFungible/blob/bd52beff55589f026e71cef3c73cf84984bc516e/docs/evidence/v4-heldout/README.md",
+      "measure": "v4: 13 of 20 held-out questions ended without a cited purchase; the key fact led the answer in 2 of 20"
     },
     {
       "id": "v2-superseded",
       "kind": "Superseded",
       "title": "We replaced our own better-looking number",
       "did": "The v2 held-out score was written after the team notes; a blind v4 bank replaced it everywhere.",
-      "source": "https://github.com/Collaboration95/theFastandtheFungible/blob/329b64f745f54dce78390f2be643e9f9938888fa/docs/evidence/j5-coverage/README.md",
+      "source": "https://github.com/Collaboration95/theFastandtheFungible/blob/bd52beff55589f026e71cef3c73cf84984bc516e/docs/evidence/j5-coverage/README.md",
       "measure": "v2 held-out 8/20 → blind v4 7/20"
     },
     {
@@ -1835,7 +1920,7 @@
       "kind": "Missed",
       "title": "The loaded-host soak failed its loop-delay gate",
       "did": "Kept the failure; a quiet-host rerun passed all five gates. No threshold changed.",
-      "source": "https://github.com/Collaboration95/theFastandtheFungible/blob/329b64f745f54dce78390f2be643e9f9938888fa/docs/evidence/soak-nov4-ab/README.md",
+      "source": "https://github.com/Collaboration95/theFastandtheFungible/blob/bd52beff55589f026e71cef3c73cf84984bc516e/docs/evidence/soak-nov4-ab/README.md",
       "measure": "Loop delay p99 64.4 ms against a 50 ms limit on a busy host; 25.8 ms when quiet"
     },
     {
@@ -1843,7 +1928,7 @@
       "kind": "Missed",
       "title": "First stablecoin-escrow start was slow",
       "did": "Show provisioning progress in the app; the target stays.",
-      "source": "https://github.com/Collaboration95/theFastandtheFungible/blob/329b64f745f54dce78390f2be643e9f9938888fa/docs/evidence/r5-a/README.md",
+      "source": "https://github.com/Collaboration95/theFastandtheFungible/blob/bd52beff55589f026e71cef3c73cf84984bc516e/docs/evidence/r5-a/README.md",
       "measure": "122.9 s cold against a 100 s target; 21.5 s warm"
     },
     {
@@ -1851,7 +1936,7 @@
       "kind": "Missed",
       "title": "No buy threshold met the waste ceiling",
       "did": "Kept the default 0.20 and recorded that no value passes every constraint.",
-      "source": "https://github.com/Collaboration95/theFastandtheFungible/blob/329b64f745f54dce78390f2be643e9f9938888fa/docs/evidence/p1-threshold/README.md",
+      "source": "https://github.com/Collaboration95/theFastandtheFungible/blob/bd52beff55589f026e71cef3c73cf84984bc516e/docs/evidence/p1-threshold/README.md",
       "measure": "0 of 6 thresholds met the 18.75% waste ceiling"
     },
     {
@@ -1859,7 +1944,7 @@
       "kind": "Regressed",
       "title": "Signed fact menus raised wasted spend",
       "did": "Shipped the better selection, logged the regression and opened a follow-up.",
-      "source": "https://github.com/Collaboration95/theFastandtheFungible/blob/329b64f745f54dce78390f2be643e9f9938888fa/CHANGELOG.md",
+      "source": "https://github.com/Collaboration95/theFastandtheFungible/blob/bd52beff55589f026e71cef3c73cf84984bc516e/CHANGELOG.md",
       "measure": "Wasted spend 36.2% → 47.2% (v0.3.0)"
     }
   ],
@@ -1873,9 +1958,9 @@
   },
   "next": [
     {
-      "status": "Next",
+      "status": "Done",
       "title": "Hosted sandbox for judges, 13–19 Nov",
-      "body": "A public web version on Testnet, so nothing needs installing."
+      "body": "A public web version on Testnet, live since 11 Nov, so nothing needs installing."
     },
     {
       "status": "Done",
@@ -1911,17 +1996,17 @@
   "queries": [
     {
       "metric": "PRs merged",
-      "value": 248,
-      "definition": "gh pr list --state merged --base main, merged on or after 21 Sep 2026 (SGT), merge commit reachable from 329b64f7"
+      "value": 270,
+      "definition": "gh pr list --state merged --base main, merged on or after 21 Sep 2026 (SGT), merge commit reachable from bd52beff"
     },
     {
       "metric": "Commits",
-      "value": 303,
-      "definition": "git rev-list --count e16435a3..329b64f7 (after the last commit before 21 Sep 2026)"
+      "value": 326,
+      "definition": "git rev-list --count e16435a3..bd52beff (after the last commit before 21 Sep 2026)"
     },
     {
       "metric": "Releases",
-      "value": 13,
+      "value": 15,
       "definition": "gh release list, published, tag reachable from the counted commit (prereleases included)"
     },
     {
@@ -1936,12 +2021,12 @@
     },
     {
       "metric": "Tests in the repo",
-      "value": 1284,
+      "value": 1513,
       "definition": "static count of it()/test() declarations in *.test.* / *.spec.* files plus Python def test_ (not executions)"
     },
     {
       "metric": "Lines of code",
-      "value": 64359,
+      "value": 70650,
       "definition": "physical nonblank lines in tracked TS/JS/Python/Shell files, tests and tooling included"
     }
   ]

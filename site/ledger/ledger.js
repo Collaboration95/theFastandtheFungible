@@ -13,9 +13,9 @@ export function operationLabel(row) {
 export const rowContext = row => `${row.label ?? `${row.group}: ${row.operation ?? row.kind}`} · ${row.date}`
 export const rowAmount = row => {
   const a = row.deliveredAmount ?? row.amountDrops
-  return typeof a === 'object' ? `${a.value} ${currencyLabel(a.currency)} · issuer ${a.issuer}` : a ? `${a} drops` : row.group === 'anchor' ? `Memo = audit head ${row.head.slice(0, 12)}…; answer anchor` : 'Principal amount not recorded in this evidence'
+  return typeof a === 'object' ? `${a.value} ${currencyLabel(a.currency)} · issuer ${a.issuer}` : a ? `${(Number(a) / 1_000_000).toLocaleString('en-SG', { maximumFractionDigits: 6 })} XRP` : row.group === 'anchor' ? `Memo = audit head ${row.head.slice(0, 12)}…; answer anchor` : 'Principal amount not recorded in this evidence'
 }
-export const shortHash = hash => `${hash.slice(0, 10)}…${hash.slice(-6)}`
+export const shortHash = hash => `${hash.slice(0, 8)}…${hash.slice(-8)}`.toUpperCase()
 export const credentialTypeHex = text => Array.from(new TextEncoder().encode(text), byte => byte.toString(16).padStart(2, '0')).join('').toUpperCase()
 export function classify(row, body) {
   const r = body?.result
@@ -168,7 +168,10 @@ if (typeof document !== 'undefined' && document.querySelector('#rows')) {
   for (const row of data.rows) {
     const tr = document.createElement('tr')
     const op = el('td'); op.append(el('span', 'op', operationLabel(row)), el('span', 'ctx', rowContext(row)))
-    const money = el('td'); money.append(el('span', 'amt', rowAmount(row)), el('span', 'fee', `fee ${row.feeDrops} drops`))
+    const money = el('td'), amount = el('span', 'amt', rowAmount(row))
+    const drops = row.deliveredAmount ?? row.amountDrops
+    if (typeof drops === 'string') amount.title = `${Number(drops).toLocaleString('en-SG')} drops`
+    money.append(amount, el('span', 'fee', `fee ${row.feeDrops} drops`))
     const source = el('td'); const a = el('a', null, `Ledger ${row.ledgerIndex} · committed source`); a.href = 'https://github.com/Collaboration95/theFastandtheFungible/blob/' + (row.sourceCommit ?? 'f3902008b4be14d60f154fa6db3ba5c1dbe65943') + '/' + row.source; source.append(a)
     const td = el('td'); const link = el('a', 'hash', shortHash(row.hash)); link.href = `https://testnet.xrpl.org/transactions/${row.hash}`; link.title = row.hash; link.setAttribute('aria-label', `Transaction ${row.hash}`); const state = el('span', 'state', 'Checking live…'); td.append(link, state); cells.set(row.hash, state)
     tr.append(op, money, source, td); document.querySelector('#rows').append(tr)
@@ -183,7 +186,10 @@ if (typeof document !== 'undefined' && document.querySelector('#rows')) {
     await refresh(data.rows, WebSocket, (hash, status) => {
       document.querySelector('#status').textContent = `Checking ${data.rows.length} hashes live… ${++checked}/${data.rows.length}`
       if (meter) meter.style.width = `${(checked / data.rows.length) * 100}%`
-      const cell = cells.get(hash); cell.textContent = status
+      const cell = cells.get(hash); cell.textContent = status.replace('sha256(K) = Condition ✓', 'Key matches the escrow lock ✓')
+      if (status.startsWith('validated') && status.includes('sha256(K) = Condition ✓')) {
+        const detail = el('details'); detail.append(el('summary', null, 'Technical details'), el('code', null, 'sha256(K) = Condition ✓')); cell.append(detail)
+      }
       cell.classList.toggle('verified', status.startsWith('validated'))
       if (status.startsWith('validated')) verified++
     })

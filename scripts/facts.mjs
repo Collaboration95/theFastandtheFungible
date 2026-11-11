@@ -156,7 +156,7 @@ export function build() {
     progress_line: `${v('prs')} pull requests merged since ${v('since')} (${counted}) · ${v('releases')} releases · ${v('transactions')} Testnet transactions you can re-check`,
     heldout_line: `${bank} blind held-out: ${v('heldout')} bought and cited, ${v('offtopic')} off-topic purchases (run once, ${v('heldout_on')}, on XRPL Testnet: fixture research and decision models with answers written offline, team-authored writers)`,
     singhacks_then: 'At SingHacks a language model proposed each purchase and a person approved every quote before payment; payment was a fixture by default, with optional Testnet settlement.',
-    hosted: 'Shared XRPL Testnet sandbox · no real value · open 13–19 Nov',
+    hosted: 'Shared XRPL Testnet demo · live answers, rule-based buying · no real value',
     // Same line as `node scripts/install-snippets.mjs --tag <release> --try` (tests/deck.test.ts checks it).
     try_line: `npx -y ${REPO}/releases/download/${v('release')}/researchagent-mcp-${v('release').slice(1)}.tgz try --testnet`,
     registry: REGISTRY,
@@ -189,10 +189,13 @@ const escapeHtml = text => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').rep
 /** Replace every marked value with the current fact; unknown keys are errors. HTML files get escaped values. */
 export function fill(text, facts, file = 'text') {
   const html = file.endsWith('.html')
-  return text.replace(MARK, (_, key) => {
+  const filled = text.replace(MARK, (_, key) => {
     if (!facts[key]) throw new Error(`facts: ${file} uses unknown fact "${key}"`)
     return `<!--f:${key}-->${html ? escapeHtml(facts[key].value) : facts[key].value}<!--/f-->`
   })
+  // HTML attributes cannot contain fact comments. Mark pinned release links explicitly instead.
+  return filled.replace(/data-fact-link="release" href="[^"]*"/g,
+    () => `data-fact-link="release" href="${REPO}/releases/tag/${facts.release.value}"`)
 }
 /** Rendered text: what GitHub shows once the comments are hidden. */
 export const strip = text => text.replace(/<!--\/?f(?::[A-Za-z0-9_]+)?-->/g, '')
