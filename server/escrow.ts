@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { loadConfig } from './config.js'
 // Trusted policy purchase path. Bytes are quarantined until proof AND validated finish.
 import { amountFor, ledgerAmount, matchesAmount } from '../shared/contracts/asset.js'
@@ -17,7 +18,7 @@ import { Reputation } from './reputation.js'
 import { payeeRefusal } from './payee-screening.js'
 import type { Store } from './store.js'
 import { PublisherClient } from './publisher-client.js'
-import { XrplPayer, FEE_CAP_DROPS } from './xrpl.js'
+import { XrplPayer, FEE_CAP_DROPS, type DryRun } from './xrpl.js'
 import type { EscrowOperation } from './escrow-state.js'
 
 export function escrowSelected(store: Store, runId: string, c: PublicCandidate, optIn?: boolean): boolean {
@@ -27,7 +28,28 @@ export function escrowSelected(store: Store, runId: string, c: PublicCandidate, 
   return opted && (!rep || rep.passes === 0 || rep.T < 0.8)
 }
 export class EscrowPurchases {
-  constructor(private store: Store, private client: PublisherClient, private payer: XrplPayer) {}
+  constructor(private store: Store, private client: PublisherClient, private payer: XrplPayer) {
+    // Observe policy's existing signer only. Events cannot schedule a purchase or signature.
+    payer.observeDryRuns((tx, verdict) => {
+      if (tx.TransactionType === 'AccountSet') {
+        const memo = tx.Memos?.find(m => m.Memo.MemoType === Buffer.from('researchagent/anchor-v1').toString('hex').toUpperCase())?.Memo.MemoData
+        const runHash = memo ? Buffer.from(memo, 'hex').toString().split(':')[1] : undefined
+        const run = runHash && store.listRuns().find(r => createHash('sha256').update(r.runId).digest('hex') === runHash)
+        if (run) this.dryRunEvent(run.runId, verdict, { operation: 'anchor' })
+        return
+      }
+      const intent = store.listIntents('SUBMITTING').find(i => {
+        const e = store.getEscrow(i.intentId)
+        return e && (tx.TransactionType === 'EscrowCreate' ? tx.Condition === e.quote.terms.condition && tx.Destination === e.quote.terms.payTo :
+          (tx.TransactionType === 'EscrowFinish' || tx.TransactionType === 'EscrowCancel') && tx.Owner === e.publicStatus.owner && tx.OfferSequence === e.publicStatus.createSequence)
+      })
+      if (intent) this.dryRunEvent(intent.runId, verdict, { intentId: intent.intentId, operation: tx.TransactionType })
+    })
+  }
+  private dryRunEvent(runId: string, verdict: DryRun, data: Record<string, unknown>) {
+    const label = verdict.state === 'unavailable' ? 'Ledger dry run · dry run unavailable' : `Ledger dry run · ${verdict.code} · rippled simulate, not submitted`
+    this.store.appendEvent(runId, { type: 'LEDGER_DRY_RUN', label: `${label}${data.reportedBy === 'writer' ? ' (writer-reported)' : ''}`, data: { ...data, ...verdict } })
+  }
   async purchase(runId: string, candidate: PublicCandidate, intentId: string): Promise<PurchaseIntent> {
     if (!this.store.getIntent(intentId)) {
       const manifest = candidate.manifest, rep = candidate.wallet ? this.store.getReputation(candidate.wallet) : undefined
@@ -206,7 +228,8 @@ export class EscrowPurchases {
           await this.terminal(intent, 'cancel')
         } else {
           const result = await this.client.forSource(intent.source, true).paidGet(intent.paidPath!, encodeHeader('PAYMENT-SIGNATURE', { x402Version: 2, accepted: { scheme: 'escrow-v1', network: 'xrpl:1', asset: e.quote.terms.asset, amount: e.quote.terms.amount, payTo: e.quote.terms.payTo, maxTimeoutSeconds: 120, extra: { invoiceId: escrowInvoice(e.quote.terms), areFeesSponsored: false } }, payload: { signedTxBlob: create.txBlob } }))
-          const response = z.object({ finishHash: z.string().regex(/^[A-F0-9]{64}$/) }).parse(result.delivery)
+          const response = z.object({ finishHash: z.string().regex(/^[A-F0-9]{64}$/), dryRun: z.object({ state: z.enum(['accepted', 'refused', 'unavailable']), code: z.string().regex(/^te[scmfr][A-Z0-9_]+$/).optional(), ledgerIndex: z.number().int().positive().optional(), elapsedMs: z.number().nonnegative().finite() }).optional() }).parse(result.delivery)
+          if (response.dryRun && !this.store.getRun(intent.runId).events.some(event => event.type === 'LEDGER_DRY_RUN' && event.data?.txHash === response.finishHash)) this.dryRunEvent(intent.runId, response.dryRun, { intentId, operation: 'EscrowFinish', txHash: response.finishHash, reportedBy: 'writer' })
           // The writer has submitted, not necessarily validated. Keep the normal hire
           // flow open for ledger close; durable reconciliation still owns timeouts.
           const deadline = Date.now() + 30000

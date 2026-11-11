@@ -19,6 +19,7 @@ export function chain(path?: string, afterSubmit?: (type: unknown) => void) {
       case 'account_lines': return {result:{lines:[{account:process.env.TESTNET_IOU_ISSUER,currency:'SGT',balance: r.account === process.env.TESTNET_IOU_ISSUER ? '0' : '10000',limit:'1000000'}]}}
       case 'ledger': return { result: { ledger_index: state.index, ledger: { close_time: state.now } } }
       case 'ledger_current': return { result: { ledger_current_index: state.index } }
+      case 'simulate': return { result: { engine_result: 'tesSUCCESS', ledger_index: state.index } }
       case 'fee': return { result: { drops: { open_ledger_fee: '12' } } }
       case 'account_tx': return { result: { transactions: [...txs].map(([hash, row]) => ({ ...row, hash })) } }
       case 'ledger_entry': return { result: { node: objects.get((r.escrow as { seq: number }).seq) } }

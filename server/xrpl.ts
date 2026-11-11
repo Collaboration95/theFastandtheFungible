@@ -9,7 +9,8 @@ import type { PaymentRequirement } from '../shared/contracts/index.js'
 import { lookupTx, simulatedLedgerIndex, simulatedPayerWallet, testnetLedger, validatedLedgerIndex, type Ledger } from '../shared/xrpl.js'
 
 /** A signed payment, persisted before it is ever submitted so a restart can find it by hash. */
-export type Submission = { txHash: string; txBlob: string; lastLedgerSequence: number }
+export type DryRun = { state: 'accepted' | 'refused' | 'unavailable'; code?: string; ledgerIndex?: number; elapsedMs: number }
+export type Submission = { txHash: string; txBlob: string; lastLedgerSequence: number; dryRun?: DryRun }
 export type PaymentOutcome =
   | { state: 'success'; ledgerIndex: number }
   | { state: 'failed'; result: string }
@@ -24,6 +25,22 @@ export const FEE_CAP_DROPS = 2000
 const walletQueues = new Map<string, { queue: Promise<unknown>; pending: Submission[] }>()
 export class XrplPayer {
   readonly rail = 'xrpl-testnet' as const
+  private dryRunObserver?: (tx: Transaction, verdict: DryRun) => void
+  observeDryRuns(observer: (tx: Transaction, verdict: DryRun) => void) { this.dryRunObserver = observer }
+  /** Read-only advisory probe: it can veto policy signing, never authorize a purchase. */
+  private async dryRun(tx: Transaction): Promise<DryRun> {
+    const started = performance.now()
+    let verdict: DryRun
+    try {
+      const { result } = await bounded(this.ledger.request({ command: 'simulate', tx_json: tx }), 2000)
+      const elapsedMs = performance.now() - started
+      const code = elapsedMs <= 2000 && !result.error && typeof result.engine_result === 'string' && /^te[scmfr][A-Z0-9_]+$/.test(result.engine_result) ? result.engine_result : undefined
+      verdict = { state: code?.startsWith('tes') ? 'accepted' : code && /^(tec|tem|tef)/.test(code) ? 'refused' : 'unavailable',
+        ...(code ? { code } : {}), ...(Number.isSafeInteger(result.ledger_index) && result.ledger_index > 0 ? { ledgerIndex: result.ledger_index } : {}), elapsedMs }
+    } catch { verdict = { state: 'unavailable', elapsedMs: performance.now() - started } }
+    this.dryRunObserver?.(tx, verdict)
+    return verdict
+  }
   readonly lockWaitMs: number[] = []
   private escrowFeeHolds: () => number = () => 0
   holdEscrowFees(hold: () => number) { this.escrowFeeHolds = hold }
@@ -81,31 +98,36 @@ export class XrplPayer {
     shared.queue = run.catch(() => undefined)
     return run
   }
-  escrow<T>(tx: Omit<Transaction, 'Account'>, principal: number, persist: (s: Submission) => Submission, send: (s: Submission) => Promise<T>, beforeSign?: () => Promise<void>, reservedTerminalFees: () => number = () => 0) {
+  escrow<T>(tx: Omit<Transaction, 'Account'>, principal: number, persist: (s: Submission) => Submission, send: (s: Submission) => Promise<T>, beforeSign?: () => Promise<void>, reservedTerminalFees: () => number = () => 0, options: { lastLedgerOffset?: number; requireDryRunSuccess?: boolean } = {}) {
     return this.queued(async () => {
       if (!this.wallet || this.address === simulatedPayerWallet().classicAddress) throw new BeforeSignError('Testnet signer unavailable')
       const info = await this.ledger.request({ command: 'server_info' })
       if (info.result.info.network_id !== 1) throw new BeforeSignError('Escrow is Testnet only')
-      // Fresh validated balance already reflects locked principal and owner count. Do not deduct it twice.
+      // Independent read-only guards share a round trip after the network check.
+      // Reuse the same validated reserve snapshot for balance and owner increment.
       this.balanceCache = undefined
-      const balance = await this.balance()
+      const [balance, account, current, fee] = await Promise.all([
+        this.balance(Promise.resolve(info)),
+        this.ledger.request({ command: 'account_info', account: this.address, ledger_index: 'current' }),
+        this.ledger.request({ command: 'ledger_current' }), this.ledger.request({ command: 'fee' }),
+      ])
       const increment = Math.ceil(Number(info.result.info.validated_ledger.reserve_inc_xrp) * 1_000_000)
       if (!Number.isSafeInteger(increment) || increment < 200000) throw new BeforeSignError('Escrow reserve unavailable')
       const needed = reservedTerminalFees() + principal + FEE_CAP_DROPS + (tx.TransactionType === 'EscrowCreate' ? increment + FEE_CAP_DROPS : 0)
       if (balance.availableDrops < needed) throw new BeforeSignError('Payer balance below escrow reserve; nothing was charged')
-      const [account, current, fee] = await Promise.all([
-        this.ledger.request({ command: 'account_info', account: this.address, ledger_index: 'current' }),
-        this.ledger.request({ command: 'ledger_current' }), this.ledger.request({ command: 'fee' }),
-      ])
       const base = Math.max(12, Number(fee.result.drops?.open_ledger_fee ?? 12))
       const cost = Math.ceil(base * (tx.TransactionType === 'EscrowFinish' && typeof tx.Fulfillment === 'string' ? 33 + tx.Fulfillment.length / 2 / 16 : 1))
       if (!Number.isSafeInteger(cost) || cost > FEE_CAP_DROPS) throw new BeforeSignError('Escrow fee exceeds policy ceiling')
-      const lastLedgerSequence = Number(current.result.ledger_current_index) + 20
-      await beforeSign?.()
-      const signed = this.wallet.sign({ ...tx, Account: this.address!, Sequence: Number(account.result.account_data.Sequence), Fee: String(cost), LastLedgerSequence: lastLedgerSequence } as Transaction)
+      const lastLedgerSequence = Number(current.result.ledger_current_index) + (options.lastLedgerOffset ?? 20)
+      const unsigned = { ...tx, Account: this.address!, Sequence: Number(account.result.account_data.Sequence), Fee: String(cost), LastLedgerSequence: lastLedgerSequence } as Transaction
+      // Both checks are read-only and must finish before the only signing call.
+      const [, dryRun] = await Promise.all([beforeSign?.(), this.dryRun(unsigned)])
+      if (dryRun.state === 'refused') throw new BeforeSignError(`Ledger dry run refused (${dryRun.code}); nothing was charged`)
+      if (options.requireDryRunSuccess && (dryRun.state !== 'accepted' || dryRun.code !== 'tesSUCCESS')) throw new BeforeSignError('Ledger dry run unavailable; writer key was not signed')
+      const signed = this.wallet.sign(unsigned)
       // Until the next validated refresh, a direct payment must see this new principal/reserve too.
       this.balanceCache!.committed += principal + FEE_CAP_DROPS + (tx.TransactionType === 'EscrowCreate' ? increment : 0)
-      return { txHash: signed.hash.toUpperCase(), txBlob: signed.tx_blob, lastLedgerSequence }
+      return { txHash: signed.hash.toUpperCase(), txBlob: signed.tx_blob, lastLedgerSequence, dryRun }
     }, persist, send)
   }
   anchor<T>(memo: string, persist: (s: Submission) => Submission, send: (s: Submission) => Promise<T>) {
@@ -130,13 +152,13 @@ export class XrplPayer {
     } while (Date.now() < deadline)
     return { state: 'pending' }
   }
-  async balance(): Promise<BalanceSnapshot> {
+  async balance(serverInfo?: ReturnType<Ledger['request']>): Promise<BalanceSnapshot> {
     if (!this.address) throw new BeforeSignError('XRPL payer is not configured; nothing was charged')
     if (!this.balanceCache || Date.now() - this.balanceCache.at >= 5000) {
       this.balanceLoading ??= (async () => {
         const [account, server] = await Promise.all([
           this.ledger.request({ command: 'account_info', account: this.address, ledger_index: 'validated' }),
-          this.ledger.request({ command: 'server_info' }),
+          serverInfo ?? this.ledger.request({ command: 'server_info' }),
         ])
         const validated = server.result.info.validated_ledger
         const balanceDrops = Number(account.result.account_data.Balance)
