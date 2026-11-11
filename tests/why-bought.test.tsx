@@ -46,6 +46,12 @@ describe('the why line on each payment', () => {
     expect(line.length).toBeLessThanOrEqual(WHY_MAX)
   })
 
+  it('uses the latest answer version even when saved answers arrive out of order', () => {
+    const run = clone(ucRuns.UC2)
+    run.answers.reverse()
+    expect(whyBought(run, run.intents[0])).toMatch(/^Covers/)
+  })
+
   it('keeps the recorded F-P3 owner-reserve target honest in a synthetic uncovered-gap case', () => {
     // H10-06's saved target: trust-lines/TrustSet were bought for this still-open fact.
     const run = oneBuy('The owner-reserve increment')

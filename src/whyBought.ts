@@ -35,13 +35,13 @@ function clip(text: string, max: number): string {
 
 /** Read recorded coverage, never infer it from the BUY score or a successful integrity check. */
 function verifiedGap(run: RunSnapshot, intent: PurchaseIntent, gap: string): boolean {
-  if (intent.status !== 'VERIFIED' || !run.grants.some(grant => grant.intentId === intent.intentId && sameSource(grant, intent))) return false
-  const answer = run.answers.reduce<RunSnapshot['answers'][number] | undefined>((latest, next) => !latest || next.version > latest.version ? next : latest, undefined)
+  const answer = [...run.answers].sort((a, b) => b.version - a.version)[0]
   const coverage = run.checkpoint.coverage?.find(record => record.answerVersion === answer?.version)
   const requirement = run.checkpoint.requirements?.find(fact => coveredThing(fact.gap ?? fact.text) === gap)
-  if (!answer || !coverage || coverage.error || !requirement) return false
-  const entry = coverage.entries.find(record => record.requirementId === requirement.id)
-  return entry?.status === 'supported' && !!entry.claimIds?.some(id => answer.claims.some(claim => claim.id === id && claim.citations.some(citation => sameSource(citation, intent))))
+  const entry = coverage?.entries.find(record => record.requirementId === requirement?.id)
+  return !!(intent.status === 'VERIFIED' && answer && entry?.status === 'supported' && !coverage!.error
+    && run.grants.some(grant => grant.intentId === intent.intentId && sameSource(grant, intent))
+    && answer.claims.some(claim => entry.claimIds?.includes(claim.id) && claim.citations.some(citation => sameSource(citation, intent))))
 }
 
 /**
@@ -60,6 +60,6 @@ export function whyBought(run: RunSnapshot, intent: PurchaseIntent): string | un
   if (found.row.probe || intent.purchaseKind) return line('A small test purchase from a new writer')
   const gap = coveredThing(found.round.gap)
   if (!gap) return line('Bought because the free sources left a gap')
-  const [open, close] = [verifiedGap(run, intent, gap) ? 'Covers “' : 'Bought to fill: “', '”']
-  return line(`${open}${clip(gap, WHY_MAX - open.length - close.length - tail.length)}${close}`)
+  const open = verifiedGap(run, intent, gap) ? 'Covers “' : 'Bought to fill: “'
+  return line(`${open}${clip(gap, WHY_MAX - open.length - 1 - tail.length)}”`)
 }
