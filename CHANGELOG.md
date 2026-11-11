@@ -38,6 +38,10 @@ Patch release on v1.1.0 with the fixes from the round-9 mock judges (#472, #473,
 - Hosted guard: qualifies the API per Host and re-checks it in the background, failing closed after 60 s without a good answer; the uptime check returns to a 60 s period (#474).
 - Every install and verify line (README, install guide, SDK and MCP guides, Export menu, site, submission pack) pins v1.1.1.
 
+### Fixed
+
+- One very long word in a writer's passage no longer stalls choosing the answer's lead: a 47,000-character token took 3.9 s, now 8 ms. The rule that skips sentences naming a source file now starts a match only where a word starts; over 566,505 corpus sentences and generated strings it decides exactly as before.
+
 ### Corrected
 
 - v1.1.0's purchase bullets (#460, #464, #467) were measured on development banks with the fixture planner, where the presets matched. On the hosted demo, which plans with the live model, the RLUSD preset bought 3 articles (S$1.20) and led with a generic sentence. The v1.1.0 entry below now says so; #473 fixes that path.
