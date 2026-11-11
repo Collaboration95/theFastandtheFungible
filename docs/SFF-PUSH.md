@@ -10,6 +10,7 @@ something significant: a feature, a metric move, a finished deliverable. Don't
 add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
+- 12 Nov: P4 adds a public, cookieless sandbox scoreboard with 60-second aggregate caching, recorded gate-violation counters, honest missing-trace/pending-anchor counts, latency and unit-cost medians; opens from the judges’ corner without spending a question. [Local synthetic acceptance evidence](evidence/p4-scoreboard/README.md).
 - 12 Nov: LABELS9 makes Show work use one plain-language trace map: guard and allowance substitutions stay explicit and neutral, real failures stay warnings, keyword search no longer reads like an outage, and policy verdicts use words. All team promise labels checked; 1280/390 px screenshots and zero serious/critical axe violations in [fixture evidence](evidence/labels9/README.md).
 - 12 Nov: VID-3 pins the video kit to published v1.1.1, adds local browser key/corner/credential proof and recorded unsigned ledger verdicts, and supplies the final owner voice text; media stays in video-out, hosted-URL footage is record after redeploy.
 - 12 Nov: T3 replaces the reserves preset with “How writers get paid”: three fresh local HOSTED=1 live-DeepSeek asks each buy one S$0.40 explainer through real Testnet key-reveal escrow and pass browser verification with zero failures; x402 and RLUSD each retain one purchase in two fresh runs. Reserves remains answerable. [Measurements](evidence/t3-presets/README.md).
