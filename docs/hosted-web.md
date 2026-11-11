@@ -42,7 +42,9 @@ alone; record the actual provider/rail identity in launch acceptance.
 
 `GET /api/demo/status` issues an opaque `__Host-ra_session` cookie (Secure,
 HttpOnly, SameSite=Lax, Path=/, absolute 24-hour lifetime) and returns `csrfToken`.
-Only a SHA-256 cookie hash is stored. Every mutation requires that cookie, the
+Only a SHA-256 cookie hash is stored. A session that never asked a question is dropped
+after 2 hours instead (it holds no money and no run); the page notices the next time it
+asks, fetches a new token and repeats the request once, so a visitor sees nothing. Every mutation requires that cookie, the
 exact `Origin`, and `X-CSRF-Token`; Fetch Metadata must be same-origin when sent.
 No CORS permission is emitted. Public bearer/principal/internal routing headers
 are stripped. A supplied owner bearer cannot grant public authority.
@@ -90,6 +92,8 @@ fault scenario must be bound to a run; there is no public fault endpoint here.
 | Model USD | $0.05/question, $15/day, $105/lifetime |
 | Model tokens / question | Research input 60,000 and output 6,000; decision input 50,000 |
 | Queue | One active job, two waiting, 90-second wait, cancellable |
+| New sessions / address / hour | 120 (HMAC of the address, kept one hour); a request that already carries a live cookie never counts. Over the cap: 429 `session_rate` |
+| Session table | 5,000. When full, idle sessions (no question ever) at least 10 minutes old are dropped, oldest first, 500 at a time; a session that asked is never dropped early. Still full: 429 `session_limit` |
 
 SQLite immediate transactions reserve the requested gross allowance and complete
 $0.05 model envelope before queueing. Provider transports reserve integer
@@ -162,8 +166,9 @@ Locally: `npx playwright test --config tests/playwright/hosted.config.ts`
 
 `/livez` reports process liveness. `/startupz` requires writable DB, initialized
 recovery and reachable corpus registry. `/readyz` additionally requires current
-funding/ledger headroom, caps, provider preflight freshness, queue capacity,
-unpaused controls and an unexpired admission window. Paused initialization serves
+funding/ledger headroom, caps, provider preflight freshness (from the background
+check, at most 15 s old), unpaused controls and an unexpired admission window. A full
+queue is not a failure (200, `queue: "full"`). Paused initialization serves
 liveness and status but fails startup/readiness. Launch acceptance must still
 exercise two actual deployed cookie jars, proxy-header spoofing, a real Testnet
 purchase/refund/restart and read-only explorer verification before advertising a
@@ -257,6 +262,28 @@ every deploy now sets the existing `ra-readyz` check back to 60 s. Evidence:
 [evidence/h6](evidence/h6/README.md).
 Re-run locally with `node --import tsx scripts/hosted-load.mjs`.
 
+H7 closed the three follow-ups H6 left ([evidence/h7](evidence/h7/README.md)):
+
+- **Session flood.** A client that never keeps a cookie minted a session per request, up
+  to the 5,000 ceiling, after which every new visitor was refused. A new session now needs
+  room under 120 per address per hour, counted with the same daily-rotating HMAC as the
+  question caps (no raw address is stored; the records are deleted after an hour). A
+  reload, a second tab or a room of judges behind one network address does not reach it.
+  Sessions that never asked a question expire after 2 hours, and a full table drops the
+  oldest of those before it refuses anyone. The money caps are untouched.
+- **Readiness off the request path.** The readiness probe (writer registry, payer balance,
+  Testnet ledger) runs on its own timer every 5 s and `/api/demo/status`, `/readyz`,
+  `/health` and the ask gate read its last answer from memory (`server/hosted/readiness.ts`).
+  **Staleness bound: 15 s.** An answer is used only while the check behind it started at most
+  15 s ago; in steady state that is 5 to 11 s (a check is cut off after 6 s and counted as not
+  ready). If the timer stops, answers turn into "not ready" after 15 s: it fails closed. Pause,
+  the admission window, the money caps and the spending guard are not read from this cache;
+  they are still read fresh at every authority boundary.
+- **Full queue is busy, not down.** `/readyz` answers 200 `{status:"busy",queue:"full"}`
+  when one question is running and two are waiting, so the `ra-readyz-failed` alert does
+  not email the owner for a busy demo. It still answers 503 for `paused`, `degraded` and
+  `ended`. Visitors see the same busy state and the same refusal as before.
+
 `PublisherClient` accepts only a
 numeric-loopback publisher origin, so in compose the API supervisor relays
 `127.0.0.1:8790` to `HOSTED_PUBLISHER_UPSTREAM` (`publisher:8790`). Startup
@@ -269,8 +296,10 @@ publisher quotes no escrow and every policy purchase is skipped.
   tests its nginx process, VM API tests its supervised child.
 - `/startupz`: HG confirms corpus, state and recovery initialization. A paused
   API is allowed only after HG safely initializes; missing HG returns 503.
-- `/readyz`: 200 only when HG can admit work: funded, headroom available,
-  providers/RPC fresh, origin correct, not paused/expired; otherwise 503.
+- `/readyz`: 200 when HG can admit work (state `ready`) or is merely busy (state `busy`,
+  including a full queue, which adds `queue: "full"`): funded, headroom available,
+  providers/RPC fresh (last background check at most 15 s old), origin correct, not
+  paused/expired. 503 for `paused`, `degraded` and `ended`.
 - `/api/demo/status`: bounded safe JSON with state, capabilities, own remaining
   allowance, actual model/rail labels and public links. No operator diagnostics.
 

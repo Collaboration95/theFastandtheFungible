@@ -3,7 +3,13 @@
 // fixture models, the simulated rail, the fixture writer server, ephemeral ports. Never a deployment, never Testnet.
 //
 //   node --import tsx scripts/hosted-load.mjs [--guard-ref <git ref>] [--visitors 6] [--seconds 120] [--uptime-ms 10000]
-//        [--readiness 380,1900,...] [--paused-check] [--out docs/evidence/h6/<name>.json]
+//        [--readiness 380,1900,...] [--inline-readiness] [--flood 5200] [--paused-check] [--out docs/evidence/h7/<name>.json]
+//
+// --inline-readiness: the readiness stand-in H6 used, which behaves as production did before H7 (5 s cache, and the request
+//   that finds it expired waits for the refresh). Without it the API runs its real background readiness (server/hosted/readiness.ts)
+//   and only the probe is a stand-in, so the before/after comparison runs the same harness on the code under test.
+// --flood N: after the visitors, N cookieless requests from one address (a scripted client that never keeps a cookie), then a
+//   new visitor from another address, to show how many sessions the flood minted and whether the next real visitor gets in.
 //
 // Each visitor behaves like the browser: status at boot, history and writers, then ask (scope, submit), follow the run
 // over SSE, poll the run every 5 s and status every 3 s, then ask again. One more client polls /readyz with no cookie,
@@ -28,6 +34,7 @@ const flag = (name, fallback) => { const i = args.indexOf(`--${name}`); return i
 const VISITORS = Number(flag('visitors', 6)), SECONDS = Number(flag('seconds', 120))
 const READINESS = flag('readiness', '380,400,1310,520,370,570,1900,380,650,450')
 const guardRef = flag('guard-ref', ''), out = flag('out', ''), pausedCheck = args.includes('--paused-check')
+const INLINE_READINESS = args.includes('--inline-readiness'), FLOOD = Number(flag('flood', 0))
 // The live check runs every 60 s from 6 locations: about one /ready every 10 s.
 const UPTIME_MS = Number(flag('uptime-ms', 10000))
 const HOST = 'ra-load.invalid', ORIGIN = `https://${HOST}`
@@ -65,14 +72,17 @@ writeFileSync(join(dir, 'api.mjs'), `import { monitorEventLoopDelay } from 'node
 import { writeFileSync } from 'node:fs'
 const { createApiApp } = await import(${JSON.stringify(pathToFileURL(join(root, 'server/routes.ts')).href)})
 const schedule = ${JSON.stringify(READINESS)}.split(',').map(Number)
-let n = 0, checkedAt = 0, healthy = false, pending
+let n = 0
 const refreshes = []
-const hostedReadiness = () => {
+// The one stand-in: what a readiness check costs. Without a funded Testnet payer the real probe is never ready.
+const probe = async () => { const ms = schedule[n++ % schedule.length]; await new Promise(r => setTimeout(r, ms)); refreshes.push(ms); return true }
+// Inline (pre-H7 production shape): a 5 s cache, and the request that finds it expired waits for one refresh at a time.
+let checkedAt = 0, healthy = false, pending
+const inline = () => {
   if (Date.now() - checkedAt < 5000) return Promise.resolve(healthy)
-  return pending ??= (async () => { const ms = schedule[n++ % schedule.length]; await new Promise(r => setTimeout(r, ms)); refreshes.push(ms); return true })()
-    .then(v => { checkedAt = Date.now(); healthy = v; return v }).finally(() => { pending = undefined })
+  return pending ??= probe().then(v => { checkedAt = Date.now(); healthy = v; return v }).finally(() => { pending = undefined })
 }
-const api = await createApiApp({ publisherUrl: process.env.PUBLISHER_URL, hostedReadiness })
+const api = await createApiApp({ publisherUrl: process.env.PUBLISHER_URL, ...(${JSON.stringify(INLINE_READINESS)} ? { hostedReadiness: inline } : { hostedProbe: probe }) })
 const lag = monitorEventLoopDelay({ resolution: 10 }); lag.enable()
 const server = api.app.listen(Number(process.env.PORT), process.env.HOST)
 const dump = () => writeFileSync(${JSON.stringify(lagFile)}, JSON.stringify({ p50: lag.percentile(50) / 1e6, p99: lag.percentile(99) / 1e6, max: lag.max / 1e6, refreshes }))
@@ -201,6 +211,25 @@ try {
     routes: Object.fromEntries(Object.entries(routes).map(([k, rs]) => [k, { n: rs.length, p50: pct(rs.map(r => r.ms), 50), p95: pct(rs.map(r => r.ms), 95), max: Math.max(...rs.map(r => r.ms)), guardPaused: count(rs, 'guard-paused') }])),
     guardPausedSamples: records.filter(r => r.kind === 'guard-paused').slice(0, 20).map(r => ({ t: r.t, route: `${r.method} ${r.route}`, ms: r.ms })),
   })
+  if (FLOOD > 0) {
+    // A scripted client that never keeps a cookie: every request is a new visitor to the gateway. One address, 12 in flight.
+    records.length = 0
+    const scripted = '203.0.113.77', beforeFlood = sessions(), tally = { requests: FLOOD, sessionsMinted: 0, refused: {} }
+    let sent = 0
+    const started = Date.now()
+    await Promise.all(Array.from({ length: 12 }, async () => {
+      while (sent < FLOOD) {
+        sent++
+        const r = await call('GET', '/api/demo/status', { ip: scripted })
+        if (r.status === 200 && r.set) tally.sessionsMinted++
+        else tally.refused[`${r.status} ${r.error ?? ''}`.trim()] = (tally.refused[`${r.status} ${r.error ?? ''}`.trim()] ?? 0) + 1
+      }
+    }))
+    // The next real visitor, from another address, with no cookie.
+    const visitor = await call('GET', '/api/demo/status', { ip: '198.51.100.200' })
+    summary.flood = { fromOneAddress: scripted, ...tally, seconds: +((Date.now() - started) / 1000).toFixed(1), sessionTableAfter: sessions(), sessionsAddedByFlood: sessions() - beforeFlood,
+      nextRealVisitor: { http: visitor.status, state: visitor.json?.state, ask: visitor.json?.capabilities?.ask, error: visitor.error, gotSession: Boolean(visitor.set) } }
+  }
   if (pausedCheck) {
     // The operator pause must still reach visitors: HG's own paused state and refusals, through the guard.
     control(true)

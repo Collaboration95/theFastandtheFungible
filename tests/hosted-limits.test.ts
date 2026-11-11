@@ -145,3 +145,66 @@ it('names a fixture decision model in the environment label (H5: the live chip s
   expect(modelsLabel(true,true)).toBe('live research and purchase decisions · per-answer fallback labelled')
   expect(modelsLabel(false,false)).toBe('fixture models')
 })
+
+// H7: a cookieless script must not be able to fill the session table and lock real visitors out.
+const mintsFrom = (limits: HostedLimits, ip: string, n: number) => Array.from({ length: n }, () => limits.session(undefined, ip))
+it('caps new sessions per address per hour, across midnight, and stores only a daily-rotating HMAC of the address', () => {
+  const { a, limits, advance } = setup(), ip = '203.0.113.9'
+  const minted = mintsFrom(limits, ip, LIMITS.sessionMintsPerIpHour)
+  expect(() => limits.session(undefined, ip)).toThrow('session_rate')
+  // A visitor who already holds a cookie (a reload, another tab) is not a new session and is never refused by the cap.
+  expect(limits.session(minted[0].token, ip).principal).toBe(minted[0].principal)
+  // Another address is unaffected, and so is a caller that gives no address (in-process use).
+  expect(limits.session(undefined, '203.0.113.10').token).toHaveLength(64)
+  expect(limits.session().token).toHaveLength(64)
+  // Half an hour later the clock has crossed midnight UTC (the HMAC key rotated); the earlier mints still count.
+  advance(30 * 60000); expect(() => limits.session(undefined, ip)).toThrow('session_rate')
+  advance(30 * 60000 + 1); expect(limits.session(undefined, ip).token).toHaveLength(64)
+  expect(JSON.stringify(a.hostedState(db => db.prepare('SELECT * FROM hosted_session_mints').all()))).not.toContain(ip)
+  // Records older than an hour are removed by the retention pass.
+  advance(3600000); limits.expireSessions()
+  expect(a.hostedState(db => Number(db.prepare('SELECT count(*) AS n FROM hosted_session_mints').get()!.n))).toBe(0)
+})
+it('drops a session that never asked a question after 2 h, and keeps one that asked for 24 h', () => {
+  const { limits, advance } = setup()
+  const idle = limits.session(undefined, '198.51.100.1'), asked = limits.session(undefined, '198.51.100.2')
+  limits.reserve(asked.principal, 'k', 'a question', '198.51.100.2', 200, 'scope', {})
+  advance(LIMITS.sessionIdleMs - 1)
+  expect(limits.session(idle.token).principal).toBe(idle.principal)
+  advance(2)
+  expect(limits.session(idle.token).principal).not.toBe(idle.principal)
+  expect(limits.session(asked.token).principal).toBe(asked.principal)
+  limits.expireSessions()
+  expect(limits.session(asked.token).principal).toBe(asked.principal)
+  advance(86400000 - LIMITS.sessionIdleMs)
+  expect(limits.session(asked.token).principal).not.toBe(asked.principal)
+})
+it('keeps the money caps and the per-session question allowance when an idle session is replaced', () => {
+  const { limits, advance } = setup()
+  const first = limits.session(undefined, '198.51.100.3')
+  expect(limits.remaining(first.principal)).toEqual({ questions: LIMITS.sessionQuestions, minor: LIMITS.sessionMinor })
+  advance(LIMITS.sessionIdleMs + 1)
+  const second = limits.session(first.token, '198.51.100.3')
+  expect(second.principal).not.toBe(first.principal)
+  // It asked nothing, so nothing was forgotten; the per-address daily cap is unchanged by a new session.
+  expect(limits.remaining(second.principal)).toEqual({ questions: LIMITS.sessionQuestions, minor: LIMITS.sessionMinor })
+  for (let i = 0; i < LIMITS.sessionQuestions; i++) limits.update(limits.reserve(second.principal, `q${i}`, `question ${i}`, '198.51.100.3', 0, 'submit', { i }).id, { state: 'done' })
+  expect(() => limits.reserve(second.principal, 'one-more', 'one more', '198.51.100.3', 0, 'submit', {})).toThrow('allowance_exhausted')
+})
+it('when the table is full, drops the oldest idle sessions at least 10 min old before refusing anyone, and never one that asked', () => {
+  const { a, limits, advance } = setup()
+  const fill = (n: number, ageMs: number, prefix: string) => a.hostedState(db => {
+    for (let i = 0; i < n; i++) db.prepare('INSERT INTO hosted_sessions VALUES (?,?,?)').run(`${prefix}${i}`, 'c', limits.now() + 86400000 - ageMs + i)
+  })
+  const count = () => a.hostedState(db => Number(db.prepare('SELECT count(*) AS n FROM hosted_sessions').get()!.n))
+  // 4,990 idle sessions 1 minute old plus 10 that asked a question 15 minutes ago: nothing is old enough to drop.
+  fill(LIMITS.sessionCeiling - 10, 60000, 'young'); fill(10, 15 * 60000, 'asked')
+  for (let i = 0; i < 10; i++) limits.reserve(`asked${i}`, 'k', 'a question', `198.51.100.${40 + i}`, 0, 'submit', {})
+  expect(count()).toBe(LIMITS.sessionCeiling)
+  expect(() => limits.session(undefined, '198.51.100.5')).toThrow('session_limit')
+  // Ten minutes on, the idle ones are old enough: the oldest batch goes, a newcomer gets in, and every asked session stays.
+  advance(10 * 60000)
+  expect(limits.session(undefined, '198.51.100.5').token).toHaveLength(64)
+  expect(count()).toBe(LIMITS.sessionCeiling - LIMITS.sessionEvictBatch + 1)
+  for (let i = 0; i < 10; i++) expect(a.hostedState(db => db.prepare('SELECT 1 FROM hosted_sessions WHERE principal=?').get(`asked${i}`))).toBeTruthy()
+})

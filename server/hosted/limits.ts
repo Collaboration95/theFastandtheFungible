@@ -4,7 +4,12 @@ import type { Store } from '../store.js'
 import type { Config } from '../config.js'
 import { HostedError, requireAdmissions, requireSpending } from './control.js'
 // USD stored as integer microdollars. Gross authority is never replenished by refunds.
-export const LIMITS = { questionMinor: 200, sessionQuestions: 5, sessionMinor: 1000, ipQuestions: 60, ipMinor: 12000, ipStartsPerMinute: 6, dailyQuestions: 300, dailyMinor: 60000, lifetimeQuestions: 2100, lifetimeMinor: 420000, questionModel: 50000, dailyModel: 15000000, lifetimeModel: 105000000, bodyBytes: 16384, questionChars: 2000, waiting: 2, queueMs: 90000 } as const
+export const LIMITS = { questionMinor: 200, sessionQuestions: 5, sessionMinor: 1000, ipQuestions: 60, ipMinor: 12000, ipStartsPerMinute: 6, dailyQuestions: 300, dailyMinor: 60000, lifetimeQuestions: 2100, lifetimeMinor: 420000, questionModel: 50000, dailyModel: 15000000, lifetimeModel: 105000000, bodyBytes: 16384, questionChars: 2000, waiting: 2, queueMs: 90000,
+  // Session table (H7). New sessions per address per hour: a judge reloading or using tabs keeps one cookie and mints none;
+  // 120 leaves room for a whole venue behind one NAT address, and it caps one scripted machine at 120 an hour.
+  // A session that never asked a question is dropped after 2 h (it holds no money and no run), and a full table drops
+  // such sessions at least 10 min old before it refuses anyone. Sessions that asked keep their 24 h.
+  sessionCeiling: 5000, sessionMintsPerIpHour: 120, sessionIdleMs: 7200000, sessionEvictAfterMs: 600000, sessionEvictBatch: 500 } as const
 export const hash = (s: string) => createHash('sha256').update(s).digest('hex')
 const canonical = (x: unknown): unknown => Array.isArray(x) ? x.map(canonical) : x && typeof x === 'object' ? Object.fromEntries(Object.entries(x).sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => [k, canonical(v)])) : x
 export const digest = (x: unknown) => hash(JSON.stringify(canonical(x)))
@@ -15,24 +20,51 @@ export class HostedLimits {
       CREATE TABLE IF NOT EXISTS hosted_holds (id TEXT PRIMARY KEY, principal TEXT NOT NULL, request_key TEXT NOT NULL, question TEXT NOT NULL, ip TEXT NOT NULL, day TEXT NOT NULL, created INTEGER NOT NULL, minor INTEGER NOT NULL, gross_open INTEGER NOT NULL DEFAULT 1, model_used INTEGER NOT NULL DEFAULT 0, model_envelope INTEGER NOT NULL DEFAULT 50000, run_id TEXT, scope_digest TEXT, submit_digest TEXT, scope_result TEXT, state TEXT NOT NULL DEFAULT 'draft', UNIQUE(principal,request_key));
       CREATE TABLE IF NOT EXISTS hosted_attempts (id INTEGER PRIMARY KEY, hold_id TEXT NOT NULL, provider TEXT NOT NULL, model TEXT NOT NULL, reserved INTEGER NOT NULL, input_tokens INTEGER NOT NULL, output_tokens INTEGER NOT NULL, created INTEGER NOT NULL);
       CREATE TABLE IF NOT EXISTS hosted_reputation (principal TEXT NOT NULL, wallet TEXT NOT NULL, json TEXT NOT NULL, PRIMARY KEY(principal,wallet));
+      CREATE TABLE IF NOT EXISTS hosted_session_mints (ip TEXT NOT NULL, at INTEGER NOT NULL);
+      CREATE INDEX IF NOT EXISTS hosted_session_mints_ip ON hosted_session_mints(ip,at);
       CREATE INDEX IF NOT EXISTS hosted_holds_principal ON hosted_holds(principal,day);
       CREATE INDEX IF NOT EXISTS hosted_holds_ip ON hosted_holds(ip,day);`))
   }
   get questionMinor() { return Number(this.config.HOSTED_QUESTION_CAP_MINOR ?? LIMITS.questionMinor) }
-  session(cookie?: string) {
+  /**
+   * The visitor's session, or a new one. `ip` is the client address the gateway validated; a new session needs room under
+   * the per-address hourly mint cap (H7), counted by the same daily-rotating HMAC as the question caps and kept for an hour.
+   * A request with a live cookie never counts: reloads and extra tabs share the cookie.
+   */
+  session(cookie?: string, ip?: string) {
     const now = this.now()
     return this.store.hostedState(db => {
-      db.prepare('DELETE FROM hosted_sessions WHERE expires<=?').run(now)
       if (cookie && /^[a-f0-9]{64}$/.test(cookie)) {
         const old = db.prepare('SELECT * FROM hosted_sessions WHERE principal=? AND expires>?').get(hash(cookie), now)
-        if (old) return { principal: String(old.principal), csrf: String(old.csrf), expires: Number(old.expires) }
+        if (old && !this.idleExpired(db, old.principal as string, Number(old.expires), now)) return { principal: String(old.principal), csrf: String(old.csrf), expires: Number(old.expires) }
       }
-      if (Number(db.prepare('SELECT count(*) AS n FROM hosted_sessions').get()!.n) >= 5000) throw new HostedError(429, 'session_limit')
+      const hour = 3600000, keys = ip === undefined ? undefined : [this.ipKey(ip, now), this.ipKey(ip, now - hour)] as const
+      if (keys && Number(db.prepare('SELECT count(*) AS n FROM hosted_session_mints WHERE ip IN (?,?) AND at>?').get(keys[0], keys[1], now - hour)!.n) >= LIMITS.sessionMintsPerIpHour) throw new HostedError(429, 'session_rate')
+      this.sweepSessions(db, now)
+      if (Number(db.prepare('SELECT count(*) AS n FROM hosted_sessions').get()!.n) >= LIMITS.sessionCeiling) {
+        this.evictIdle(db, now)
+        if (Number(db.prepare('SELECT count(*) AS n FROM hosted_sessions').get()!.n) >= LIMITS.sessionCeiling) throw new HostedError(429, 'session_limit')
+      }
       const token = randomBytes(32).toString('hex'), principal = hash(token), csrf = randomBytes(32).toString('hex'), expires = now + 86400000
       db.prepare('INSERT INTO hosted_sessions VALUES (?,?,?)').run(principal, csrf, expires)
+      if (keys) db.prepare('INSERT INTO hosted_session_mints VALUES (?,?)').run(keys[0], now)
       return { principal, csrf, expires, token }
     })
   }
+  /** A session that never asked a question (no hold, ever) outlives its mint by only `sessionIdleMs`. Minted at expires-24h. */
+  private idleExpired(db: DatabaseSync, principal: string, expires: number, now: number) {
+    return expires - 86400000 + LIMITS.sessionIdleMs <= now && !db.prepare('SELECT 1 FROM hosted_holds WHERE principal=? LIMIT 1').get(principal)
+  }
+  private sweepSessions(db: DatabaseSync, now: number) {
+    db.prepare('DELETE FROM hosted_sessions WHERE expires<=? OR (expires<=? AND NOT EXISTS (SELECT 1 FROM hosted_holds h WHERE h.principal=hosted_sessions.principal))').run(now, now + 86400000 - LIMITS.sessionIdleMs)
+    db.prepare('DELETE FROM hosted_session_mints WHERE at<=?').run(now - 3600000)
+  }
+  /** A full table drops the oldest idle sessions first, never one that asked a question or one younger than 10 minutes. */
+  private evictIdle(db: DatabaseSync, now: number) {
+    db.prepare('DELETE FROM hosted_sessions WHERE principal IN (SELECT principal FROM hosted_sessions s WHERE s.expires<=? AND NOT EXISTS (SELECT 1 FROM hosted_holds h WHERE h.principal=s.principal) ORDER BY s.expires LIMIT ?)').run(now + 86400000 - LIMITS.sessionEvictAfterMs, LIMITS.sessionEvictBatch)
+  }
+  /** Retention pass: expired and idle sessions, and mint records older than an hour. */
+  expireSessions() { this.store.hostedState(db => this.sweepSessions(db, this.now())) }
   ipKey(ip: string, at = this.now()) { const day = new Date(at).toISOString().slice(0, 10); return createHmac('sha256', createHmac('sha256', this.config.HOSTED_IP_HMAC_KEY!).update(day).digest()).update(ip).digest('hex') }
   private row(db: DatabaseSync, principal: string, key: string) { return db.prepare('SELECT * FROM hosted_holds WHERE principal=? AND request_key=?').get(principal, key) as Hold | undefined }
   existing(principal: string, key: string, stage: 'scope' | 'submit', request: unknown) {

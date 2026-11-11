@@ -6,6 +6,7 @@ import { validateHosted, hostedPayer, pausedShell } from './hosted/bootstrap.js'
 import { HostedLimits } from './hosted/limits.js'
 import { HostedQueue } from './hosted/queue.js'
 import { hostedRouter } from './hosted/routes.js'
+import { HostedReadiness } from './hosted/readiness.js'
 import { sessionGuard, accessGuard } from './hosted/session.js'
 import { hostedControl, HostedError } from './hosted/control.js'
 import { hostedExecution } from './hosted/execution.js'
@@ -53,7 +54,7 @@ import { type DecisionProvider } from './agents/decision.js'
 import { isLlmConfigured, llmLabel, researchModel } from './agents/llm.js'
 
 /** `observe`: the trust check's relevance re-measure (#205); defaults to Workers AI embeddings when SEARCH_EMBEDDINGS=live. */
-export type ApiOptions = { payer?: XrplPayer; dbPath?: string; publisherUrl?: string; publisherUrls?: string[]; secret?: string; reportDir?: string; provider?: DecisionProvider; observe?: RelevanceObserver; reconcileIntervalMs?: number; hostedReadiness?: () => Promise<boolean> }
+export type ApiOptions = { payer?: XrplPayer; dbPath?: string; publisherUrl?: string; publisherUrls?: string[]; secret?: string; reportDir?: string; provider?: DecisionProvider; observe?: RelevanceObserver; reconcileIntervalMs?: number; hostedReadiness?: () => Promise<boolean>; hostedProbe?: () => Promise<boolean> }
 export async function createApiApp(options: ApiOptions = {}) {
   if (process.env.HOSTED !== '1') return createConfiguredApi(options)
   try { validateHosted(loadConfig()); return await createConfiguredApi(options) }
@@ -176,25 +177,24 @@ async function createConfiguredApi(options: ApiOptions = {}) {
   }
   const faultsAvailable = config.PUBLISHER_FAULTS === '1' && ['localhost', '127.0.0.1', '[::1]'].includes(new URL(publisherUrl).hostname)
   const context: ApiContext = { work, store, client, payer, purchases, loop, reputation, labels, mcpPolicy, publisherUrl, launch, streams, onStreamEmpty: runId => { clearTimeout(snapshotTimers.get(runId)); snapshotTimers.delete(runId); lastSnapshot.delete(runId) }, reportDir, reportJobs, progress }
+  let readiness: HostedReadiness | undefined
   if (hosted && queue) {
-    // Recovery is complete before startup health becomes available. Fresh probes are bounded and coalesced.
-    let probe: Promise<boolean> | undefined, checkedAt = 0, healthy = false
-    const ready = () => {
-      if (options.hostedReadiness) return options.hostedReadiness()
-      if (Date.now()-checkedAt < 5000) return Promise.resolve(healthy)
-      return probe ??= (async () => {
-        try {
-          if (!hosted.available()) return false
-          if (isLlmConfigured() && ['RESEARCH','DECISION'].some(profile => !Number.isFinite(Number(config[`HOSTED_${profile}_INPUT_USD_PER_MILLION`])) || Number(config[`HOSTED_${profile}_INPUT_USD_PER_MILLION`]) <= 0 || !Number.isFinite(Number(config[`HOSTED_${profile}_OUTPUT_USD_PER_MILLION`])) || Number(config[`HOSTED_${profile}_OUTPUT_USD_PER_MILLION`]) < 0)) return false
-          store.checkWritable()
-          const writers = await client.registry()
-          if (!writers.length || !payer) return false
-          const b = await payer.balance()
-          return b.ledgerAgeSeconds <= 30 && b.availableDrops > (store.walletStatus().reservedMinor + hosted.questionMinor) * 1000 + 2000 &&
-            config.HOSTED_PROVIDERS_READY_UNTIL !== undefined && Date.parse(config.HOSTED_PROVIDERS_READY_UNTIL) > Date.now()
-        } catch { return false }
-      })().then(value => { checkedAt = Date.now(); healthy = value; return value }).finally(() => { probe = undefined })
-    }
+    // Recovery is complete before startup health becomes available. Readiness is probed in the background (H7): a
+    // request reads the last answer (at most 15 s old, see server/hosted/readiness.ts) and never waits for the ledgers.
+    const probeReadiness = options.hostedProbe ?? (async () => {
+      try {
+        if (!hosted.available()) return false
+        if (isLlmConfigured() && ['RESEARCH','DECISION'].some(profile => !Number.isFinite(Number(config[`HOSTED_${profile}_INPUT_USD_PER_MILLION`])) || Number(config[`HOSTED_${profile}_INPUT_USD_PER_MILLION`]) <= 0 || !Number.isFinite(Number(config[`HOSTED_${profile}_OUTPUT_USD_PER_MILLION`])) || Number(config[`HOSTED_${profile}_OUTPUT_USD_PER_MILLION`]) < 0)) return false
+        store.checkWritable()
+        const writers = await client.registry()
+        if (!writers.length || !payer) return false
+        const b = await payer.balance()
+        return b.ledgerAgeSeconds <= 30 && b.availableDrops > (store.walletStatus().reservedMinor + hosted.questionMinor) * 1000 + 2000 &&
+          config.HOSTED_PROVIDERS_READY_UNTIL !== undefined && Date.parse(config.HOSTED_PROVIDERS_READY_UNTIL) > Date.now()
+      } catch { return false }
+    })
+    if (!options.hostedReadiness) readiness = new HostedReadiness(probeReadiness)
+    const ready = () => options.hostedReadiness ? options.hostedReadiness() : readiness!.ready()
     app.use(hostedRouter(context,config,hosted,queue,ready,async () => {
       try { store.checkWritable(); return (await client.registry()).length > 0 } catch { return false }
     }))
@@ -289,10 +289,10 @@ async function createConfiguredApi(options: ApiOptions = {}) {
   if (hosted) {
     const retain = () => {
       hosted.expireDrafts()
+      hosted.expireSessions()
       refusal.proofs.expire()
       store.prune({ olderThanDays: 1 })
       store.hostedState(db => {
-        db.prepare('DELETE FROM hosted_sessions WHERE expires<=?').run(Date.now())
         db.prepare("UPDATE hosted_holds SET scope_result=NULL,ip='' WHERE created<?").run(Date.now()-86400000)
         db.prepare('DELETE FROM hosted_reputation WHERE principal NOT IN (SELECT principal FROM hosted_sessions)').run()
       })
@@ -318,6 +318,7 @@ async function createConfiguredApi(options: ApiOptions = {}) {
   const drain = async () => {
     stopReconciler()
     queue?.close()
+    readiness?.close()
     work.controller.abort()
     loop.abortProviders()
     for (const runId of store.runnableRunIds(true)) loop.stop(runId)

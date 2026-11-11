@@ -74,7 +74,10 @@ export function hostedRouter(context: ApiContext, config: Config, limits: Hosted
   }
   router.get('/livez', (_req,res) => res.json({ status: 'ok' }))
   router.get('/startupz', async (_req,res) => { const ok=await initialized(); res.status(ok?200:503).json({status:ok?'ok':'paused'}) })
-  router.get('/readyz', async (_req,res) => { const s = await status(); res.status(['ready','busy'].includes(s.state) && queue.canQueue ? 200 : 503).json({ status: s.state }) })
+  // A full queue (one running, two waiting) is normal busy-ness: visitors see "busy" and are told to wait, and an uptime
+  // check that failed on it would page the owner for a healthy demo (H7). Only a state that cannot take work (paused,
+  // ended, degraded) answers 503; a full queue stays 200 with `queue: 'full'` so a reader can still tell.
+  router.get('/readyz', async (_req,res) => { const s = await status(); res.status(['ready','busy'].includes(s.state) ? 200 : 503).json({ status: s.state, ...(queue.canQueue ? {} : { queue: 'full' }) }) })
   router.get(['/health','/api/health'], async (_req,res) => res.json({ status: (await status()).state, labels: context.labels, faults: false }))
   router.get('/api/demo/status', async (_req,res) => {
     const principal = res.locals.hostedSession.principal

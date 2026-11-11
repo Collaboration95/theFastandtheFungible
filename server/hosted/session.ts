@@ -29,7 +29,7 @@ export function sessionGuard(limits: HostedLimits): RequestHandler {
     // A shared proof is public by the sharer's choice: reading it mints no session and sets no cookie.
     if (['GET','HEAD'].includes(req.method) && publicProofPath(req.path)) { next(); return }
     const cookies = (req.get('Cookie') || '').split(';').map(v => v.trim()).filter(v => v.startsWith(cookieName + '='))
-    const session = limits.session(cookies.length === 1 ? cookies[0].slice(cookieName.length + 1) : undefined)
+    const session = limits.session(cookies.length === 1 ? cookies[0].slice(cookieName.length + 1) : undefined, ip)
     if (session.token) res.cookie(cookieName, session.token, { secure: true, httpOnly: true, sameSite: 'lax', path: '/', maxAge: 86400000 })
     res.locals.hostedSession = session
     if (!['GET','HEAD'].includes(req.method)) {
