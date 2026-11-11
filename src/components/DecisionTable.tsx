@@ -1,4 +1,5 @@
 import { decisionLabel, type RunSnapshot } from '../../shared/contracts/index.js'
+import { traceLabel } from '../../shared/trace-labels.js'
 import { plainVerdict } from '../format'
 import WriterChip from './WriterChip'
 
@@ -17,17 +18,17 @@ export default function DecisionTable({ run }: { run: RunSnapshot }) {
     <h2>Decision table</h2>
     <p>Public previews → model probabilities → policy verdicts. Only code purchases.</p>
     <div className="ra-policy"><p>value = gap material × addresses gap × P(original) × (0.5 + 0.25 × credibility)</p><p>Buy the highest value/S$ that clears the threshold, source cap and remaining budget.</p><details><summary>Full policy formula</summary><pre>{`value(c) = gapMaterial × addressesGap(c) × P(original)(c) × (0.5 + 0.25 × credibility(c))
-eligible(c) = value(c) ≥ BUY_THRESHOLD
+eligible(c) = value(c) ≥ buy threshold
               ∧ price(c) ≤ perSourceCap
               ∧ price(c) ≤ budget − spent − reserved
               ∧ c not bought already ∧ c.derivedFrom ∉ {read or bought sources}
 buy = argmax over eligible of value(c) / price(c); none → STOP`}</pre>
     </details></div>
-    {run.budgetMinor === 0 && <p>Free-only run: “would buy” is a counterfactual, with no BUY or spending authorized.</p>}
+    {run.budgetMinor === 0 && <p>Free-only run: “would buy” is a counterfactual, with no purchase or spending authorized.</p>}
     {run.decisions.length === 0 && <p>Waiting for candidate scores. No purchase is initiated by this table.</p>}
     {run.decisions.map((round, index) => <details open={index === 0} key={round.round} aria-label={`Decision round ${round.round}`}>
       <summary>Round {round.round} · {decisionLabel(round)}</summary>
-      <p>BUY_THRESHOLD: {round.threshold} · Gap: {round.gap}</p>
+      <p>Buy threshold: {round.threshold} · Gap: {round.gap}</p>
       {round.gapMaterialSource === 'requirement' ? <p>Gap material: 1 · requested fact</p> : <Probability label="Gap material" value={round.gapMaterial} />}
       <div className="ra-table-scroll" tabIndex={0} role="region" aria-label={`Candidate scores round ${round.round}`}><table>
         <caption>All candidates · round {round.round}</caption>
@@ -39,9 +40,9 @@ buy = argmax over eligible of value(c) / price(c); none → STOP`}</pre>
             <Probability label="Rewrite" value={row.judgment.originality.rewrite} />
             <Probability label="Overlap" value={row.judgment.originality.overlap} /></div></td>
           <td><strong>{row.value.toFixed(3)}</strong><br />{row.valuePerDollar.toFixed(3)} / S$<br />Credibility: {row.judgment.credibility.toFixed(2)} / 2</td>
-          <td className={row.verdict === 'BUY' && run.budgetMinor > 0 ? 'ra-verdict-buy' : undefined}><strong>{run.budgetMinor === 0 && row.verdict === 'BUY' ? 'SKIP_OVER_BUDGET' : row.verdict}</strong>
+          <td className={row.verdict === 'BUY' && run.budgetMinor > 0 ? 'ra-verdict-buy' : undefined}><strong>{run.budgetMinor === 0 && row.verdict === 'BUY' ? traceLabel('SKIP_OVER_BUDGET') : traceLabel(row.verdict)}</strong>
             {row.wouldBuy && <p>Would buy{run.budgetMinor === 0 ? ' · with sufficient budget' : ''}</p>}
-            <p>{row.reason}</p>{row.verdict === 'SKIP_LOW_TRUST' && <p>{plainVerdict(row, run).why}</p>}</td>
+            <p>{traceLabel(row.reason)}</p>{row.verdict === 'SKIP_LOW_TRUST' && <p>{plainVerdict(row, run).why}</p>}</td>
         </tr>)}</tbody>
       </table></div>
     </details>)}

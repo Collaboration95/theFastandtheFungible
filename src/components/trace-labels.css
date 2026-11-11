@@ -1,0 +1,7 @@
+/* Trace severity comes from the event result, never from the fact that a substitute was used. */
+.ra-log li.is-warning .ra-tag { color: #5e3d00; background: var(--warn-wash); padding: 3px 6px; }
+.ra-log li > span { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 600px) {
+  .ra-activity .ra-log li { grid-template-columns: 62px minmax(0, 1fr); gap: 4px 10px; align-items: start; }
+  .ra-activity .ra-log li > span:last-child { grid-column: 2; }
+}

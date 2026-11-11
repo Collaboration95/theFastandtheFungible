@@ -1,4 +1,5 @@
 import { money, shortTx, xrpAmount as xrp, whenSGT } from '../../shared/presentation'
+import { traceLabel } from '../../shared/trace-labels.js'
 import { keyRevealLabel } from '../format'
 import { useEffect, useRef, useState } from 'react'
 import { XRPL_LABEL, type LedgerView, type RunSnapshot } from '../../shared/contracts/index.js'
@@ -51,7 +52,7 @@ export default function Ledger({ run }: { run: RunSnapshot }) {
       </li>)}
     </ol>}
     {steps.length > 0 && <ol className="ra-ledger-steps" aria-label="Payment steps">
-      {steps.map(step => <li key={step.id}><time dateTime={step.at}>{whenSGT(step.at)}</time> {step.label}</li>)}
+      {steps.map(step => <li key={step.id}><time dateTime={step.at}>{whenSGT(step.at)}</time> {traceLabel(step.label)}</li>)}
     </ol>}
     <h3>Wallets</h3>
     {error && <p role="status">Couldn’t load balances. {view && updated && `Last updated ${whenSGT(updated.toISOString())}. `}<button className="ra-btn" onClick={() => { setError(false); setAttempt(n => n + 1) }}>Retry balances</button></p>}
