@@ -32,7 +32,7 @@ npx vitest run tests/declutter.test.tsx tests/hosted-judges-corner.test.tsx src/
 
 For baseline, archive the pinned frontend and its imports to a temporary directory, symlink the installed dependencies, build there, then set `DECLUTTER_BASELINE=1 DECLUTTER_DIST=<temporary-dist>` and run the same Playwright config with `-g 'baseline counts'`.
 
-Existing browser tests updated only for the intended disclosure navigation: `hosted-ui.spec.ts`, `judges-corner.spec.ts`, `ui-nov11.spec.ts`. Existing component assertion updated: judges' corner now follows examples. **Snapshot/golden updates: none. Thresholds and gates loosened: none.**
+Existing browser tests updated only for the intended disclosure navigation: `hosted-ui.spec.ts`, `judges-corner.spec.ts`, `ui-nov11.spec.ts`, `browser-demo.spec.ts`. Existing component assertion updated: judges' corner now follows examples. **Snapshot/golden updates: none. Thresholds and gates loosened: none.**
 
 Initial JS uses the deploy/performance gate calculation: follow `dist/.vite/manifest.json` imports recursively from `index.html`, gzip each unique JS file with Node's `gzipSync`, sum the byte counts. Final integrated bundle measurement and clean-head gate evidence follow below.
 
