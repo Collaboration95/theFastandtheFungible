@@ -563,6 +563,38 @@ that exact HTTPS origin and re-render/restart. Disable the alternate front or
 redirect to the canonical host; do not wildcard origins or share cookies. Qualify
 TLS, header handling and smoke again. Fallback was not run locally or in cloud.
 
+## Spending cap (owner request, 11 Nov)
+
+The owner asked for the hosted demo to stay within about US$30 through 18 Nov. This is enforced in three layers:
+
+1. **Budget `ra-researchagent-sff`: S$40 a month, about US$30.** The billing account bills in SGD, and budgets must use the account's currency. It covers only this project. It emails the owner at 25, 50, 75, 90 and 100% of actual spend and at 100% of forecast spend.
+2. **Kill switch.** The budget also publishes its status to the Pub/Sub topic `ra-budget`. The 2nd-gen Cloud Function `ra-budget-stop` (source in `docker/hosted/budget-stop/`) receives each message.
+   - When actual spend is at or over the budget, it stops `ra-app`. Forecasts never stop anything.
+   - It runs as `ra-budget-stop@`, whose custom role `raBudgetStop` holds only `compute.instances.get` and `compute.instances.stop`.
+   - Its ingress is internal-only.
+   - A message with the attribute `dryRun=true` only logs what the function would do.
+   - Stopping the VM ends compute charges. The Cloud Run front then serves the paused page. Disks, data and money journals are kept.
+   - Billing data lags by hours, so spend can overshoot the cap slightly before the stop.
+3. **End-of-event stop.** The instance schedule `ra-stop-after-judging` stops the VM at 00:30 SGT on 20 Nov. That is after the control expiry at `2026-11-19T16:00:00Z`, and it means a forgotten VM cannot keep billing.
+
+**Expected spend** (list-price estimate; check the billing report for actuals):
+- The e2-standard-2 VM, its external IPv4 and its two disks cost about US$2.3 a day in asia-southeast1.
+- The Cloud Run front, Pub/Sub, the function, logging and uptime checks are within free tiers.
+- 10–20 Nov therefore comes to roughly US$22–24.
+- Model calls are billed by DeepSeek, not Google, and are capped separately in `server/hosted/limits.ts`: US$0.05 per question, US$15 a day, US$105 in total. Measured use on 11 Nov was US$0.46 across 111 hosted questions.
+
+**Restart after a cap stop.** An operator can run `gcloud compute instances start ra-app --zone asia-southeast1-b --project researchagent-sff`. A qualified release then auto-resumes as after any restart. Raise the budget first, or the next budget message stops the VM again.
+
+**Teardown.** `make hosted-teardown` deletes the budget but not these extras. Remove them afterwards:
+
+```bash
+gcloud functions delete ra-budget-stop --gen2 --region asia-southeast1 --project researchagent-sff
+gcloud pubsub topics delete ra-budget --project researchagent-sff
+gcloud compute resource-policies delete ra-stop-after-judging --region asia-southeast1 --project researchagent-sff
+gcloud iam service-accounts delete ra-budget-stop@researchagent-sff.iam.gserviceaccount.com --project researchagent-sff
+gcloud iam roles delete raBudgetStop --project researchagent-sff
+```
+
 ## Teardown on 20 Nov
 
 Pause admissions/signatures at event expiry; let recovery finish. Purge expired
