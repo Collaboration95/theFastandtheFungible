@@ -197,6 +197,10 @@ export class RunLoop {
     const coverage = this.coverageOf(run, run.answers.at(-1)?.version)
     return (this.requirements(run) ?? []).filter(r => coverage?.entries.find(e => e.requirementId === r.id)?.status !== 'supported')
   }
+  /** Public metadata of the articles this run bought and verified (R8-A2): the run's own record, never paid text. */
+  private verifiedPurchases(run: RunSnapshot): PublicCandidate[] {
+    return run.candidates.filter(candidate => run.intents.some(intent => intent.status === 'VERIFIED' && sameSource(candidate, intent) && candidate.resourceId === intent.resourceId))
+  }
   /**
    * H8-06, fixture coverage judge only: once this run has bought (and verified) an article whose public title states
    * the requested fact, that fact is not bought for again. The fixture judge needs a figure or an identifier, so it
@@ -207,8 +211,7 @@ export class RunLoop {
   private answeredByPurchase(run: RunSnapshot, requirement: Requirement): boolean {
     if ((this.options.provider?.name ?? 'fixture') !== 'fixture' || requirement.gap || FIXTURE_GAP_RULES.some(rule => rule.cue.test(requirement.text))) return false
     const single = this.requirements(run)?.length === 1
-    return run.intents.some(intent => intent.status === 'VERIFIED' && run.candidates.some(candidate => sameSource(candidate, intent) && candidate.resourceId === intent.resourceId
-      && (titleCovers(requirement.text, candidate.title) || single && titleCovers(run.question, candidate.title))))
+    return this.verifiedPurchases(run).some(candidate => titleCovers(requirement.text, candidate.title) || single && titleCovers(run.question, candidate.title))
   }
   /** Passages for a coverage judgment: exact accessible spans, never instructions (gate 1: free or verified-granted only). */
   private evidence(contents: ContentEnvelope[], refs: { resourceId: string; version: string; spanId: string }[]): CoverageEvidence[] {
@@ -426,7 +429,7 @@ export class RunLoop {
         const open = requirements ? this.openRequirements(run) : undefined
         const fingerprint = this.fingerprint(run)
         // #209: the next unresolved requested fact not yet judged on this evidence; a legacy run judges its first free-text gap.
-        // H8-06: a fact a bought passage already answers is not bought for again (fixture coverage judge only).
+        // H8-06: a fact whose title is stated by a verified purchase's public title is not bought for again (fixture coverage judge only).
         const purchasable = open?.filter(r => !this.answeredByPurchase(run, r))
         const target = purchasable?.find(r => !(run.checkpoint.attempts ?? []).some(a => a.requirementId === r.id && a.fingerprint === fingerprint))
         // Historical fixture scenarios still exercise the legacy path. Live legacy gaps require operator opt-in.
@@ -447,7 +450,7 @@ export class RunLoop {
         const readSources = publicSources(run.candidates.filter(candidate => contents.some(content => sameSource(content, candidate))))
         let decision: Awaited<ReturnType<typeof decide>>
         try {
-          decision = await decide({ signal: this.signal(runId), question: run.question, conclusion: answer.conclusion, gap, requirement: Boolean(target), candidates: run.candidates, readSources, accessibleEvidence: contents, boughtResourceIds: run.intents.filter(intent => !['SKIPPED', 'FAILED_NOT_SETTLED'].includes(intent.status)).map(intent => intent.source ? sourceKey(intent) : intent.resourceId), budgetMinor: run.budgetMinor, spentMinor: run.spentMinor, reservedMinor: run.reservedMinor, perSourceCapMinor: run.perSourceCapMinor, round, probeWallets: run.candidates.flatMap(c => c.wallet && this.store.probeAvailable(c.wallet) ? [c.wallet] : []), provider: this.options.provider, threshold: this.options.threshold, ...(this.options.reputation ? { reputation: this.options.reputation.summaries() } : {}) })
+          decision = await decide({ signal: this.signal(runId), question: run.question, conclusion: answer.conclusion, gap, requirement: Boolean(target), candidates: run.candidates, readSources, accessibleEvidence: contents, verifiedPurchases: this.verifiedPurchases(run), boughtResourceIds: run.intents.filter(intent => !['SKIPPED', 'FAILED_NOT_SETTLED'].includes(intent.status)).map(intent => intent.source ? sourceKey(intent) : intent.resourceId), budgetMinor: run.budgetMinor, spentMinor: run.spentMinor, reservedMinor: run.reservedMinor, perSourceCapMinor: run.perSourceCapMinor, round, probeWallets: run.candidates.flatMap(c => c.wallet && this.store.probeAvailable(c.wallet) ? [c.wallet] : []), provider: this.options.provider, threshold: this.options.threshold, ...(this.options.reputation ? { reputation: this.options.reputation.summaries() } : {}) })
         } catch (error) {
           if (!(error instanceof DecisionUnavailableError)) throw error
           if (this.signal(runId).aborted) { this.trace(runId, 'STOPPED', 'Provider work cancelled after Stop.'); return }

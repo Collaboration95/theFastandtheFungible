@@ -1,4 +1,4 @@
-import { isProtocolQuery, subjectFamilies, subjectRank, titleMatches, topicMatches, topicOverlap, topicWords } from '../../shared/relevance.js'
+import { familyMemberWords, identifierFamily, identifiersIn, identifierWords, isProtocolQuery, subjectFamilies, subjectRank, titleMatches, topicMatches, topicOverlap, topicWords } from '../../shared/relevance.js'
 import { alreadyCovered, entityPrecision, probeMetadata } from './precision.js'
 import { searchText } from '../../publisher/search-text.js'
 import { setImmediate as yieldToLoop } from 'node:timers/promises'
@@ -12,7 +12,7 @@ import { startActiveObservation } from '@langfuse/tracing'
 import { z } from 'zod'
 import { CandidateJudgmentSchema, DecisionRoundSchema, PublicCandidateSchema } from '../../shared/contracts/index.js'
 import type { CandidateJudgment, ContentEnvelope, CoverageStatus, DecisionProviderName, DecisionRound, PublicCandidate, PublicSourceRef, Requirement, ReputationSummary } from '../../shared/contracts/index.js'
-import { fixtureCoverage, type CoverageEvidence } from './requirements.js'
+import { FIXTURE_GAP_RULES, fixtureCoverage, type CoverageEvidence } from './requirements.js'
 import { NEWCOMER } from '../reputation.js'
 import { compareTieBreak } from './tie-break.js'
 import { activeCalibrator, calibrate, roundCalibration } from './calibration.js'
@@ -117,6 +117,51 @@ export const entityOverlap = (question: string, candidate: PublicCandidate) => {
  * weighs, and the story-bible decisions (UC1–UC3) depend on value.
  */
 const titledWithQuestion = (question: string, candidate: Pick<PublicCandidate, 'title'>) => isProtocolQuery(question) && titleMatches(question, candidate.title)
+/** Words that name no particular subject: a fact naming only these says nothing a title could add. */
+const GENERIC = new Set(['xrpl', 'xrp', 'ledger', 'payment', 'transaction', 'account', 'token', 'asset', 'field', 'type', 'testnet'])
+const metadataWords = (candidate: Pick<PublicCandidate, 'title' | 'facets'>) => new Set(topicWords(`${candidate.title} ${candidate.facets.join(' ')}`))
+/**
+ * A fact that asks for a named thing (which transaction, the issuer flag, what a holder must submit) rather than an
+ * explanation ("what a Credential proves", "how to make an escrow release").
+ */
+const asksForName = (fact: string) => /\bwhich\b|\b(?:transaction|field|flag|type|amendment|setting|header|scheme|submit)s?\b/i.test(fact)
+export const REPEATS_PURCHASES = 'Its title and topics name no part of the requested fact that a bought article does not already name.'
+/**
+ * R8-A2, fixture judge only: a further purchase for a protocol question must add part of the requested fact that no
+ * verified purchase of this run already names in its public title or topics. The fixture coverage judge needs a
+ * figure or an exact identifier in a cited passage, so it graded "How do I make an XRPL escrow release only when a
+ * secret is revealed" missing after the crypto-condition explainer was bought, and the run bought two more generic
+ * escrow references that named nothing the first did not. Two things count as new:
+ * - a word of the fact that no purchase names ("accept" in the CredentialAccept reference after CredentialCreate);
+ * - a protocol identifier in the title, related to the fact by its glossary family or a shared word, that no purchase
+ *   names. For a fact asking for a named thing, any member of the family counts unless the fact already names the
+ *   members it wants (the TrustSet reference after the trust-line explainer for "What must a holder submit before an
+ *   account can receive an issued token", whose answer is that identifier; not CredentialDelete for "which
+ *   transactions create and accept one"). For any other fact it counts only while no purchase names a member of that
+ *   family (SignerListSet after the multi-signing explainer; not EscrowCreate after an article naming EscrowFinish).
+ * A first purchase is never affected, and a live judge decides unaided. Story-bible cue rules keep their own tests.
+ */
+function repeatsPurchases(provider: DecisionProvider, input: Pick<DecideInput, 'question' | 'gap' | 'requirement' | 'verifiedPurchases'>, candidate: Pick<PublicCandidate, 'title' | 'facets'>): boolean {
+  if (provider.name !== 'fixture' || !input.requirement || !input.verifiedPurchases?.length || !isProtocolQuery(input.question) || FIXTURE_GAP_RULES.some(rule => rule.cue.test(input.gap))) return false
+  const named = new Set(input.verifiedPurchases.flatMap(bought => [...metadataWords(bought)]))
+  const own = metadataWords(candidate)
+  if (topicWords(input.gap).some(word => !/^\d+$/.test(word) && !GENERIC.has(word) && own.has(word) && !named.has(word))) return false
+  const namedIds = new Set(input.verifiedPurchases.flatMap(bought => identifiersIn(`${bought.title} ${bought.facets.join(' ')}`)).map(id => id.toLowerCase()))
+  const namedFamilies = new Set([...namedIds].map(identifierFamily))
+  const factFamilies = new Set(subjectFamilies(input.gap).map(group => group[0] as string))
+  const factWords = new Set(topicWords(input.gap).filter(word => !GENERIC.has(word)))
+  return !identifiersIn(candidate.title).some(id => {
+    if (namedIds.has(id.toLowerCase())) return false
+    const family = identifierFamily(id)
+    // Related to the fact through its glossary family (TrustSet for an issued token) or a shared word (PermissionedDomainSet).
+    if (family ? !factFamilies.has(family) : !identifierWords(id).some(word => factWords.has(word))) return false
+    if (!family) return true
+    // A fact that names the members it wants ("which transactions create and accept one") already got any of them
+    // through the word check above; another member (CredentialDelete) is not its answer.
+    if (asksForName(input.gap)) return ![...familyMemberWords(family)].some(word => factWords.has(word))
+    return !namedFamilies.has(family)
+  })
+}
 function purchaseTopicMatches(input: Pick<DecideInput, 'question' | 'gap' | 'requirement'>, candidate: PublicCandidate): boolean {
   // H8-05: for a protocol question, an article titled with the question is on topic whatever wording the planner
   // gave the requested fact, so the same question admits the same article on every run.
@@ -185,6 +230,8 @@ export type DecideInput = {
    * gap_material score swung 0.06–0.94 on on-question gaps and dropped right articles under the threshold).
    */
   requirement?: boolean
+  /** Public metadata of the articles this run has bought and verified; the run's own record, never paid text. */
+  verifiedPurchases?: Pick<PublicCandidate, 'title' | 'facets'>[]
 }
 /** Raw-score buy thresholds per model. gpt-6-luna runs raw at 0.20 with no calibrator (#214): never the benchmark's calibrated 0.05. */
 export function buyThreshold(model: string, configured: unknown = loadConfig().BUY_THRESHOLD): number {
@@ -318,6 +365,7 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
     else if (process.env.DECISION_SCOPE_POLICY !== 'off' && input.requirement && scopeContradiction(input.gap, candidate)) { verdict = 'SKIP_LOW_VALUE'; reason = 'Public source scope contradicts the requested country; model confidence cannot authorize this purchase.' }
     else if (price > cap) { verdict = 'SKIP_OVER_CAP'; reason = 'Price exceeds the per-source cap.' }
     else if (value < threshold && !probe) { verdict = 'SKIP_LOW_VALUE'; reason = 'Value is below the model threshold.' }
+    else if (process.env.R8A2_MARGINAL !== 'off' && repeatsPurchases(provider, input, candidate)) { verdict = 'SKIP_LOW_VALUE'; reason = REPEATS_PURCHASES }
     else if (process.env.DECISION_NUMBERS_POLICY !== 'off' && input.requirement && factMenuMismatch(input.gap, candidate)) { verdict = 'SKIP_LOW_VALUE'; reason = 'Signed fact menu does not offer the requested fact key and entity/period scope.' }
     else if (marginal && !marginal.eligible) { verdict = 'SKIP_LOW_VALUE'; reason = `Expected missing facts per S$ ${marginal.factsPerDollar.toFixed(3)} < ${marginal.threshold.toFixed(3)} (covered menu entries ${marginal.coveredEntries}/${marginal.menuEntries}).` }
     else if (price > remaining || input.budgetMinor === 0) { verdict = 'SKIP_OVER_BUDGET'; reason = input.budgetMinor === 0 ? 'Would buy with a sufficient budget; S$0 authorizes no purchase.' : 'Price exceeds the remaining budget.' }

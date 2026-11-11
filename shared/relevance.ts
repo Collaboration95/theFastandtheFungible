@@ -53,9 +53,35 @@ const matchingGroups = (query: string) => {
   return PROTOCOL_GLOSSARY.filter(group => (group[0] !== 'did' || /\bDID(?:Set|Delete)?\b/.test(query) || /decentralized identifier/i.test(query)) && group.some(p => phraseIn(normalized, p)))
 }
 export const isProtocolQuery = (query: string) => /\b(?:XRPL|XRP|x402|RLUSD|escrow\w*|credentials?|trustset|AMM\w*|FATF|VASPs|MAS|prompt.inject\w*)\b/i.test(query) || /\bDID(?:Set|Delete)?\b/.test(query) || matchingGroups(query).length > 0 && /\b(?:payment|purchase|http|transaction|ledger|token|account|wallet)\b/i.test(query)
-export function expandProtocolQuery(query: string): string {
+/** The glossary phrases a query's families add that the query does not already say. */
+export function protocolAliases(query: string): string[] {
   const normalized = phraseText(query)
-  return [query, ...new Set(matchingGroups(query).flat().filter(p => !phraseIn(normalized, p)))].join(' ')
+  return [...new Set(matchingGroups(query).flat().filter(p => !phraseIn(normalized, p)))]
+}
+export function expandProtocolQuery(query: string): string {
+  return [query, ...protocolAliases(query)].join(' ')
+}
+/**
+ * A protocol identifier: a CamelCase transaction, field or flag name (EscrowCreate, DIDSet, AllowTrustLineLocking)
+ * or a hyphenated capitalised standard name (XLS-85, PREIMAGE-SHA-256).
+ */
+export const IDENTIFIER = /\b[A-Za-z][A-Za-z0-9]*(?:[a-z][A-Z]|[A-Z]{2}[a-z])[A-Za-z0-9]*\b|\b[A-Z]{2,}(?:-[A-Z0-9]+)+\b/g
+/** A CamelCase protocol name (EscrowCreate, DIDSet, tfFillOrKill): one member of a family, not a synonym for it. */
+export const isCamelCaseName = (phrase: string) => /^[A-Za-z][A-Za-z0-9]*(?:[a-z][A-Z]|[A-Z]{2}[a-z])[A-Za-z0-9]*$/.test(phrase)
+/** The protocol identifiers a public text names, as written. */
+export const identifiersIn = (text: string) => [...new Set(text.match(IDENTIFIER) ?? [])]
+/** The glossary family an identifier belongs to (its first phrase), if any: escrow for EscrowCreate. */
+export const identifierFamily = (identifier: string) => PROTOCOL_GLOSSARY.find(group => group.some(p => p.toLowerCase() === identifier.toLowerCase()))?.[0]
+/** An identifier's words, splitting a leading acronym too: DIDSet → did, set (topicWords alone keeps "didset"). */
+export const identifierWords = (identifier: string) => topicWords(identifier.replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2'))
+/**
+ * The words that tell a family's members apart: create, accept and delete for the credential family (CredentialCreate,
+ * CredentialAccept, CredentialDelete), never the family's own words (credential).
+ */
+export function familyMemberWords(family: string): Set<string> {
+  const groups = PROTOCOL_GLOSSARY.filter(group => group[0] === family)
+  const own = new Set(groups.flatMap(group => group.filter(p => !isCamelCaseName(p)).flatMap(topicWords)))
+  return new Set(groups.flatMap(group => group.filter(isCamelCaseName).flatMap(identifierWords)).filter(word => !own.has(word)))
 }
 /** Match each original term directly or through a glossary group it belongs to. */
 export function topicOverlap(query: string, document: string, prepared?: TopicDocument): number {
@@ -113,18 +139,18 @@ export function topicMatches(query: string, document: string, prepared?: TopicDo
   return metadataTopicMatches(query, document, prepared)
 }
 /**
- * An article titled with (part of) the question: at least 80% of the title's topic words occur in the question
- * directly or through a shared glossary family, at least 60% occur literally (so one shared family name such as
- * "x402" cannot carry a whole title), and the title has at least four of them, so a generic reference title
- * ("What does EscrowCreate do on XRPL?") never qualifies. It reads only the public title, never paid text.
- */
-/**
  * A bought article's title states a requested fact: at least 80% of its (four or more) topic words occur in the fact,
  * directly or through a shared glossary family. Looser than titleMatches; it only ever withholds further spending.
  */
 export function titleCovers(fact: string, title: string): boolean {
   return topicWords(title).filter(w => !/^\d+$/.test(w)).length >= 4 && topicOverlap(title, fact) >= 0.8
 }
+/**
+ * An article titled with (part of) the question: at least 80% of the title's topic words occur in the question
+ * directly or through a shared glossary family, at least 60% occur literally (so one shared family name such as
+ * "x402" cannot carry a whole title), and the title has at least four of them, so a generic reference title
+ * ("What does EscrowCreate do on XRPL?") never qualifies. It reads only the public title, never paid text.
+ */
 export function titleMatches(question: string, title: string): boolean {
   const words = topicWords(title).filter(w => !/^\d+$/.test(w))
   if (words.length < 4) return false
