@@ -25,7 +25,7 @@ export function sessionGuard(limits: HostedLimits): RequestHandler {
       ip = forwarded.trim()
     }
     res.locals.hostedIp = ip
-    if (['/livez','/startupz','/readyz'].includes(req.path)) { next(); return }
+    if (['/livez','/startupz','/readyz','/readyz/funds'].includes(req.path)) { next(); return }
     // A shared proof is public by the sharer's choice: reading it mints no session and sets no cookie.
     if (['GET','HEAD'].includes(req.method) && publicProofPath(req.path)) { next(); return }
     const cookies = (req.get('Cookie') || '').split(';').map(v => v.trim()).filter(v => v.startsWith(cookieName + '='))
@@ -44,7 +44,7 @@ export function accessGuard(limits: HostedLimits): RequestHandler {
   return (req,res,next) => {
     // Deny by default, including alternate case, encoded slashes and trailing-path aliases.
     const path = req.path
-    const publicReads = ['/api/demo/status','/api/health','/health','/api/runs','/api/reputation','/api/writers/status','/api/writers/earnings','/livez','/startupz','/readyz']
+    const publicReads = ['/api/demo/status','/api/health','/health','/api/runs','/api/reputation','/api/writers/status','/api/writers/earnings','/livez','/startupz','/readyz','/readyz/funds']
     if (['GET','HEAD'].includes(req.method) && (publicWriterPath(path) || path === '/api/writers/earnings' || publicProofPath(path))) {
       if (Object.keys(req.query).length) return res.status(404).json({ error: 'Not found.' })
       const now = Date.now(), key = limits.ipKey(res.locals.hostedIp)

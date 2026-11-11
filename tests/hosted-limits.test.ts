@@ -4,8 +4,8 @@ import { join } from 'node:path'
 import { resources } from './helpers/resource-scope.js'
 import { Store } from '../server/store.js'
 import { loadConfig } from '../server/config.js'
-import { HostedLimits, LIMITS } from '../server/hosted/limits.js'
-import { HostedQueue } from '../server/hosted/queue.js'
+import { HostedLimits, LIMITS, mintGroup } from '../server/hosted/limits.js'
+import { HostedQueue, HostedPlanLane } from '../server/hosted/queue.js'
 import { readControl, requireAdmissions } from '../server/hosted/control.js'
 import { hostedExecution, meteredFetch } from '../server/hosted/execution.js'
 beforeEach(() => { vi.spyOn(Date, 'now').mockReturnValue(Date.parse('2026-11-10T12:00:00Z')) })
@@ -207,4 +207,61 @@ it('when the table is full, drops the oldest idle sessions at least 10 min old b
   expect(limits.session(undefined, '198.51.100.5').token).toHaveLength(64)
   expect(count()).toBe(LIMITS.sessionCeiling - LIMITS.sessionEvictBatch + 1)
   for (let i = 0; i < 10; i++) expect(a.hostedState(db => db.prepare('SELECT 1 FROM hosted_sessions WHERE principal=?').get(`asked${i}`))).toBeTruthy()
+})
+it('counts an IPv6 client by its /64, so rotating addresses inside one allocation does not escape the session cap', () => {
+  expect(mintGroup('203.0.113.9')).toBe('203.0.113.9')
+  expect(mintGroup('::ffff:203.0.113.9')).toBe('203.0.113.9')
+  const one = ['2001:db8:1:2::1', '2001:0db8:0001:0002:aaaa:bbbb:cccc:dddd', '2001:DB8:1:2:0:0:0:7', '2001:db8:1:2:ffff:ffff:ffff:ffff%eth0'].map(mintGroup)
+  expect(new Set(one)).toEqual(new Set(['2001:db8:1:2::/64']))
+  expect(mintGroup('2001:db8:1:3::1')).not.toBe(mintGroup('2001:db8:1:2::1'))
+  expect(mintGroup('2001:db8::1')).toBe('2001:db8:0:0::/64')
+  expect(mintGroup('::1')).toBe('0:0:0:0::/64')
+  const { limits } = setup()
+  for (let i = 0; i < LIMITS.sessionMintsPerIpHour; i++) limits.session(undefined, `2001:db8:1:2:${i.toString(16)}::${i + 1}`)
+  expect(() => limits.session(undefined, '2001:db8:1:2:dead:beef::1')).toThrow('session_rate')
+  expect(limits.session(undefined, '2001:db8:1:3::1').token).toHaveLength(64)
+})
+
+it('estimates a queued question’s wait from recent runs, rounded up to 5 s, and says nothing before one has finished (H7)', async () => {
+  const { c } = setup(); let now = 0
+  const queue = new HostedQueue(c, () => now); cleanup.push(() => queue.close())
+  expect(queue.estimateSeconds()).toBeUndefined()
+  for (const [i, seconds] of [20, 40, 30].entries()) {
+    let finish: (() => void) | undefined
+    queue.enqueue(`r${i}`, () => new Promise<void>(resolve => { finish = resolve }), vi.fn())
+    await vi.waitFor(() => expect(finish).toBeTypeOf('function'))
+    if (i === 0) expect(queue.estimateSeconds()).toBeUndefined() // the first is still running: nothing has finished
+    now += seconds * 1000; finish!(); await vi.waitFor(() => expect(queue.busy).toBe(false))
+    if (i === 0) expect(queue.estimateSeconds()).toBe(0) // idle: a new question starts at once
+  }
+  // Typical run: the median of 20, 40 and 30 s is 30 s. One started 12 s ago, two wait: a new arrival is third.
+  queue.enqueue('running', () => new Promise<void>(() => undefined), vi.fn()); now += 12000
+  queue.enqueue('w1', async () => undefined, vi.fn()); queue.enqueue('w2', async () => undefined, vi.fn())
+  expect(queue.estimateSeconds(0)).toBe(0)
+  expect(queue.estimateSeconds(1)).toBe(20) // 30 - 12 left of the running one
+  expect(queue.estimateSeconds(2)).toBe(50) // + one typical run
+  expect(queue.estimateSeconds(3)).toBe(80)
+  // A run past its typical length is never promised sooner than 10 s.
+  now += 60000; expect(queue.estimateSeconds(1)).toBe(10)
+})
+it('plans in a small lane of its own: two at once, a short wait for the next, then busy (H7)', async () => {
+  vi.useFakeTimers()
+  try {
+    const lane = new HostedPlanLane({ concurrent: 2, waiting: 1, waitMs: 5000 })
+    const gates: (() => void)[] = [], started: string[] = []
+    const plan = (name: string) => lane.run(() => new Promise<string>(resolve => { started.push(name); gates.push(() => resolve(name)) }))
+    const a = plan('a'), b = plan('b'), c = plan('c')
+    expect(started).toEqual(['a', 'b']) // two run; the third waits for a free place
+    await expect(plan('d')).rejects.toMatchObject({ status: 429, code: 'busy' }) // the waiting place is taken too
+    gates[0](); expect(await a).toBe('a')
+    await vi.advanceTimersByTimeAsync(0); expect(started).toEqual(['a', 'b', 'c'])
+    gates[1](); gates[2](); expect(await Promise.all([b, c])).toEqual(['b', 'c'])
+    expect(lane.depth).toBe(0)
+    // A wait that outlasts the limit is refused as busy, and the place is given up.
+    const x = plan('x'), y = plan('y'), z = plan('z'), zRefused = expect(z).rejects.toMatchObject({ code: 'busy' })
+    await vi.advanceTimersByTimeAsync(5001); await zRefused
+    expect(lane.depth).toBe(2)
+    gates.splice(0).forEach(open => open()); await Promise.all([x, y])
+    expect(lane.depth).toBe(0)
+  } finally { vi.useRealTimers() }
 })

@@ -5,16 +5,21 @@ import { readFileSync, writeFileSync, renameSync, existsSync, mkdirSync, chmodSy
 import { dirname, join, resolve } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { AUTO_REASON, MARKER_FILE, parseMarker } from '../docker/hosted/autoresume.mjs'
+import { LINK_KEYS, LINKS_FILE, cleanLinks, validLink } from '../docker/hosted/links.mjs'
 const [action = 'status', ...argv] = process.argv.slice(2)
 const o = {}, targets = ['all','admissions','spending']
 let target = 'all'
 for (let i=0;i<argv.length;i++) {
   if (targets.includes(argv[i]) && i===0) target=argv[i]
   else if (['--dry-run','--execute','--local'].includes(argv[i])) o[argv[i].slice(2)]=true
-  else if (['--project','--reason','--path','--only-if-reason'].includes(argv[i]) && argv[i+1]) o[argv[i].slice(2)]=argv[++i]
+  else if (['--project','--reason','--path','--only-if-reason','--video','--proof','--clear'].includes(argv[i]) && argv[i+1]) o[argv[i].slice(2)]=argv[++i]
   else throw Error('Unknown control option')
 }
-if (!['init','pause','resume','status'].includes(action)) throw Error('Expected init, pause, resume or status')
+if (!['init','pause','resume','status','links'].includes(action)) throw Error('Expected init, pause, resume, status or links')
+// links: the public video / proof links on the state disk (H7). Show them, set them (--video URL, --proof URL) or remove them (--clear video|proof|all).
+for (const key of LINK_KEYS) if (o[key] !== undefined && !validLink(o[key])) throw Error(`--${key} must be a plain https URL (a real host, at most 300 characters, no spaces or quotes)`)
+if (o.clear !== undefined && ![...LINK_KEYS,'all'].includes(o.clear)) throw Error('--clear takes video, proof or all')
+if (action!=='links' && (LINK_KEYS.some(k=>o[k]!==undefined) || o.clear!==undefined)) throw Error('--video, --proof and --clear belong to the links action')
 if (o.execute && o['dry-run']) throw Error('Choose one execution mode')
 if (o.reason && !/^[a-z0-9_-]{1,64}$/.test(o.reason)) throw Error('Invalid reason')
 if (o['only-if-reason'] && !/^[a-z0-9_-]{1,64}$/.test(o['only-if-reason'])) throw Error('Invalid reason')
@@ -22,7 +27,7 @@ if (o.project && o.local) throw Error('Choose local disk or remote project')
 if (o.project) {
   if (!/^[a-z][a-z0-9-]{4,28}[a-z0-9]$/.test(o.project)) throw Error('Invalid project')
   if (o.path) throw Error('Remote control uses only the fixed persistent-disk path')
-  const cmd=`sudo docker compose --env-file /etc/researchagent/images -f /opt/researchagent/compose.yaml exec -T api node /app/scripts/hosted-control.mjs ${action} ${target} --local --execute --path /state/control.json${o.reason?' --reason '+o.reason:''}${o['only-if-reason']?' --only-if-reason '+o['only-if-reason']:''}`
+  const cmd=`sudo docker compose --env-file /etc/researchagent/images -f /opt/researchagent/compose.yaml exec -T api node /app/scripts/hosted-control.mjs ${action} ${target} --local --execute --path /state/control.json${o.reason?' --reason '+o.reason:''}${LINK_KEYS.map(k=>o[k]?` --${k} ${o[k]}`:'').join('')}${o.clear?' --clear '+o.clear:''}${o['only-if-reason']?' --only-if-reason '+o['only-if-reason']:''}`
   const args=['compute','ssh','ra-app',`--project=${o.project}`,'--zone=asia-southeast1-b','--tunnel-through-iap',`--command=${cmd}`]
   if (!o.execute || o['dry-run']) console.log(['gcloud',...args].map(x=>"'"+x.replaceAll("'","'\\''")+"'").join(' '))
   else execFileSync('gcloud',args,{stdio:'inherit'})
@@ -31,6 +36,17 @@ if (o.project) {
 const path=resolve(o.path || process.env.HOSTED_CONTROL_PATH || 'data/hosted-control.json')
 if (o['dry-run'] || (o.local && !o.execute)) { console.log(JSON.stringify({action,target,path,state:'planned'})); process.exit(0) }
 process.umask(0o077)
+if (action==='links') {
+  const file=join(dirname(path),LINKS_FILE)
+  let doc={}
+  try { doc=cleanLinks(JSON.parse(readFileSync(file,'utf8'))) } catch { /* absent or unreadable: no links set */ }
+  const next={...doc}
+  for (const key of LINK_KEYS) if (o[key]) next[key]=o[key]
+  if (o.clear) for (const key of o.clear==='all'?LINK_KEYS:[o.clear]) delete next[key]
+  if (JSON.stringify(next)!==JSON.stringify(doc)) { mkdirSync(dirname(file),{recursive:true,mode:0o700}); writeDurable(file,JSON.stringify(next)+'\n') }
+  console.log(JSON.stringify({file,links:next,changed:JSON.stringify(next)!==JSON.stringify(doc),note:'The API reads this file on every status call: no redeploy or restart.'},null,2))
+  process.exit(0)
+}
 const closed={admissionsPaused:true,spendingPaused:true,reasonCode:'control_unavailable',expiresAt:'1970-01-01T00:00:00Z'}
 let control
 try { control=JSON.parse(readFileSync(path,'utf8')) } catch { /* unavailable is closed */ }

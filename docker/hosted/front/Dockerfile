@@ -3,7 +3,9 @@ USER root
 RUN apk add --no-cache tini
 COPY docker/hosted/front/default.conf.template /etc/nginx/templates/default.conf.template
 COPY docker/hosted/paused.html /usr/share/nginx/html/paused.html
-ENV NGINX_ENVSUBST_FILTER=VM_UPSTREAM
+# HOSTED_VIDEO_URL must exist (empty by default): the entrypoint only substitutes variables that are defined.
+ENV HOSTED_VIDEO_URL=
+ENV NGINX_ENVSUBST_FILTER="VM_UPSTREAM|HOSTED_VIDEO_URL"
 USER 101:101
 EXPOSE 8080
 ENTRYPOINT ["/sbin/tini", "--", "/docker-entrypoint.sh"]

@@ -40,11 +40,23 @@ server {
   # Plain text, so a browser shows the word instead of downloading an octet-stream file (R8 sweep H20).
   location = /livez { default_type text/plain; return 200 'alive'; }
   location = /startupz { default_type text/plain; return 200 'started'; }
-  location = /paused.html { internal; root /usr/share/nginx/html; }
+  # The page's video link is empty in the file and hidden by the page itself; this fills it in from the front's own
+  # HOSTED_VIDEO_URL (empty when unset), so the link appears once a video exists without touching the page.
+  location = /paused.html {
+    internal;
+    root /usr/share/nginx/html;
+    sub_filter 'id="video" href=""' 'id="video" href="${HOSTED_VIDEO_URL}"';
+    sub_filter_once on;
+  }
   # Cloud Run's edge reserves some paths ending in "z"; /ready is the public
   # readiness path for uptime checks and maps to the VM's /readyz.
   location = /ready {
     rewrite ^ /readyz break;
+    proxy_pass http://${VM_UPSTREAM};
+  }
+  # The shared payer's balance against 30 XRP, for the owner's alert (H7). Public alias of the VM's /readyz/funds.
+  location = /ready/funds {
+    rewrite ^ /readyz/funds break;
     proxy_pass http://${VM_UPSTREAM};
   }
   location / {

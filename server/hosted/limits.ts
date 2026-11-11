@@ -1,4 +1,5 @@
 import { createHash, createHmac, randomBytes } from 'node:crypto'
+import { isIP } from 'node:net'
 import type { DatabaseSync } from 'node:sqlite'
 import type { Store } from '../store.js'
 import type { Config } from '../config.js'
@@ -10,6 +11,20 @@ export const LIMITS = { questionMinor: 200, sessionQuestions: 5, sessionMinor: 1
   // A session that never asked a question is dropped after 2 h (it holds no money and no run), and a full table drops
   // such sessions at least 10 min old before it refuses anyone. Sessions that asked keep their 24 h.
   sessionCeiling: 5000, sessionMintsPerIpHour: 120, sessionIdleMs: 7200000, sessionEvictAfterMs: 600000, sessionEvictBatch: 500 } as const
+/**
+ * What the session-mint cap counts: an IPv4 address, or an IPv6 /64. One customer holds a whole /64, so a script could
+ * otherwise mint from a new address on every request and never meet a per-address cap.
+ */
+export function mintGroup(ip: string) {
+  const bare = ip.split('%')[0]
+  const mapped = bare.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/i)
+  if (mapped) return mapped[1]
+  if (isIP(bare) !== 6) return ip
+  const [left, right] = bare.split('::'), head = left ? left.split(':') : [], tail = right ? right.split(':') : []
+  const wide = tail.reduce((n, g) => n + (g.includes('.') ? 2 : 1), 0) + head.length
+  const groups = bare.includes('::') ? [...head, ...Array(Math.max(0, 8 - wide)).fill('0'), ...tail] : head
+  return groups.slice(0, 4).map(g => parseInt(g, 16).toString(16)).join(':') + '::/64'
+}
 export const hash = (s: string) => createHash('sha256').update(s).digest('hex')
 const canonical = (x: unknown): unknown => Array.isArray(x) ? x.map(canonical) : x && typeof x === 'object' ? Object.fromEntries(Object.entries(x).sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => [k, canonical(v)])) : x
 export const digest = (x: unknown) => hash(JSON.stringify(canonical(x)))
@@ -38,7 +53,7 @@ export class HostedLimits {
         const old = db.prepare('SELECT * FROM hosted_sessions WHERE principal=? AND expires>?').get(hash(cookie), now)
         if (old && !this.idleExpired(db, old.principal as string, Number(old.expires), now)) return { principal: String(old.principal), csrf: String(old.csrf), expires: Number(old.expires) }
       }
-      const hour = 3600000, keys = ip === undefined ? undefined : [this.ipKey(ip, now), this.ipKey(ip, now - hour)] as const
+      const hour = 3600000, group = ip === undefined ? undefined : mintGroup(ip), keys = group === undefined ? undefined : [this.ipKey(group, now), this.ipKey(group, now - hour)] as const
       if (keys && Number(db.prepare('SELECT count(*) AS n FROM hosted_session_mints WHERE ip IN (?,?) AND at>?').get(keys[0], keys[1], now - hour)!.n) >= LIMITS.sessionMintsPerIpHour) throw new HostedError(429, 'session_rate')
       this.sweepSessions(db, now)
       if (Number(db.prepare('SELECT count(*) AS n FROM hosted_sessions').get()!.n) >= LIMITS.sessionCeiling) {

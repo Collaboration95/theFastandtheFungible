@@ -58,3 +58,18 @@ export class HostedReadiness {
   }
   close() { this.closed = true; clearTimeout(this.timer) }
 }
+
+/**
+ * The shared payer's balance, as the readiness probe last saw it (H7, J7). An alert, not a gate: below 30 XRP the owner is
+ * emailed through the existing uptime-check path, while visitors see nothing different (readiness still fails only at the
+ * real shortfall). It reads the probe's own ledger result, so it adds no ledger call.
+ */
+export const PAYER_LOW_DROPS = 30_000_000
+export type PayerFunds = 'ok' | 'low' | 'unknown'
+export class PayerWatch {
+  private seen?: { drops: number; at: number }
+  constructor(private readonly now: () => number = () => Date.now(), private readonly maxAgeMs = 120000) {}
+  record(drops: number) { if (Number.isFinite(drops) && drops >= 0) this.seen = { drops, at: this.now() } }
+  /** `unknown` (not `low`) when there is no recent reading, so a ledger outage alerts through readiness, not twice. */
+  state(): PayerFunds { return !this.seen || this.now() - this.seen.at > this.maxAgeMs ? 'unknown' : this.seen.drops < PAYER_LOW_DROPS ? 'low' : 'ok' }
+}
