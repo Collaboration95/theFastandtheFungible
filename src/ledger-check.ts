@@ -1,4 +1,5 @@
 import { ledgerReceipt, type LedgerReceipt as Fields } from '../shared/ledger-receipt'
+import { xrpAmount } from '../shared/presentation'
 import { FEES_INDEX, publicRead, type Rpc } from './ledger-rpc'
 export type LedgerKind = 'rlusd-escrow' | 'reserve' | 'fee'
 export const RLUSD_ISSUER = 'rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV'
@@ -35,7 +36,7 @@ export async function readLedgerFact(kind: LedgerKind, rpc: Rpc = publicRead): P
   if (kind === 'rlusd-escrow') return issuerFact(await rpc({ command: 'account_info', account: RLUSD_ISSUER, ledger_index: 'validated', strict: true }), new Date().toISOString())
   const f = feeSettings(await rpc({ command: 'ledger_entry', index: FEES_INDEX, ledger_index: 'validated' }))
   return { network: 'XRPL Testnet', ledger: f.ledger, readAt: new Date().toISOString(), text: kind === 'reserve'
-    ? `Account reserve ${(Number(f.baseReserve) / 1e6).toFixed(2)} XRP · owner reserve ${(Number(f.ownerReserve) / 1e6).toFixed(2)} XRP per object.`
+    ? `Account reserve ${xrpAmount(f.baseReserve)} · owner reserve ${xrpAmount(f.ownerReserve)} per object.`
     : `Base fee ${f.baseFee} drops. ResearchAgent pays 12 drops to lock (buyer) and 423 to reveal (writer). For our 36-byte fulfillment, rippled’s minimum is ${BigInt(f.baseFee) * 35n} drops.` }
 }
 export type PayerFact = LedgerFact & { openEscrows: number; ownerCount: number }

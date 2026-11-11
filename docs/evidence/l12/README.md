@@ -44,6 +44,11 @@ consolidation is routed below. Account addresses retain the separate 6…4 rule.
 wallet balances use the same shared helpers. The 390 px Wire panel has no
 overflow or serious/critical axe violations.
 
+The merged ledger card and reserve-release summary also use the exact-drop XRP
+helper. Reserves retain up to six decimals, including a one-drop reserve and
+amounts beyond floating-point precision; fees stay in drops. Ledger validation,
+provenance and signed receipt fields are unchanged.
+
 <!-- l12-performance:start -->
 ## Replay performance
 

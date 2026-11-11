@@ -42,7 +42,9 @@ describe('validated facts', () => {
     expect(feeSettings(fixture.fees)).toEqual({ ledger: 22245632, baseFee: '10', baseReserve: '1000000', ownerReserve: '200000' })
     expect((await readLedgerFact('fee', rpc(fixture.fees))).text).toContain('12 drops to lock (buyer) and 423 to reveal (writer)')
     expect((await readLedgerFact('fee', rpc(fixture.fees))).text).toContain('minimum is 350 drops')
-    expect((await readLedgerFact('reserve', rpc(fixture.fees))).text).toContain('1.00 XRP · owner reserve 0.20 XRP')
+    expect((await readLedgerFact('reserve', rpc(fixture.fees))).text).toContain('1 XRP · owner reserve 0.2 XRP')
+    const exact = { ...fixture.fees, node: { ...fixture.fees.node, ReserveBaseDrops: '9007199254740993', ReserveIncrementDrops: '1' } }
+    expect((await readLedgerFact('reserve', rpc(exact))).text).toContain('9,007,199,254.740993 XRP · owner reserve 0.000001 XRP')
     expect(() => feeSettings({ ...fixture.fees, validated: false })).toThrow()
     expect(() => feeSettings({ ...fixture.fees, node: {} })).toThrow()
   })
