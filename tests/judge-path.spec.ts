@@ -89,6 +89,8 @@ test('replay header reuses the app font without a second brand download', async 
   const fonts: string[] = []
   page.on('request', request => { if (request.resourceType() === 'font') fonts.push(request.url()) })
   await page.goto(`${base}/demo/`)
+  // Count fonts after the replay renders, including when its app module loads lazily.
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   await page.evaluate(() => document.fonts.ready)
   expect(await page.locator('.ra-hdr').evaluate(node => getComputedStyle(node).fontFamily)).toContain('Geist Variable')
   expect(fonts.filter(url => /geist-latin-wght-normal/.test(url))).toHaveLength(1)
