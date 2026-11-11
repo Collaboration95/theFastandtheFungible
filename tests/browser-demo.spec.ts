@@ -215,6 +215,8 @@ test('replay downloads only the requested recording, then loads another scenario
   const requests:string[]=[];page.on('request',r=>requests.push(new URL(r.url()).pathname))
   const base=`http://127.0.0.1:${port}/theFastandtheFungible/demo/`
   await page.goto(base);await expect(page.getByRole('heading',{level:1})).toContainText('Kestrel',{timeout:10_000})
+  await expect(page.locator('link[rel="modulepreload"][href*="/assets/main-"]')).toHaveCount(1)
+  await expect(page.locator('link[rel="stylesheet"][href*="/assets/main-"]')).toHaveCount(1)
   expect(requests.filter(p=>/\/(?:UC1|UC2|UC3|UC3-testnet|UC-key-reveal)-[A-Za-z0-9_-]{8}\.js$/.test(p))).toEqual([])
   expect(requests.filter(p=>/\/UC3-key-reveal-[\w-]+\.js$/.test(p))).toHaveLength(1)
   await page.getByRole('combobox',{name:'Recorded scenario'}).selectOption('UC2')

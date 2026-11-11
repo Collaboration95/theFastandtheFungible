@@ -12,11 +12,15 @@ export default defineConfig({
     transformIndexHtml: {
       order: 'post',
       handler(_html, { bundle }) {
-        const app = Object.values(bundle ?? {}).find(item => item.type === 'chunk' && item.facadeModuleId?.endsWith('/src/main.tsx'))
-        if (!app) return []
+        if (!bundle) return []
+        const app = Object.values(bundle ?? {}).find(item => item.type === 'chunk' && item.moduleIds.some(id => id.endsWith('/src/main.tsx')))
+        if (!app || app.type !== 'chunk') throw Error('Replay app chunk was not emitted')
         // Download the shared app while the replay entry validates its selected trace.
         // Preloading does not execute it before the transport shim is installed.
-        return [{ tag: 'link', attrs: { rel: 'modulepreload', crossorigin: true, href: `/theFastandtheFungible/demo/${app.fileName}` } }]
+        return [
+          { tag: 'link', attrs: { rel: 'modulepreload', crossorigin: true, href: `/theFastandtheFungible/demo/${app.fileName}` } },
+          ...[...app.viteMetadata?.importedCss ?? []].map(file => ({ tag: 'link', attrs: { rel: 'stylesheet', href: `/theFastandtheFungible/demo/${file}` } })),
+        ]
       },
     },
     transform(_code, id) {
