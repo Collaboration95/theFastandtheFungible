@@ -5,6 +5,7 @@
 import { describe, expect, it } from 'vitest'
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
+import { createHash } from 'node:crypto'
 
 const read = (path: string) => readFileSync(path, 'utf8')
 /** Every file under a folder whose name matches, sorted. */
@@ -87,9 +88,21 @@ describe('judge pack: one true story', () => {
     const did = /\bDIDs?\b/ // The acronym is case-sensitive; prose such as 'Did I get paid?' is not a feature claim.
     const never = /\bMPTs?\b|XLS-56|Batch (?:transaction|amendment)|payment channels?|PayChan|mainnet[- ]ready|KYC'?d|smart[- ]contract/i
     const denial = /\bno (?:smart )?contract|\bwithout (?:a )?smart contract|no Permissioned Domains|There's no contract/i
+    // The unchanged hosted export includes an unbought comparison article, not a
+    // claim that ResearchAgent uses channels. Allow only its four exact JSON lines;
+    // the evidence-coherence check below also pins the whole export's SHA-256.
+    const comparison = new Set([
+      '"title": "Can an agent pay for many small x402 requests over an XRPL payment channel instead of one escrow per article?",',
+      '"preview": "Sourced comparison of XRPL payment channels and key-reveal escrow for agent micropayments: what each costs on the ledger, what each guarantees about delivery, and when to use which.",',
+      '"payment channel",',
+      '"entity": "payment channel",',
+    ])
     const hits: string[] = []
     for (const file of publicFiles) {
-      for (const [i, line] of read(file).split('\n').entries()) if ((did.test(line) || never.test(line)) && !denial.test(line)) hits.push(`${file}:${i + 1}`)
+      for (const [i, line] of read(file).split('\n').entries()) {
+        const alternative = file === 'docs/submission/evidence/hosted-answer-nov12/receipts.json' && comparison.has(line.trim())
+        if ((did.test(line) || never.test(line)) && !denial.test(line) && !alternative) hits.push(`${file}:${i + 1}`)
+      }
     }
     expect(hits).toEqual([])
   })
@@ -124,13 +137,61 @@ describe('judge pack: one true story', () => {
     expect(hits).toEqual([])
   })
 
-  it('labels what the live sandbox does not show: Credentials and token escrow are CLI and evidence only', () => {
-    expect(read('docs/submission/qa-prep.md').replace(/\s+/g, ' ')).toMatch(/Credentials identify writers who publish with `publish --testnet`; the sandbox's team writers are unverified/)
-    for (const file of ['docs/submission/compliance-slide.md', 'docs/submission/deck/index.html']) expect(read(file), file).toContain('XRPL Credentials badge for writers (publish CLI; none in the live sandbox)'.replace('for writers ', file.endsWith('.md') ? '' : 'for writers '))
-    for (const file of ['README.md', 'docs/submission/short-description.md', 'docs/submission/qa-prep.md', 'docs/submission/deck/index.html']) expect(read(file), file).toMatch(/live (?:sandbox|demo) pays in Testnet XRP/)
-    // TokenEscrow is enabled on Testnet and Mainnet; only the RLUSD issuer flag blocks it.
-    expect(read('docs/submission/deck/index.html')).not.toMatch(/enabled on Testnet(?! and Mainnet)/)
+  it('states the current Testnet identity and token scope, and recorded RLUSD verdicts', () => {
+    for (const file of ['README.md', 'docs/submission/qa-prep.md', 'docs/submission/compliance-slide.md', 'docs/submission/deck/index.html']) {
+      const text = read(file)
+      expect(text, file).toMatch(/accepted.*(?:Testnet|XRPL Testnet)|accepted XRPL Testnet/)
+      expect(text, file).toMatch(/Testnet Permissioned Domain/)
+      expect(text, file).not.toMatch(/No Permissioned Domains|none in the live sandbox|sandbox's team writers are unverified/)
+    }
+    for (const file of ['README.md', 'docs/submission/short-description.md', 'docs/submission/qa-prep.md', 'docs/submission/deck/index.html']) {
+      expect(read(file), file).toMatch(/live (?:sandbox|demo) pays in Testnet XRP/)
+      expect(read(file), file).toContain('tecNO_PERMISSION')
+      expect(read(file), file).not.toMatch(/predicted refusal|one issuer flag away/)
+    }
     expect(read('docs/submission/qa-prep.md')).toMatch(/Testnet and Mainnet both have TokenEscrow enabled/)
+  })
+
+  it('makes the initial market a hypothesis and discloses the absence of traction', () => {
+    for (const file of ['docs/submission/qa-prep.md', 'docs/submission/deck/index.html', 'docs/submission/short-description.md']) {
+      const text = read(file).replace(/\s+/g, ' ')
+      expect(text, file).toMatch(/initial.market hypothesis/i)
+      expect(text, file).toContain('XRPL/x402 integrators')
+      expect(text, file).toMatch(/coding agents/)
+      expect(text, file).toMatch(/No independent writers, customers, pilots or revenue/i)
+      expect(text, file).toContain('product-writer-paid.json')
+    }
+  })
+
+  it('uses one hosted run for the useful-answer card and leaves absent model cost unmeasured', () => {
+    const source = JSON.parse(read('docs/submission/evidence/hosted-answer-nov12/summary.json'))
+    const receipts = JSON.parse(read('docs/submission/evidence/hosted-answer-nov12/receipts.json'))
+    expect(source.runId).toBe(receipts.runId)
+    expect(createHash('sha256').update(readFileSync('docs/submission/evidence/hosted-answer-nov12/receipts.json')).digest('hex')).toBe(source.receiptSha256)
+    expect(Date.parse(source.done) - Date.parse(source.start)).toBe(source.startToDoneMs)
+    const ledger = JSON.parse(read('docs/submission/evidence/hosted-answer-nov12/ledger.json'))
+    for (const row of ledger.transactions) {
+      expect(row.hash).toBe(source.transactions[row.kind])
+      expect(row.validated).toBe(true)
+      expect(row.result).toBe('tesSUCCESS')
+    }
+    expect(source.bought).toEqual(['product-writer-paid'])
+    expect(source.spentMinor).toBe(40)
+    expect(source.startToDoneMs).toBe(65797)
+    expect(source.modelCostUsd).toBeNull()
+    expect(source.deployedSha).toBe('5f683a0477c945153bd9a27a39ebd1a236f6951d')
+    expect(source.refunds).toBe(0)
+    expect(receipts.answers[0].claims).toEqual([])
+    expect(receipts.answers[0].openGaps).toHaveLength(2)
+    expect(receipts.answers.at(-1).openGaps).toEqual([])
+    expect(source.evidence).toHaveLength(4)
+    expect(source.evidence[2].text).toMatch(/validated transaction releases the payment/)
+    for (const file of ['README.md', 'docs/submission/deck/index.html']) {
+      expect(read(file), file).toContain(source.transactions.finish)
+      expect(read(file), file).toContain('65.8')
+      expect(read(file), file).toContain('unmeasured')
+      expect(read(file), file).toMatch(/initial.*fixture/)
+    }
   })
 
   it('says who pays which part of the fee: the buyer locks (12), the writer reveals (423), rippled needs 360', () => {

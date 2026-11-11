@@ -1,0 +1,211 @@
+{
+  "id": "HOSTED-12",
+  "runId": "ffbaf57a-2445-4da5-aa93-e946043d9777",
+  "question": "How does the writer get paid, and what stops the agent from reading the article and then refusing to pay?",
+  "date": "12 Nov 2026",
+  "deployedSha": "5f683a0477c945153bd9a27a39ebd1a236f6951d",
+  "hostedUrl": "https://ra-front-651013803640.asia-southeast1.run.app",
+  "start": "2026-11-12T00:27:58.254Z",
+  "done": "2026-11-12T00:29:04.051Z",
+  "startToDoneMs": 65797,
+  "timeScope": "Admission/Start to Done; excludes pre-admission planning and the five-second confirmation modal. Verification is separate.",
+  "labels": {
+    "decision": "fixture · metadata-fixture",
+    "plan": "DeepSeek · deepseek-flash",
+    "publisher": "local",
+    "research": "DeepSeek · deepseek-flash",
+    "search": "keyword only (embeddings unavailable)",
+    "settlement": "XRPL TESTNET · no real value"
+  },
+  "bought": [
+    "product-writer-paid"
+  ],
+  "spentMinor": 40,
+  "refunds": 0,
+  "requirements": [
+    {
+      "id": "r1",
+      "text": "How the writer is paid for an article, including the XRPL escrow and key reveal mechanism"
+    },
+    {
+      "id": "r2",
+      "text": "What stops the agent from reading the article and then refusing to pay"
+    }
+  ],
+  "freeDraft": {
+    "lead": [],
+    "conclusion": "Matched articles supplied no citable answer · nothing bought",
+    "claims": [],
+    "openGaps": [
+      {
+        "text": "How the writer is paid for an article, including the XRPL escrow and key reveal mechanism"
+      },
+      {
+        "text": "What stops the agent from reading the article and then refusing to pay"
+      }
+    ],
+    "version": 1,
+    "provider": "fixture",
+    "model": "extractive-fixture"
+  },
+  "finalAnswer": {
+    "lead": [
+      {
+        "text": "the writer gets paid by publishing the article's key on the XRP Ledger: the payment waits in an escrow that only that key can open, so an agent cannot read the article unless the writer is paid.",
+        "claim": {
+          "id": "claim-1",
+          "text": "The writer gets paid by publishing the article's key on the XRP Ledger; payment waits in an escrow only that key can open, so an agent cannot read the article unless the writer is paid.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "product-writer-paid",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        }
+      }
+    ],
+    "conclusion": "The writer gets paid by publishing the article's key on the XRP Ledger: the payment waits in an escrow that only that key can open, so an agent cannot read the article unless the writer is paid. Before any money moves, the writer encrypts the article with a fresh key for that buyer and signs the price, a hash of the key and hashes of the content. The buyer's policy code then locks the price in an XRPL escrow with a PREIMAGE-SHA-256 condition and a CancelAfter deadline. To claim the money, the writer submits EscrowFinish with the fulfillment, which is the key. The buyer then decrypts the article and checks every signed promise before the agent may read it.",
+    "claims": [
+      {
+        "id": "claim-1",
+        "text": "The writer gets paid by publishing the article's key on the XRP Ledger; payment waits in an escrow only that key can open, so an agent cannot read the article unless the writer is paid.",
+        "stance": "SUPPORTS",
+        "citations": [
+          {
+            "resourceId": "product-writer-paid",
+            "version": "v1",
+            "spanId": "p1"
+          }
+        ]
+      },
+      {
+        "id": "claim-2",
+        "text": "The writer encrypts the article with a fresh key and signs the price, a hash of the key, and content hashes; the buyer's policy code locks the price in an XRPL escrow with a PREIMAGE-SHA-256 condition and CancelAfter deadline.",
+        "stance": "SUPPORTS",
+        "citations": [
+          {
+            "resourceId": "product-writer-paid",
+            "version": "v1",
+            "spanId": "p2"
+          }
+        ]
+      },
+      {
+        "id": "claim-3",
+        "text": "Until the key is revealed, the buyer holds only ciphertext it cannot open, which is what stops the agent from reading before paying.",
+        "stance": "SUPPORTS",
+        "citations": [
+          {
+            "resourceId": "product-writer-paid",
+            "version": "v1",
+            "spanId": "p2"
+          }
+        ]
+      },
+      {
+        "id": "claim-4",
+        "text": "To claim the money the writer submits EscrowFinish with the fulfillment (the key); that validated transaction releases payment and makes the key public, so payment and delivery are a single event.",
+        "stance": "SUPPORTS",
+        "citations": [
+          {
+            "resourceId": "product-writer-paid",
+            "version": "v1",
+            "spanId": "p3"
+          }
+        ]
+      },
+      {
+        "id": "claim-5",
+        "text": "If the writer never publishes the key, the writer is never paid; after CancelAfter, policy code submits EscrowCancel and the funds return to the buyer.",
+        "stance": "SUPPORTS",
+        "citations": [
+          {
+            "resourceId": "product-writer-paid",
+            "version": "v1",
+            "spanId": "p4"
+          }
+        ]
+      },
+      {
+        "id": "claim-6",
+        "text": "The ledger checks the key, not article quality; if a revealed article breaks a signed promise, the refund is a payment the writer must sign and the writer's trust score drops.",
+        "stance": "UNCERTAIN",
+        "citations": [
+          {
+            "resourceId": "product-writer-paid",
+            "version": "v1",
+            "spanId": "p4"
+          }
+        ]
+      }
+    ],
+    "openGaps": [],
+    "version": 2,
+    "provider": "deepseek",
+    "model": "deepseek-flash"
+  },
+  "evidence": [
+    {
+      "resourceId": "product-writer-paid",
+      "version": "v1",
+      "id": "p1",
+      "text": "According to ResearchAgent documentation, the writer gets paid by publishing the article's key on the XRP Ledger: the payment waits in an escrow that only that key can open, so an agent cannot read the article unless the writer is paid. [1] [2]"
+    },
+    {
+      "resourceId": "product-writer-paid",
+      "version": "v1",
+      "id": "p2",
+      "text": "Before any money moves, the writer encrypts the article with a fresh key for that buyer and signs the price, a hash of the key and hashes of the content. The buyer's policy code then locks the price in an XRPL escrow with a PREIMAGE-SHA-256 condition and a CancelAfter deadline. Until the key is revealed, the buyer holds only ciphertext it cannot open. [1] [3]"
+    },
+    {
+      "resourceId": "product-writer-paid",
+      "version": "v1",
+      "id": "p3",
+      "text": "To claim the money, the writer submits EscrowFinish with the fulfillment, which is the key. That one validated transaction releases the payment to the writer and makes the key public, so payment and delivery are a single event. The buyer then decrypts the article and checks every signed promise before the agent may read it. [1] [3]"
+    },
+    {
+      "resourceId": "product-writer-paid",
+      "version": "v1",
+      "id": "p4",
+      "text": "Author interpretation: if the writer never publishes the key, the writer is never paid. After CancelAfter, policy code submits EscrowCancel and the locked funds return to the buyer. The ledger checks the key, not the article's quality: if a revealed article breaks a signed promise, the refund is a payment the writer must sign, and that writer's trust score drops. Sources accessed 11 November 2026. [1] [3]"
+    }
+  ],
+  "modelCostUsd": null,
+  "modelCostNote": "Unmeasured: per-run model token usage/cost was not retained in this export or measurement. Do not substitute the 3 Nov synthetic evaluation cost.",
+  "receiptSha256": "be67bb3a23ed6287d70abc6654a741d539e0b3aaeb05636167fb3df13855c498",
+  "transactions": {
+    "create": "CB872E5FEF205F8E31BB522A57EF5CFCC7F815DE4770F29A9856EA1F724E04A6",
+    "finish": "EF66F5C9FD1DE68E8167189CF4FAF5DB94ABD3FA561C65F9D4DACA8828177930",
+    "anchor": "EC4ABD3FBCAFC035E71D5BA74C01529D9AA52D45D9A228896A24BD8C44187EF6"
+  },
+  "browserChecks": {
+    "passed": 26,
+    "failed": 0,
+    "notChecked": 2
+  },
+  "pythonChecks": {
+    "version": "v1.1.1",
+    "passed": 27,
+    "failed": 0,
+    "skipped": 2,
+    "testnetPassed": 6,
+    "testnetTotal": 6,
+    "anchorLedger": 22254709
+  },
+  "gateObservations": [
+    "Not checked",
+    "Held",
+    "Held",
+    "Held",
+    "Held"
+  ],
+  "scope": "One hosted preset-3 run, DEPLOY-3, 12 Nov 2026; live DeepSeek planning/final answer, fixture buying, initial extractive-fixture draft, keyword fallback, real Testnet XRP, team-authored writer, no real value. Gate 1 paid-read telemetry not retained; no new held-out or general quality claim.",
+  "fees": {
+    "buyerCreateDrops": 12,
+    "writerFinishDrops": 423,
+    "buyerAnchorDrops": 12
+  },
+  "principalDrops": 40000
+}

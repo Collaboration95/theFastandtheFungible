@@ -15,7 +15,7 @@ const descriptions = {
   'ledger/index.html': 'Inspect recorded XRPL Testnet transactions and re-check their validation on public servers. No real value.',
   'proof/index.html': 'Inspect transaction receipts, independently verify answers, and follow measured evidence and its limits.',
   'developers/index.html': 'Connect an MCP client, run the Testnet app, or verify receipts with versioned release packages.',
-  'builder-feedback/index.html': 'Read builder feedback and check the official RLUSD issuers’ live escrow permission on Testnet and mainnet, read-only.',
+  'builder-feedback/index.html': 'Read recorded unsigned RLUSD escrow refusals and check the issuers’ current AccountRoot permission, read-only.',
   'evolution/index.html': 'The September–October build archive. For the current finals story, follow Progress since SingHacks.',
   'project-map/index.html': 'Explore the architecture from source discovery through budget policy, payment and verified citations.',
   'slides/index.html': 'Archived October AI Tinkerers presentation: research, evidence, spending policy and payment.',

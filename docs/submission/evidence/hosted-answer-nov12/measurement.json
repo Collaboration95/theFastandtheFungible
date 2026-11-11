@@ -1,0 +1,69 @@
+{
+  "answers": [
+    {
+      "conclusion": "Matched articles supplied no citable answer \u00b7 nothing bought",
+      "lead": [],
+      "model": "extractive-fixture",
+      "provider": "fixture",
+      "version": 1
+    },
+    {
+      "conclusion": "The writer gets paid by publishing the article's key on the XRP Ledger: the payment waits in an escrow that only that key can open, so an agent cannot read the article unless the writer is paid. Before any money moves, the writer encrypts the article with a fresh key for that buyer and signs the price, a hash of the key and hashes of the content. The buyer's policy code then locks the price in an XRPL escrow with a PREIMAGE-SHA-256 condition and a CancelAfter deadline. To claim the money, the writer submits EscrowFinish with the fulfillment, which is the key. The buyer then decrypts the article and checks every signed promise before the agent may read it.",
+      "lead": [
+        {
+          "claim": {
+            "citations": [
+              {
+                "resourceId": "product-writer-paid",
+                "spanId": "p1",
+                "version": "v1"
+              }
+            ],
+            "id": "claim-1",
+            "stance": "SUPPORTS",
+            "text": "The writer gets paid by publishing the article's key on the XRP Ledger; payment waits in an escrow only that key can open, so an agent cannot read the article unless the writer is paid."
+          },
+          "text": "the writer gets paid by publishing the article's key on the XRP Ledger: the payment waits in an escrow that only that key can open, so an agent cannot read the article unless the writer is paid."
+        }
+      ],
+      "model": "deepseek-flash",
+      "provider": "deepseek",
+      "version": 2
+    }
+  ],
+  "at": "2026-11-12T00:29:20.964Z",
+  "done": "2026-11-12T00:29:04.051Z",
+  "labels": {
+    "decision": "fixture \u00b7 metadata-fixture",
+    "plan": "DeepSeek \u00b7 deepseek-flash",
+    "publisher": "local",
+    "research": "DeepSeek \u00b7 deepseek-flash",
+    "search": "keyword only (embeddings unavailable)",
+    "settlement": "XRPL TESTNET \u00b7 no real value"
+  },
+  "lead": "The writer gets paid by publishing the article's key on the XRP Ledger: the payment waits in an escrow that only that key can open, so an agent cannot read the article unless the writer is paid. Before any money moves, the writer encrypts the article with a fresh key for that buyer and signs the price, a hash of the key and hashes of the content. The buyer's policy code then locks the price in an XRPL escrow with a PREIMAGE-SHA-256 condition and a CancelAfter deadline. To claim the money, the writer submits EscrowFinish with the fulfillment, which is the key. The buyer then decrypts the article and checks every signed promise before the agent may read it.",
+  "ledgerAnchor": {
+    "account": "rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1",
+    "feeDrops": "12",
+    "head": "e396ce29fa95221ac4264787ad212c6c20d688741e586ab4be34b89f98760b5b",
+    "ledgerIndex": 22254709,
+    "network": "xrpl:1",
+    "runIdHash": "fe4e0748f761ea6a89ff93c40bae68217bc29897ceeabdf716cce6b85ec4ad1e",
+    "txHash": "EC4ABD3FBCAFC035E71D5BA74C01529D9AA52D45D9A228896A24BD8C44187EF6",
+    "version": "anchor-v1"
+  },
+  "phase": "DONE",
+  "purchases": 1,
+  "runId": "ffbaf57a-2445-4da5-aa93-e946043d9777",
+  "spentMinor": 40,
+  "start": "2026-11-12T00:27:58.254Z",
+  "startToDoneMs": 65797,
+  "leadSentence": "The writer gets paid by publishing the article's key on the XRP Ledger: the payment waits in an escrow that only that key can open, so an agent cannot read the article unless the writer is paid.",
+  "refunds": 0,
+  "testnetTxLinks": [
+    "https://testnet.xrpl.org/transactions/CB872E5FEF205F8E31BB522A57EF5CFCC7F815DE4770F29A9856EA1F724E04A6",
+    "https://testnet.xrpl.org/transactions/EC4ABD3FBCAFC035E71D5BA74C01529D9AA52D45D9A228896A24BD8C44187EF6",
+    "https://testnet.xrpl.org/transactions/EF66F5C9FD1DE68E8167189CF4FAF5DB94ABD3FA561C65F9D4DACA8828177930"
+  ],
+  "wheelVersion": "v1.1.1"
+}

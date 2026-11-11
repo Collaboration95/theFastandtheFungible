@@ -1,162 +1,62 @@
-# Two-minute pitch · Wed 18 Nov, 11:30 SGT, Swiss Pavilion
+# Pitch · Wed 18 Nov, 11:30 SGT, Swiss Pavilion
 
-Tenity's emails say both 2 and 3 minutes, so this script is **2:00** and the
-[3-minute variant](#three-minute-variant) adds three beats. Ask Tenity which it
-is (open item in the organiser brief). Spoken at about 140 words a minute.
+The organiser emails name both two and three minutes. This is a **3:00 rehearsal
+target**, not measured speaker timing; retain the 2:00 cut below until the slot is confirmed.
 
-The brief says to skip the problem statement and cover the solution, key
-developments, and what we achieved since SingHacks. So we open on the
-mechanism, not the problem. Slide numbers refer to
-[the deck](ResearchAgent-SFF-deck.pdf) (14 slides); each slide's speaker notes in
-[deck/index.html](deck/index.html) name the judging criteria it serves.
+## Before the timer
 
-**Rules for the speaker:**
-- Say "Testnet" in the first 20 seconds. Call the hosted app "our live Testnet
-  sandbox" (open 13–19 Nov); never say "live service", "production" or
-  "mainnet".
-- Every number below is on a slide with its source, and comes from
-  [facts.json](facts.json). Don't round up. Read this page rendered on GitHub:
-  the markers that keep numbers in sync are hidden there.
-- The deck has no placeholders: every number on it is filled from
-  [facts.json](facts.json), and its export fails if one is stale.
+Prepare a completed real run and its **own** receipts and EscrowFinish; keep the same
+browser profile for Show work’s plan comparison. Current presets: RLUSD escrow,
+x402 payment, and **How writers get paid** — “How does the writer get paid, and what
+stops the agent from reading the article and then refusing to pay?” Use the actual
+count, spend and links from the take. Do not borrow T3’s links for a new hosted take.
 
-## Script (~350 words)
+Tabs: completed run; its key check; judges’ corner; slide 6’s recorded unsigned verdicts;
+slide 12’s identity evidence; cached replay. Keep final MP4/PDF locally. No waiting for
+research on stage. Run the stage check with the actual final video and verify playback.
+Credentials are real on Testnet; hosted badge display requires observed configuration.
 
-**[0:00 · slide 1]**
-ResearchAgent is research with a wallet. Give it a question and a budget. It
-answers from free sources, then buys the articles it's missing, straight from
-the writer, over x402 on the XRP Ledger: at most one per round, up to three
-rounds, inside your budget. Everything you'll see runs on XRPL Testnet, and you
-can try it yourself in our live sandbox until 19 November.
+### Spoken master
 
-**[0:18 · slide 5]**
-Here's what's new. The writer only gets paid by publishing the article's key on
-the ledger. We lock payment in a native XRPL escrow whose condition is the hash
-of that key. Delivery and payment become one ledger event. No smart contract.
+| Time | Say verbatim | Show / action |
+|---|---|---|
+| **0:00–0:15** | “ResearchAgent is research with a wallet, on XRPL Testnet. Give it a question and a budget. The writer collects payment by revealing the article's key on the ledger. Paid on delivery. Proven on the ledger.” | Slide 1: tagline and sandbox URL. Testnet/no-real-value label visible. |
+| **0:15–0:43** | “Here it researched how writers get paid. It checked free sources, then policy bought an article within the budget. Payment went into native XRPL escrow. The writer published the key to collect. Now press ‘Check the key yourself’. This browser reads both transactions from a public node and hashes the key. It matches the escrow lock.” | Prepared A → B; click the real button, hold the computed match with both tx links. If result is unavailable, use the fallback wording below. |
+| **0:43–1:02** | “That proves the key matches, not that the article is good. We check its signed promises after decrypting. A broken promise can get a writer-signed refund; a real writer could refuse. A no-show needs an explicit cancellation after the deadline.” | Slide 5: short boundary line; optional recorded refund detail, labelled replay/fictional writer. |
+| **1:02–1:23** | “You can check a recorded run without spending a question. The judges' corner checks its signatures, passage hashes, audit chain and payments in your browser. It can run while new questions are paused. Read what passed and what wasn't checked; identity is a separate observation.” | C → Run the checks. Hold actual result; no scripted pass count. If corner not deployed, show recorded local acceptance with its label, not a purported live click. |
+| **1:23–1:46** | “We also ask the ledger before signing. Our unsigned RLUSD escrow probe returned ‘no permission’ from rippled on both Testnet and Mainnet. The matched TEST-SGD control succeeded on Testnet. Nothing was signed or submitted. Our demo token is a stand-in, and the browser sandbox pays in Testnet XRP.” | Slide 6: the recorded result table and ledger indexes. No new request needed on stage. |
+| **1:46–2:05** | “Since SingHacks, writer identity is on the ledger too. Three operator-run writers hold accepted Testnet Credentials; a Permissioned Domain lists the issuer we accept for identity display. That's our attestation, not KYC or quality. It gives no permission to spend.” | Slide 12 or E's genuine identity view, with operator label and domain link. |
+| **2:05–2:26** | “The sandbox uses live answers, rule-based buying. We measured live OpenAI decisions and kept the rules after failures within the hosted token allowance. Only policy code can pay. Each purchase shows its recorded reason; Show work compares the searches run with the plan confirmed here.” | Actual model chip, one settled purchase reason, then Show work → Trace. Say final sentence only with the matching current-run records visible. |
+| **2:26–2:44** | “Builders can add the same research tools to Claude Code over MCP, or run a published one-line demo. Two verifiers, written separately in TypeScript and Python, let anyone check exported receipts. We have no independent writers yet, and mainnet spending stays disabled.” | Slide 8, then slide 14; no terminal wait. |
+| **2:44–3:00** | “Start with the recorded proof, then ask your own question. ResearchAgent: paid on delivery, proven on the ledger. XRPL Testnet, no real value.” | Slide 14: two actions, URL to hosted app plus recorded replay fallback. Hold for final seconds. |
 
-**[0:36 · slide 6]**
-From the command line it works in a stablecoin-style token too, through XLS-85 token escrow. Official
-RLUSD is one issuer flag away, and that's our top piece of builder feedback.
 
-**[0:48 · slides 2–3]**
-At SingHacks we had a prototype: a language model proposed each purchase, a
-person approved every quote, and payment was simulated by default. Since then we merged <!--f:prs-->270<!--/f-->
-pull requests. Today a judge opens one link, or runs one line with no clone and
-no account. It buys, catches a broken promise, gets refunded, re-buys, anchors
-the answer and prints "result: pass" with six Testnet links.
+## Two-minute cut
 
-**[1:08 · slide 7]**
-Don't trust us, verify it. Two verifiers, written separately, one in Python with no
-Node, re-check every receipt against the ledger. Our ledger page lists
-<!--f:transactions-->61<!--/f--> historical Testnet transactions with live
-read-only checks.
+Use 0:00–1:46, omit the identity and model-experiment beats, then close: “Check the
+recorded proof, then ask your question. Paid on delivery. Proven on the ledger.
+XRPL Testnet, no real value.” Rehearse to two minutes; trim the MCP detail before
+rushing the key check, refund boundary or unsigned verdict.
 
-**[1:22 · slide 8]**
-The same package is an MCP server for Claude Code and a local app. And it knows
-when not to buy: ask it something its sources can't answer and it spends nothing,
-and the refusal is anchored on the ledger, so anyone can open the proof. On
-<!--f:offtopic_N-->ten<!--/f--> off-topic questions from a blind bank it bought
-nothing. The slide shows that bank with both numbers.
-[Evidence](../evidence/v5-heldout/README.md).
+## Fallback words
 
-**[1:36 · slide 9]**
-Our measured key-reveal purchase used <!--f:fee_drops-->435<!--/f--> drops in
-network fees, 12 from the buyer and 423 from the writer. Only policy code spends, and the blind banks ran on Testnet with
-<!--f:heldout_violations-->0<!--/f--> gate violations.
+Public node unavailable: “This is the recorded result of that browser check. We cannot
+re-check the public node right now.” Sandbox unavailable: “This is a recorded Testnet
+run.” Offline: “This replay shows the recorded run; the offline verifier checks the
+signed bundle. Public-ledger lookups are not running.” Never call unavailable a pass.
 
-**[1:48 · slide 14]**
-Every payment has a Testnet hash. ResearchAgent: paid on delivery, proven on
-the ledger.
+## Evidence to keep in Q&A
 
-**[2:00]**
-
-## Three-minute variant
-
-Add these beats at the marked points (about +125 words, ~2:55 in total).
-
-**After slide 6 (+0:20) · What the ledger can't do:** "Key reveal makes
-*delivery* atomic, not *quality*. If the article breaks its promise after the
-key is out, the refund is writer-signed. Our test writer cooperates; a real one
-could refuse. So the buyer gets a fraud proof anyone can check, and the writer's
-trust score drops. We label that on every refund."
-
-**After slide 8 (+0:20) · Writers:** "Writers join with one command. A Markdown
-folder becomes a Testnet writer with an XRPL credential in <!--f:writer_s-->33.9<!--/f-->
-seconds (J3, #389). Our demo writers are fictional or labelled team-authored,
-and we have no independent writers yet. That list stays empty until a real
-person consents."
-
-**On slide 12 (+0:15) · Honest limits:** "What's not done: payer keys in a
-KMS, RLUSD escrow until the issuer allows it, and KYB and sanctions screening.
-We wrote a mainnet checklist instead of claiming readiness."
-
-## Timing marks for rehearsal
-
-These are target cues, not measured timings. The current script is about 350
-words: two minutes needs about 175 words per minute before pauses. Rehearse
-with the cuts below to fit the slot.
-
-| Mark | Slide | Beat | Words |
-|---|---:|---|---:|
-| 0:00 | 1 | What it is, Testnet | 66 |
-| 0:18 | 5 | Key reveal | 42 |
-| 0:36 | 6 | Stablecoin escrow, RLUSD flag | 30 |
-| 0:48 | 2–3 | Since SingHacks, one link or one line | 66 |
-| 1:08 | 7 | Verify | 33 |
-| 1:22 | 8 | Refusal, blind negatives | 65 |
-| 1:36 | 9 | Fees, gates | 34 |
-| 1:48 | 14 | Close | 14 |
-
-Running out of time? Cut slide 6 (the stablecoin beat) first, then slide 9.
-Never cut the "Testnet" line on slide 1.
-
-## Speaker notes: numbers to say exactly
-
-- **`try` timing, if asked**: one cold run took <!--f:try_s-->84.2<!--/f--> s
-  with an empty npm cache and fresh faucet wallets, 7 Nov;
-  <!--f:try_misses-->2 of 4<!--/f--> cold attempts overran 90 s. Source:
-  `docs/evidence/round4-j2/`. It is not in the script any more: the live
-  sandbox is the first thing judges use.
-- **"<!--f:heldout_n-->sixteen<!--/f--> of <!--f:heldout_N-->twenty<!--/f-->"**:
-  <!--f:heldout_line-->v5 blind held-out: 16/20 bought and cited, 0/10 off-topic purchases (run once, 11 Nov, on XRPL Testnet: fixture research and decision models with answers written offline, team-authored writers)<!--/f-->.
-  The key fact leads the answer in <!--f:answers_it-->7/20<!--/f-->; 0 gate
-  violations. Say that the development sets are separate (v1
-  <!--f:dev_v1-->16/20<!--/f-->), because we tuned on them. Do not say "fifteen
-  of twenty": that was an earlier, tuned bank.
-- **"<!--f:prs-->270<!--/f--> pull requests"**: merged into `main` since
-  <!--f:since-->21 Sep<!--/f-->, counted at <!--f:sha-->bd52beff<!--/f--> on
-  <!--f:as_of-->11 Nov 2026<!--/f-->. Say "since SingHacks", not "in a week".
-- **SingHacks baseline**: in the event build (19–20 Sep, `e16435a3`) a language
-  model proposed each purchase and a person approved every quote
-  (`approvalPolicy: 'MANUAL_APPROVAL_REQUIRED'`); payment was a fixture by
-  default with optional Testnet settlement. The earlier prototype tag
-  `hackathon-baseline` (7 Sep) had no approval step. Today there is no
-  per-purchase approval: policy code buys within the budget after one plan confirmation.
-- **"<!--f:fee_drops-->435<!--/f--> drops"**: 12 for EscrowCreate, paid by the buyer, plus 423 for the
-  conditional EscrowFinish, paid by the writer, as we sign on Testnet. rippled's own minimum
-  is 360 (10 + 350). At an assumed S$2 per XRP that is S$0.00087,
-  a projection.
-- **"0 gate violations"**: the read-only gate audit on the v5 held-out and
-  off-topic banks, run on XRPL Testnet on 11 Nov
-  ([evidence](../evidence/v5-heldout/README.md)). The earlier 10-run, 568-observation
-  audit (fresh-question evaluation, 3 Nov) used simulated payments: do not quote it as
-  a Testnet result.
-- **The 93% number is not in the 2-minute script.** If asked, say it exactly:
-  "On 48 fresh synthetic questions, 93.15% of gross article spend bought a
-  requested fact retained in the final cited answer (95% CI 81.25–100.00%)."
-  Live decision models, fixture research, simulated payments. Not a production
-  result; the paired gain over the old policy (+3.08 pts, 0.00–9.43) is not
-  significant. See [qa-prep.md](qa-prep.md#19-does-it-actually-buy-the-right-things).
-
-## If a live demo is allowed
-
-Use the live sandbox (https://ra-front-651013803640.asia-southeast1.run.app):
-ask "What does an x402 402 Payment Required response contain?" (the first
-preset) with a S$2 budget before you start speaking, so the payment settles
-under the first beats; it buys one article in about 20 seconds. Backup: run
-`npx -y <release tgz> try --testnet` in a terminal (about 84 s cold; a rerun on
-the same wallets reuses the run and prints the same six links; say it is a
-rerun). Fallback with no network: the
-[browser replay](https://collaboration95.github.io/theFastandtheFungible/demo/)
-from a cached tab. It is a replay of a recorded Testnet run, and the banner
-says so.
+- [One useful paid answer](evidence/hosted-answer-nov12/README.md): one hosted DEPLOY-3 run, live final
+  answer, rule-based buying, initial fixture draft and keyword fallback; S$0.40, 65.8 s Start→Done
+  excluding planning/modal; no refunds; model cost unmeasured.
+- Fees: 12 drops paid by the buyer to create, 423 by the writer to finish; anchor extra.
+- [v5](../evidence/v5-heldout/README.md): <!--f:heldout-->16/20<!--/f--> bought/cited,
+  key fact leads <!--f:answers_it-->7/20<!--/f-->, fixture research and decision models,
+  answers written offline on Testnet. Not live quality evidence.
+- [Browser key proof](../evidence/key-on-ledger/README.md),
+  [recorded-run verification](../evidence/judges-corner/README.md),
+  [unsigned refusal / key-free writer guard](../evidence/dry-run-nov12/README.md),
+  [operator identity](../evidence/writer-credentials-nov12/README.md).
+- No independent writers, customers, pilots or revenue. Initial-market hypothesis:
+  XRPL/x402 integrators buying practitioner implementation notes through coding agents.

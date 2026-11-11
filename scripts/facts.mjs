@@ -29,7 +29,7 @@ const DECK = 'docs/submission/deck/index.html'
 const REPO = 'https://github.com/Collaboration95/theFastandtheFungible'
 // Owner: paste the unlisted demo-video URL here once it is uploaded, then run
 // `node scripts/facts.mjs && node docs/submission/deck/export.mjs`. Until then the
-// deck says the video is linked in the submission form; it never shows a placeholder.
+// deck says the owner video is pending; it never shows a placeholder.
 const VIDEO_URL = ''
 // Owner decision A3: change this sentence when the packages are published.
 const REGISTRY = 'GitHub Releases; not yet on npm, PyPI or the MCP Registry'
@@ -102,7 +102,27 @@ export function build() {
   const sha = progress.source_sha.slice(0, 8)
   const counted = `counted at ${sha} on ${day(progress.as_of)}`
 
+  const PAID = 'docs/submission/evidence/hosted-answer-nov12/summary.json'
+  const paid = json(PAID)
+  const IDENTITY = 'docs/evidence/writer-credentials-nov12/ledger.json'
+  const identity = json(IDENTITY)
   const facts = {
+    identity_writers: fact(identity.writers.length, IDENTITY, 'operator writer Credentials in the validated Testnet identity snapshot; identity only'),
+    identity_domains: fact(identity.domain.validated && identity.domain.index === identity.domainId ? 1 : 0, IDENTITY, 'retained validated Testnet Permissioned Domain, identity display only'),
+    identity_ledger: fact(identity.ledgerIndex, IDENTITY, 'validated Testnet identity snapshot ledger; 11 Nov 2026'),
+    paid_seconds: fact((paid.startToDoneMs / 1000).toFixed(1), PAID, 'HOSTED-12 Start to Done seconds; excludes pre-admission planning and five-second modal'),
+    paid_spend: fact((paid.spentMinor / 100).toFixed(2), PAID, 'HOSTED-12 nominal S$ article price; fixed Testnet demo rate, not FX'),
+    paid_principal: fact(paid.principalDrops.toLocaleString('en-US'), PAID, 'HOSTED-12 Testnet XRP principal in drops'),
+    paid_articles: fact(paid.bought.length, PAID, 'HOSTED-12 purchased articles'),
+    paid_create: fact(paid.fees.buyerCreateDrops, 'docs/submission/evidence/hosted-answer-nov12/ledger.json', 'HOSTED-12 buyer create fee, independently re-read on Testnet'),
+    paid_finish: fact(paid.fees.writerFinishDrops, 'docs/submission/evidence/hosted-answer-nov12/ledger.json', 'HOSTED-12 writer finish fee, independently re-read on Testnet'),
+    paid_anchor: fact(paid.fees.buyerAnchorDrops, 'docs/submission/evidence/hosted-answer-nov12/ledger.json', 'HOSTED-12 buyer anchor fee, independently re-read on Testnet'),
+    paid_passages: fact(paid.evidence.length, PAID, 'HOSTED-12 delivered passages'),
+    paid_before: fact(paid.freeDraft.openGaps.length, PAID, 'HOSTED-12 free draft recorded open gaps; no independent quality score'),
+    paid_after: fact(paid.finalAnswer.openGaps.length, PAID, 'HOSTED-12 final recorded open gaps; no independent quality score'),
+    paid_model_cost: fact('unmeasured', PAID, paid.modelCostNote),
+    simulate_create: fact('10', 'docs/evidence/dry-run-nov12/result.json', 'unsigned rippled create fee autofill, no fee charged'),
+    simulate_finish: fact('350', 'docs/evidence/dry-run-nov12/result.json', 'unsigned dummy finish fee autofill, tecNO_TARGET; not a successful delivery'),
     // Dates and provenance
     as_of: fact(`${day(progress.as_of)} ${progress.as_of.slice(0, 4)}`, P, 'day the counts below were taken (SGT)'),
     sha: fact(sha, P, 'main commit the counts were taken at'),
@@ -160,7 +180,7 @@ export function build() {
     // Same line as `node scripts/install-snippets.mjs --tag <release> --try` (tests/deck.test.ts checks it).
     try_line: `npx -y ${REPO}/releases/download/${v('release')}/researchagent-mcp-${v('release').slice(1)}.tgz try --testnet`,
     registry: REGISTRY,
-    video: VIDEO_URL || 'linked in the submission form',
+    video: VIDEO_URL || 'Owner video pending (issue #265)',
   }
   for (const [key, value] of Object.entries(copy)) facts[key] = { value, source: 'scripts/facts.mjs', definition: 'canonical sentence built from the facts above' }
   return {

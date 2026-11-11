@@ -5,16 +5,16 @@
   </picture>
 </p>
 
-<h3 align="center">Research with a wallet.</h3>
+<h3 align="center">Paid on delivery. Proven on the ledger.</h3>
 
 <p align="center">
-  ResearchAgent answers from free sources first, then pays writers for the articles it is still missing,
-  over x402 on the XRP Ledger, inside a budget you set. The writer is paid only by publishing the
-  article's key on the ledger.
+  ResearchAgent is research with a wallet. Policy can buy articles within your budget over x402
+  on XRPL Testnet. Writers collect by publishing article keys; your browser checks the key
+  against its escrow lock on the public ledger.
 </p>
 
 <p align="center">
-  <a href="https://ra-front-651013803640.asia-southeast1.run.app"><b>Try it live →</b></a>
+  <a href="https://ra-front-651013803640.asia-southeast1.run.app"><b>Check a recorded run — no question used →</b></a>
   &nbsp;·&nbsp;
   <a href="https://collaboration95.github.io/theFastandtheFungible/demo/">Watch a recorded run</a>
   &nbsp;·&nbsp;
@@ -27,9 +27,11 @@
   <a href="docs/x402-xrpl.md"><img alt="XRPL Testnet" src="https://img.shields.io/badge/XRPL-Testnet-24211E?style=flat-square"></a>
 </p>
 
-The live demo is open **13–19 Nov 2026** on XRPL Testnet with no real value and nothing to
-install. The recorded run works any time. Or run the whole money path yourself, with no clone and
-no account (Node ≥ 22.13):
+**Verify a recorded run without asking a question** in the judges’ corner. A payment’s
+**Check the key yourself** recomputes `sha256(key) = lock`. A match proves key reveal,
+not quality or identity; pending/unavailable is not a pass.
+
+Shared Testnet demo: **13–19 Nov 2026**, no real value. Or run locally (Node ≥ 22.13):
 
 ```sh
 REL=https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1
@@ -41,28 +43,41 @@ npx -y $REL/researchagent-mcp-1.1.1.tgz try --testnet
 </p>
 <p align="center"><sub>The live demo, 11 Nov 2026 · XRPL Testnet · live answers, rule-based buying · team-authored writers · no real value · <a href="docs/evidence/hosted-export-nov11/README.md">its five transactions and receipts</a></sub></p>
 
+## One useful paid answer · hosted Testnet run
+
+**“How does the writer get paid, and what stops the agent from reading the article and then refusing to pay?”**
+
+| Free evidence → missing fact → paid evidence → final answer | HOSTED-12, 12 Nov 2026 |
+|---|---|
+| Free draft | No citable answer; <!--f:paid_before-->2<!--/f--> recorded open gaps. |
+| Missing fact | What binds key publication to payment? |
+| Bought passage | [Team-authored passage p3](data/corpus/v2/articles/team-xrpl-explainers/product-writer-paid.json): validated EscrowFinish publishes the key and releases payment together. |
+| Final answer | The writer publishes the key to collect escrow payment; <!--f:paid_after-->0<!--/f--> recorded open gaps. This is the run’s answer record, not independent quality scoring. |
+| Same-run cost and time | <!--f:paid_articles-->1<!--/f--> article, <!--f:paid_passages-->4<!--/f--> passages; S$<!--f:paid_spend-->0.40<!--/f--> = <!--f:paid_principal-->40,000<!--/f--> Testnet drops at the fixed demo rate, not FX; no refunds. <!--f:paid_seconds-->65.8<!--/f--> s Start→Done, excluding planning and the five-second confirmation modal. Buyer create <!--f:paid_create-->12<!--/f--> drops; writer finish <!--f:paid_finish-->423<!--/f-->; buyer anchor another <!--f:paid_anchor-->12<!--/f-->. Model cost: **<!--f:paid_model_cost-->unmeasured<!--/f-->** (usage not retained). |
+
+One hosted run on 12 Nov, DEPLOY-3 · live DeepSeek plan/final answer, rule-based buying ·
+initial draft fixture · keyword fallback · team-authored writer · XRPL Testnet XRP, no real value.
+No new held-out or general quality claim. [Evidence and receipts](docs/submission/evidence/hosted-answer-nov12/README.md) ·
+[lock](https://testnet.xrpl.org/transactions/CB872E5FEF205F8E31BB522A57EF5CFCC7F815DE4770F29A9856EA1F724E04A6) ·
+[key/payment](https://testnet.xrpl.org/transactions/EF66F5C9FD1DE68E8167189CF4FAF5DB94ABD3FA561C65F9D4DACA8828177930) ·
+[anchor](https://testnet.xrpl.org/transactions/EC4ABD3FBCAFC035E71D5BA74C01529D9AA52D45D9A228896A24BD8C44187EF6).
+
 ## What it does
 
-- **Ask with a budget.** From the browser, Claude Code or Codex over MCP, TypeScript or Python,
-  or the Mac app. Every question carries its own spending limit.
-- **Free sources first, then buy only what fills the gap.** Writers search their own articles and
-  sign promises about what each one contains. A decision model (or fixed rules, as in the live
-  demo), weighted by each writer's trust score, judges which paid article is worth it: at most
-  one per round, up to three rounds. Only policy code can pay, within your budget.
-- **The writer is paid by revealing the key.** Policy code locks payment in a native XRPL escrow
-  that only the article's key can open. Publishing the key on the ledger is what pays the writer,
-  so delivery and payment are one event.
-- **Every claim has a receipt.** The answer cites the exact passages it bought. A broken promise
-  is refunded, each answer is anchored on the ledger, and anyone can re-check the receipts offline.
+- **Ask with a budget** in the browser, over MCP, through SDKs or the Mac app.
+- **Free sources first; policy judges whether to buy.** Signed writer promises and trust
+  inform selection. Only policy code spends: one article per round, up to three rounds.
+- **Check delivery and payment receipts.** The answer cites delivered passages. A broken
+  promise can receive a writer-signed refund; a real writer could refuse. No-show recovery
+  requires validated EscrowCancel after the deadline. Completed Testnet answers can be
+  anchored; claim anchoring only after validation.
 
 ## How it works
 
-![Key-reveal escrow in five steps: policy code locks payment to the hash of the article key; the writer publishes the key in EscrowFinish and is paid; the buyer decrypts and checks every signed promise; a broken promise is refunded by the writer; the answer is anchored on the ledger](docs/media/key-reveal.svg)
+![Key-reveal escrow: policy locks payment; writer publishes the key to collect; buyer checks signed promises and cites delivered passages](docs/media/key-reveal.svg)
 
-Key reveal makes *delivery* atomic, not quality: if an article breaks its promise after the key is
-out, the refund is a payment the writer signs. Our fixture writer cooperates; a real one could
-refuse, so the buyer keeps a fraud proof anyone can check and the writer's trust score drops.
-[Mechanism](docs/key-reveal-escrow.md) · [architecture](docs/capabilities.md#how-a-run-works).
+Key reveal proves delivery, not quality. [Mechanism and refund limits](docs/key-reveal-escrow.md) ·
+[architecture](docs/capabilities.md#how-a-run-works).
 
 ### Hard guarantees
 
@@ -78,8 +93,7 @@ Every gate has regression tests and a [read-only audit rule](scripts/gate-audit.
 
 ## Use it from your agent
 
-Give Claude Code a research wallet on XRPL Testnet. The caps live in the environment, where the
-calling model cannot raise them:
+Give Claude Code a Testnet research wallet. The model cannot raise environment caps:
 
 ```sh
 claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz --testnet
@@ -92,14 +106,15 @@ npm i https://github.com/Collaboration95/theFastandtheFungible/releases/download
 pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-1.1.1-py3-none-any.whl
 ```
 
-- **Agent hires agent.** Another agent pays ResearchAgent over x402, and cited writers get
-  royalties: append `--hire` to the `try --testnet` line · [how](docs/hire.md).
-- **Writers.** A Markdown folder becomes a payable Testnet writer with an XRPL Credential in two
-  commands · [publishing](docs/publishing.md).
-- **Everything else:** Codex and Claude Desktop, TEST-SGD escrow, the zero-clone web app, the Mac
-  app and a full checkout are in the [install guide](docs/install.md).
+- **Agent hires agent.** Add `--hire`: Testnet service fee and writer royalties · [how](docs/hire.md).
+- **Writers.** Publish Markdown notes on Testnet · [publishing](docs/publishing.md).
+- [Install guide](docs/install.md): Codex, Claude Desktop, TEST-SGD, web and Mac apps.
 
 ## Verify it yourself
+
+[Open the judges’ corner](https://ra-front-651013803640.asia-southeast1.run.app) →
+**Check our work · recorded run and ledger** → **Run the checks**. Read pass/skip groups
+separately. The page, receipt file and public node must be reachable.
 
 <details>
 <summary>Six Testnet transactions from one recorded run, and how to re-check them</summary>
@@ -138,33 +153,29 @@ shared conformance cases ([receipt format](docs/receipt-spec.md)).
 | Blind held-out judge questions (<!--f:heldout_bank-->v5<!--/f-->) | <!--f:heldout-->16/20<!--/f--> bought and cited; <!--f:offtopic-->0/10<!--/f--> off-topic purchases; <!--f:heldout_violations-->0<!--/f--> gate violations | run once on <!--f:heldout_on-->11 Nov<!--/f--> on XRPL Testnet; fixture research and decision models, answers written offline (the hosted demo writes live with DeepSeek); team-authored writers |
 | One line to a verified purchase | <!--f:try_s-->84.2<!--/f--> s cold; <!--f:try_misses-->2 of 4<!--/f--> cold runs overran 90 s | one Mac, empty npm cache, 7 Nov |
 | Network fees per key-reveal purchase | <!--f:fee_drops-->435<!--/f--> drops: <!--f:fee_create-->12<!--/f--> paid by the buyer to lock, <!--f:fee_finish-->423<!--/f--> by the writer to reveal | XRPL Testnet, measured as we sign |
-| Progress since SingHacks | <!--f:prs-->270<!--/f--> PRs merged since <!--f:since-->21 Sep<!--/f-->; <!--f:releases-->15<!--/f--> releases | counted at <!--f:sha-->bd52beff<!--/f--> on <!--f:as_of-->11 Nov 2026<!--/f--> |
+| Progress since SingHacks | <!--f:prs-->299<!--/f--> PRs merged since <!--f:since-->21 Sep<!--/f-->; <!--f:releases-->15<!--/f--> releases | counted at <!--f:sha-->8c6b9018<!--/f--> on <!--f:as_of-->12 Nov 2026<!--/f--> |
 
-Development banks we tuned on, the synthetic-corpus scorecard, cost and latency:
-[docs/numbers.md](docs/numbers.md). What shipped when, with the misses we kept:
-[progress page](https://collaboration95.github.io/theFastandtheFungible/progress/).
+[Numbers and limitations](docs/numbers.md) · [Progress and retained misses](https://collaboration95.github.io/theFastandtheFungible/progress/).
 
 ## Builder feedback
 
 <!--f:feedback_line-->7 ranked findings with runnable repros · 35 numbered findings (B01–B35) · 15 submissions on 4–5 Sep · 8 upstream drafts, 0 filed<!--/f-->.
-The top three: the RLUSD issuer lacks the flag that token escrow needs; an issued amount must be
-checked as the delivered amount; a signed IOU quote overflowed the 1 KiB Memo limit.
+Top finding: [unsigned rippled probes](docs/evidence/dry-run-nov12/README.md) returned
+`tecNO_PERMISSION` for RLUSD escrow on Testnet and Mainnet; TEST-SGD control `tesSUCCESS`
+on Testnet. Nothing signed or submitted.
 [Read it in 90 seconds](docs/BUILDER-FEEDBACK.md) · [mainnet checklist](docs/BUILDER-FEEDBACK.md#mainnet-readiness-checklist).
 
 ## Status and limits
 
-- **XRPL Testnet only, no real value.** Mainnet is disabled in code; readiness is a
-  [checklist](docs/BUILDER-FEEDBACK.md#mainnet-readiness-checklist), not a claim.
-- **Writers.** The demo's research writers are fictional. Two team-authored writers (our own XRPL
-  build notes and sourced explainers) are labelled as ours and are not independent. No independent
-  writers yet: consenting writers will be listed as **real person · Testnet · no real value**
-  ([list](docs/evidence/real-writers.json)).
-- **New writers get one labelled probe.** A new writer's best matching article may get one probe
-  purchase of up to S$0.30 inside your budget, shown as *probe purchase · new writer*.
+- **XRPL Testnet only, no real value.** Mainnet signing is disabled. [Readiness gaps](docs/BUILDER-FEEDBACK.md#mainnet-readiness-checklist).
+- **Writers.** Two team-authored writers, Build notes and XRPL explainers, supply paid notes;
+  Open Records supplies free records. These three team writers hold accepted XRPL Testnet
+  Credentials from our operator issuer; a Testnet Permissioned Domain lists accepted issuers;
+  identity only, not KYC or quality. Fictional writers stay unverified; hosted badges require configuration. **No independent writers, customers,
+  pilots or revenue yet.** Consenting writers will be labelled **real person · Testnet · no real value**. ([Identity evidence](docs/evidence/writer-credentials-nov12/README.md)).
+- **New writers get one labelled probe.** Policy may buy one matching article up to S$0.30, inside your budget (*probe purchase · new writer*).
 - **TEST-SGD stands in for RLUSD** in token escrow (CLI and evidence; the live demo pays in Testnet XRP); official RLUSD payments work on Testnet.
-- **Live demo.** One shared Testnet payer, per-visitor caps, owner controls off. Answers are
-  written live by DeepSeek; purchases are decided by the rule-based model, as the header chip says,
-  and an answer says so if it falls back to a labelled fixture. Open 13–19 Nov 2026.
+- **Live demo.** Live answers, rule-based buying; fixture fallbacks labelled. One shared payer, visitor caps, owner controls off.
 - **Packages** are on GitHub Releases, not yet on npm, PyPI or the MCP Registry. The Mac app is an
   unsigned DMG.
 - `theFastandtheFungible` is the team and repository name; the product is **ResearchAgent**.
