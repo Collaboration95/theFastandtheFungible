@@ -32,9 +32,10 @@ const wire = (path: string, method = 'GET', headers: Record<string,string> = {},
 })
 const results = []
 try {
+ for (let repetition=1;repetition<=2;repetition++) {
  const status=await wire('/api/demo/status')
  const visitor={Cookie:status.headers['set-cookie']![0].split(';')[0],Origin:'https://demo.example','X-CSRF-Token':status.data.csrfToken}
- for (let repetition=1;repetition<=2;repetition++) for (const q of TESTNET_QUESTIONS) {
+ for (const q of TESTNET_QUESTIONS) {
   // Preserve the local IP rate limit, including scope admission, rather than raising it.
   if(results.length) await new Promise(r=>setTimeout(r,22000))
   const start=performance.now(),key=`qual-${q.id}-${repetition}`,headers={...visitor,'Idempotency-Key':key}
@@ -55,6 +56,7 @@ try {
   if(results.length===0){const exported=await wire(`/runs/${runId}/receipts.json`,'GET',visitor);writeFileSync(process.argv[2].replace(/\.json$/,'.receipts.json'),JSON.stringify(exported.data,null,2)+'\n')}
   const row={id:q.id,repetition,question:q.text,phase:run.phase,planMs,askMs:performance.now()-start,scopeLabel:scoped.data.label,plan:run.checkpoint.plan,requirements:run.checkpoint.requirements,labels:run.labels,bought:run.intents.filter(i=>['VERIFIED','REFUNDED'].includes(i.status)).map(i=>i.resourceId),spentMinor:run.spentMinor,lead:answer?.lead?.map(l=>l.text),conclusion:answer?.conclusion,openGaps:answer?.openGaps,facts:factsSummary(run),fallbacks:run.events.filter(e=>e.type==='MODEL_FALLBACK').map(e=>e.data)}
   results.push(row);writeFileSync(process.argv[2],JSON.stringify(results,null,2)+'\n');console.log(q.id,repetition,row.phase,row.bought.join(','),row.spentMinor,Math.round(row.askMs))
+ }
  }
 } finally {
  server.closeAllConnections();await new Promise<void>(r=>server.close(()=>r()));await api.close()

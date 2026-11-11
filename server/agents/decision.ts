@@ -88,7 +88,8 @@ export const textOverlap = (gap: string, text: string) => {
 }
 export const gapOverlap = (gap: string, candidate: PublicCandidate) => {
   const text = `${candidate.title} ${candidate.preview} ${candidate.facets.join(' ')}`
-  const semantic = /\b(?:XRPL|XRP|x402|RLUSD|escrow\w*|credentials?|trustset|DID(?:Set|Delete)?|AMM\w*|prompt.inject\w*)\b/i.test(gap)
+  // Product mechanics need the same word-form matching as protocol questions (model/models, buy/spend).
+  const semantic = /\b(?:ResearchAgent|XRPL|XRP|x402|RLUSD|escrow\w*|credentials?|trustset|DID(?:Set|Delete)?|AMM\w*|prompt.inject\w*)\b/i.test(gap)
     ? Math.min(1, topicOverlap(gap, text) * topicWords(gap).length / 2) : 0
   return Math.max(textOverlap(gap, text), semantic)
 }
@@ -185,8 +186,11 @@ function repeatsPurchases(provider: DecisionProvider, input: Pick<DecideInput, '
   // QUAL: once the bought titles and topics name a member for every verb the fact asks for (EscrowFinish and EscrowCancel
   // for "release or return"), any further article only repeats them.
   const groups = askedKind(input.gap) === 'transaction' ? actionGroups(input.gap) : []
-  const boughtMembers = new Set(input.verifiedPurchases.flatMap(bought => identifiersIn(`${bought.title} ${bought.facets.join(' ')}`).map(memberOf)))
-  if (groups.length && groups.every(group => group.some(m => boughtMembers.has(m)))) return true
+  const gapFamilies = subjectFamilies(input.gap)
+  // A create in another family is not evidence of this family's create. Ambiguous multi-family facts use the checks below.
+  const boughtMembers = new Set(input.verifiedPurchases.flatMap(bought => identifiersIn(`${bought.title} ${bought.facets.join(' ')}`)
+    .filter(id => gapFamilies.length === 1 && identifierFamily(id) === gapFamilies[0][0]).map(memberOf)))
+  if (groups.length && boughtMembers.size && groups.every(group => group.some(m => boughtMembers.has(m)))) return true
   const named = new Set(input.verifiedPurchases.flatMap(bought => [...metadataWords(bought)]))
   const own = metadataWords(candidate)
   // QUAL: a fact's verbs name the members it wants ("release or return" → finish, cancel), as its own words do.

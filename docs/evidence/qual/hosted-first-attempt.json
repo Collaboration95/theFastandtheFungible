@@ -1,0 +1,374 @@
+[
+  {
+    "id": "XRPL2",
+    "repetition": 1,
+    "question": "What does an x402 402 response contain, and can my agent pay it with XRP on Testnet?",
+    "phase": "DONE",
+    "planMs": 1701.8256659999997,
+    "askMs": 3908.6716249999995,
+    "scopeLabel": "DeepSeek · deepseek-flash",
+    "plan": {
+      "restatement": "What an x402 402 response contains and whether an agent can pay it with XRP on Testnet.",
+      "subqueries": [
+        "x402 402 response contents payment requirements",
+        "x402 XRP payment support Testnet",
+        "x402 protocol payment header scheme network asset"
+      ]
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "What fields an x402 402 response contains, including payment requirements"
+      },
+      {
+        "id": "r2",
+        "text": "Whether x402 supports paying with XRP, and on which networks including Testnet"
+      }
+    ],
+    "labels": {
+      "research": "DeepSeek · deepseek-flash",
+      "decision": "fixture · metadata-fixture",
+      "publisher": "local",
+      "settlement": "SIMULATED SGD · no real funds",
+      "search": "keyword only (embeddings unavailable)",
+      "plan": "DeepSeek · deepseek-flash"
+    },
+    "bought": [
+      "product-x402-response"
+    ],
+    "spentMinor": 40,
+    "lead": [
+      "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
+      "An agent can pay a 402 in XRP on Testnet, network xrpl:1."
+    ],
+    "conclusion": "An HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. An agent can pay a 402 in XRP on Testnet, network xrpl:1. The XRPL exact scheme quotes a native XRP Payment in integer drops, and ResearchAgent's writers accept exactly that. A successful HTTP response can include PAYMENT-RESPONSE with settlement details.",
+    "openGaps": [],
+    "facts": {
+      "answered": 2,
+      "total": 2,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "What fields an x402 402 response contains, including payment requirements",
+          "status": "supported"
+        },
+        {
+          "id": "r2",
+          "text": "Whether x402 supports paying with XRP, and on which networks including Testnet",
+          "status": "supported"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "no-eligible-purchase",
+      "line": "2 of 2 answered · no source worth buying for the rest",
+      "judge": "fixture · metadata-fixture"
+    },
+    "fallbacks": []
+  },
+  {
+    "id": "XRPL1",
+    "repetition": 1,
+    "question": "Can an XRPL escrow hold RLUSD today, and what must the issuer enable before a buyer can lock it?",
+    "phase": "DONE",
+    "planMs": 1751.1269170000014,
+    "askMs": 4716.518125000002,
+    "scopeLabel": "DeepSeek · deepseek-flash",
+    "plan": {
+      "restatement": "Whether XRPL escrows can hold RLUSD today and what the issuer must enable before a buyer can lock it.",
+      "subqueries": [
+        "XRPL escrow RLUSD token support",
+        "XRPL escrow token escrow amendment issuer enable",
+        "RLUSD escrow XRPL requirements"
+      ]
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "Whether XRPL escrow can hold RLUSD today, with date"
+      },
+      {
+        "id": "r2",
+        "text": "What the issuer must enable before a buyer can lock RLUSD in escrow"
+      },
+      {
+        "id": "r3",
+        "text": "Any XRPL amendment or feature governing token escrow for RLUSD"
+      }
+    ],
+    "labels": {
+      "research": "DeepSeek · deepseek-flash",
+      "decision": "fixture · metadata-fixture",
+      "publisher": "local",
+      "settlement": "SIMULATED SGD · no real funds",
+      "search": "keyword only (embeddings unavailable)",
+      "plan": "DeepSeek · deepseek-flash"
+    },
+    "bought": [
+      "team-rlusd"
+    ],
+    "spentMinor": 40,
+    "lead": [
+      "Not today: an XRPL escrow can hold official RLUSD only after its issuer enables AllowTrustLineLocking, and the RLUSD issuer had not enabled it on Mainnet or Testnet when the team checked on 11 November 2026."
+    ],
+    "conclusion": "Not today: an XRPL escrow can hold official RLUSD only after its issuer enables AllowTrustLineLocking, and the RLUSD issuer had not enabled it on Mainnet or Testnet when the team checked on 11 November 2026. The TokenEscrow amendment (XLS-85), which lets an escrow hold issued tokens, is already enabled on both networks, so the issuer flag is the remaining blocker. Only the issuer can set that flag, with an AccountSet transaction; a buyer or writer cannot set it for them. The issuer is separate from buyer and writer. Policy rejects issuer-as-party, missing permission, nonzero transfer fees, frozen/unauthorized lines, insufficient balance or destination limit before create signing. Cancellation checks the buyer's returned balance delta.",
+    "openGaps": [],
+    "facts": {
+      "answered": 3,
+      "total": 3,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "Whether XRPL escrow can hold RLUSD today, with date",
+          "status": "supported"
+        },
+        {
+          "id": "r2",
+          "text": "What the issuer must enable before a buyer can lock RLUSD in escrow",
+          "status": "supported"
+        },
+        {
+          "id": "r3",
+          "text": "Any XRPL amendment or feature governing token escrow for RLUSD",
+          "status": "supported"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "complete",
+      "line": "3 of 3 answered",
+      "judge": "fixture · metadata-fixture"
+    },
+    "fallbacks": []
+  },
+  {
+    "id": "XRPL3",
+    "repetition": 1,
+    "question": "How much XRP reserve does an agent wallet need, and how much does each open escrow or trust line add?",
+    "phase": "DONE",
+    "planMs": 1788.895666999997,
+    "askMs": 4116.184084,
+    "scopeLabel": "DeepSeek · deepseek-flash",
+    "plan": {
+      "restatement": "XRPL base reserve and owner reserve requirements for an agent wallet, including how much each open escrow or trust line adds.",
+      "subqueries": [
+        "XRPL base reserve and owner reserve requirements",
+        "XRPL escrow owner reserve cost",
+        "XRPL trust line owner reserve cost"
+      ]
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "XRPL base account reserve amount for a wallet, with current figures"
+      },
+      {
+        "id": "r2",
+        "text": "XRPL owner reserve increment per object, with current figures"
+      },
+      {
+        "id": "r3",
+        "text": "Whether an open escrow adds to the owner reserve and by how much"
+      },
+      {
+        "id": "r4",
+        "text": "Whether a trust line adds to the owner reserve and by how much"
+      }
+    ],
+    "labels": {
+      "research": "DeepSeek · deepseek-flash",
+      "decision": "fixture · metadata-fixture",
+      "publisher": "local",
+      "settlement": "SIMULATED SGD · no real funds",
+      "search": "keyword only (embeddings unavailable)",
+      "plan": "DeepSeek · deepseek-flash"
+    },
+    "bought": [
+      "xrpl-reserves"
+    ],
+    "spentMinor": 40,
+    "lead": [
+      "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings."
+    ],
+    "conclusion": "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings. The reserve is held separately from the money the wallet intends to send.",
+    "openGaps": [],
+    "facts": {
+      "answered": 4,
+      "total": 4,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "XRPL base account reserve amount for a wallet, with current figures",
+          "status": "supported"
+        },
+        {
+          "id": "r2",
+          "text": "XRPL owner reserve increment per object, with current figures",
+          "status": "supported"
+        },
+        {
+          "id": "r3",
+          "text": "Whether an open escrow adds to the owner reserve and by how much",
+          "status": "supported"
+        },
+        {
+          "id": "r4",
+          "text": "Whether a trust line adds to the owner reserve and by how much",
+          "status": "supported"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "complete",
+      "line": "4 of 4 answered",
+      "judge": "fixture · metadata-fixture"
+    },
+    "fallbacks": [
+      {
+        "fallback": true,
+        "reason": "guard"
+      }
+    ]
+  },
+  {
+    "id": "XRPL2",
+    "repetition": 2,
+    "question": "What does an x402 402 response contain, and can my agent pay it with XRP on Testnet?",
+    "phase": "DONE",
+    "planMs": 1518.9057089999988,
+    "askMs": 3820.722834,
+    "scopeLabel": "DeepSeek · deepseek-flash",
+    "plan": {
+      "restatement": "What an x402 402 response contains and whether an agent can pay it with XRP on Testnet.",
+      "subqueries": [
+        "x402 402 response contents payment requirements",
+        "x402 XRP payment support Testnet",
+        "x402 protocol payment header scheme network asset"
+      ]
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "What fields an x402 402 response contains, including payment requirements"
+      },
+      {
+        "id": "r2",
+        "text": "Whether x402 supports paying with XRP, and on which networks including Testnet"
+      }
+    ],
+    "labels": {
+      "research": "DeepSeek · deepseek-flash",
+      "decision": "fixture · metadata-fixture",
+      "publisher": "local",
+      "settlement": "SIMULATED SGD · no real funds",
+      "search": "keyword only (embeddings unavailable)",
+      "plan": "DeepSeek · deepseek-flash"
+    },
+    "bought": [
+      "product-x402-response"
+    ],
+    "spentMinor": 40,
+    "lead": [
+      "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
+      "An agent can pay a 402 in XRP on Testnet, network xrpl:1."
+    ],
+    "conclusion": "An HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. An agent can pay a 402 in XRP on Testnet, network xrpl:1. The XRPL exact scheme quotes a native XRP Payment in integer drops, and ResearchAgent's writers accept exactly that. A successful HTTP response can include PAYMENT-RESPONSE with settlement details.",
+    "openGaps": [],
+    "facts": {
+      "answered": 2,
+      "total": 2,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "What fields an x402 402 response contains, including payment requirements",
+          "status": "supported"
+        },
+        {
+          "id": "r2",
+          "text": "Whether x402 supports paying with XRP, and on which networks including Testnet",
+          "status": "supported"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "no-eligible-purchase",
+      "line": "2 of 2 answered · no source worth buying for the rest",
+      "judge": "fixture · metadata-fixture"
+    },
+    "fallbacks": []
+  },
+  {
+    "id": "XRPL1",
+    "repetition": 2,
+    "question": "Can an XRPL escrow hold RLUSD today, and what must the issuer enable before a buyer can lock it?",
+    "phase": "DONE",
+    "planMs": 1465.0263750000013,
+    "askMs": 3936.397082999989,
+    "scopeLabel": "DeepSeek · deepseek-flash",
+    "plan": {
+      "restatement": "Whether XRPL escrows can hold RLUSD today and what the issuer must enable before a buyer can lock it.",
+      "subqueries": [
+        "XRPL escrow RLUSD token support",
+        "XRPL escrow token escrow amendment issuer enable",
+        "RLUSD XRPL escrow requirements issuer"
+      ]
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "Whether XRPL escrows can hold RLUSD today, with the date"
+      },
+      {
+        "id": "r2",
+        "text": "What the issuer must enable before a buyer can lock RLUSD in escrow"
+      },
+      {
+        "id": "r3",
+        "text": "The XRPL amendment or feature governing token escrows"
+      }
+    ],
+    "labels": {
+      "research": "DeepSeek · deepseek-flash",
+      "decision": "fixture · metadata-fixture",
+      "publisher": "local",
+      "settlement": "SIMULATED SGD · no real funds",
+      "search": "keyword only (embeddings unavailable)",
+      "plan": "DeepSeek · deepseek-flash"
+    },
+    "bought": [
+      "team-rlusd"
+    ],
+    "spentMinor": 40,
+    "lead": [
+      "Not today: an XRPL escrow can hold official RLUSD only after its issuer enables AllowTrustLineLocking, and the RLUSD issuer had not enabled it on Mainnet or Testnet when the team checked on 11 November 2026."
+    ],
+    "conclusion": "Not today: an XRPL escrow can hold official RLUSD only after its issuer enables AllowTrustLineLocking, and the RLUSD issuer had not enabled it on Mainnet or Testnet when the team checked on 11 November 2026. The TokenEscrow amendment (XLS-85), which lets an escrow hold issued tokens, is already enabled on both networks, so the issuer flag is the remaining blocker. Only the issuer can set that flag, with an AccountSet transaction; a buyer or writer cannot set it for them. An issuer can change its flags later, so check the issuer account on the intended network before relying on this answer.",
+    "openGaps": [
+      {
+        "text": "The XRPL amendment or feature governing token escrows"
+      }
+    ],
+    "facts": {
+      "answered": 2,
+      "total": 3,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "Whether XRPL escrows can hold RLUSD today, with the date",
+          "status": "supported"
+        },
+        {
+          "id": "r2",
+          "text": "What the issuer must enable before a buyer can lock RLUSD in escrow",
+          "status": "supported"
+        },
+        {
+          "id": "r3",
+          "text": "The XRPL amendment or feature governing token escrows",
+          "status": "missing"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "no-eligible-purchase",
+      "line": "2 of 3 answered · no source worth buying for the rest",
+      "judge": "fixture · metadata-fixture"
+    },
+    "fallbacks": []
+  }
+]

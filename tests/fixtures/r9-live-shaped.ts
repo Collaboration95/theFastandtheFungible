@@ -13,6 +13,7 @@ import { Store } from '../../server/store.js'
 import { RunLoop } from '../../server/agents/loop.js'
 import { fixtureRequirements, withIds } from '../../server/agents/requirements.js'
 import { FixtureDecisionProvider } from '../../server/agents/decision.js'
+import { factsSummary, type FactsSummary } from '../../shared/coverage.js'
 import { Reputation } from '../../server/reputation.js'
 import type { RunSnapshot } from '../../shared/contracts/index.js'
 
@@ -24,7 +25,7 @@ export const liveQuestion = (id: string) => {
   if (!found) throw new Error(`no recorded plan for ${id}`)
   return found
 }
-export type LiveShapedResult = { id: string; wording: 'modal' | 'run'; question: string; bought: string[]; spentMinor: number; lead: string[]; openGaps: string[]; stopReason?: unknown; phase: RunSnapshot['phase']; decisions: { round: number; gap: string; selected?: string; rows: { id: string; verdict: string; value: number; reason: string }[] }[] }
+export type LiveShapedResult = { id: string; wording: 'modal' | 'run'; question: string; bought: string[]; spentMinor: number; lead: string[]; openGaps: string[]; conclusion: string; facts?: FactsSummary; stopReason?: unknown; phase: RunSnapshot['phase']; decisions: { round: number; gap: string; selected?: string; rows: { id: string; verdict: string; value: number; reason: string }[] }[] }
 
 /** One publisher and engine for a batch of questions; each question is its own run with its own frozen plan. */
 export async function runLiveShaped(questions: LiveQuestion[], wording: 'modal' | 'run' = 'modal'): Promise<LiveShapedResult[]> {
@@ -43,7 +44,7 @@ export async function runLiveShaped(questions: LiveQuestion[], wording: 'modal' 
       store.updateRun(run.runId, { checkpoint: { plan, requirements: frozen, requirementsBy: requirements.length ? 'DeepSeek · deepseek-flash (recorded)' : 'fixture · scope-fixture' } })
       await loop.start(run.runId)
       const final = store.getRun(run.runId)
-      results.push({ id: q.id, wording, question: q.question, bought: final.intents.filter(i => i.status === 'VERIFIED' || i.status === 'REFUNDED').map(i => i.resourceId), spentMinor: final.spentMinor, lead: (final.answers.at(-1)?.lead ?? []).map(l => l.text), openGaps: (final.answers.at(-1)?.openGaps ?? []).map(g => g.text), stopReason: final.checkpoint.stopReason, phase: final.phase, decisions: final.decisions.map(d => ({ round: d.round, gap: d.gap, selected: d.selectedResourceId, rows: d.rows.map(r => ({ id: r.candidate.resourceId, verdict: r.verdict, value: Number(r.value.toFixed(3)), reason: r.reason })) })) })
+      results.push({ id: q.id, wording, question: q.question, bought: final.intents.filter(i => i.status === 'VERIFIED' || i.status === 'REFUNDED').map(i => i.resourceId), spentMinor: final.spentMinor, lead: (final.answers.at(-1)?.lead ?? []).map(l => l.text), openGaps: (final.answers.at(-1)?.openGaps ?? []).map(g => g.text), conclusion: final.answers.at(-1)?.conclusion ?? '', facts: factsSummary(final), stopReason: final.checkpoint.stopReason, phase: final.phase, decisions: final.decisions.map(d => ({ round: d.round, gap: d.gap, selected: d.selectedResourceId, rows: d.rows.map(r => ({ id: r.candidate.resourceId, verdict: r.verdict, value: Number(r.value.toFixed(3)), reason: r.reason })) })) })
     }
     return results
   } finally { store.close(); server.closeAllConnections(); await new Promise<void>(done => server.close(() => done())); app.locals.journal.close() }

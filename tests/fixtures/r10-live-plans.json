@@ -1,0 +1,247 @@
+{
+  "source": "Local HOSTED=1, live DeepSeek plans, 11 November 2026. Used regression data.",
+  "questions": [
+    {
+      "id": "XRPL2-1",
+      "question": "What does an x402 402 response contain, and can my agent pay it with XRP on Testnet?",
+      "budgetMinor": 200,
+      "modal": {
+        "restatement": "What an x402 402 Payment Required response contains and whether an agent can pay it with XRP on Testnet.",
+        "subqueries": [
+          "x402 402 Payment Required response fields",
+          "x402 payment requirements XRP Testnet",
+          "x402 protocol XRP settlement support"
+        ],
+        "requirements": [
+          "What an x402 402 response contains, including payment requirement fields",
+          "Whether x402 supports paying with XRP on Testnet, and how"
+        ]
+      },
+      "run": {
+        "restatement": "What an x402 402 Payment Required response contains and whether an agent can pay it with XRP on Testnet.",
+        "subqueries": [
+          "x402 402 Payment Required response fields",
+          "x402 payment requirements XRP Testnet",
+          "x402 protocol XRP settlement support"
+        ],
+        "requirements": [
+          "What an x402 402 response contains, including payment requirement fields",
+          "Whether x402 supports paying with XRP on Testnet, and how"
+        ]
+      },
+      "observed": {
+        "bought": [
+          "product-x402-response"
+        ],
+        "spentMinor": 40,
+        "lead": [
+          "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
+          "An agent can pay a 402 in XRP on Testnet, network xrpl:1."
+        ]
+      }
+    },
+    {
+      "id": "XRPL1-1",
+      "question": "Can an XRPL escrow hold RLUSD today, and what must the issuer enable before a buyer can lock it?",
+      "budgetMinor": 200,
+      "modal": {
+        "restatement": "Whether XRPL escrows can hold RLUSD today and what the issuer must enable before a buyer can lock it.",
+        "subqueries": [
+          "XRPL escrow RLUSD token support",
+          "XRPL escrow token escrow amendment issuer enable",
+          "RLUSD XRPL escrow requirements issuer"
+        ],
+        "requirements": [
+          "Whether XRPL escrow can hold RLUSD today, with the date",
+          "What the RLUSD issuer must enable before a buyer can lock it in escrow",
+          "The XRPL amendment or feature governing token escrow for issued assets"
+        ]
+      },
+      "run": {
+        "restatement": "Whether XRPL escrows can hold RLUSD today and what the issuer must enable before a buyer can lock it.",
+        "subqueries": [
+          "XRPL escrow RLUSD token support",
+          "XRPL escrow token escrow amendment issuer enable",
+          "RLUSD XRPL escrow requirements issuer"
+        ],
+        "requirements": [
+          "Whether XRPL escrow can hold RLUSD today, with the date",
+          "What the RLUSD issuer must enable before a buyer can lock it in escrow",
+          "The XRPL amendment or feature governing token escrow for issued assets"
+        ]
+      },
+      "observed": {
+        "bought": [
+          "team-rlusd"
+        ],
+        "spentMinor": 40,
+        "lead": [
+          "Not today: an XRPL escrow can hold official RLUSD only after its issuer enables AllowTrustLineLocking, and the RLUSD issuer had not enabled it on Mainnet or Testnet when the team checked on 11 November 2026."
+        ]
+      }
+    },
+    {
+      "id": "XRPL3-1",
+      "question": "How much XRP reserve does an agent wallet need, and how much does each open escrow or trust line add?",
+      "budgetMinor": 200,
+      "modal": {
+        "restatement": "The XRP reserve an agent wallet needs on the XRP Ledger, and how much each open escrow or trust line adds.",
+        "subqueries": [
+          "XRPL base reserve requirement account 2026",
+          "XRPL owner reserve per object escrow trust line",
+          "XRPL reserve requirements escrow trust line cost"
+        ],
+        "requirements": [
+          "Current XRPL base account reserve in XRP, with date",
+          "Current XRPL owner reserve per object in XRP, with date",
+          "How much an open escrow adds to an agent wallet's XRP reserve",
+          "How much an open trust line adds to an agent wallet's XRP reserve"
+        ]
+      },
+      "run": {
+        "restatement": "The XRP reserve an agent wallet needs on the XRP Ledger, and how much each open escrow or trust line adds.",
+        "subqueries": [
+          "XRPL base reserve requirement account 2026",
+          "XRPL owner reserve per object escrow trust line",
+          "XRPL reserve requirements escrow trust line cost"
+        ],
+        "requirements": [
+          "Current XRPL base account reserve in XRP, with date",
+          "Current XRPL owner reserve per object in XRP, with date",
+          "How much an open escrow adds to an agent wallet's XRP reserve",
+          "How much an open trust line adds to an agent wallet's XRP reserve"
+        ]
+      },
+      "observed": {
+        "bought": [
+          "xrpl-reserves"
+        ],
+        "spentMinor": 40,
+        "lead": [
+          "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings."
+        ]
+      }
+    },
+    {
+      "id": "XRPL2-2",
+      "question": "What does an x402 402 response contain, and can my agent pay it with XRP on Testnet?",
+      "budgetMinor": 200,
+      "modal": {
+        "restatement": "What an x402 402 Payment Required response contains and whether an agent can pay it with XRP on Testnet.",
+        "subqueries": [
+          "x402 402 Payment Required response fields",
+          "x402 payment requirements header scheme network",
+          "x402 XRP XRPL Testnet payment support"
+        ],
+        "requirements": [
+          "What an x402 402 response contains, including payment requirements fields",
+          "Whether x402 supports paying with XRP on the XRPL Testnet",
+          "How an agent constructs and submits an x402 payment for a 402 response"
+        ]
+      },
+      "run": {
+        "restatement": "What an x402 402 Payment Required response contains and whether an agent can pay it with XRP on Testnet.",
+        "subqueries": [
+          "x402 402 Payment Required response fields",
+          "x402 payment requirements header scheme network",
+          "x402 XRP XRPL Testnet payment support"
+        ],
+        "requirements": [
+          "What an x402 402 response contains, including payment requirements fields",
+          "Whether x402 supports paying with XRP on the XRPL Testnet",
+          "How an agent constructs and submits an x402 payment for a 402 response"
+        ]
+      },
+      "observed": {
+        "bought": [
+          "product-x402-response"
+        ],
+        "spentMinor": 40,
+        "lead": [
+          "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
+          "An agent can pay a 402 in XRP on Testnet, network xrpl:1."
+        ]
+      }
+    },
+    {
+      "id": "XRPL1-2",
+      "question": "Can an XRPL escrow hold RLUSD today, and what must the issuer enable before a buyer can lock it?",
+      "budgetMinor": 200,
+      "modal": {
+        "restatement": "Whether XRPL escrows can hold RLUSD today and what the issuer must enable before a buyer can lock it.",
+        "subqueries": [
+          "XRPL escrow RLUSD token support",
+          "XRPL escrow token escrow amendment issuer enable",
+          "RLUSD XRPL escrow requirements issuer"
+        ],
+        "requirements": [
+          "Whether XRPL escrows can hold RLUSD today, with the date",
+          "What the issuer must enable before a buyer can lock RLUSD in escrow",
+          "The XRPL amendment or feature governing token escrows"
+        ]
+      },
+      "run": {
+        "restatement": "Whether XRPL escrows can hold RLUSD today and what the issuer must enable before a buyer can lock it.",
+        "subqueries": [
+          "XRPL escrow RLUSD token support",
+          "XRPL escrow token escrow amendment issuer enable",
+          "RLUSD XRPL escrow requirements issuer"
+        ],
+        "requirements": [
+          "Whether XRPL escrows can hold RLUSD today, with the date",
+          "What the issuer must enable before a buyer can lock RLUSD in escrow",
+          "The XRPL amendment or feature governing token escrows"
+        ]
+      },
+      "observed": {
+        "bought": [
+          "team-rlusd"
+        ],
+        "spentMinor": 40,
+        "lead": [
+          "Not today: an XRPL escrow can hold official RLUSD only after its issuer enables AllowTrustLineLocking, and the RLUSD issuer had not enabled it on Mainnet or Testnet when the team checked on 11 November 2026."
+        ]
+      }
+    },
+    {
+      "id": "XRPL3-2",
+      "question": "How much XRP reserve does an agent wallet need, and how much does each open escrow or trust line add?",
+      "budgetMinor": 200,
+      "modal": {
+        "restatement": "The XRP reserve an agent wallet needs on the XRP Ledger, and how much each open escrow or trust line adds to it.",
+        "subqueries": [
+          "XRPL base reserve and owner reserve requirement",
+          "XRPL escrow owner reserve requirement",
+          "XRPL trust line owner reserve requirement"
+        ],
+        "requirements": [
+          "The XRPL base account reserve an agent wallet needs, with current figures",
+          "How much each open escrow adds to the XRPL reserve",
+          "How much each trust line adds to the XRPL reserve"
+        ]
+      },
+      "run": {
+        "restatement": "The XRP reserve an agent wallet needs on the XRP Ledger, and how much each open escrow or trust line adds to it.",
+        "subqueries": [
+          "XRPL base reserve and owner reserve requirement",
+          "XRPL escrow owner reserve requirement",
+          "XRPL trust line owner reserve requirement"
+        ],
+        "requirements": [
+          "The XRPL base account reserve an agent wallet needs, with current figures",
+          "How much each open escrow adds to the XRPL reserve",
+          "How much each trust line adds to the XRPL reserve"
+        ]
+      },
+      "observed": {
+        "bought": [
+          "xrpl-reserves"
+        ],
+        "spentMinor": 40,
+        "lead": [
+          "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings."
+        ]
+      }
+    }
+  ]
+}

@@ -373,6 +373,12 @@ describe('R8-A2 coverage stop: a further purchase must add part of the requested
     const gap = 'Which transaction type creates or modifies a permissioned domain on the XRP Ledger'
     expect((await verdict({ question: gap, gap, candidates: [candidate('xrpl-tx-permissioneddomainset')], verifiedPurchases: [candidate('xrpl-tx-permissioneddomaindelete')] })).reason).not.toBe(REPEATS_PURCHASES)
   })
+  it.each([
+    ['Which XRPL transaction creates a Credential?', 'xrpl-tx-credentialcreate', 'xrpl-tx-escrowcreate'],
+    ['Which XRPL transaction creates an escrow?', 'xrpl-tx-escrowcreate', 'xrpl-tx-credentialcreate'],
+  ])('a bought create from another family does not answer %s', async (gap, wanted, bought) => {
+    expect((await verdict({ question: gap, gap, candidates: [candidate(wanted)], verifiedPurchases: [candidate(bought)] })).reason).not.toBe(REPEATS_PURCHASES)
+  })
   it('a live decision provider is never affected', async () => {
     const live: DecisionProvider = { name: 'openai', model: 'gpt-6-luna', judgeRound: async () => ({ gapMaterial: 1 }), judgeCandidate: async () => ({ addressesGap: 0.9, originality: { original: 0.9, rewrite: 0.05, overlap: 0.05 }, credibility: 0.9 }) }
     expect((await verdict({ provider: live, candidates: [candidate('xrpl-tx-escrowcreate')], verifiedPurchases: [candidate('c5-xrpl-crypto-condition-type')] })).verdict).toBe('BUY')

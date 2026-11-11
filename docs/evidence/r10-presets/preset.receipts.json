@@ -1,0 +1,1287 @@
+{
+  "fraudProofs": [],
+  "schemaVersion": 3,
+  "identityVersion": 1,
+  "contributions": {
+    "version": "structural-v1",
+    "semanticStatus": "not independently verified",
+    "purchases": [
+      {
+        "intentId": "0416ba73-ca76-4563-8951-494a5fd2a687:1:product-x402-response:v2",
+        "sourceKey": "product-x402-response@v2",
+        "status": "VERIFIED",
+        "grossMinor": 40,
+        "refundMinor": 0,
+        "netMinor": 40,
+        "refundStatus": "none",
+        "assessment": "not assessed",
+        "structuralUse": "cited",
+        "links": [
+          {
+            "answerVersion": 2,
+            "claimId": "claim-1",
+            "claim": "The PAYMENT-REQUIRED header carries base64-encoded JSON with x402Version 2, resource (the protected URL), and accepts listing payment options.",
+            "citation": "[\"product-x402-response@v2\",\"p2\"]",
+            "spanId": "p2",
+            "passage": "The header carries base64-encoded JSON: x402Version is 2, resource identifies the protected URL, and accepts lists payment options. Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details. An optional error explains the refusal, and extensions can advertise additional capabilities. Base64 is an encoding, not encryption or proof that the seller is trustworthy. [1] [2]",
+            "manifestRoot": "4b3755d15948f051b5844557aa5990e2f8da7e4b86f74265887d1b9c4b1ee605",
+            "grantIntentId": "0416ba73-ca76-4563-8951-494a5fd2a687:1:product-x402-response:v2",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "claim-2",
+            "claim": "Each accepted option names scheme, network, amount, asset, payTo and maxTimeoutSeconds, with extra for scheme-specific details; an optional error explains refusal and extensions may advertise capabilities.",
+            "citation": "[\"product-x402-response@v2\",\"p2\"]",
+            "spanId": "p2",
+            "passage": "The header carries base64-encoded JSON: x402Version is 2, resource identifies the protected URL, and accepts lists payment options. Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details. An optional error explains the refusal, and extensions can advertise additional capabilities. Base64 is an encoding, not encryption or proof that the seller is trustworthy. [1] [2]",
+            "manifestRoot": "4b3755d15948f051b5844557aa5990e2f8da7e4b86f74265887d1b9c4b1ee605",
+            "grantIntentId": "0416ba73-ca76-4563-8951-494a5fd2a687:1:product-x402-response:v2",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "claim-3",
+            "claim": "An agent can pay a 402 in XRP on Testnet, network xrpl:1; the XRPL exact scheme quotes a native XRP Payment in integer drops.",
+            "citation": "[\"product-x402-response@v2\",\"p1\"]",
+            "spanId": "p1",
+            "passage": "According to the X402 v2 specification, an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. An agent can pay a 402 in XRP on Testnet, network xrpl:1. The XRPL exact scheme quotes a native XRP Payment in integer drops, and ResearchAgent's writers accept exactly that. [1] [2] [3] [4]",
+            "manifestRoot": "4b3755d15948f051b5844557aa5990e2f8da7e4b86f74265887d1b9c4b1ee605",
+            "grantIntentId": "0416ba73-ca76-4563-8951-494a5fd2a687:1:product-x402-response:v2",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "claim-4",
+            "claim": "The retry carries the selected accepted requirements and a scheme-specific payment payload; a successful response may include PAYMENT-RESPONSE with settlement details.",
+            "citation": "[\"product-x402-response@v2\",\"p3\"]",
+            "spanId": "p3",
+            "passage": "The retry carries the selected accepted requirements and a scheme-specific payment payload. A successful HTTP response can include PAYMENT-RESPONSE with settlement details. Verification and settlement are distinct steps: a syntactically valid signature does not establish that a transaction completed. Network and asset support must agree across the client, server and facilitator. [1] [2]",
+            "manifestRoot": "4b3755d15948f051b5844557aa5990e2f8da7e4b86f74265887d1b9c4b1ee605",
+            "grantIntentId": "0416ba73-ca76-4563-8951-494a5fd2a687:1:product-x402-response:v2",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "claim-5",
+            "claim": "Network and asset support must agree across client, server and facilitator, and a valid signature does not establish that a transaction completed.",
+            "citation": "[\"product-x402-response@v2\",\"p3\"]",
+            "spanId": "p3",
+            "passage": "The retry carries the selected accepted requirements and a scheme-specific payment payload. A successful HTTP response can include PAYMENT-RESPONSE with settlement details. Verification and settlement are distinct steps: a syntactically valid signature does not establish that a transaction completed. Network and asset support must agree across the client, server and facilitator. [1] [2]",
+            "manifestRoot": "4b3755d15948f051b5844557aa5990e2f8da7e4b86f74265887d1b9c4b1ee605",
+            "grantIntentId": "0416ba73-ca76-4563-8951-494a5fd2a687:1:product-x402-response:v2",
+            "retained": true
+          }
+        ]
+      }
+    ]
+  },
+  "requirements": [
+    {
+      "id": "r1",
+      "text": "What an x402 402 response contains, including payment requirement fields"
+    },
+    {
+      "id": "r2",
+      "text": "Whether x402 supports paying with XRP on Testnet, and how"
+    }
+  ],
+  "runId": "0416ba73-ca76-4563-8951-494a5fd2a687",
+  "label": "SIMULATED SGD · no real funds; DeepSeek · deepseek-flash; writer identity unverified; team-authored explainer · sources cited · not an independent writer · Testnet; team-authored · real content · not an independent writer · Testnet",
+  "answers": [
+    {
+      "lead": [],
+      "conclusion": "Matched articles supplied no citable answer · nothing bought",
+      "claims": [],
+      "openGaps": [
+        {
+          "text": "What an x402 402 response contains, including payment requirement fields"
+        },
+        {
+          "text": "Whether x402 supports paying with XRP on Testnet, and how"
+        }
+      ],
+      "version": 1,
+      "provider": "fixture",
+      "model": "extractive-fixture"
+    },
+    {
+      "lead": [
+        {
+          "text": "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
+          "claim": {
+            "id": "claim-3",
+            "text": "An agent can pay a 402 in XRP on Testnet, network xrpl:1; the XRPL exact scheme quotes a native XRP Payment in integer drops.",
+            "stance": "SUPPORTS",
+            "citations": [
+              {
+                "resourceId": "product-x402-response",
+                "version": "v2",
+                "spanId": "p1"
+              }
+            ]
+          }
+        },
+        {
+          "text": "An agent can pay a 402 in XRP on Testnet, network xrpl:1.",
+          "claim": {
+            "id": "claim-3",
+            "text": "An agent can pay a 402 in XRP on Testnet, network xrpl:1; the XRPL exact scheme quotes a native XRP Payment in integer drops.",
+            "stance": "SUPPORTS",
+            "citations": [
+              {
+                "resourceId": "product-x402-response",
+                "version": "v2",
+                "spanId": "p1"
+              }
+            ]
+          }
+        }
+      ],
+      "conclusion": "An HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. An agent can pay a 402 in XRP on Testnet, network xrpl:1. The XRPL exact scheme quotes a native XRP Payment in integer drops, and ResearchAgent's writers accept exactly that. A successful HTTP response can include PAYMENT-RESPONSE with settlement details.",
+      "claims": [
+        {
+          "id": "claim-1",
+          "text": "The PAYMENT-REQUIRED header carries base64-encoded JSON with x402Version 2, resource (the protected URL), and accepts listing payment options.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "product-x402-response",
+              "version": "v2",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "claim-2",
+          "text": "Each accepted option names scheme, network, amount, asset, payTo and maxTimeoutSeconds, with extra for scheme-specific details; an optional error explains refusal and extensions may advertise capabilities.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "product-x402-response",
+              "version": "v2",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "claim-3",
+          "text": "An agent can pay a 402 in XRP on Testnet, network xrpl:1; the XRPL exact scheme quotes a native XRP Payment in integer drops.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "product-x402-response",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-4",
+          "text": "The retry carries the selected accepted requirements and a scheme-specific payment payload; a successful response may include PAYMENT-RESPONSE with settlement details.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "product-x402-response",
+              "version": "v2",
+              "spanId": "p3"
+            }
+          ]
+        },
+        {
+          "id": "claim-5",
+          "text": "Network and asset support must agree across client, server and facilitator, and a valid signature does not establish that a transaction completed.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "product-x402-response",
+              "version": "v2",
+              "spanId": "p3"
+            }
+          ]
+        }
+      ],
+      "openGaps": [],
+      "version": 2,
+      "provider": "deepseek",
+      "model": "deepseek-flash"
+    }
+  ],
+  "sources": [
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "product-x402-response",
+      "version": "v2",
+      "title": "What does an x402 402 Payment Required response contain?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored)",
+      "body": "According to the X402 v2 specification, an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. An agent can pay a 402 in XRP on Testnet, network xrpl:1. The XRPL exact scheme quotes a native XRP Payment in integer drops, and ResearchAgent's writers accept exactly that. [1] [2] [3] [4]\n\nThe header carries base64-encoded JSON: x402Version is 2, resource identifies the protected URL, and accepts lists payment options. Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details. An optional error explains the refusal, and extensions can advertise additional capabilities. Base64 is an encoding, not encryption or proof that the seller is trustworthy. [1] [2]\n\nThe retry carries the selected accepted requirements and a scheme-specific payment payload. A successful HTTP response can include PAYMENT-RESPONSE with settlement details. Verification and settlement are distinct steps: a syntactically valid signature does not establish that a transaction completed. Network and asset support must agree across the client, server and facilitator. [1] [2]\n\nAuthor interpretation: validate the advertised resource, payee, exact amount, network and expiry before authorizing a retry. Preserve the original payment identity after a timeout instead of approving a new payment blindly. The core protocol deliberately leaves client budget management to the application. A 402 challenge is an offer to pay; it does not itself authorize spending. Sources accessed 11 November 2026. [1] [2]",
+      "spans": [
+        {
+          "id": "p1",
+          "text": "According to the X402 v2 specification, an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. An agent can pay a 402 in XRP on Testnet, network xrpl:1. The XRPL exact scheme quotes a native XRP Payment in integer drops, and ResearchAgent's writers accept exactly that. [1] [2] [3] [4]"
+        },
+        {
+          "id": "p2",
+          "text": "The header carries base64-encoded JSON: x402Version is 2, resource identifies the protected URL, and accepts lists payment options. Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details. An optional error explains the refusal, and extensions can advertise additional capabilities. Base64 is an encoding, not encryption or proof that the seller is trustworthy. [1] [2]"
+        },
+        {
+          "id": "p3",
+          "text": "The retry carries the selected accepted requirements and a scheme-specific payment payload. A successful HTTP response can include PAYMENT-RESPONSE with settlement details. Verification and settlement are distinct steps: a syntactically valid signature does not establish that a transaction completed. Network and asset support must agree across the client, server and facilitator. [1] [2]"
+        },
+        {
+          "id": "p4",
+          "text": "Author interpretation: validate the advertised resource, payee, exact amount, network and expiry before authorizing a retry. Preserve the original payment identity after a timeout instead of approving a new payment blindly. The core protocol deliberately leaves client budget management to the application. A 402 challenge is an offer to pay; it does not itself authorize spending. Sources accessed 11 November 2026. [1] [2]"
+        }
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-x402",
+      "version": "v3",
+      "title": "x402 payment headers and delivery failure modes: budgets and one charge per intent",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "What x402 headers an XRPL buyer sends, payment and delivery failure modes, policy spending authority and retry idempotency.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r3d1Tdrw9qZCq2p48egJZj6wNCdcStCz6K",
+      "family": "team-x402",
+      "facets": [
+        "x402 headers",
+        " budgets and one charge per intent",
+        "x402",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-x402",
+      "relevance": 0.6730709061838338,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-x402",
+        "version": "v3",
+        "wallet": "r3d1Tdrw9qZCq2p48egJZj6wNCdcStCz6K",
+        "pubKey": "EDE1CEBFF98BE4105473BEEB6BE54814F76F9A45B04BB27C4ED535A1E29DE41AE2",
+        "priceMinor": 40,
+        "leaves": [
+          "0191360b3202e87385434954080630c1d8585614bbc8d100d922c9830e6467c8",
+          "cc2052210c05ff0a02b61a07a205db0f95e88efe15245631688d6e47527707e9",
+          "6d1aa6aded40bc92fdb9baadf23ac9acc68c48fffcd20ff8a964dc059bc2022d",
+          "07a6eb84e7a4a7e9a9b3a6797399bd60aaee49bc25f7410f24a5f6cf0e379797",
+          "c8d9f8dc23d0f1a39a241d3ccf8b16bd6a33b852ef316285c70209d6020d2d0d",
+          "d21e71071f900b6ca15b00188e96852e77112c0e6337673bfe8fe6acd8fec537",
+          "aace1550fed973483d76a0361dc037113c89454ed0e2ad84b953fb0a60afd0c7"
+        ],
+        "root": "db68c3a0336a37d554b1e3bbc1cca3f0f197f389f96ff87dd0be3c65e4a2a95b",
+        "claims": [],
+        "wordCount": 373,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.6730709061838338,
+        "sig": "35001548C968DD8939E9CDC7A1AA35B31196225CD47AD0E22C2AF31FD5FAF8BD9F36F019124B75C98BB8F5C051690C590E4B5393584C3B9F5B0CEC21D049610C"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "product-x402-response",
+      "version": "v2",
+      "title": "What does an x402 402 Payment Required response contain?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced guide to what does an x402 402 Payment Required response contain. Includes evidence limits.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+      "family": "product-x402-response",
+      "facets": [
+        "x402",
+        "HTTP 402",
+        "PAYMENT-REQUIRED",
+        "PAYMENT-SIGNATURE",
+        "headers",
+        "client retry"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/product-x402-response",
+      "relevance": 0.852696814975771,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "product-x402-response",
+        "version": "v2",
+        "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+        "pubKey": "ED35C13027D23D06D2219C016CEF0113DE60126DCDD5995203C0E3771AE37906ED",
+        "priceMinor": 40,
+        "leaves": [
+          "8cd446c0d2152089ddc02053fe9f2fc652b2f9059a20e559236c730a37bba7a1",
+          "c7cf2511817aa11661cd019c69a40e189e6f23a2276ed9a1395faf2bcdb5fef2",
+          "e81162b37480af7077145df7393e7b97a6c9df9a4b7335e068e349aacef8d922",
+          "149418597ca44b135f2392642b236cb2191c4a3d824928de7eaf81b059b0df4f"
+        ],
+        "root": "4b3755d15948f051b5844557aa5990e2f8da7e4b86f74265887d1b9c4b1ee605",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "8cd446c0d2152089ddc02053fe9f2fc652b2f9059a20e559236c730a37bba7a1",
+            "covers": {
+              "entity": "payment",
+              "measure": "requirements"
+            }
+          }
+        ],
+        "wordCount": 242,
+        "publishedAt": "2026-11-11",
+        "relevance": 0.852696814975771,
+        "sig": "D7E4CBC42AAA23BDFDD01963AF5A80A3AE7E0F45B0FBA948BF689B601E5EBC8143A06B77212B7E48772FDDC7E72344F56553E84EF6EF846566AF797BE452E70D"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-x402",
+      "version": "v1",
+      "title": "What does HTTP 402 and x402 actually standardize?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Primary-source guide to what does http 402 and x402 actually standardize?. Includes integration considerations and evidence boundaries.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+      "family": "xrpl-x402",
+      "facets": [
+        "XRPL",
+        "x402",
+        "HTTP 402",
+        "PAYMENT-REQUIRED",
+        "PAYMENT-SIGNATURE",
+        "facilitator"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-x402",
+      "relevance": 0.8258708392962978,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-x402",
+        "version": "v1",
+        "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+        "pubKey": "ED35C13027D23D06D2219C016CEF0113DE60126DCDD5995203C0E3771AE37906ED",
+        "priceMinor": 40,
+        "leaves": [
+          "7b49348ce72fa64c2b365ff620dc9b9844d4ce357ea8b3a0713207ed1dcf56f9",
+          "df52856467f1ed7805b80ff07a9a7222bce14b7e0e955a682d76d3694c01d850",
+          "735e0bc1feafde6290b199f82672be16bd41c47c0ab9ab1e30c2d27c6a5b1410",
+          "2cd284c334cf47e54b276f3b52cc996dcf9800cc81193282acdae92b77d6d970"
+        ],
+        "root": "2dbfbf9b299799ce70a42a8c8090927e8da0a214b0b0282c21d279d5d1d4e266",
+        "claims": [],
+        "wordCount": 235,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.8258708392962978,
+        "sig": "A8B1AE242317DC9D83CB53CBB13436951D44FBD8B49BEAEA88261434A661CBA986A7946DF48057D7350696AA1AE4418EC9D0A9402324AB13AD6BC72FDA6D6104"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-credentials",
+      "version": "v3",
+      "title": "XRPL Credentials: writer trust, article accuracy and identity evidence",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "How XRPL Credentials change writer identity checks without proving an article accurate or boosting trust scores.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r3d1Tdrw9qZCq2p48egJZj6wNCdcStCz6K",
+      "family": "team-credentials",
+      "facets": [
+        "Writer Credentials",
+        " trust and refund responsibility",
+        "credentials",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-credentials",
+      "relevance": 0.5006085745201346,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-credentials",
+        "version": "v3",
+        "wallet": "r3d1Tdrw9qZCq2p48egJZj6wNCdcStCz6K",
+        "pubKey": "EDE1CEBFF98BE4105473BEEB6BE54814F76F9A45B04BB27C4ED535A1E29DE41AE2",
+        "priceMinor": 40,
+        "leaves": [
+          "90fda30967bc179d0534d6243ab084e91ece7973ca5fae107b6628b8d797806e",
+          "1b0e46f37e5366a199cb09a3f7640620569dff8f194e320bc8e5507cf1f57194",
+          "940fca4bf05400f47ae86b466b6a4269bf92fef2816d108a2caa51ba471d2231",
+          "4d8c0c0b0904af320ff8060e09c46ca98a7d4a41a8769f95f5a7ee83b704f054",
+          "92e872703a9493ccf66032c157c31bfae09134b8873ce4fee2c99737af9f910b",
+          "a9e9a8a7e8de2d06e897a7d6043354a0226e512031bf8e4127b1a5cde556cbb4",
+          "c5955b698052af7d11d2ccfc174e4edbe2a4ade38732b9bdca219fb032cc89f7",
+          "faa4f3d62af8acc9c0fe3cd474453f98a52ca0273a94947aa5be781d7b1c5d32"
+        ],
+        "root": "dfd46c251fad21a6b7a6590c3a1a52ada65ae7c357660394a86e73017af6ef88",
+        "claims": [],
+        "wordCount": 520,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.5006085745201346,
+        "sig": "502314FF93CEA880C938429244FADAD8D00B1CB5D8D388C6C620939F450EC7ABB238DA2EB04EDD7C7079AB664689E2FAFE2271844704A7CB3DAFBB4C7BA99001"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-settlement",
+      "version": "v3",
+      "title": "delivered_amount, faucet funding and Testnet endpoint history",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "Operational lessons on faucet wallets, partial payments, validated settlement and historical transaction availability.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r3d1Tdrw9qZCq2p48egJZj6wNCdcStCz6K",
+      "family": "team-settlement",
+      "facets": [
+        "delivered_amount",
+        " faucet funding and Testnet endpoint history",
+        "settlement",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-settlement",
+      "relevance": 0.5270938294779007,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-settlement",
+        "version": "v3",
+        "wallet": "r3d1Tdrw9qZCq2p48egJZj6wNCdcStCz6K",
+        "pubKey": "EDE1CEBFF98BE4105473BEEB6BE54814F76F9A45B04BB27C4ED535A1E29DE41AE2",
+        "priceMinor": 40,
+        "leaves": [
+          "f90c4ed09a6e639f9d53c6c4f25ccedd0ca3a6ed7fe697327afbcde13fc02341",
+          "4fedd8538aaece8beab8baf58ab6067885c7bb4ac74ffb054a0c0e4f61a5bc97",
+          "962ad05152d832a04c1e64ba8741f96feeb27cd16b247a2f94eb0cb2888c1735",
+          "cd98ad7e504a7f05d1338ea2a95760c60a0b2d8bd1a14b805cb821d87aae1cdb"
+        ],
+        "root": "356144ecf80b642c18dfbf1ef0c5180e2531d9ad70c7a040f3ff169ecf0bac41",
+        "claims": [],
+        "wordCount": 229,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.5270938294779007,
+        "sig": "0D3F08342A0F79D668D1651F21F28025292128A3E6B3E0C4ECAE0BE9C1C8357FF2917867C7288F81643DAD194D9FABD255D1DD47A652976CE74331F5460D630A"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-fees",
+      "version": "v3",
+      "title": "EscrowFinish fulfillment fees: XRP drops and SGD prices in the app",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "Measured Testnet costs and accounting: how XRP drops differ from the SGD price shown in the app, including principal and fees.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r3d1Tdrw9qZCq2p48egJZj6wNCdcStCz6K",
+      "family": "team-fees",
+      "facets": [
+        "EscrowFinish fulfillment fees and XRP drops",
+        "fees",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-fees",
+      "relevance": 0.49983674359511265,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-fees",
+        "version": "v3",
+        "wallet": "r3d1Tdrw9qZCq2p48egJZj6wNCdcStCz6K",
+        "pubKey": "EDE1CEBFF98BE4105473BEEB6BE54814F76F9A45B04BB27C4ED535A1E29DE41AE2",
+        "priceMinor": 40,
+        "leaves": [
+          "504b871c6d477aa0e28d92a1c4167998bb9e3fb228c4f4d2b45e9e519376d239",
+          "fcdee246b581ad8922a6afc40629975aa0f0eecd457abca87697e6027abe43c0",
+          "d666fab4da50961cec14dbba0cfb7d61b81be74ac6980834560cbd804b4acf3c",
+          "b8beafa896cfe9cb762e883e9f2a7442f974d345a882185504126a42ea222eea",
+          "c493cca9c7667c2bab7a643aefa732f96c65fae2d2e5ad1a699ab1deabe599ef",
+          "97476173dcf6fc14ff85a42261df1fc1d66022add4ec4ae57455f32b5c6c4b6b"
+        ],
+        "root": "4bd7fffc54a690a42ee5bf19f11758d688caffe2dabbba66a99ef3710dfb0876",
+        "claims": [],
+        "wordCount": 450,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.49983674359511265,
+        "sig": "0BAA57A54289C5FDCB9BB82DECCAA6A4AE93F6B2DC92E38517E81AB569CC9FC407748AB6E643F94297D0F108B0F61E1D74B41AF77D722E12FB4FF7F5E803DE00"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "product-x402-xrpl-settlement",
+      "version": "v1",
+      "title": "Can an agent pay x402 with XRP on Testnet, and who confirms settlement?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced guide to can an agent pay x402 with XRP on Testnet, and who confirms settlement. Includes evidence limits.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+      "family": "product-x402-xrpl-settlement",
+      "facets": [
+        "x402",
+        "XRPL",
+        "XRP",
+        "Testnet",
+        "facilitator",
+        "settlement",
+        "validated"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/product-x402-xrpl-settlement",
+      "relevance": 0.78552326124205,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "product-x402-xrpl-settlement",
+        "version": "v1",
+        "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+        "pubKey": "ED35C13027D23D06D2219C016CEF0113DE60126DCDD5995203C0E3771AE37906ED",
+        "priceMinor": 40,
+        "leaves": [
+          "4a75a0b7dc25a3142131f75cfb8a06a5ab8babb3816af1f1decdc5f6dcf9affc",
+          "f52e1df9682d7e31b4f428deecb9af101e61bfbdeb7af42a5d37ec8f7431bab7",
+          "8bfa4cd8b8da8338988e2fa03fe54f3bb73b87d902137780db51b0c64d1f77ca",
+          "af26cea0f7374f3f8a632020138cfcf2097f5d12d0e0cbcd00e31de41e76b007"
+        ],
+        "root": "4e526738cceecf1274e7e31991a34a8a8efcc8530be3e172186091f46358bec1",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "4a75a0b7dc25a3142131f75cfb8a06a5ab8babb3816af1f1decdc5f6dcf9affc",
+            "covers": {
+              "entity": "XRP",
+              "measure": "settlement"
+            }
+          }
+        ],
+        "wordCount": 210,
+        "publishedAt": "2026-11-10",
+        "relevance": 0.78552326124205,
+        "sig": "7DE8D50B29ED24133BF63B6B004C702FC9BA3AFF2F5FEC72997D3436B4B10405A965152A0644B0180F4C0B9FBC782D6A1431CB3A90E1677879467051E423A30F"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "product-payment-finality",
+      "version": "v1",
+      "title": "When is an XRPL agent payment final and validated?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced guide to when is an XRPL agent payment final and validated. Includes evidence limits.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+      "family": "product-payment-finality",
+      "facets": [
+        "XRPL",
+        "payment finality",
+        "validated ledger",
+        "ledger close",
+        "settled",
+        "confirmation",
+        "reorg"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/product-payment-finality",
+      "relevance": 0.8550344715336431,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "product-payment-finality",
+        "version": "v1",
+        "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+        "pubKey": "ED35C13027D23D06D2219C016CEF0113DE60126DCDD5995203C0E3771AE37906ED",
+        "priceMinor": 40,
+        "leaves": [
+          "a36ef23170ce19ea53b296e193c3bb08f1a94f40dd1e7cacbc5d0a1034c8f7af",
+          "fd15c4addaf7bd216ff82cbd9845d53f0c82cb58f51d2c20cb4a7b4d14105fee",
+          "8a8c36d073ec8805704d8c2c4ee89ad55378f2ee5cb7df1226fd7b0228c865cd",
+          "3d06c54cfbad182b2c38dbfd7627995d1ba6dea624456f0e3203bf22fedb4bfe"
+        ],
+        "root": "8b10c002a2d001327ca1bfb78c8018534aa4c9b89afeff4ba1136422b14125e0",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "a36ef23170ce19ea53b296e193c3bb08f1a94f40dd1e7cacbc5d0a1034c8f7af",
+            "covers": {
+              "entity": "XRPL",
+              "measure": "payment"
+            }
+          }
+        ],
+        "wordCount": 223,
+        "publishedAt": "2026-11-10",
+        "relevance": 0.8550344715336431,
+        "sig": "966AA2074B0C7BCACD6DB0553F3F9DFB14D921E8B1A35CF77E34CF7666589680D9036594CFE8196406372B0BFBFB852C1474E7482C35D9B6F52EB2318E69A00C"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "c5-xrpl-testnet-servers",
+      "version": "v1",
+      "title": "Which public server URLs and faucet does XRPL Testnet use?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced guide to the public XRPL Testnet endpoints, what the Testnet is for, its faucet, and why test XRP has no value.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+      "family": "c5-xrpl-testnet-servers",
+      "facets": [
+        "XRPL",
+        "XRP Ledger",
+        "Testnet",
+        "public server",
+        "altnet",
+        "faucet",
+        "WebSocket",
+        "JSON-RPC",
+        "test XRP"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/c5-xrpl-testnet-servers",
+      "relevance": 0.8159237935508367,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "c5-xrpl-testnet-servers",
+        "version": "v1",
+        "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+        "pubKey": "ED35C13027D23D06D2219C016CEF0113DE60126DCDD5995203C0E3771AE37906ED",
+        "priceMinor": 40,
+        "leaves": [
+          "a9a939b7fb092e250dab3ae761b15016b239309646ad9a214621b83bed52667f",
+          "cd3345ab14d8d9fcbb767585a51b0f5828cb7e1cdb302c76ae2e3e32eb5251c6",
+          "f9c5107eb9d32479fd97ad0cd6ff6bf6f17237592a8fe9c823d09d783dd1695c",
+          "49f0caf864af3a4a67f0aa4ebb2f394737a535fbc3de8a5730f1f295f44b1753"
+        ],
+        "root": "a4ed7dc6b8dcbc429070712e3869dc492d6f7971159a87fa111e234e71db1e33",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "a9a939b7fb092e250dab3ae761b15016b239309646ad9a214621b83bed52667f",
+            "covers": {
+              "entity": "Testnet",
+              "measure": "server"
+            }
+          },
+          {
+            "id": "p3:named-source",
+            "kind": "named-source",
+            "leaf": "f9c5107eb9d32479fd97ad0cd6ff6bf6f17237592a8fe9c823d09d783dd1695c",
+            "covers": {
+              "entity": "XRPL",
+              "measure": "production"
+            }
+          }
+        ],
+        "wordCount": 209,
+        "publishedAt": "2026-11-11",
+        "relevance": 0.8159237935508367,
+        "sig": "DDE7AE9809343708D3F01FB9A00C425A9541B1F0486F589A6355ED94F71CAC04A82C7DB48D6753798C48E86CC3A5EF61523217799EBA8C79BA4B5A69E9F2BC0C"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "product-accept-x402-xrp",
+      "version": "v1",
+      "title": "How do I accept x402 payments in XRP on my own API?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced guide for an API owner: the 402 challenge to send, how a signed XRP Payment is verified and settled on XRPL Testnet, and which checks stop a retry from charging twice.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+      "family": "product-accept-x402-xrp",
+      "facets": [
+        "x402",
+        "accept payments",
+        "API",
+        "XRP",
+        "XRPL",
+        "Testnet",
+        "facilitator"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/product-accept-x402-xrp",
+      "relevance": 0.7938142077414236,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "product-accept-x402-xrp",
+        "version": "v1",
+        "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+        "pubKey": "ED35C13027D23D06D2219C016CEF0113DE60126DCDD5995203C0E3771AE37906ED",
+        "priceMinor": 40,
+        "leaves": [
+          "5dce3f79a3024613ec4439bab990116a0d6b3aec2746006aabb887ef10eed1a3",
+          "487aabd46ba71d0060239e20e6e2cf0ed64a10d60b0ecd225749ebb4628eecd5",
+          "438387c3b677ce2560e53cc9517fefcf95c9f7ed245f210f4cba817d22c0e616",
+          "2cbc092dd7152292ec5a3841a015fccc757760ce0ef55b0286e4faddb3fce04c"
+        ],
+        "root": "f922b18f915315ec4ef817e7e6a8281f24d8689674b3e418a688b022e1089d04",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "5dce3f79a3024613ec4439bab990116a0d6b3aec2746006aabb887ef10eed1a3",
+            "covers": {
+              "entity": "XRP",
+              "measure": "payment"
+            }
+          }
+        ],
+        "wordCount": 250,
+        "publishedAt": "2026-11-11",
+        "relevance": 0.7938142077414236,
+        "sig": "7993934A639FC927FF3E41D11154F6BC273C6562D0E8D668E43479A34A9246BAC6F5BD718CA7AD6B9C457058E7233ACB23E83AFEDF56B7520946C4242652750C"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "c5-x402-facilitator-verify-settle",
+      "version": "v1",
+      "title": "What do an x402 facilitator's verify and settle steps do on XRPL?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced guide to the x402 facilitator interface: the read-only verify call, the committing settle call, the response fields and the XRPL payment flow around them.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+      "family": "c5-x402-facilitator-verify-settle",
+      "facets": [
+        "x402",
+        "facilitator",
+        "/verify",
+        "/settle",
+        "XRPL",
+        "XRP Ledger",
+        "PAYMENT-SIGNATURE",
+        "PAYMENT-RESPONSE",
+        "X-PAYMENT-RESPONSE",
+        "settlement"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/c5-x402-facilitator-verify-settle",
+      "relevance": 0.7503003842487858,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "c5-x402-facilitator-verify-settle",
+        "version": "v1",
+        "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+        "pubKey": "ED35C13027D23D06D2219C016CEF0113DE60126DCDD5995203C0E3771AE37906ED",
+        "priceMinor": 40,
+        "leaves": [
+          "7f76f867a07a91f4294cbfee24e3f5bde4808ae49fcb99001507764760b475b8",
+          "9e051aee50234b9fafd65c6668329e6efae3dc0db33ab2f9d1511e6a8014c4b4",
+          "c0840a222001ba53b25342ef33086454a4e69b0a2337ffaf69688926e32e4a84",
+          "f7b8992bad7489da066d68f0d749e4cdc96f0a3a3b7e3696d31ec7dbfda3a81d"
+        ],
+        "root": "49c17b9577812b4c9570fa9e2bcc5ea08d68b3db3d68ef5c261e40571b4a207a",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "7f76f867a07a91f4294cbfee24e3f5bde4808ae49fcb99001507764760b475b8",
+            "covers": {
+              "entity": "facilitator",
+              "measure": "verification"
+            }
+          }
+        ],
+        "wordCount": 266,
+        "publishedAt": "2026-11-11",
+        "relevance": 0.7503003842487858,
+        "sig": "7B7FCFEC48699CE595AE86CD289933CA2CD040EFF20A9B9D2612AF273EAA10024FD6CDA5198284A6F4A68E3197C1FAF41E14CA6BA0032145081CCC07E82CB505"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "c5-xrpl-destination-tag",
+      "version": "v1",
+      "title": "What is an XRPL DestinationTag, and what does the RequireDest setting do?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced guide to XRPL destination tags: what they identify, their format, the account setting that rejects untagged payments and how x402 carries them.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+      "family": "c5-xrpl-destination-tag",
+      "facets": [
+        "XRPL",
+        "XRP Ledger",
+        "DestinationTag",
+        "destination tag",
+        "RequireDest",
+        "exchange deposit",
+        "source tag",
+        "hosted recipient"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/c5-xrpl-destination-tag",
+      "relevance": 0.6761680309834516,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "c5-xrpl-destination-tag",
+        "version": "v1",
+        "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+        "pubKey": "ED35C13027D23D06D2219C016CEF0113DE60126DCDD5995203C0E3771AE37906ED",
+        "priceMinor": 40,
+        "leaves": [
+          "13a8548c5a6c6698d0da5bd8e3cafb78e01470b9af469ff9d86b3fad1053b62c",
+          "2499ecb51bf0b6abdab0ed29f0cbccd1955348be83c2c96bb27659b6516dc963",
+          "4b33392628f239bd8e21086b5bfc1e588789bb27fc40eae18eb1c3f13ee1c5e8",
+          "97206d7148b561b0b32c17f74661cfa435e1b21147f994a1a422b7e03e8fbc60"
+        ],
+        "root": "d705ba6652e09bde0f36f14ff3606d59cf024439ad3e70799943abbb606b0df0",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "13a8548c5a6c6698d0da5bd8e3cafb78e01470b9af469ff9d86b3fad1053b62c",
+            "covers": {
+              "entity": "destination tags",
+              "measure": "payment"
+            }
+          }
+        ],
+        "wordCount": 207,
+        "publishedAt": "2026-11-11",
+        "relevance": 0.6761680309834516,
+        "sig": "1AC07BD2E1E4BA8FDB27CB2B55A41382C9DF4F9D4844AB2A9FA4640C5AAF1A8F0349468774E3B30F817C9A04741CF3C9DC7785E95BB76B11885765E222255109"
+      }
+    }
+  ],
+  "intents": [
+    {
+      "intentId": "0416ba73-ca76-4563-8951-494a5fd2a687:1:product-x402-response:v2",
+      "runId": "0416ba73-ca76-4563-8951-494a5fd2a687",
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "product-x402-response",
+      "version": "v2",
+      "amountMinor": 40,
+      "status": "VERIFIED",
+      "createdAt": "2026-11-11T14:36:53.333Z",
+      "submittingAt": "2026-11-11T14:36:53.335Z",
+      "settledAt": "2026-11-11T14:36:53.343Z",
+      "quote": {
+        "profileId": "team-xrpl-explainers",
+        "resourceId": "product-x402-response",
+        "version": "v2",
+        "runId": "0416ba73-ca76-4563-8951-494a5fd2a687",
+        "intentId": "0416ba73-ca76-4563-8951-494a5fd2a687:1:product-x402-response:v2",
+        "quoteId": "{\"amount\":\"40000\",\"articleId\":\"product-x402-response\",\"manifestRoot\":\"4b3755d15948f051b5844557aa5990e2f8da7e4b86f74265887d1b9c4b1ee605\",\"payTo\":\"rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ\",\"quoteId\":\"94b773b6-85ad-43ce-aad9-5e0027de4d2c\",\"version\":\"v2\"}",
+        "quoteHash": "40CB44188A37F1FAF8DA84B1EF9913872CEB9392ACFDDCEFF25CBEF690AA5330",
+        "amountMinor": 40,
+        "currency": "SGD",
+        "expiresAt": "2026-11-11T14:37:53.331Z",
+        "contentDigest": "4b3755d15948f051b5844557aa5990e2f8da7e4b86f74265887d1b9c4b1ee605",
+        "payment": {
+          "rail": "simulated",
+          "network": "xrpl:1",
+          "asset": "XRP",
+          "payTo": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+          "amountDrops": "40000",
+          "invoiceId": "40CB44188A37F1FAF8DA84B1EF9913872CEB9392ACFDDCEFF25CBEF690AA5330"
+        }
+      },
+      "paidPath": "/w/team-xrpl-explainers/articles/product-x402-response",
+      "receiptId": "x402-A79C5A91534388E5A6DFC372A16780FB1A101EC90433BFEA194F61391C797EA0",
+      "txHash": "A79C5A91534388E5A6DFC372A16780FB1A101EC90433BFEA194F61391C797EA0"
+    }
+  ],
+  "grants": [
+    {
+      "runId": "0416ba73-ca76-4563-8951-494a5fd2a687",
+      "resourceId": "product-x402-response",
+      "version": "v2",
+      "intentId": "0416ba73-ca76-4563-8951-494a5fd2a687:1:product-x402-response:v2",
+      "contentDigest": "4b3755d15948f051b5844557aa5990e2f8da7e4b86f74265887d1b9c4b1ee605",
+      "grantedAt": "2026-11-11T14:36:53.345Z"
+    }
+  ],
+  "receipts": [
+    {
+      "receiptId": "x402-A79C5A91534388E5A6DFC372A16780FB1A101EC90433BFEA194F61391C797EA0",
+      "intentId": "0416ba73-ca76-4563-8951-494a5fd2a687:1:product-x402-response:v2",
+      "runId": "0416ba73-ca76-4563-8951-494a5fd2a687",
+      "resourceId": "product-x402-response",
+      "version": "v2",
+      "amountMinor": 40,
+      "currency": "SGD",
+      "settledAt": "2026-11-11T14:36:53.343Z",
+      "label": "SIMULATED SGD · no real funds"
+    }
+  ],
+  "payments": [
+    {
+      "asset": "XRP",
+      "kind": "purchase",
+      "label": "SIMULATED SGD · no real funds",
+      "network": "SIMULATED rail, no real funds",
+      "runId": "0416ba73-ca76-4563-8951-494a5fd2a687",
+      "intentId": "0416ba73-ca76-4563-8951-494a5fd2a687:1:product-x402-response:v2",
+      "surface": "web",
+      "principal": "03bbcc040aa244c4d86d3c7929b6b01cff6145e395e9fc4560c829e922261af7",
+      "policyVersion": "wallet-v1",
+      "writer": "team-xrpl-explainers",
+      "resourceId": "product-x402-response",
+      "version": "v2",
+      "payee": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+      "payer": "",
+      "amountMinor": 40,
+      "currency": "SGD",
+      "amountDrops": "40000",
+      "txHash": "A79C5A91534388E5A6DFC372A16780FB1A101EC90433BFEA194F61391C797EA0",
+      "invoiceId": "40CB44188A37F1FAF8DA84B1EF9913872CEB9392ACFDDCEFF25CBEF690AA5330",
+      "ledgerIndex": "",
+      "explorerUrl": "",
+      "status": "VERIFIED",
+      "refundTxHash": "",
+      "refundAmountMinor": "",
+      "refundExplorerUrl": "",
+      "reservedAt": "2026-11-11T14:36:53.333Z",
+      "settledAt": "2026-11-11T14:36:53.343Z"
+    }
+  ],
+  "proofs": [
+    {
+      "resourceId": "product-x402-response",
+      "version": "v2",
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "product-x402-response",
+        "version": "v2",
+        "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+        "pubKey": "ED35C13027D23D06D2219C016CEF0113DE60126DCDD5995203C0E3771AE37906ED",
+        "priceMinor": 40,
+        "leaves": [
+          "8cd446c0d2152089ddc02053fe9f2fc652b2f9059a20e559236c730a37bba7a1",
+          "c7cf2511817aa11661cd019c69a40e189e6f23a2276ed9a1395faf2bcdb5fef2",
+          "e81162b37480af7077145df7393e7b97a6c9df9a4b7335e068e349aacef8d922",
+          "149418597ca44b135f2392642b236cb2191c4a3d824928de7eaf81b059b0df4f"
+        ],
+        "root": "4b3755d15948f051b5844557aa5990e2f8da7e4b86f74265887d1b9c4b1ee605",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "8cd446c0d2152089ddc02053fe9f2fc652b2f9059a20e559236c730a37bba7a1",
+            "covers": {
+              "entity": "payment",
+              "measure": "requirements"
+            }
+          }
+        ],
+        "wordCount": 242,
+        "publishedAt": "2026-11-11",
+        "relevance": 0.852696814975771,
+        "sig": "D7E4CBC42AAA23BDFDD01963AF5A80A3AE7E0F45B0FBA948BF689B601E5EBC8143A06B77212B7E48772FDDC7E72344F56553E84EF6EF846566AF797BE452E70D"
+      },
+      "salts": [
+        "a2b29a09613fdbc8897df76b25ead288",
+        "1bdba88a8341880add4773ef2d4d226f",
+        "7cc7a3b66a5dd4606ce67d97f4bceba0",
+        "b4e608ec422b79a66b2a73624f200640"
+      ],
+      "intentId": "0416ba73-ca76-4563-8951-494a5fd2a687:1:product-x402-response:v2"
+    }
+  ],
+  "audit": {
+    "anchor": {
+      "seq": 2,
+      "hash": "e6a07f0154ec780e7b34c46cbcf82a8053559b8ba03022292c1b7339988bdf9f"
+    },
+    "entries": [
+      {
+        "seq": 3,
+        "at": "2026-11-11T14:36:53.158Z",
+        "prevHash": "e6a07f0154ec780e7b34c46cbcf82a8053559b8ba03022292c1b7339988bdf9f",
+        "hash": "3c5b1b98cdcdface548e2fb3f8fc7cccd0742a9eb0668b6be0c4665a076f33aa",
+        "runId": "0416ba73-ca76-4563-8951-494a5fd2a687",
+        "intentId": null,
+        "surface": "web",
+        "principal": "03bbcc040aa244c4d86d3c7929b6b01cff6145e395e9fc4560c829e922261af7",
+        "kind": "admission",
+        "data": {
+          "admittedMinor": 200,
+          "agentMaxMinor": null,
+          "day": "2026-11-11",
+          "hireReserveMinor": 0,
+          "labels": {
+            "decision": "fixture · metadata-fixture",
+            "publisher": "local",
+            "research": "DeepSeek · deepseek-flash (pending)",
+            "settlement": "SIMULATED SGD · no real funds"
+          },
+          "maxMinor": 200,
+          "paused": false,
+          "policyVersion": "wallet-v1",
+          "questionCommitment": "eecf230e8a5d83f957f4f49aa7bbec3f8cce40ee6ef962e363d1312f4d3cb92a",
+          "requestedMinor": 200,
+          "surfaceDailyMinor": null,
+          "surfaceRemainingMinor": 2000,
+          "walletDailyMinor": 2000,
+          "walletRemainingMinor": 2000
+        }
+      },
+      {
+        "seq": 4,
+        "at": "2026-11-11T14:36:53.322Z",
+        "prevHash": "3c5b1b98cdcdface548e2fb3f8fc7cccd0742a9eb0668b6be0c4665a076f33aa",
+        "hash": "86648bec1bb288be2082a313ce0697a5e3d95dd888a754ad7bd96421303f2d69",
+        "runId": "0416ba73-ca76-4563-8951-494a5fd2a687",
+        "intentId": null,
+        "surface": "web",
+        "principal": "03bbcc040aa244c4d86d3c7929b6b01cff6145e395e9fc4560c829e922261af7",
+        "kind": "decision",
+        "data": {
+          "calibration": null,
+          "candidatesJudged": 12,
+          "fallbackReason": null,
+          "model": "metadata-fixture",
+          "promptVersion": null,
+          "provider": "fixture",
+          "round": 1,
+          "selectedResourceId": "product-x402-response",
+          "selectedSourceKey": "product-x402-response@v2",
+          "threshold": 0.2,
+          "verdicts": {
+            "BUY": 6,
+            "SKIP_LOW_VALUE": 6
+          }
+        }
+      },
+      {
+        "seq": 5,
+        "at": "2026-11-11T14:36:53.333Z",
+        "prevHash": "86648bec1bb288be2082a313ce0697a5e3d95dd888a754ad7bd96421303f2d69",
+        "hash": "a060a3df96745c5b8434a0c0118a6aa340335e103afd1b47976262f43b500976",
+        "runId": "0416ba73-ca76-4563-8951-494a5fd2a687",
+        "intentId": "0416ba73-ca76-4563-8951-494a5fd2a687:1:product-x402-response:v2",
+        "surface": "web",
+        "principal": "03bbcc040aa244c4d86d3c7929b6b01cff6145e395e9fc4560c829e922261af7",
+        "kind": "reserve",
+        "data": {
+          "amountMinor": 40,
+          "committedMinor": 0,
+          "payTo": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+          "perSourceCapMinor": 100,
+          "policyVersion": "wallet-v1",
+          "profileId": "team-xrpl-explainers",
+          "quoteHash": "40CB44188A37F1FAF8DA84B1EF9913872CEB9392ACFDDCEFF25CBEF690AA5330",
+          "rail": "simulated",
+          "resourceId": "product-x402-response",
+          "runBudgetMinor": 200,
+          "source": null,
+          "version": "v2",
+          "walletDailyMinor": 2000
+        }
+      },
+      {
+        "seq": 6,
+        "at": "2026-11-11T14:36:53.338Z",
+        "prevHash": "a060a3df96745c5b8434a0c0118a6aa340335e103afd1b47976262f43b500976",
+        "hash": "3e774fc9f0287b0fe8855e6c4c3c9375a02a1befe00f83e88f2c9e6df7fda484",
+        "runId": "0416ba73-ca76-4563-8951-494a5fd2a687",
+        "intentId": "0416ba73-ca76-4563-8951-494a5fd2a687:1:product-x402-response:v2",
+        "surface": "web",
+        "principal": "03bbcc040aa244c4d86d3c7929b6b01cff6145e395e9fc4560c829e922261af7",
+        "kind": "sign",
+        "data": {
+          "amountMinor": 40,
+          "lastLedgerSequence": 448601973,
+          "paused": false,
+          "payTo": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+          "policyVersion": "wallet-v1",
+          "rail": "simulated",
+          "txHash": "A79C5A91534388E5A6DFC372A16780FB1A101EC90433BFEA194F61391C797EA0",
+          "walletDailyMinor": 2000
+        }
+      },
+      {
+        "seq": 7,
+        "at": "2026-11-11T14:36:53.344Z",
+        "prevHash": "3e774fc9f0287b0fe8855e6c4c3c9375a02a1befe00f83e88f2c9e6df7fda484",
+        "hash": "e87d1830141a9a6ca38d7c94733adfe43cbdc6faa03a860d8f30c6b4c852b778",
+        "runId": "0416ba73-ca76-4563-8951-494a5fd2a687",
+        "intentId": "0416ba73-ca76-4563-8951-494a5fd2a687:1:product-x402-response:v2",
+        "surface": "web",
+        "principal": "03bbcc040aa244c4d86d3c7929b6b01cff6145e395e9fc4560c829e922261af7",
+        "kind": "settle",
+        "data": {
+          "amountDrops": "40000",
+          "amountMinor": 40,
+          "asset": "XRP",
+          "deliveredAmount": null,
+          "label": "SIMULATED SGD · no real funds",
+          "ledgerIndex": null,
+          "payTo": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+          "payer": null,
+          "policyVersion": "wallet-v1",
+          "profileId": "team-xrpl-explainers",
+          "receiptId": "x402-A79C5A91534388E5A6DFC372A16780FB1A101EC90433BFEA194F61391C797EA0",
+          "resourceId": "product-x402-response",
+          "settledAt": "2026-11-11T14:36:53.343Z",
+          "txHash": "A79C5A91534388E5A6DFC372A16780FB1A101EC90433BFEA194F61391C797EA0",
+          "version": "v2"
+        }
+      },
+      {
+        "seq": 8,
+        "at": "2026-11-11T14:36:53.346Z",
+        "prevHash": "e87d1830141a9a6ca38d7c94733adfe43cbdc6faa03a860d8f30c6b4c852b778",
+        "hash": "86a12ddc2d8af97e0afd377e6b33f9a46f654a824dfa456aa1f39f5791eb2e91",
+        "runId": "0416ba73-ca76-4563-8951-494a5fd2a687",
+        "intentId": "0416ba73-ca76-4563-8951-494a5fd2a687:1:product-x402-response:v2",
+        "surface": "web",
+        "principal": "03bbcc040aa244c4d86d3c7929b6b01cff6145e395e9fc4560c829e922261af7",
+        "kind": "deliver",
+        "data": {
+          "accessible": false,
+          "contentDigest": "4b3755d15948f051b5844557aa5990e2f8da7e4b86f74265887d1b9c4b1ee605",
+          "passageCount": 4,
+          "resourceId": "product-x402-response",
+          "version": "v2"
+        }
+      },
+      {
+        "seq": 9,
+        "at": "2026-11-11T14:36:53.346Z",
+        "prevHash": "86a12ddc2d8af97e0afd377e6b33f9a46f654a824dfa456aa1f39f5791eb2e91",
+        "hash": "bc9e5923e6f2e36395d156426c5a4479f9a1f6a0e9007abbb8d1f0a2ce7e6735",
+        "runId": "0416ba73-ca76-4563-8951-494a5fd2a687",
+        "intentId": "0416ba73-ca76-4563-8951-494a5fd2a687:1:product-x402-response:v2",
+        "surface": "web",
+        "principal": "03bbcc040aa244c4d86d3c7929b6b01cff6145e395e9fc4560c829e922261af7",
+        "kind": "proof",
+        "data": {
+          "contentDigest": "4b3755d15948f051b5844557aa5990e2f8da7e4b86f74265887d1b9c4b1ee605",
+          "failedClaimIds": [],
+          "resourceId": "product-x402-response",
+          "status": "VERIFIED",
+          "verified": true,
+          "version": "v2"
+        }
+      }
+    ],
+    "head": "bc9e5923e6f2e36395d156426c5a4479f9a1f6a0e9007abbb8d1f0a2ce7e6735"
+  }
+}

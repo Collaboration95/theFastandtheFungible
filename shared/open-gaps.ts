@@ -6,7 +6,7 @@ import type { Answer, Gap } from './contracts/index.js'
 const FRAME = new Set('identify explain describe state name list confirm determine whether specific exact detail details information evidence source sources need needs required requires require must one amount amounts number numbers figure figures value values total level'.split(' '))
 /** QUAL: live planners also frame facts as "the difference between…", "what mechanism or control…", "the role of…",
  * "including…", "each one". Not in strict mode. */
-const PLANNER_FRAME = new Set([...FRAME, ...'difference differences differ compare comparison versus mechanism mechanisms control controls role roles including include includes criteria process way ways each any many'.split(' ')])
+const PLANNER_FRAME = new Set([...FRAME, ...'difference differences differ between compare comparison versus mechanism mechanisms control controls role roles including include includes criteria process way ways each any many'.split(' ')])
 /** A gap that asks for a quantity is answered only by a lead sentence that carries a figure. */
 const QUANTITY = /\b(?:how (?:much|many|long)|amounts?|numbers?|figures?|fees?|costs?|prices?|reserves?|rates?|percent(?:age)?|drops)\b/i
 /** "Which transaction(s) / field / flag / type" is answered by the identifier the lead names, not by the word. */
