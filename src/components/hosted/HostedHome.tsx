@@ -50,7 +50,6 @@ export function HostedJudgesCorner({ hosted }: { hosted: Hosted }) {
     </ul>
     {opened && <SharedPayer />}
   </section>
-    <BuildersCorner hosted={hosted} />
     <HostedFooter hosted={hosted} />
   </details>
 }
@@ -123,6 +122,7 @@ export function HostedWaiting({ hosted, onCancel }: { hosted: Hosted; onCancel: 
 export function HostedFooter({ hosted }: { hosted: Hosted }) {
   const links = hostedLinks(hosted)
   return <>
+    <BuildersCorner hosted={hosted} />
     <footer className="ra-hfoot" aria-label="About this project">
       <nav aria-label="Project links"><ul>
         <li><Out href={links.repo}>Source code</Out></li>
