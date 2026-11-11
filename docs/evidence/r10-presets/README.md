@@ -5,6 +5,8 @@ Local `HOSTED=1`, ephemeral ports, live DeepSeek planning/writing, fixture decis
 
 The local hosted-readiness callback is stubbed healthy. These runs exercise local admission and answer generation; they do not qualify HG or a deployed edge.
 
+The fresh live samples preceded the final anaphora and clause-order safeguards. All six recorded plans pass the final offline engine replay; the live samples are not an exact-final-head run.
+
 | Preset | Before buys / S$ | After buys / S$ | Before first lead | After first lead | After counter |
 | --- | --- | --- | --- | --- | --- |
 | XRPL2 | 1 / 0.40, 1 / 0.40 | 1 / 0.40, 1 / 0.40 | an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. | an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. | 2/2, 3/3 |
