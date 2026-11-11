@@ -15,7 +15,7 @@ it('publishes sourced explainers through the ordinary signed delivery and public
  expect(publisher.verification?.status).toBe('unverified')
  expect(publisher.bio).toBe('team-authored explainer · sources cited · not an independent writer · Testnet')
  const articles = corpus.articles.filter(a => a.publisherSlug === publisher.slug)
- expect(articles).toHaveLength(182)
+ expect(articles).toHaveLength(184) // QUAL/P1: + channel-vs-escrow, accept-x402-xrp
  const journal = new PublisherJournal(':memory:')
  try {
   const manifests = createManifests(journal), keys = simulatedKeys(publisher.slug)

@@ -119,8 +119,10 @@ describe('round-8 judge questions, end to end with fixture models', () => {
     expect(final.phase).toBe('DONE')
     expect(final.spentMinor).toBeLessThanOrEqual(200)
   }, 60_000)
-  it('A2 buys one article per clause: the 402 response explainer, then the XRP-on-Testnet explainer, and stops', async () => {
-    expect((await ask(X402)).bought).toEqual(['product-x402-response', 'product-x402-xrpl-settlement'])
+  // P1: the 402 response explainer now also says an agent can pay a 402 in XRP on Testnet (network xrpl:1), so one article
+  // answers both clauses and the second purchase is gone.
+  it('A2 buys one article: the 402 response explainer answers both clauses, and stops', async () => {
+    expect((await ask(X402)).bought).toEqual(['product-x402-response'])
   }, 60_000)
   // H8-05: the live planner words the requested facts differently on every run; the article titled with the question
   // is admitted and preferred from the question alone, so each wording buys it first.
@@ -189,20 +191,23 @@ describe('round-8 judge questions, end to end with fixture models', () => {
   it('C3 leads with what EscrowCancel does, from the reference it bought', async () => {
     const { bought, final } = await ask(FINISH_CANCEL)
     expect(bought).toEqual(['xrpl-tx-escrowcancel'])
-    expect(final.answers.at(-1)!.lead!.map(l => l.text)).toEqual(["EscrowCancel returns expired escrowed principal to the sender after the ledger's cancellation deadline."])
+    // QUAL: the "who can submit" clause is answered in the lead too, by the reference's own sentence.
+    expect(final.answers.at(-1)!.lead!.map(l => l.text)).toEqual(["EscrowCancel returns expired escrowed principal to the sender after the ledger's cancellation deadline.", 'Any account may submit the cancellation, identifying the original Owner and OfferSequence.'])
   }, 60_000)
   it.each([
     [['The difference between EscrowFinish and EscrowCancel', 'Who can submit EscrowFinish and EscrowCancel']],
     [['How EscrowFinish and EscrowCancel differ', 'Which accounts can submit each one']],
     [['EscrowFinish vs EscrowCancel and who may submit each']],
-  ])('C3 always has a lead: a capitalised, cited sentence naming one side, whatever the planner calls the facts: %j', async texts => {
+  ])('C3 always has a lead: capitalised, cited sentences, the first naming one side, whatever the planner calls the facts: %j', async texts => {
     const { bought, final } = await ask(FINISH_CANCEL, 200, texts.map(text => ({ text })))
     expect(bought).toContain('xrpl-tx-escrowcancel')
     const lead = final.answers.at(-1)!.lead!
     expect(lead.length).toBeGreaterThan(0)
+    // QUAL: a second sentence may answer the "who can submit" clause without naming a side ("Any account may submit the
+    // cancellation…"); the first still names one.
+    expect(lead[0].text).toMatch(/Escrow(?:Finish|Cancel)/)
     for (const item of lead) {
       expect(item.text).toMatch(/^[A-Z]/)
-      expect(item.text).toMatch(/Escrow(?:Finish|Cancel)/)
       expect(final.contents.some(c => item.claim.citations.some(ref => ref.resourceId === c.resourceId) && c.body.includes(item.text))).toBe(true)
     }
   }, 60_000)

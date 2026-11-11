@@ -126,8 +126,13 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
       if (extra) selected.push(extra)
     }
   }
-  // P1: two sentences of one cited passage read in the order the writer wrote them.
-  if (selected.length === 2 && selected[0].claim.citations.every(ref => selected[1].claim.citations.some(other => other.resourceId === ref.resourceId && other.spanId === ref.spanId && other.version === ref.version)) && selected[1].si < selected[0].si) selected.reverse()
+  // P1: two lead sentences that answer different clauses read in the question's order ("What does a 402 response contain,
+  // and can my agent pay it with XRP?" leads with the contents, then the XRP sentence), whichever ranked higher.
+  if (selected.length === 2) {
+    const clauses = clausesOf(question)
+    const [a, b] = selected.map(item => clauses.findIndex(clause => answersClause(question, clause, item.text)))
+    if (a >= 0 && b >= 0 && b < a) selected.reverse()
+  }
   let remaining = 40
   return selected.flatMap(({ text, claim }) => {
     const count = text.split(/\s+/).length
