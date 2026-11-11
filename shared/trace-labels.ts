@@ -41,11 +41,12 @@ export const REASON_LABELS: Record<string, string> = {
 
 const lookup = (labels: Record<string, string>, code: string): string | undefined => Object.hasOwn(labels, code) ? labels[code] : undefined
 
+// Aggregate keyword mode can include hybrid results too; it means at least one result used keywords only.
 const SEARCH_MODE_LABELS: Record<string, string> = {
   hybrid: 'Keyword and semantic search',
-  'keyword only (embeddings unavailable)': 'Keyword search (semantic search not used)',
-  'embeddings unavailable': 'Keyword search (semantic search not used)',
-  'keyword only': 'Keyword search (semantic search not used)',
+  'keyword only (embeddings unavailable)': 'Includes results matched by keywords only',
+  'embeddings unavailable': 'Includes results matched by keywords only',
+  'keyword only': 'Includes results matched by keywords only',
 }
 
 export function searchLabel(label: string): string {

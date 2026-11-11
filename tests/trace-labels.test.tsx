@@ -115,7 +115,7 @@ it('keeps healthy fixture rows neutral and actual failures visible', () => {
   const { container, unmount } = render(<Activity run={run} />)
   expect(container.querySelectorAll('.is-warning')).toHaveLength(0)
   expect(container.textContent).toContain('without calling the model')
-  expect(container.textContent).toContain('Keyword search (semantic search not used)')
+  expect(container.textContent).toContain('Includes results matched by keywords only')
   expect(JSON.stringify(run)).toBe(before)
   unmount()
   render(<Activity run={{ ...runWith(event('FAILED', 'Article delivery failed.')), phase: 'FAILED', error: 'Article delivery failed.' }} />)
@@ -144,6 +144,18 @@ it('uses the same search label in Models without inferring an outage from keywor
   expect(screen.getByRole('tabpanel').textContent).toContain(searchLabel(run.labels.search!))
   expect(screen.getByRole('tabpanel').textContent).not.toContain('embeddings unavailable')
   expect(document.querySelector('.ra-models .is-fallback')?.textContent).not.toContain('Research')
+})
+
+it('labels mixed retrieval without claiming that every result skipped semantic search', async () => {
+  const { retrieve } = await import('../server/agents/research')
+  const hit = (articleId: string, searchMode: 'keyword' | 'hybrid') => ({ publisherSlug: 'writer', writerSlug: 'writer', articleId, version: 'v1', url: `/w/writer/articles/${articleId}`, title: articleId, abstract: 'Public preview.', tags: [], tier: 'FREE', priceMinor: 0, relevance: 0.5, publishedAt: '2026-09-01', family: articleId, searchMode })
+  const client = { registry: async () => [{ slug: 'writer', name: 'Writer', kind: 'independent' }], searchPublisher: async () => [hit('keyword-result', 'keyword'), hit('semantic-result', 'hybrid')], readFree: async () => { throw new Error('No article read needed for this search-mode check') } } as unknown as Parameters<typeof retrieve>[0]
+  const found = await retrieve(client, 'search-mode fixture')
+  expect(found.hits.map(h => h.searchMode).sort()).toEqual(['hybrid', 'keyword'])
+  expect(found.search).toBe('keyword only (embeddings unavailable)')
+  const display = eventPresentation(event('SEARCH', `2 hits from 1 writers · ${found.search}`, { searchMode: found.search }))
+  expect(display.detail).toBe('2 hits from 1 writers · Includes results matched by keywords only')
+  expect(display.warning).toBe(false)
 })
 
 it('maps search-mode fields without rewriting words in a question or title', () => {

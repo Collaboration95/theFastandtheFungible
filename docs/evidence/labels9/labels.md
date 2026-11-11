@@ -79,9 +79,9 @@ Display only. The event and reason codes are unchanged in saved runs.
 | `MODEL_FALLBACK / cap` | A model allowance limit was reached; used offline extracts instead. |
 | `MODEL_FALLBACK / invalid` | The model output did not pass validation; used offline extracts instead. |
 | `MODEL_FALLBACK / unavailable` | The model was unavailable; used offline extracts instead. |
-| `keyword only (embeddings unavailable)` | Keyword search (semantic search not used) |
-| `embeddings unavailable` | Keyword search (semantic search not used) |
-| `keyword only` | Keyword search (semantic search not used) |
+| `keyword only (embeddings unavailable)` | Includes results matched by keywords only |
+| `embeddings unavailable` | Includes results matched by keywords only |
+| `keyword only` | Includes results matched by keywords only |
 | `hybrid` | Keyword and semantic search |
 
 Promise pairs such as `client requirements` retain the existing shared promise renderer: “Mentions client and requirements”.

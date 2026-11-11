@@ -33,7 +33,8 @@ entry-bundle budget is unchanged. The tab-loading regression tests await the rea
 
 Persisted server codes, event text, manifests, receipts and verifiers are unchanged.
 The Models tab retains the recorded provider identities and fixture disclosures.
-Keyword-only status does not distinguish disabled embeddings from a failed call,
-so the UI says “semantic search not used”; it does not invent a cause.
+Aggregate keyword status can include mixed keyword and hybrid results, and does not
+distinguish disabled embeddings from a failed call. “Includes results matched by
+keywords only” does not invent a cause or claim semantic search was absent everywhere.
 
 Nothing loosened. No gate threshold, test threshold, timeout or verifier was changed.
