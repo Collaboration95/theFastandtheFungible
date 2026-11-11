@@ -54,15 +54,15 @@ provenance and signed receipt fields are unchanged.
 
 Measured local Pages builds with Lighthouse 12.8.2 at 390 × 844, DPR 3,
 simulated slow 4G (150 ms RTT, 1,638.4 Kbps) and 4× CPU slowdown. Both use the
-same gzip-6 static server. Before is `e5541665` (L1/L2 already applied, eager
-recordings); after is `9050e1eefc2dfff8022ade0b2b08c7c2502f459c`, on integrated main, including the merged JC, KEY, writer-credential and FIN work.
+same gzip-6 static server. The final build and gates use Node 22.23.4. Before is `e5541665` (L1/L2 already applied, eager
+recordings); after is `937e8233689340c6785da9bb803fcb0a7ce8b902`, on integrated main, including the merged JC, KEY, writer-credential and FIN work.
 
 | Metric | Before | After | Target |
 | --- | ---: | ---: | ---: |
-| Initial transfer | 650.4 KiB | 284.4 KiB | <300 KiB |
+| Initial transfer | 650.4 KiB | 271.6 KiB | <300 KiB |
 | Lighthouse performance | 76 | 99 | ≥90 |
-| LCP | 4.77 s | 1.80 s | ≤2.50 s |
-| Entry gzip | 370.7 KiB | 3.4 KiB | ≤80 KB |
+| LCP | 4.77 s | 1.56 s | ≤2.50 s |
+| Entry gzip | 368.6 KiB | 3.4 KiB | ≤80 KB |
 | Question visible, real CDP throttling | 3.69 s | 0.37 s | ≤2.00 s |
 | Lighthouse accessibility | 100 | 100 | — |
 
@@ -74,13 +74,7 @@ These are single cold-load measurements, not deployed or release claims.
 `performance.json` records exact bytes, timings, resource names and entry
 SHA-256s; `lighthouse-{before,after}.json.gz` preserves the raw reports. The
 network browser test confirms one trace initially, another only on demand, and
-a selected-trace preload and one inlined stylesheet, with no CSS requests or initial app preload. An earlier lazy-build run
-reached performance 94 but missed LCP at 2.93 s; the app chunk had no facade ID,
-so its intended preload was absent. The final build resolves it by module ID and
-preloads its stylesheet as well. The next integrated attempt reached 95 but
-missed at 300.7 KiB and 2.70 s LCP. The selected trace now preloads directly
-from HTML; long hex in that recording and its proof list is packed losslessly.
-The UI subset attempt passed transfer at 290.1 KiB and score 94 but missed LCP at 2.71 s; its Mono font remained at the end of the critical chain. Both visible replay fonts now preload from HTML. The selected public question appears in a labelled loading shell before the recording arrives; the app executes only after that recording validates. A following fast-capture run still missed LCP at 2.91 s because app takeover could erase the shell before its first paint. The entry now yields through a paint before takeover, including with cached recordings; a fast native capture confirms the selected public question is the first contentful candidate. A held-recording browser test proves that the shell shows only the question and loading status, with stable heading geometry across six viewport/sidebar/storage cases. The existing variable Geist UI font is subset from 29,400 to 19,824 bytes and Geist Mono from 23,128 to 13,972 bytes; all weights, glyph outlines and line metrics are retained, with full-font fallback for other characters. Waiting for the question font made the handoff stable but still missed at 2.56 s LCP. The final build emits and inlines one combined stylesheet, including verifier styles, removing the blocking CSS round trip without a duplicate dynamic download. The shared app no longer preloads from HTML: it loads after the public question paint, leaving bandwidth for that question and its font. No metric threshold or live check was loosened.
+a selected-trace preload and one inlined stylesheet, with no CSS requests or initial app preload. Earlier attempts retained misses rather than changing budgets: lazy loading scored 94 but missed at 2.93 s LCP; the integrated build reached 95 but missed at 300.7 KiB and 2.70 s; the UI-font subset passed transfer at 290.1 KiB but missed at 2.71 s. A loading-shell attempt still missed at 2.91 s, and waiting for its question font reached 2.56 s. The final build emits and inlines one combined stylesheet, including verifier styles, with no duplicate CSS requests. Only the selected trace preloads from HTML; the shared app loads after the public question paint, leaving bandwidth for the question and its font. A held-recording browser test proves that the shell contains only that public question and loading status, with stable heading geometry across seven viewport/sidebar/storage/font cases. The existing variable Geist UI font is subset from 29,400 to 19,824 bytes and Geist Mono from 23,128 to 13,972 bytes; all weights, glyph outlines and line metrics are retained, with full-font fallback for other characters. No metric threshold or live check was loosened.
 <!-- l12-performance:end -->
 
 ## Routed to the owning lanes
