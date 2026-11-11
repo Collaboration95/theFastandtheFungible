@@ -298,7 +298,9 @@ for (const delay of [6000, 12000]) test(`A11Y status delayed ${delay} ms keeps t
   expect(await serious(page)).toEqual([])
   await expect(page.getByRole('status')).toContainText('Your network is slow; still trying.', { timeout: 7000 })
   await expect(question(page)).toBeVisible({ timeout: 16000 })
-  expect(Date.now() - landed).toBeLessThan(1000)
+  const renderMs = Date.now() - landed
+  expect(renderMs).toBeLessThan(1000)
+  await test.info().attach('status-timing', { body: JSON.stringify({ delayMs: delay, hostedRenderMs: renderMs, statusCalls: calls, failedRequests: failed }), contentType: 'application/json' })
   expect(calls).toBe(1); expect(failed).toBe(0)
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await context.close()
@@ -307,8 +309,8 @@ for (const delay of [6000, 12000]) test(`A11Y status delayed ${delay} ms keeps t
 test('A11Y keyboard Ask → plan → result → verify, idle prefetch, offline recovery and phone targets', async ({ browser }) => {
   const { context, page } = await visitor(browser, 390, 844)
   await page.emulateMedia({ reducedMotion: 'reduce' })
-  const verifierLoads: string[] = []
-  page.on('request', request => { if (/\/assets\/browser-[^/]+\.js$/.test(request.url())) verifierLoads.push(request.url()) })
+  const verifierLoads: string[] = [], verifierTitles: string[] = []
+  page.on('request', request => { if (/\/assets\/browser-[^/]+\.js$/.test(request.url())) { verifierLoads.push(request.url()); void page.title().then(title => verifierTitles.push(title)) } })
   await page.goto('/')
   await expect(question(page)).toBeVisible()
   // Test actual hit areas, including transparent pseudo-elements, rather than only visual boxes.
@@ -333,6 +335,8 @@ test('A11Y keyboard Ask → plan → result → verify, idle prefetch, offline r
   await page.keyboard.press('Tab'); await expect(page.getByRole('button', { name: 'Show work', exact: true })).toBeFocused()
   await expect(page).toHaveTitle(/Answer ready/, { timeout: 60000 })
   await expect.poll(() => verifierLoads.length).toBe(1)
+  await expect.poll(() => verifierTitles.length).toBe(1)
+  expect(verifierTitles[0]).toMatch(/Answer ready/)
   expect(await smallTargets()).toEqual([])
   expect(await serious(page)).toEqual([])
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
@@ -357,7 +361,9 @@ test('A11Y keyboard Ask → plan → result → verify, idle prefetch, offline r
   })
   await verify.getByRole('button', { name: 'Try again' }).focus(); await page.keyboard.press('Enter')
   await expect(verify.getByRole('status')).toContainText(/passed/, { timeout: 30000 })
-  expect(await page.evaluate(() => (window as unknown as { verifyProgressMs: number }).verifyProgressMs)).toBeLessThan(300)
+  const firstProgressMs = await page.evaluate(() => (window as unknown as { verifyProgressMs: number }).verifyProgressMs)
+  expect(firstProgressMs).toBeLessThan(300)
+  await test.info().attach('verification-timing', { body: JSON.stringify({ firstProgressMs, verifierChunkRequests: verifierLoads.length, smallVisiblePhoneTargets: 0, horizontalOverflow: false }), contentType: 'application/json' })
   expect(await page.evaluate(() => document.activeElement !== document.body)).toBe(true)
   expect(await serious(page)).toEqual([])
   await context.close()
