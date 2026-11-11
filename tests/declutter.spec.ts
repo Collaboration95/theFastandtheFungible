@@ -112,7 +112,7 @@ for (const width of [1280, 390]) {
   })
 }
 })
-test.afterAll(() => { writeFileSync(`${dir}/${baseline ? 'before-measurements' : 'measurements'}.json`, JSON.stringify(results, null, 2) + '\n') })
+test.afterAll(() => { if (results.length) writeFileSync(`${dir}/${baseline ? 'before-measurements' : 'measurements'}.json`, JSON.stringify(results, null, 2) + '\n') })
 
 test('baseline counts from pinned production source', async ({ page }) => {
   test.skip(!baseline, 'Only runs against the pinned before bundle.')
