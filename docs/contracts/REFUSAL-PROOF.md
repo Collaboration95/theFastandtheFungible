@@ -74,7 +74,11 @@ Server-rendered (works for link previews, screen readers and phones without our 
 `receipts.json` and runs `sdk/verify.ts` client-side with read-only `tx` lookups on public Testnet nodes. The page states one total: the
 ledger-record row reads "13 of 17 checks passed when shared" and the button's result "15 of 17 checks passed", naming what the browser
 skips (writer credentials: they cannot be checked from the receipts alone). The header chip stays on a phone in a short form
-("Testnet demo · no real value"). Link preview:
+("Testnet demo · no real value"). The full chip uses the sharing surface's canonical wording; hosted is
+"Shared XRPL Testnet demo · live answers, rule-based buying · no real value". Geist and Geist Mono are self-hosted,
+with content-addressed URLs under `/assets/proof-fonts/` for the front's immutable cache. Mono is subset to ASCII for
+hashes, addresses and verifier commands. The downloaded card keeps system fonts and makes no font request.
+Inline tokens match `src/tokens.css` exactly (guarded by `proof-page-style.test.ts`). Link preview:
 `og:title` "Refused to spend · verified on XRPL", a per-proof `og:description` with the question, and one static card,
 `public/og/refusal-proof.png` (`node design/brand/build-proof-og.mjs`).
 

@@ -1,6 +1,8 @@
 // The public proof-of-refusal page and its downloadable card. Server-rendered and dependency-free so a link preview,
 // a screen reader and a phone all get the whole proof without running our app. The one script (page mode) loads the
 // same lazy verifier chunk the app uses and re-checks the receipts in the visitor's browser; nothing else is dynamic.
+import { PROOF_TOKENS } from './proof-tokens.js'
+import { PROOF_FONTS } from './proof-fonts.js'
 import { clip, explorerTx, proofWriter, sgd, type ProofSnapshot } from '../shared/refusal-proof.js'
 
 const esc = (text: string) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
@@ -10,7 +12,7 @@ const sgt = (iso: string) => {
   const d = new Date(new Date(iso).getTime() + 8 * 3_600_000), pad = (n: number) => String(n).padStart(2, '0')
   return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}, ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} SGT`
 }
-const short = (hash: string) => `${hash.slice(0, 10)}…${hash.slice(-8)}`
+const short = (hash: string) => `${hash.slice(0, 8)}…${hash.slice(-8)}`
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`
 const MARK = '<svg class="mark" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M9 4H4v16h5M15 4h5v16h-5M9 15l6-6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg>'
 /** Held coin: a ring with a bar through it, on the 24-unit grid with the 1.5 stroke. */
@@ -20,30 +22,28 @@ export const LEDGER_HOSTS = ['wss://s.altnet.rippletest.net:51233', 'wss://clio.
 export const VERIFY_MODULE = '/verify/proof-verify.js'
 /** The environment chip on a phone: every proof is an XRPL Testnet record with test funds, whichever surface shared it. */
 const ENV_SHORT = 'Testnet demo · no real value'
-/**
- * The environment chip in full (H9-14). A refusal writes no answer from paid text, so the label names only what judged the
- * purchase, in the app's own words ("rule-based buying"), never "fixture models" beside an app chip that says "live answers".
- * Rendered from the snapshot's fields, so a proof shared before this wording reads the same way.
- */
+/** Same full label as the sharing surface, including the hosted demo's live answer model. */
 export const proofEnvironmentLabel = (env: Pick<ProofSnapshot['environment'], 'surface' | 'models'>) =>
-  `${env.surface === 'hosted' ? 'Shared ' : ''}XRPL Testnet demo · ${env.models === 'fixture' ? 'rule-based buying' : 'model-judged buying'} · no real value`
+  env.surface === 'hosted'
+    ? 'Shared XRPL Testnet demo · live answers, rule-based buying · no real value'
+    : `XRPL Testnet demo · ${env.models === 'fixture' ? 'rule-based buying' : 'model-judged buying'} · no real value`
 
 const CSS = `
-:root{--paper:#FBF8F2;--surface:#fff;--ink:#24211E;--muted:#655D55;--rule:#E8E2D8;--rule-2:#C9BFB2;--hover:#F3EEE4;--ok:#2F6B4F;--bad:#9B3E35}
+${PROOF_TOKENS}
 *{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--paper);color:var(--ink);font:400 15px/1.5 "Geist Variable",Geist,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 15px/1.5 var(--f-ui);-webkit-font-smoothing:antialiased}
 a{color:var(--ink);text-underline-offset:3px}:focus-visible{outline:2.5px solid var(--ink);outline-offset:2px;border-radius:6px}
 .top{display:flex;align-items:center;gap:12px;min-height:48px;padding:6px 16px;background:var(--surface);border-bottom:1px solid var(--rule)}
 .brand{display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px;letter-spacing:-.015em;text-decoration:none}
-.chip{margin-left:auto;display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border:1px solid var(--rule);border-radius:6px;background:var(--surface);font-size:12px;font-weight:500;line-height:1.2}
+.chip{margin-left:auto;display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border:1px solid var(--rule-strong);border-radius:6px;background:var(--surface);font-size:12px;font-weight:500;line-height:1.2}
 .chip i{flex:none;width:6px;height:6px;border-radius:6px;background:var(--ok)}.chip{min-width:0}.chip .short{display:none}
 main{max-width:760px;margin:0 auto;padding:40px 16px 48px}
-.eyebrow{display:flex;align-items:center;gap:8px;margin:0 0 10px;color:var(--muted);font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.eyebrow{display:flex;align-items:center;gap:8px;margin:0 0 10px;color:var(--muted);font-size:12px;font-weight:600;letter-spacing:normal}
 .held{flex:none;color:var(--ink)}
 h1{margin:0;font-size:36px;line-height:42px;font-weight:600;letter-spacing:-.025em}
 .lede{margin:12px 0 0;max-width:60ch;color:var(--muted);font-size:16px;line-height:24px}
 .ask{margin:28px 0 0;padding:18px 20px;border:1px solid var(--rule);border-radius:10px;background:var(--surface)}
-.label{margin:0;color:var(--muted);font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.label{margin:0;color:var(--muted);font-size:12px;font-weight:600;letter-spacing:normal}
 blockquote{margin:6px 0 8px;font-size:20px;line-height:28px;font-weight:500;letter-spacing:-.01em;overflow-wrap:anywhere}
 .meta{margin:0;color:var(--muted);font-size:13px}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:16px 0 0;padding:0;border:1px solid var(--rule);border-radius:10px;background:var(--surface);overflow:hidden}
@@ -60,11 +60,11 @@ p{margin:0 0 10px}
 .rest{margin-top:10px}.rest summary{cursor:pointer;color:var(--muted);font-size:13px;padding:2px 2px 8px}.rest .items{margin-top:0}
 .facts{margin:0;border:1px solid var(--rule);border-radius:10px;background:var(--surface)}
 .facts div{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:10px 16px;border-top:1px solid var(--rule)}.facts div:first-child{border-top:0}
-.facts dt{color:var(--muted);font-size:13px}.facts dd{margin:0;overflow-wrap:anywhere}.mono{font:500 13px/1.45 "Geist Mono Variable","Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace}
+.facts dt{color:var(--muted);font-size:13px}.facts dd{margin:0;overflow-wrap:anywhere}.mono{font:500 13px/1.45 var(--f-mono)}
 .ok{color:var(--ok);font-weight:600}
 .verify{margin:14px 0 0;padding:16px 20px;border:1px solid var(--rule);border-radius:10px;background:var(--surface)}
-.btn{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:0 14px;border-radius:6px;border:1px solid var(--ink);background:var(--ink);color:#fff;font:600 13px/1 inherit;cursor:pointer;text-decoration:none}
-.btn:disabled{opacity:.5;cursor:default}.btn.alt{background:var(--surface);color:var(--ink);border-color:var(--rule-2)}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:0 14px;border-radius:6px;border:1px solid var(--ink);background:var(--ink);color:#fff;font:600 13px/1 var(--f-ui);cursor:pointer;text-decoration:none}
+.btn:disabled{opacity:.5;cursor:default}.btn.alt{background:var(--surface);color:var(--ink);border-color:var(--rule-strong)}
 .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px}
 .vhead{margin:14px 0 8px;font-weight:600}.vhead.ok{color:var(--ok)}.vhead.bad{color:var(--bad)}
 .vgroups{margin:0;padding:0;list-style:none}.vgroups>li{border-top:1px solid var(--rule)}
@@ -148,7 +148,7 @@ export function renderProofPage(snapshot: ProofSnapshot, { mode, origin = '', no
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)} · ResearchAgent</title>${meta}
-<style${nonce ? ` nonce="${nonce}"` : ''}>${CSS}</style></head>
+<style${nonce ? ` nonce="${nonce}"` : ''}>${mode === 'page' ? PROOF_FONTS : ''}${CSS}${mode === 'card' ? ':root{--f-ui:system-ui,sans-serif;--f-mono:ui-monospace,monospace}' : ''}</style></head>
 <body>
 <header class="top"><a class="brand" href="/">${MARK}<span>ResearchAgent</span></a><span class="chip"><i></i><span class="full">${esc(envLabel)}</span><span class="short">${ENV_SHORT}</span></span></header>
 <main>
@@ -186,5 +186,5 @@ export const proofCsp = (nonce: string) => [
 ].join('; ')
 
 export function renderProofMissing(nonce = ''): string {
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Proof not found · ResearchAgent</title><style${nonce ? ` nonce="${nonce}"` : ''}>${CSS}</style></head><body><header class="top"><a class="brand" href="/">${MARK}<span>ResearchAgent</span></a></header><main><p class="eyebrow">${HELD}<span>Proof of refusal</span></p><h1>This proof isn’t here.</h1><p class="lede">The link may be mistyped, or the page has passed its retention date. A shared proof never changes, so a link that worked once will not now show something else.</p></main></body></html>`
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Proof not found · ResearchAgent</title><style${nonce ? ` nonce="${nonce}"` : ''}>${PROOF_FONTS}${CSS}</style></head><body><header class="top"><a class="brand" href="/">${MARK}<span>ResearchAgent</span></a></header><main><p class="eyebrow">${HELD}<span>Proof of refusal</span></p><h1>This proof isn’t here.</h1><p class="lede">The link may be mistyped, or the page has passed its retention date. A shared proof never changes, so a link that worked once will not now show something else.</p></main></body></html>`
 }

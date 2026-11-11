@@ -1,0 +1,3 @@
+// Self-hosted Fontsource Geist; content hashes use the hosted front's immutable /assets/ cache.
+// Mono keeps ASCII only: hashes, addresses and verifier commands. Regenerate as described in the evidence.
+export const PROOF_FONTS = "@font-face{font-family:\"Geist Variable\";src:url(\"/assets/proof-fonts/geist-latin-wght-normal-19f9c92546aa.woff2\") format(\"woff2\");font-style:normal;font-weight:100 900;font-display:swap}\n@font-face{font-family:\"Geist Mono Variable\";src:url(\"/assets/proof-fonts/geist-mono-latin-wght-normal-43e0ecc837d3.woff2\") format(\"woff2\");font-style:normal;font-weight:100 900;font-display:swap;unicode-range:U+0020-007E}\n"
