@@ -62,6 +62,7 @@ try {
       const evidence=[]
       for(const width of [1280,390]) {
         await page.setViewportSize({width,height:width===390?844:900}); await page.goto(origin)
+        await page.getByText('Check our work · recorded run and ledger',{exact:true}).click()
         await page.getByText('Sandbox scoreboard',{exact:true}).click()
         const panel=page.getByRole('region',{name:'Sandbox scoreboard'})
         await panel.getByText('XRPL Testnet · test funds · includes our own test runs since 11 Nov',{exact:true}).waitFor()
