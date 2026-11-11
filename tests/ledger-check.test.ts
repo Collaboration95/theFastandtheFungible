@@ -23,6 +23,9 @@ describe('ledger check subjects', () => {
     ['What are XRP account reserves?', 'reserve'], ['How much XRPL owner reserve is held?', 'reserve'],
     ['What fee does EscrowFinish charge?', 'fee'], ['What are XRPL transaction fees?', 'fee'],
     ['What is the RLUSD currency code?', undefined], ['What are mutual fund fees?', undefined], ['How do escrows work?', undefined],
+    ['What are XRP ETF management fees?', undefined], ['What fee does an exchange charge to withdraw XRP?', undefined],
+    ['What reserves back an XRP ETF?', undefined], ['What backing reserves does RLUSD hold on XRPL?', undefined],
+    ['What XRPL owner reserve applies to an ETF escrow?', 'reserve'], ['What network fee applies when an exchange sends XRP?', 'fee'],
     ['What are bank reserves?', undefined], ['How many drops are in one XRP?', undefined], ['How much does EscrowFinish cost?', 'fee'], ['What are XRPL transaction costs?', 'fee'], ['Which XRPL transactions are allowed?', undefined],
   ])('%s → %s', (question, kind) => expect(ledgerKind(question)).toBe(kind))
 })

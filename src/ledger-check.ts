@@ -11,9 +11,10 @@ export const drops = (v: unknown): v is string => typeof v === 'string' && /^(0|
 export function ledgerKind(question: string): LedgerKind | undefined {
   const q = question.toLowerCase()
   if (/\brlusd\b/.test(q) && /\bescrow(?:s|ed|ing)?\b|\block(?:ing|ed)?\b|\ballowtrustlinelocking\b/.test(q)) return 'rlusd-escrow'
-  if (/\bxrpl\b|\bxrp\b|\brippled\b/.test(q) && /\breserves?\b|\bowner\s*count\b/.test(q)) return 'reserve'
-  const tradingFee = /\btrading\b|\bswap\b|\bamm\b|\bpool\b/.test(q) && !/\btransaction\b|\bnetwork\b|\brippled\b/.test(q)
-  if (!tradingFee && /\bxrpl\b|\bxrp\b|\brippled\b|\bescrow(?:create|finish|cancel)?\b/.test(q) && (/\bfees?\b/.test(q) || /\bescrow(?:create|finish|cancel)\b/.test(q) && /\bcosts?\b|\bcharges?\b/.test(q) || /\btransaction\s+costs?\b/.test(q))) return 'fee'
+  const backingReserve = /\betfs?\b|\bstablecoins?\b|\bbacking\b|\bcollateral\b/.test(q) && !/\baccount\b|\bowner\b|\bownercount\b/.test(q)
+  if (!backingReserve && /\bxrpl\b|\bxrp\b|\brippled\b/.test(q) && /\breserves?\b|\bowner\s*count\b/.test(q)) return 'reserve'
+  const otherFee = /\btrading\b|\bswap\b|\bamm\b|\bpool\b|\betfs?\b|\bbrokerage\b|\bmanagement\b|\bwithdrawals?\b|\bexchange\b/.test(q) && !/\btransaction\b|\bnetwork\b|\brippled\b/.test(q)
+  if (!otherFee && /\bxrpl\b|\bxrp\b|\brippled\b|\bescrow(?:create|finish|cancel)?\b/.test(q) && (/\bfees?\b/.test(q) || /\bescrow(?:create|finish|cancel)\b/.test(q) && /\bcosts?\b|\bcharges?\b/.test(q) || /\btransaction\s+costs?\b/.test(q))) return 'fee'
 }
 export function validated(result: Record<string, unknown>): number {
   if (result.validated !== true || !positive(result.ledger_index)) throw new Error('Validated ledger required')

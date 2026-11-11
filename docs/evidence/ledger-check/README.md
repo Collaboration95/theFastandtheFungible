@@ -31,6 +31,6 @@ Screenshots and width/axe checks were refreshed after A11Y #487 merged. The full
 
 ## Verification
 
-40 new targeted tests pass. Full check:fast, local gate, published PR-head gate and post-merge gate are recorded in the PR / local-gate receipts.
+46 new targeted tests pass. Full check:fast, local gate, published PR-head gate and post-merge gate are recorded in the PR / local-gate receipts.
 
 Nothing was loosened.
