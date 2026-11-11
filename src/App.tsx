@@ -140,7 +140,7 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
     const tick = () => { if (!document.hidden) void refreshDemo() }
     const timer = setInterval(tick, waiting || ownQueued || connection || detecting ? 3000 : 15000)
     const offline = () => setConnection('offline')
-    const online = () => { setError(current => current.startsWith('You’re offline.') || current === 'Connection lost. Reconnecting…' ? '' : current); tick() }
+    const online = () => { setConnection(undefined); setError(current => current.startsWith('You’re offline.') || current === 'Connection lost. Reconnecting…' ? '' : current); tick() }
     window.addEventListener('online', online); window.addEventListener('offline', offline); document.addEventListener('visibilitychange', tick)
     return () => { clearInterval(timer); window.removeEventListener('online', online); window.removeEventListener('offline', offline); document.removeEventListener('visibilitychange', tick) }
   }, [demo, detecting, waiting, ownQueued, connection, refreshDemo])
