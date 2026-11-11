@@ -6,7 +6,7 @@ import LedgerReceipt from '../src/components/LedgerReceipt'
 import { readLedgerFact } from '../src/ledger-check'
 import bank from '../eval/questions/bank.v1.json'
 vi.mock('../src/ledger-check', async original => ({ ...await original<typeof import('../src/ledger-check')>(), readLedgerFact: vi.fn() }))
-afterEach(() => { cleanup(); vi.resetAllMocks(); delete (window as unknown as { desktop?: unknown }).desktop })
+afterEach(() => { cleanup(); vi.resetAllMocks(); vi.unstubAllEnvs(); delete (window as unknown as { desktop?: unknown }).desktop })
 it('hides the card with no read for 20 bank questions and on desktop', () => {
   for (const q of bank.questions.slice(0, 20)) { const r = render(<LedgerCheck question={q.question} />); expect(r.container.textContent).toBe(''); r.unmount() }
   ;(window as unknown as { desktop?: unknown }).desktop = {}
@@ -50,4 +50,11 @@ it('refreshes a changed question even when it has the same ledger subject', asyn
   r.rerender(<LedgerCheck question="What fee does EscrowFinish pay?" />)
   await screen.findByText('Fresh read')
   expect(screen.queryByText('First read')).toBeNull()
+})
+
+it('keeps the static replay tx-only, with no purchase reserve read', () => {
+  vi.stubEnv('MODE', 'browser-demo')
+  const read = vi.fn()
+  expect(render(<LedgerReceipt create={'A'.repeat(64)} finish={'B'.repeat(64)} read={read} />).container.textContent).toBe('')
+  expect(read).not.toHaveBeenCalled()
 })

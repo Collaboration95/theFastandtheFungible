@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { allowanceText, builderLines, canAsk, explorerTx, hostedLinks, HOSTED_DAILY_QUESTIONS, HOSTED_ENDS, JUDGE_RUN, questionCap, minorText, proofLink, waitCopy, type HomeState, type Hosted } from '../../hosted'
 import VerifyInBrowser from './VerifyInBrowser'
-import { SharedPayer } from '../LedgerCheck'
+import { SharedPayer } from '../LedgerCheckEntry'
 import './judges-corner.css'
 
 const Out = ({ href, children }: { href: string; children: ReactNode }) => <a href={href} target="_blank" rel="noopener noreferrer">{children}<span className="ra-sr"> (opens in a new tab)</span></a>

@@ -25,10 +25,10 @@ The spec’s 7 seconds was illustrative: **both actual pairs took 2 seconds**, u
 
 At 390 px, document scrollWidth = 390. Axe serious/critical violations = **0**. At 1280 px the same check is recorded in `ui-acceptance.json`. No motion is added. Failure, Retry, late-response isolation and desktop hiding are covered in `ledger-ui.test.tsx`. P3 is hidden for 20 research-bank questions; unrelated RLUSD and general finance questions are also excluded.
 
-All connections use exactly the verifier’s two public Testnet endpoints. Desktop policies are untouched and P3 is hidden there. The hosted app has no restrictive connect-src policy in its static HTML/server/host configuration; these are the same sockets already used by VerifyInBrowser. No Mainnet endpoints were added. L12 has not merged at this base; amounts use two decimals and dates use the specified SGT format. Existing transaction links do not add hash labels.
+All connections use exactly the verifier’s two public Testnet endpoints. Desktop policies are untouched and P3 is hidden there. The hosted app has no restrictive connect-src policy in its static HTML/server/host configuration; these are the same sockets already used by VerifyInBrowser. No Mainnet endpoints were added. The static Pages replay retains its tx-only policy: X3 is shown in the hosted/local app, while P3 and X3 are hidden in the static replay. The ledger UI is loaded in a separate chunk to preserve the existing initial-JS budget. L12 has not merged at this base; amounts use two decimals and dates use the specified SGT format. Existing transaction links do not add hash labels.
 
 ## Verification
 
-38 new targeted tests pass. Full check:fast, local gate, published PR-head gate and post-merge gate are recorded in the PR / local-gate receipts.
+39 new targeted tests pass. Full check:fast, local gate, published PR-head gate and post-merge gate are recorded in the PR / local-gate receipts.
 
 Nothing was loosened.
