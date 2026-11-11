@@ -74,6 +74,7 @@ test('static Pages UC3: draft, verified upgrade, refund, receipt, citation and W
     await expect(page).toHaveTitle(/Answer ready/, { timeout: 30000 })
     await expect(page.getByRole('region', { name: /Payment: NotFinancialTimes/ })).toContainText('Verified')
     await expect(page.locator('.demo-shell > summary').getByText(/^Replay · simulated payments, recorded .* · fictional writers · no real value$/)).toBeVisible()
+    await expect(page.locator('.demo-transactions')).toHaveCount(0)
     await page.goto(`http://127.0.0.1:${port}/theFastandtheFungible/demo/?scenario=UC1`)
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Bank of Japan')
     await page.keyboard.press('ControlOrMeta+n')

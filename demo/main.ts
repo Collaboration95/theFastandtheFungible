@@ -29,11 +29,13 @@ const testnetRun = (recording: Recording) => recording.run.labels.settlement.inc
 // Recording dates read in Singapore time, as the submission and the site do.
 const recordedOn = (recording: Recording) => { const at = recording.run.events[0]?.at; return at ? dateSGT(at) : 'date unavailable' }
 const scenarioOf = (recording: Recording) => { const key = recordingIndex.find(item => item.runId === recording.run.runId)?.scenario ?? ''; return key === 'UC3-key-reveal' ? '' : key }
+let updateTransactions: (() => Promise<void>) | undefined
 const showLabel = () => {
   for (const label of document.querySelectorAll('.demo-label')) label.textContent = ENV.replay(recordedOn(active), testnetRun(active))
   document.querySelector('.demo-short')!.textContent = ENV.replayShort(testnetRun(active))
   const picker = document.querySelector<HTMLSelectElement>('.demo-banner select')
   if (picker) picker.value = scenarioOf(active)
+  void updateTransactions?.()
 }
 const history = () => [...visited.values()].map(({ run }) => ({ runId: run.runId, question: run.question, phase: run.phase, stopped: false, budgetMinor: run.budgetMinor, spentMinor: run.spentMinor, at: run.events[0].at, pinned: pinned.has(run.runId) }))
 // No request escapes this entry: only committed recordings and in-memory navigation.
@@ -75,7 +77,6 @@ const app = import('../src/main')
 await activeReady
 await app
 
-const testnet = testnetRun(active)
 const banner = document.querySelector('.demo-banner')!
 const runYourself = banner.querySelector('.demo-install')!
 const shell = banner.querySelector<HTMLDetailsElement>('.demo-shell')!
@@ -97,10 +98,20 @@ controls.append(picker, pause)
 options.append(controls, runYourself, askOwn)
 showLabel()
 
-if (testnet) {
+let checkedRun: string | undefined, generation = 0
+const ledgerSockets = new Set<WebSocket>()
+updateTransactions = async () => {
+  if (checkedRun === active.run.runId) return
+  checkedRun = active.run.runId
+  const current = ++generation, recording = active
+  for (const socket of ledgerSockets) socket.close()
+  ledgerSockets.clear()
+  options.querySelector('.demo-transactions')?.remove()
+  if (!testnetRun(recording)) return
   // @ts-expect-error Dependency-free browser JavaScript shared with the ledger page.
   const { refresh } = await import('../site/ledger/ledger.js')
-  const rows = scenarioOf(active) === '' ? (await import('../docs/evidence/replay-nov11/key-reveal/transactions.json')).default.transactions : scenarioOf(active) === 'UC-key-reveal' ? (await import('../docs/evidence/round4-j1/replays/no-show/transactions.json')).default.transactions : (await import('../docs/evidence/round4-j1/replays/payment/transactions.json')).default.transactions
+  const rows = scenarioOf(recording) === '' ? (await import('../docs/evidence/replay-nov11/key-reveal/transactions.json')).default.transactions : scenarioOf(recording) === 'UC-key-reveal' ? (await import('../docs/evidence/round4-j1/replays/no-show/transactions.json')).default.transactions : (await import('../docs/evidence/round4-j1/replays/payment/transactions.json')).default.transactions
+  if (current !== generation) return
   const panel = document.createElement('details'); panel.open = false; panel.className = 'demo-transactions'
   const summary = document.createElement('summary')
   const summaryText = document.createElement('span'), toggle = document.createElement('span')
@@ -116,7 +127,16 @@ if (testnet) {
     state.textContent = ' · Recorded validated tesSUCCESS; checking live…'; states.set(row.hash, state); p.append(a, state); list.append(p)
   }
   options.append(panel)
-  void refresh(rows, WebSocket, (hash: string, status: string) => {
+  class RecordingSocket extends WebSocket {
+    constructor(url: string) {
+      // A previous refresh may try its next node after the visitor changes runs.
+      if (current !== generation) throw Error('Replay changed')
+      super(url)
+      ledgerSockets.add(this)
+    }
+  }
+  void refresh(rows, RecordingSocket, (hash: string, status: string) => {
+    if (current !== generation) return
     states.get(hash)!.textContent = ` · ${status}`
     checked++; if (status.startsWith('validated')) verified++
     summaryText.textContent = checked === rows.length
@@ -124,3 +144,4 @@ if (testnet) {
       : `Checking hashes live… ${checked}/${rows.length}`
   })
 }
+void updateTransactions()

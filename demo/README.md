@@ -29,7 +29,9 @@ that merge when publishing. Build output is ignored and ships via site publishin
 The entry indexes the six recordings by scenario, run ID and question. It downloads
 and validates only the selected recording; other recordings load when selected or
 opened from the app. There is no idle prefetch. Live hash checks use only that
-recording's transaction list. The header reuses the app's preloaded Geist font
+recording's transaction list. When in-app navigation changes runs, the old live
+ledger sockets close and its proof panel is removed; only the newly displayed
+Testnet run starts a check. The header reuses the app's preloaded Geist font
 with `font-display: swap`, avoiding a second font request.
 Replay money, hashes and commands use a 15 KiB subset of the same variable
 Geist Mono (all weights retained); other characters fall back to the app's
