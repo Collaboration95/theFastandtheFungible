@@ -8,7 +8,8 @@ const canonical = new Set<string>([...Object.values(ENV).filter(value => typeof 
 export function presentationDrift(code: string, file: string, headingClasses = new Set<string>()): Drift[] {
   const found: Drift[] = []
   const add = (rule: string, text: string) => { if (!found.some(v => v.rule === rule && v.text === text)) found.push({ rule, text }) }
-  const text = (value: string) => {
+  const text = (value: string, visible = false) => {
+    if (visible) for (const m of value.matchAll(/\b\d{4}-\d{2}-\d{2}(?:T[\d:.]+Z)?\b/g)) add('date', m[0])
     for (const m of value.matchAll(/S\$(-?\d+(?:\.\d+)?)/g)) if (!/^-?\d+\.\d{2}$/.test(m[1])) add('money', m[0])
     for (const m of value.matchAll(/\b([a-f0-9]{4,})(…|\.{3})([a-f0-9]*)(?![a-z0-9])/gi)) if (m[1].length !== 8 || m[3].length !== 8 || m[2] !== '…' || m[0] !== m[0].toUpperCase()) add('hash', m[0])
     if (/^(?:Shared (?:XRPL Testnet demo|demo ·)|XRPL Testnet demo|Testnet demo|Simulated demo|Simulated ·|Replay ·)/.test(value.trim()) && !canonical.has(value.trim()) && !/no real value$/.test(value.trim())) add('environment', value.trim())
@@ -40,7 +41,7 @@ export function presentationDrift(code: string, file: string, headingClasses = n
   const javascript = (value: string, kind = ts.ScriptKind.TSX) => {
     const source = ts.createSourceFile(file, value, ts.ScriptTarget.Latest, true, kind)
     const visit = (n: ts.Node) => {
-      if (ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n) || ts.isJsxText(n) || ts.isTemplateHead(n) || ts.isTemplateMiddle(n) || ts.isTemplateTail(n)) text(n.text)
+      if (ts.isStringLiteral(n) || ts.isNoSubstitutionTemplateLiteral(n) || ts.isJsxText(n) || ts.isTemplateHead(n) || ts.isTemplateMiddle(n) || ts.isTemplateTail(n)) text(n.text, ts.isJsxText(n) || ts.isJsxExpression(n.parent) && !ts.isJsxAttribute(n.parent.parent))
       if (ts.isCallExpression(n) && ts.isPropertyAccessExpression(n.expression)) {
         const name = n.expression.name.text, target = n.expression.expression.getText(source)
         if (/^(slice|substring|substr)$/.test(name) && /^(?!location\.)[^]*?(?:hash|fingerprint|\btx\b|\.head$)/i.test(target)) add('hash', n.getText(source))
@@ -50,6 +51,7 @@ export function presentationDrift(code: string, file: string, headingClasses = n
       }
       if (ts.isNewExpression(n) && /DateTimeFormat/.test(n.expression.getText(source))) add('date', n.getText(source))
       if (ts.isTemplateExpression(n) && /S\$/.test(n.getText(source)) && n.templateSpans.some((span, i) => (i ? n.templateSpans[i-1].literal.text : n.head.text).endsWith('S$'))) add('money', n.getText(source))
+      if (ts.isTemplateExpression(n)) for (const span of n.templateSpans) if (ts.isPropertyAccessExpression(span.expression) && /^(date|snapshotDate|settledAt|createdAt|readAt)$/.test(span.expression.name.text)) add('date', span.expression.getText(source))
       if (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.PlusToken && /['"]S\$['"]/.test(n.left.getText(source))) add('money', n.getText(source))
       if (ts.isJsxElement(n) || ts.isJsxFragment(n)) n.children.forEach((child, i) => {
         if (ts.isJsxText(child) && /S\$$/.test(child.text) && ts.isJsxExpression(n.children[i+1])) add('money', n.getText(source))
@@ -58,7 +60,7 @@ export function presentationDrift(code: string, file: string, headingClasses = n
         if (!/^`\$\{address\.slice\(0, 6\)\}…\$\{address\.slice\(-4\)\}`$/.test(n.getText(source))) add('hash', n.getText(source))
       }
       if (ts.isBinaryExpression(n) && /…|\.\.\./.test(n.getText(source)) && (n.getText(source).match(/\.(?:slice|substring|substr)\(/g) ?? []).length >= 2) add('hash', n.getText(source))
-      if (ts.isJsxExpression(n) && !ts.isJsxAttribute(n.parent) && n.expression && ts.isPropertyAccessExpression(n.expression) && /^(settledAt|createdAt|readAt)$/.test(n.expression.name.text)) add('date', n.getText(source))
+      if (ts.isJsxExpression(n) && !ts.isJsxAttribute(n.parent) && n.expression && ts.isPropertyAccessExpression(n.expression) && /^(date|snapshotDate|settledAt|createdAt|readAt)$/.test(n.expression.name.text)) add('date', n.getText(source))
       if (ts.isPropertyAssignment(n) && n.name.getText(source) === 'fontFamily') css(`body{font-family:${n.initializer.getText(source).replace(/^['"]|['"]$/g, '')}}`)
       if (ts.isPropertyAssignment(n) && n.name.getText(source) === 'fontWeight') {
         const attribute = n.parent.parent?.parent
@@ -83,7 +85,7 @@ export function presentationDrift(code: string, file: string, headingClasses = n
     doc.querySelectorAll('[style]').forEach(n => css(`${n.tagName.toLowerCase()}{${n.getAttribute('style')}}`))
     doc.querySelectorAll('link[href]').forEach(n => { if (/fonts\.(?:googleapis|gstatic)\.com/.test(n.getAttribute('href') ?? '')) add('font', 'remote font source') })
     const walker = doc.createTreeWalker(doc.body, 4)
-    while (walker.nextNode()) (walker.currentNode.textContent ?? '').split(/\. (?=[A-Z])/).forEach(text)
+    while (walker.nextNode()) (walker.currentNode.textContent ?? '').split(/\. (?=[A-Z])/).forEach(value => text(value, true))
 
     doc.defaultView?.close()
   } else javascript(code)

@@ -5,6 +5,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { dateSGT, whenSGT } from '../site/brand/presentation.js'
 
 // Dates shown on the page are Singapore dates (UTC+8), like the counted days.
 const sgtDate = iso => new Date(Date.parse(iso) + 8 * 3600e3).toISOString().slice(0, 10)
@@ -17,7 +18,7 @@ const short = sha => sha.slice(0, 7)
 const ext = (url, label, cls = '') => `<a${cls ? ` class="${cls}"` : ''} href="${esc(url)}">${esc(label)}<svg class="ext" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M8 5H5v14h14v-3M12 5h7v7M19 5l-9 9" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></a>`
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const day = d => `${Number(d.slice(8, 10))} ${MONTHS[Number(d.slice(5, 7)) - 1]}`
-const longDay = d => new Date(`${d}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
+const longDay = d => dateSGT(`${d}T00:00:00Z`)
 const pct = (v, max) => `${Math.max(0, Math.min(100, (v / max) * 100)).toFixed(2)}%`
 const slug = id => `stop-${id.replaceAll('.', '-')}`
 // Inline code in generated bullets: `x` → <code>x</code>, everything else escaped.
@@ -212,7 +213,7 @@ function method(d) {
   return `<section class="sec method" id="method" aria-labelledby="method-h"><div class="sec-head"><p class="kick"><span class="idx">—</span>Method</p><h2 id="method-h">How we count</h2>
 <p class="lede">Counts are dated and query-defined: facts at ${ext(`${REPO}/commit/${d.source_sha}`, short(d.source_sha), 'mono')} (${esc(longDay(d.as_of))}). SingHacks ran ${esc(d.event.label)}; the prototype was frozen earlier as tag <span class="mono">${esc(d.event.baseline.ref)}</span> (commit ${ext(`${REPO}/commit/${d.event.baseline.sha}`, short(d.event.baseline.sha), 'mono')}, ${esc(day(d.event.baseline.date.slice(0, 10)))}), and the closest snapshot to the event's end is ${ext(`${REPO}/commit/${d.event.snapshot.sha}`, short(d.event.snapshot.sha), 'mono')} (${esc(day(d.event.snapshot.date.slice(0, 10)))}). Both are shown rather than picking one.</p></div>
 <div class="card"><table class="qt"><caption class="sr">Metric definitions</caption><thead><tr><th scope="col">Metric</th><th scope="col">Value</th><th scope="col">Definition</th></tr></thead><tbody>${d.queries.map(q => `<tr><th scope="row">${esc(q.metric)}</th><td class="mono">${esc(typeof q.value === 'number' ? n(q.value) : q.value)}</td><td>${esc(q.definition)}</td></tr>`).join('')}</tbody></table>
-<p class="foot">Rebuilt with <code>npm run site:progress</code> from git, GitHub, CHANGELOG.md, docs/SFF-PUSH.md (latest entry ${esc(d.tracker.latest)}) and the evidence files linked above. Generated ${esc(d.generated_at.replace('T', ' ').slice(0, 16))} UTC. Missing data stops the build instead of showing a stale number.</p></div>
+<p class="foot">Rebuilt with <code>npm run site:progress</code> from git, GitHub, CHANGELOG.md, docs/SFF-PUSH.md (latest entry ${esc(d.tracker.latest)}) and the evidence files linked above. Generated ${esc(whenSGT(d.generated_at))}. Missing data stops the build instead of showing a stale number.</p></div>
 </section>`
 }
 

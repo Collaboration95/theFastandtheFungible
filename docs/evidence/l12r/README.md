@@ -57,7 +57,8 @@ fresh compilation instead of allowing a second handwritten formatter.
 `tests/one-product-exceptions.json` documents every exact file/rule/text exception
 and its reason. These preserve archived October reports, slides and maps,
 verbatim historical CLI evidence, relative trace timers, a tested SGT alias,
-wire discriminators and intentionally offline downloadable proof-card fonts.
+wire discriminators, archived scorecard timestamp strings and intentionally
+offline downloadable proof-card fonts.
 New drift, undocumented exceptions and stale exceptions fail.
 
 `planted-drift.log` records an actual temporary src/ CSS file with Arial and

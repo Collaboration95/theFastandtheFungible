@@ -60,6 +60,9 @@ it('rejects planted drift for every rule', () => {
     ['hash', '<p>ABCDEF…1234</p>', 'broken.tsx'],
     ['hash', 'const short = `${hash.slice(0,8)}…${hash.slice(-8)}`', 'broken.ts'],
     ['date', '<time>{receipt.settledAt}</time>', 'broken.tsx'],
+    ['date', '<p>Snapshot 2026-11-11</p>', 'broken.html'],
+    ['date', '<p>{row.date}</p>', 'broken.tsx'],
+    ['date', 'const label = `Date: ${row.date}`', 'broken.js'],
     ['date', 'const date = new Date().toLocaleDateString()', 'broken.ts'],
   ]) expect(presentationDrift(code, file).some(v => v.rule === rule), `${rule}: ${code}`).toBe(true)
 })
