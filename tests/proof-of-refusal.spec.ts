@@ -77,6 +77,10 @@ test('a visitor shares a refusal; anyone can open and check it; nobody else’s 
   await expect(proof.locator('meta[property="og:image"]')).toHaveAttribute('content', /\/og\/refusal-proof\.png$/)
   const og = await proof.request.get('/og/refusal-proof.png')
   expect(og.status()).toBe(200); expect(og.headers()['content-type']).toBe('image/png')
+  await proof.evaluate(() => document.fonts.ready)
+  expect(await proof.evaluate(() => [...document.fonts].filter(f => f.status === 'loaded').map(f => f.family))).toContain('Geist Variable')
+  expect(await proof.locator('#verify').evaluate(el => { const s = getComputedStyle(el); return [s.fontFamily, s.fontSize, s.fontWeight] })).toEqual(['"Geist Variable", sans-serif', '13px', '600'])
+  expect(await proof.locator('.eyebrow, .label').evaluateAll(elements => elements.map(el => getComputedStyle(el).textTransform))).not.toContain('uppercase')
   expect(await serious(proof)).toEqual([])
   await shot(proof, 'hosted-proof-1440')
   // One count: the total before the browser check is the total after it, and what the browser skips is named.
@@ -90,6 +94,8 @@ test('a visitor shares a refusal; anyone can open and check it; nobody else’s 
   expect(await anon.context.cookies()).toEqual([])
   await proof.locator('#vout').scrollIntoViewIfNeeded()
   await shot(proof, 'hosted-proof-verified-1440')
+  await proof.setViewportSize({ width: 1280, height: 900 })
+  expect(await serious(proof)).toEqual([])
   // The card is a self-contained download: no scripts, no network.
   const [download] = await Promise.all([proof.waitForEvent('download'), proof.getByRole('link', { name: 'Download proof card' }).click()])
   expect(download.suggestedFilename()).toMatch(/^proof-of-refusal-[a-f0-9]{8}\.html$/)
