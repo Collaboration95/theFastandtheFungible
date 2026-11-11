@@ -134,3 +134,7 @@ it.each(['What XRPL Credentials attest to', 'What an XRPL Credential proves', 'W
 it('recognizes an explicit matching date across calendar formats', () => {
   expect(fixtureCoverage([{ id: 'dated', text: 'RLUSD issuer permission as of 2026-11-11' }], [{ ref: 'p1', text: 'RLUSD requires AllowTrustLineLocking; the issuer had not enabled it on 11 November 2026.' }])).toEqual({ dated: 'supported' })
 })
+it.each(['The eligible accounts that may submit each EscrowFinish and EscrowCancel transaction', 'Which eligible accounts may submit each EscrowFinish and EscrowCancel transaction', 'Eligible submitters for both EscrowFinish and EscrowCancel transactions'])('submitter eligibility binds each requested transaction: %s', text => {
+  expect(fixtureCoverage([{ id: 'roles', text }], [{ ref: 'p1', text: 'Any account may submit EscrowFinish. EscrowCancel returns principal to the owner.' }])).toEqual({ roles: 'missing' })
+  expect(fixtureCoverage([{ id: 'roles', text }], [{ ref: 'p1', text: 'Eligible submitters include any account: any account may submit EscrowFinish or EscrowCancel transactions.' }])).toEqual({ roles: 'supported' })
+})

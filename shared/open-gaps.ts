@@ -54,8 +54,10 @@ export function factSupportBoundary(fact: string, passage: string): boolean {
       const members = new Set(names.map(memberOf))
       if (!groups.every(group => group.some(member => members.has(member)))) return false
     }
-    if (/\b(?:who|submitters?|eligible accounts?|which accounts?)\b/i.test(fact) && /\bsubmit\w*\b/i.test(fact)
-      && !/\b(?:anyone|any account|(?:the )?(?:owner|sender|buyer|writer|destination|subject|issuer))\b[^.!?]{0,90}\b(?:may|can|must|allowed to)\s+submit\b|\bsubmitted by\s+(?:any|the|an?)\b/i.test(passage)) return false
+    if (/\b(?:who|submitters?|eligible accounts?|which accounts?)\b/i.test(fact) && /\bsubmit\w*\b/i.test(fact)) {
+      const eligibility = sentences(passage).filter(text => /\b(?:anyone|any account|(?:the )?(?:owner|sender|buyer|writer|destination|subject|issuer))\b[^.!?]{0,90}\b(?:may|can|must|allowed to)\s+submit\b|\bsubmitted by\s+(?:any|the|an?)\b/i.test(text))
+      if (!eligibility.length || answerNames('transaction', fact, '').some(name => !eligibility.some(text => new RegExp(`\\b${name}\\b`).test(text)))) return false
+    }
     if (/\bsubmit\w*\b/i.test(fact) && answerNames('transaction', fact, '').some(name => !new RegExp(`\\b${name}\\b`).test(passage))) return false
     if (/\bvot(?:e|es|ing)\b/i.test(fact) && !sentences(passage).some(text => !answerBoilerplate(text) && /\bvot(?:e|es|ing)\b/i.test(text) && !/\b(?:neither|no|not|without)\b[^.!?]{0,80}\bvot/i.test(text))) return false
     if (/\bcredentials?\b/i.test(fact) && /\bcontains?\b/i.test(fact)
