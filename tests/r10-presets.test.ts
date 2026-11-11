@@ -16,6 +16,12 @@ const doc = (text: string) => {
 }
 const answerWith = (text: string): Answer => ({ version: 1, conclusion: text, claims: [], openGaps: [], provider: 'fixture', model: 'test' })
 
+it.each(['Which transaction creates Tickets and which transaction cancels offers?', 'What transaction creates Tickets, and which one cancels offers?', 'Which transaction creates Tickets; what transaction cancels offers?'])('preserves the frozen first fact before question-clause order: %s', question => {
+  const { content, claim } = doc('TicketCreate creates Tickets for parallel transactions. OfferCancel cancels offers for an account.')
+  const lead = leadFinding(question, [claim], [content], 'OfferCancel cancels offers')
+  expect(lead[0]?.text).toBe('OfferCancel cancels offers for an account.')
+})
+
 describe('QUAL: recorded live preset plans', () => {
   let results: LiveShapedResult[]
   beforeAll(async () => { vi.stubEnv('SEARCH_EMBEDDINGS', 'off'); results = await runLiveShaped(plans) }, 120_000)

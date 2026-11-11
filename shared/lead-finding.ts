@@ -49,9 +49,9 @@ const firstFactOf = (question: string, firstRequirement?: string) => {
   let requested = firstRequirement && !/^Basic facts on\b/i.test(firstRequirement) ? firstRequirement : undefined
   // A planner can introduce a narrower protocol name into a general question. That bookkeeping must not veto a
   // direct answer to the user's question (for example spending controls merely because the fact adds a network).
-  const queryVocabulary = new Set(words(expandProtocolQuery(question)))
+  const queryVocabulary = new Set(stems(expandProtocolQuery(question)))
   const plannedNames = requested?.match(/\b(?:[A-Z]{2,}[A-Z0-9]*|[A-Z][a-z]+(?:[A-Z][a-z]+)+|[a-z]+\d+[a-z]*)\b/g) ?? []
-  if (plannedNames.some(name => !words(name).every(word => queryVocabulary.has(word)))) requested = undefined
+  if (plannedNames.some(name => !stems(name).every(word => queryVocabulary.has(word)))) requested = undefined
   return (requested ?? question.split(/[,;?]\s*(?:and\s+)?(?=what|which|how|when|why)/i)[0]).replace(/^.*?[.!]\s+(?=(?:what|which|how|when|why|is|can)\b)/i, '')
 }
 /** A which/what question may be answered by a sentence of the asked shape or one that
@@ -138,8 +138,10 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
     if (second) selected.push(second)
   }
   // P1: two lead sentences that answer different clauses read in the question's order ("What does a 402 response contain,
-  // and can my agent pay it with XRP?" leads with the contents, then the XRP sentence), whichever ranked higher.
-  if (selected.length === 2) {
+  // and can my agent pay it with XRP?" leads with the contents, then the XRP sentence). An explicit frozen first fact
+  // retains its priority; clause order applies only when that fact did not supply the ranking target.
+  const frozenFirst = firstRequirement && firstFactOf(question, firstRequirement) === firstRequirement
+  if (selected.length === 2 && !frozenFirst) {
     const clauses = clausesOf(question)
     const [a, b] = selected.map(item => clauses.findIndex(clause => answersClause(question, clause, item.text)))
     if (a >= 0 && b >= 0 && b < a) selected.reverse()
