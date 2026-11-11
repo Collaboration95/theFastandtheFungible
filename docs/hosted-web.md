@@ -426,7 +426,8 @@ every render, so reboots and redeploys keep it. Only these names are accepted
 `HOSTED_{RESEARCH,DECISION}_{INPUT,OUTPUT}_USD_PER_MILLION`,
 `HOSTED_DECISION_OUTPUT_TOKENS`, `HOSTED_QUESTION_CAP_MINOR`,
 `HOSTED_ADMISSIONS_UNTIL`, `HOSTED_{DECK,VIDEO,PROGRESS,REPLAY}_URL`,
-`WALLET_DAILY_CAP_MINOR` and `DECISION_PROVIDER` (`openai`, `cloudflare` or
+`WALLET_DAILY_CAP_MINOR`, `WRITER_CREDENTIAL_DOMAIN` (exactly 64 hexadecimal
+characters, uppercase or lowercase), and `DECISION_PROVIDER` (`openai`, `cloudflare` or
 `fixture`; a fixture decision model is labelled on every answer and receipt).
 
 The script builds from `git archive SHA` locally, uses each Dockerfile's own

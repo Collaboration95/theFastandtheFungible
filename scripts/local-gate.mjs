@@ -153,7 +153,7 @@ export function inputsFor(id, files, read, unknown = false) {
   else if (id === 'gate-tests') match = file => /^scripts\/local-gate|^shared\/resource-scope\.ts$/.test(file)
   else if (id === 'lint') match = file => /\.(?:[cm]?[jt]sx?)$/.test(file) || /^eslint/.test(file)
   else if (id === 'typecheck') match = file => /^(?:src|server|shared|publisher|sdk|mcp|examples|tests|eval|demo)\//.test(file) || /^(?:scripts\/.*\.ts|(?:vite|playwright|vitest).*\.ts)$/.test(file)
-  else if (id === 'app-build') match = file => /^(?:src|server|shared|publisher|sdk|mcp|examples|tests|eval|demo|data|design)\//.test(file) || /^(?:index\.html|vite\.config)/.test(file)
+  else if (id === 'app-build') match = file => /^(?:src|server|shared|publisher|sdk|mcp|examples|tests|eval|demo|data|design)\//.test(file) || /^(?:index\.html|vite\.config|scripts\/bundle-budget\.)/.test(file)
   else if (id === 'unit') match = file => /^(?:src|server|shared|publisher|sdk|mcp|tests|eval|desktop|packages|data|demo|docs|site|design|examples|\.github|\.devcontainer)\//.test(file) || /^vitest\.config/.test(file)
   else if (['chaos', 'key-reveal'].includes(id)) match = file => /^(?:server|shared|publisher|sdk|mcp|data|eval\/decisions|tests\/fixtures|scripts\/chaos(?:\/|\.mjs))/.test(file)
   else if (id === 'python') match = file => /^(?:packages\/sdk(?:-python)?|server|shared|publisher|sdk|mcp|data|eval\/decisions|tests\/fixtures)\//.test(file)

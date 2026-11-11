@@ -218,6 +218,12 @@ test('per-step hashes isolate helpers, follow references and cover binary bytes,
   assert.notEqual(key(unit), beforeCreators)
 })
 
+test('the app build cache includes the shared deploy bundle budget', () => {
+  const files = ['package.json', 'scripts/bundle-budget.mjs']
+  const read = file => Buffer.from(file === 'package.json' ? '{}' : 'export const INITIAL_JS_BUDGET = 160000')
+  assert.ok(inputsFor('app-build', files, read).includes('scripts/bundle-budget.mjs'))
+})
+
 test('cache accepts successes only, --no-cache forces a miss, and same-tree commit IDs do not enter step keys', async () => fixture(async ({ scope, root, write, commit }) => {
   const before = snapshot(root, scope), file = join(root, 'cached.json')
   const entry = { schema: SCHEMA, key: 'abc', state: 'success', durationMs: 12, source: before }

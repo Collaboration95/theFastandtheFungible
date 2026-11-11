@@ -51,6 +51,14 @@ the browser app build to serialize their shared `dist` writer.
 
 An explicit UI build precedes unit tests, including the packaged-app smoke; a
 cached build is materialized whenever an uncached unit consumer needs it.
+Every production `npm run build` checks initial JS gzip at **<170,000 bytes**
+on **Node 22**, the deploy toolchain. `scripts/bundle-budget.mjs` walks only
+`index.html` and its transitive static manifest imports, counts each file once,
+and sums Node `gzipSync` lengths. The deploy's `browser-perf` test uses the same
+helper and limit. Node 26's different zlib previously measured main at 169,998
+bytes while Node 22 measured 170,326; a non-22 build now fails explicitly.
+`check:fast` remains source/unit checks; the local gate's `app-build` enforces
+the static budget before browser suites run.
 
 All checks execute against a `ResourceScope` temporary checkout of the captured
 Git tree, using installed `node_modules`. Ignored files and local runtime stores

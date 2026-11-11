@@ -1,17 +1,13 @@
 import { test, expect } from '@playwright/test'
-import { readFile, mkdir, writeFile } from 'node:fs/promises'
-import { gzipSync } from 'node:zlib'
+import { mkdir, writeFile } from 'node:fs/promises'
+import { initialJsGzip, INITIAL_JS_BUDGET } from '../scripts/bundle-budget.mjs'
 
 // @perf: timing budgets; the local gate runs this alone (browser-perf) so sibling load cannot skew CLS or latency.
 test('production preview: initial JS, interactive, input → paint, and full UC2 replay CLS budgets', { tag: '@perf' }, async ({ page }, info) => {
   test.setTimeout(45_000)
-  const manifest = JSON.parse(await readFile('dist/.vite/manifest.json', 'utf8')) as Record<string, { file: string; imports?: string[] }>
-  const files = new Set<string>()
-  const visit = (key: string) => { const chunk = manifest[key]; if (files.has(chunk.file)) return; files.add(chunk.file); chunk.imports?.forEach(visit) }
-  visit('index.html')
-  const initialJsGzip = (await Promise.all([...files].map(async file => gzipSync(await readFile(`dist/${file}`)).length))).reduce((a, b) => a + b, 0)
-  const paletteFile = [...files].find(file => file.includes('command-palette'))!
-  const paletteJsGzip = gzipSync(await readFile(`dist/${paletteFile}`)).length
+  const chunks = initialJsGzip()
+  const initialBytes = chunks.reduce((total, chunk) => total + chunk.gzip, 0)
+  const paletteJsGzip = chunks.find(chunk => chunk.file.includes('command-palette'))!.gzip
   await page.addInitScript(() => {
     const metrics = { cls: 0, paints: [] as { key: string; ms: number }[] }
     Object.assign(window, { foundationMetrics: metrics })
@@ -49,13 +45,13 @@ test('production preview: initial JS, interactive, input → paint, and full UC2
   await page.evaluate(() => { (window as unknown as { foundationMetrics: { cls: number } }).foundationMetrics.cls = 0 })
   await expect(page).toHaveTitle(/Answer ready/, { timeout: 60_000 })
   const cls = await page.evaluate(() => (window as unknown as { foundationMetrics: { cls: number } }).foundationMetrics.cls)
-  const result = { initialJsGzip, paletteJsGzip, interactiveMs, paletteP95Ms: p95('k'), viewSwitchP95Ms: p95('12'), uc2Cls: cls, environment: 'local Chromium, production vite preview, fixture replay, 1280×720' }
+  const result = { initialJsGzip: initialBytes, paletteJsGzip, interactiveMs, paletteP95Ms: p95('k'), viewSwitchP95Ms: p95('12'), uc2Cls: cls, environment: 'local Chromium, production vite preview, fixture replay, 1280×720' }
   await mkdir('.playwright/evidence', { recursive: true })
   await writeFile('.playwright/evidence/perf.json', JSON.stringify(result, null, 2))
   await info.attach('performance', { body: JSON.stringify(result, null, 2), contentType: 'application/json' })
   console.log(JSON.stringify(result))
   expect(paletteJsGzip).toBeLessThan(10_000)
-  expect(initialJsGzip).toBeLessThan(170_000)
+  expect(initialBytes).toBeLessThan(INITIAL_JS_BUDGET)
   expect(interactiveMs).toBeLessThan(2000)
   expect(result.paletteP95Ms).toBeLessThan(50)
   expect(result.viewSwitchP95Ms).toBeLessThan(50)

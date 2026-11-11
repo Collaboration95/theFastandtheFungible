@@ -1,5 +1,54 @@
 import { test, expect, type Page } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
+import { readFileSync } from 'node:fs'
+
+test('optional conversation loads on demand and preserves replies and keyboard focus', async ({ page }) => {
+  await page.route('**/api/scope', route => route.fulfill({ json: { questions: [], plan: { restatement: 'Greeting', subqueries: ['Greeting'] }, chat: { reply: 'A fixture greeting.' }, label: 'fixture' } }))
+  let requested = false
+  let release!: () => void
+  const blocked = new Promise<void>(resolve => { release = resolve })
+  await page.route('**/ChatThread-*.js', async route => { requested = true; await blocked; await route.continue() })
+  await page.goto('/?record=1')
+  const question = page.getByRole('textbox', { name: 'Your question' })
+  await expect(question).toBeEditable()
+  expect(requested).toBe(false)
+  await question.fill('Hello')
+  await question.press('Control+Enter')
+  try {
+    await expect(page.getByRole('status')).toHaveText('Loading conversation…')
+    expect(requested).toBe(true)
+  } finally { release() }
+  await expect(page.getByRole('log', { name: 'Conversation' })).toContainText('A fixture greeting.')
+  await expect(page.getByRole('textbox', { name: 'Your message' })).toBeFocused()
+  await expect(page.getByRole('log')).toContainText('no sources searched · nothing bought')
+})
+
+for (const width of [1280, 390]) for (const [module, label, ready] of [['ReceiptSheet', 'Receipt', 'Simulated payment · no ledger entry'], ['ShowWork', 'Show work', 'What the agent did, in order.']] as const) {
+  test(`optional ${label} at ${width}px loads only on demand and keeps its loading sheet accessible`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 844 })
+    const snapshot = JSON.parse(readFileSync('src/fixtures/uc/uc2.json', 'utf8'))
+    await page.route('**/runs/fixture-uc2', route => route.fulfill({ json: snapshot }))
+    await page.route('**/runs/fixture-uc2/events', route => route.fulfill({ contentType: 'text/event-stream', body: ': fixture\n\n' }))
+    let requested = false
+    let release!: () => void
+    const blocked = new Promise<void>(resolve => { release = resolve })
+    await page.route(`**/${module}-*.js`, async route => { requested = true; await blocked; await route.continue() })
+    await page.goto('/?run=fixture-uc2&pace=real')
+    await expect(page).toHaveTitle(/Answer ready/)
+    expect(requested).toBe(false)
+    if (width === 390 && label === 'Receipt') await page.getByRole('button', { name: /^Net cost/ }).click()
+    await page.getByRole('button', { name: label, exact: true }).first().click()
+    const dialog = page.getByRole('dialog', { name: label, exact: true })
+    try {
+      await expect(dialog.getByRole('status')).toHaveText(`Loading ${label.toLowerCase()}…`)
+      expect(requested).toBe(true)
+      expect((await dialog.boundingBox())!.height).toBeGreaterThanOrEqual(420)
+    } finally { release() }
+    await expect(dialog).toContainText(ready)
+    await page.keyboard.press('Escape')
+    await expect(dialog).not.toBeVisible()
+  })
+}
 
 export async function tabTo(page: Page, name: string) {
   for (let i = 0; i < 60; i++) {
