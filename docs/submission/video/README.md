@@ -65,6 +65,11 @@ browser access, raw-URL fetch or synthetic result substitution is used.
 Current-main features postdate v1.1.1; the published tools prove compatibility,
 not inclusion of those features in the release.
 
+The video wrapper warms the server's real advisory identity cache before opening
+the local take. The evidence harness omits production's startup prewarm; after
+the asynchronous refresh change, its first question can otherwise retain pending
+observations. The recorder still requires three actual verified UI badges.
+
 ## Owner audio
 
 `voiceover.txt` and `demo-video-script.md` contain the exact owner lines, with the

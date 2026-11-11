@@ -1,4 +1,4 @@
-// Where the browser scenes get their product: the hosted judge demo, or a local HOSTED=1 stack as the fallback.
+// Local HOSTED=1 product and replay builds for the browser scenes.
 // The local stack is the same one the hosted UI tests use (tests/helpers/hosted-stack.ts): fixture models, the
 // simulated rail, a throwaway HTTPS origin, ephemeral ports. It never touches 5100, 8788 or 8790.
 import { spawn } from 'node:child_process'
@@ -33,7 +33,7 @@ function livez(port) {
   })
 }
 
-/** Start the local HOSTED=1 stack. Returns { url, stackDir, close() }. Builds the web app first if dist/ is missing. */
+/** Build and start local HOSTED=1, waiting for real advisory identity observations. */
 export async function startLocalStack() {
   await must('npm', ['run', 'build'], { cwd: ROOT })
   const ports = await allocateDemoPorts()
@@ -52,14 +52,14 @@ export async function startLocalStack() {
     env[key] = ['team-builder-notes', 'team-xrpl-explainers', 'open-records'].includes(slug)
       ? privateWriterKey(key) : Wallet.generate().seed
   }
-  const child = spawn(process.execPath, ['--import', 'tsx', 'docs/evidence/writer-credentials-nov12/local-hosted.ts'], { cwd: ROOT, env, stdio: ['ignore', 'ignore', 'pipe'] })
+  const child = spawn(process.execPath, ['--import', 'tsx', 'scripts/video/lib/local-stack.mjs'], { cwd: ROOT, env, stdio: ['ignore', 'ignore', 'pipe'] })
   child.stderr.on('data', () => {})
   for (let i = 0; i < 300; i++) {
     if (child.exitCode !== null) throw new Error('local identity stack exited early; no private child diagnostics are printed')
-    if (await livez(ports.web)) break
+    if (existsSync(join(stackDir, 'identity-ready.json')) && await livez(ports.web)) break
     await sleep(300)
   }
-  if (!(await livez(ports.web))) { child.kill('SIGTERM'); throw new Error('local stack never became live') }
+  if (!existsSync(join(stackDir, 'identity-ready.json')) || !(await livez(ports.web))) { child.kill('SIGTERM'); throw new Error('local stack identity checks did not become ready; no success label substituted') }
   return {
     url: `https://localhost:${ports.web}`, stackDir,
     async close() {
