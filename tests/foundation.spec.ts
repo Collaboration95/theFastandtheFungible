@@ -138,7 +138,7 @@ test('failure recovery views: labelled fallback, slow Testnet, stopped unused pa
   snapshot = { ...snapshot, phase: 'BUY', stopped: false, labels: { ...snapshot.labels, settlement: XRPL_LABEL }, intents: [{ ...snapshot.intents[0], status: 'SUBMITTING' }], receipts: [], grants: [], events: [], spentMinor: 0, reservedMinor: 90 }
   await page.reload()
   await expect(page.locator('.ra-side').getByText(/Waiting/)).toBeVisible()
-  await expect(page.getByRole('button', { name: /Testnet demo · no real value/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'XRPL Testnet demo · fixture models · no real value', exact: true })).toBeVisible()
   snapshot = { ...ucRuns.UC2, intents: [], receipts: [], grants: [], spentMinor: 0, decisions: ucRuns.UC2.decisions.map(round => ({ ...round, rows: round.rows.map(row => ({ ...row, verdict: 'SKIP_OVER_BUDGET' as const })) })) }
   await page.reload()
   await expect(page.getByText(/Budget too small for eligible sources/)).toBeVisible()

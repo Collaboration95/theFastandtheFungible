@@ -47,8 +47,10 @@ test('UX-1: honest labels, UC1/2/3 money, receipts, reflow and recovery', async 
   })
   const labels = { indicators: await page.locator('.ra-env-trigger:visible').count(), rawText: await count(), receipt: 0 }
   expect(labels.indicators).toBe(1)
-  // Includes the mandatory refund rail and explicit unanchored simulated label (#366).
-  expect(labels.rawText).toBe(3)
+  // The canonical pill names both simulated payments and fixture models;
+  // the mandatory refund rail and unanchored simulated label remain (#366).
+  await expect(env).toBeVisible()
+  expect(labels.rawText).toBe(4)
   await leak.getByRole('button', { name: 'Receipt' }).click()
   const receipt = page.getByRole('dialog', { name: 'Receipt', exact: true })
   await expect(receipt).toContainText('None (simulated)')

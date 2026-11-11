@@ -92,6 +92,8 @@ a selected-trace preload and one inlined stylesheet, with no CSS requests or ini
 - JC: `src/components/hosted/HostedEnv.tsx`: use `ENV.hostedWriters` for the live
   writers caption and the canonical ENV values for environment headings.
   Retain the fictional-writer disclosure wherever the catalogue includes them.
+  Change the standalone “Test funds have no real value” explanation to “No
+  real value”; keep “test funds” beside the per-question amount.
   The local simulated hosted preview currently inherits the live green dot;
   use amber for simulated payments and green for Testnet, retaining offline states.
 - JC: `src/components/hosted/HostedHome.tsx`: judges’ corner title uses
