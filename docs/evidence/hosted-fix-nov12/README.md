@@ -4,7 +4,7 @@
 
 - Fresh, separate browser contexts at 1280×900 and 390×844: zero history; all three team writers carry the exact #482 identity label, with credential transaction and domain links. No sales yet. Open Records is team-authored with **Synthetic demo content** retained. Nine fictional writers remain unverified in the folded catalogue.
 - The live credential cache is allowed to warm through read-only catalogue requests before those fresh contexts open. A cold check was temporarily unavailable and recovered on its existing retry; the production 1.2 s RPC timeout and cache retry interval are unchanged.
-- `browser.json` binds identity observations to validated ledger 22253344 and records no horizontal overflow and zero serious/critical axe violations at either width. Screenshots are `writers-1280.png` and `writers-390.png`.
+- `browser.json` binds identity observations to validated ledger 22253504 and records no horizontal overflow and zero serious/critical axe violations at either width. Screenshots are `writers-1280.png` and `writers-390.png`.
 - Production inner nginx config run locally (only container paths/listen port adapted): `curl -I` for `/demo/` and `/demo` returns 302 and the canonical Pages replay location; see `demo-headers.txt`. Both production nginx layers have exact redirects. The hosted image still builds only the app.
 - Targeted coverage: fresh hosted session with mocked credential cache, signed catalogue metadata, missing/forged/wrong-wallet/wrong-slug proofs, no premium bodies, pending/unavailable labels and fictional badge isolation, replay URL consistency. Full merge gates recorded in the PR.
 
