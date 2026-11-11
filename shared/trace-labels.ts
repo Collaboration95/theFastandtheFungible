@@ -39,6 +39,8 @@ export const REASON_LABELS: Record<string, string> = {
   SKIP_NO_GAP: 'No missing fact to fill', SKIP_LOW_TRUST: 'Writer trust too low',
 }
 
+const lookup = (labels: Record<string, string>, code: string): string | undefined => Object.hasOwn(labels, code) ? labels[code] : undefined
+
 export function searchLabel(label: string): string {
   return label.replace(/\bhybrid\b/g, 'Keyword and semantic search').replace(/(?:keyword only \()?embeddings unavailable\)?|keyword only/gi, 'Keyword search (semantic search not used)')
 }
@@ -53,19 +55,20 @@ export function traceLabel(label: string): string {
   const cleaned = searchLabel(label)
     .replace(/ · H (\d+(?:\.\d+)?)→(\d+(?:\.\d+)?) · C (\d+(?:\.\d+)?)→(\d+(?:\.\d+)?)/, (_all, h0: string, h1: string, c0: string, c1: string) => ` · Trust ${(Number(h0) * Number(c0)).toFixed(2)} → ${(Number(h1) * Number(c1)).toFixed(2)}`)
     .replace(/ · InvoiceID = (?:sha256\(invoiceId\)|original tx)/, '')
-  if (REASON_LABELS[cleaned]) return REASON_LABELS[cleaned]
-  return cleaned.replace(/\b[A-Za-z][A-Za-z0-9]*(?:_[A-Za-z0-9]+)+\b/g, token => REASON_LABELS[token] ?? token.replaceAll('_', ' ').toLowerCase())
+  const known = lookup(REASON_LABELS, cleaned)
+  if (known) return known
+  return cleaned.replace(/\b[A-Za-z][A-Za-z0-9]*(?:_[A-Za-z0-9]+)+\b/g, token => lookup(REASON_LABELS, token) ?? token.replaceAll('_', ' ').toLowerCase())
 }
 
 export function eventPresentation(event: TraceEvent): { title: string; detail: string; warning: boolean } {
   const reason = fallbackReason(event)
   const fallback = event.type === 'MODEL_FALLBACK'
-  const detail = fallback ? FALLBACK_LABELS[reason ?? ''] ?? 'Used offline extracts instead of the model; the reason was not recorded in a recognised form.' : traceLabel(event.label)
+  const detail = fallback ? lookup(FALLBACK_LABELS, reason ?? '') ?? 'Used offline extracts instead of the model; the reason was not recorded in a recognised form.' : traceLabel(event.label)
   const warning = fallback ? !['guard', 'cap'].includes(reason ?? '')
     : ['FAILED', 'DECISION_UNAVAILABLE', 'MANIFEST_DROPPED', 'ROYALTY_UNRESOLVED'].includes(event.type)
       || (event.type === 'WIRE' && typeof event.data?.status === 'number' && event.data.status >= 400 && event.data.status !== 402)
       || event.data?.ok === false || event.data?.failed === true
       || (Array.isArray(event.data?.unavailable) && event.data.unavailable.length > 0)
       || /\b(?:FAILED_NOT_SETTLED|DELIVERY_FAILED|CLAIM_FAILED|CHALLENGE_REJECTED|CHALLENGE_REFUSED)\b/.test(String(event.data?.status ?? event.label))
-  return { title: EVENT_LABELS[event.type] ?? 'Additional activity', detail, warning }
+  return { title: lookup(EVENT_LABELS, event.type) ?? 'Additional activity', detail, warning }
 }

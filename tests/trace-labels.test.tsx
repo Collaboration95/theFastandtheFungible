@@ -33,6 +33,18 @@ it('maps every production event literal, including phase events and older trace 
   for (const type of types) expect(EVENT_LABELS[type], type).toBeTruthy()
 })
 
+it('covers the server fallback-reason union rather than only its own map', () => {
+  const union = /type ModelFallbackReason = ([^\n]+)/.exec(readFileSync('server/telemetry.ts', 'utf8'))![1]
+  const reasons = [...union.matchAll(/'([^']+)'/g)].map(match => match[1]).sort()
+  expect(Object.keys(FALLBACK_LABELS).sort()).toEqual(reasons)
+})
+
+it('handles unknown labels and reasons that match object prototype names', () => {
+  expect(eventPresentation(event('constructor', 'toString')).title).toBe('Additional activity')
+  expect(eventPresentation(event('constructor', 'toString')).detail).toBe('toString')
+  expect(eventPresentation(event('MODEL_FALLBACK', '', { reason: '__proto__' })).detail).toContain('reason was not recorded')
+})
+
 for (const type of Object.keys(EVENT_LABELS)) it(`renders event ${type} without its code`, () => {
   const { container } = render(<Activity run={runWith(event(type))} />)
   expect(container.textContent).not.toContain(type)
