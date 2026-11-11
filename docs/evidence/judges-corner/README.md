@@ -5,7 +5,8 @@ on `origin/main` at `bd52beff`.
 The UI checks use a local `HOSTED=1` stack with fixture models and simulated
 settlement. The recorded bundle is from the real hosted Testnet run of
 11 November: live research, rule-based purchase decisions, team-authored
-writers, no real value. No hosted question was asked for these checks.
+writers, no real value. No question was asked on the live hosted demo for these checks. The local
+fixture privacy test asks one simulated question to check session isolation.
 
 ## Real stage check on this Mac
 
