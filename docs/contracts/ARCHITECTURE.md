@@ -172,6 +172,7 @@ the complete original schema. SQLite rows, transactions and persistence format a
 unchanged; a rollback or external edit cannot turn stale cache entries into authority.
 
 The asynchronous research loop yields between content additions, answer processing
+(including between the free draft and the cited answer, which compose from the same snapshot)
 and decision rounds so immediately resolved fixture promises do not monopolize the
 worker. No yield crosses a SQLite transaction, signing persistence or the synchronous
 Stop-check-to-purchase handoff. Calibration starts in the existing order.

@@ -94,6 +94,51 @@ follow host load:
 The release soak therefore starts only when the 1-minute load is under 3, as the release brief requires; the
 loop budget is not changed.
 
+## Loop p99: one synchronous block composed the answer twice (SOAK3)
+
+The second dry run (tag at `927989d0`, after the harness fix) passed both memory gates (slope 2.68, median growth
+41 MiB) and failed **loop p99 at 51.4 ms** on one interval, at load 2.7 with the idle control steady (11.2 ms).
+The gate is the worst one-second p99 of the engine worker's event-loop delay over about 340 measured seconds. Across
+the full-length runs the typical second sat at 32–34 ms, so ordinary variation could reach 50.
+
+The harness's `--spans` diagnostic (300 measured asks, same seed and history) attributes **all** 24 measured lags over
+30 ms to one place: the synchronous start of `RunLoop.answer` (913 of 913 ms; store calls 13% of it). With fixture
+providers nothing in it awaits, so a single block read the run, wrote the trace, composed the free draft
+(`freeDraft`: extractive pass, `summarizeAnswer`, lead ranking), appended `FREE_DRAFT` and then composed the cited answer
+(`writeAnswer` → `composeAnswer`: the same work again) before its first `await`.
+
+Fix (`server/agents/loop.ts`): `await yieldToLoop()` between the free draft and the cited answer, the pattern #358
+introduced for the same reason. Both compositions still use the snapshot read at the start of `answer`, so outputs are
+identical; no SQLite transaction, signing step or Stop-to-purchase handoff spans the yield. A second split inside
+`composeAnswer` was tried and dropped: it changed nothing measurable (median 23.6 vs 23.7 ms).
+
+| 300-ask `--spans` diagnostic | per-second p99 median | p90 | max | lags > 30 ms |
+|---|---:|---:|---:|---:|
+| `927989d0` | 33.4 | 37.5 | 48.0 | 24 |
+| with the yield | **23.7** | **25.4** | **27.1** | 2 |
+
+Full-length runs (acceptance arguments, heavy lock; "control" is the idle control process in the worst second):
+
+| run | p99 median | p90 | max | control in that second | median load |
+|---|---:|---:|---:|---:|---:|
+| dry run 1 (`374743dd`) | 34.1 | 37.2 | 47.5 | 11.2 | 4.2 |
+| A/B v1.1.0 | 32.6 | 35.1 | 41.8 | 11.1 | 2.5 |
+| A/B main | 33.3 | 35.3 | 40.5 | 14.7 | 3.0 |
+| fix run 1 (`5bc9151f`) | 32.1 | 35.1 | 40.0 | 12.0 | 2.2 |
+| fix run 2 | 31.9 | 37.3 | 40.4 | 12.0 | 2.6 |
+| fix run 3 | 33.5 | 36.6 | 60.0 | 12.5 | 3.8 |
+| dry run 2 (`927989d0`) | 33.4 | 36.0 | 51.4 | 11.2 | 2.9 |
+| yield run 1 (`b3f341f6`) | **22.8** | **26.4** | 50.9 | 13.6 | 3.8 |
+| yield run 2 (`b3f341f6`) | **22.8** | **25.7** | 114.5 | **89.5** | 3.7 |
+
+The typical second drops by a third (median 32–34 → 22.8 ms, p90 35–37 → 26 ms). The worst seconds that remain
+are not the answer step:
+- yield run 2's 114.5 ms coincides with an 89.5 ms stall of the idle control process, so the whole host stalled;
+- yield run 1's 50.9 ms second had an 18 ms scavenge and 55 ms of GC pauses in that second;
+- both runs had other lanes loading the host (median load 3.7–3.8).
+
+The release soak starts only when the 1-minute load is under 3; no budget or measurement changed.
+
 ## Reproduce
 
 ```sh

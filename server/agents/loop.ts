@@ -146,6 +146,9 @@ export class RunLoop {
         scoreTrace('time-to-first-answer-s', elapsedMs / 1000, 'ask → validated free draft')
         this.store.appendEvent(runId, { type: 'FREE_DRAFT', label: 'Draft ready · free sources only', data: { answer: draft, elapsedMs, provider: draft.provider, model: draft.model } })
       }
+      // The free draft and the cited answer are two full compositions; with fixture providers neither awaits, so one
+      // synchronous block ran both. Yield between them (same snapshot, same outputs) so the worker's loop stays responsive.
+      await yieldToLoop()
     }
     const compositionStarted = Date.now()
     let lastProgressAt = -Infinity

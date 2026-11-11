@@ -38,6 +38,7 @@ Patch release on v1.1.0 with the fixes from the round-9 mock judges (#472, #473,
 - Hosted guard: qualifies the API per Host and re-checks it in the background, failing closed after 60 s without a good answer; the uptime check returns to a 60 s period (#474).
 - Every install and verify line (README, install guide, SDK and MCP guides, Export menu, site, submission pack) pins v1.1.1.
 - Release soak (dev loop): the soak harness appends its progress as one short line per ask instead of re-serialising its whole growing report inside the process it measures. That self-noise had swung RSS median growth between 38 and 132 MiB on identical code, so the v1.1.1 dry run was refused (slope 6.81, median 132 MiB) and v1.1.0's own code failed the same budget on a rerun. Three runs after the fix: slope 1.25–1.57, median growth 23–38 MiB; budgets and the measurement are unchanged ([evidence](docs/evidence/soak-nov11b/README.md)).
+- The engine yields between the free draft and the cited answer: with offline models both were composed in one uninterrupted block, the longest the engine ran. The typical second's worst event-loop delay falls from 32–34 to 23 ms in the release soak; answers are identical ([evidence](docs/evidence/soak-nov11b/README.md#loop-p99-one-synchronous-block-composed-the-answer-twice-soak3)).
 
 ### Fixed
 
