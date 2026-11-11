@@ -66,6 +66,8 @@ overflow or serious/critical axe violations.
   mode. No changes to JC-owned files in this PR.
 - KEY: `src/components/ShowWork.tsx`: render `receipt.settledAt` through
   `whenSGT` inside `<time dateTime={receipt.settledAt}>` instead of raw ISO.
+  In its confirmed-plan line, replace the trailing check glyph with the shared
+  check Icon under the existing successful-plan condition.
 - KEY: `src/components/PaymentRow.tsx`: put refund hash in a `.mono` span and
   its full value in the link's `title`. Its existing `shortHash` import already
   receives the shared uppercase 8…8 rule without changing this file.
@@ -77,10 +79,13 @@ overflow or serious/critical axe violations.
   disclosure outside the environment label so “no real value” stays last.
 - KEY: `src/verify/key-on-ledger.ts`: re-export `shortTx` as `shortHex` instead
   of its duplicate formatter (already uppercase 8…8 for key/condition values).
+- X2: `src/components/WriterVerification.tsx`: replace the domain link’s
+  trailing external-arrow glyph with `Icon name="external" size={16}`. Keep
+  “Testnet, identity only, not KYC” and both destinations unchanged.
 - FIN: do not rebuild `site/demo/` while L12 is open; after merge rebuild it
   from the merged app when publishing. Generated `site/demo/` is ignored.
 
-No L1 change was needed in QUAL, H7, X1 or X2-owned files. `Toasts.tsx` and
+No L1 change was needed in QUAL, H7 or X1-owned files. `Toasts.tsx` and
 `Sidebar.tsx` already used the shared icons on this baseline. No edits to
 `src/styles.css` or `src/App.tsx`. No money/hash-format requirement or gate threshold was loosened. The source
 guard’s prose and exact key-material exceptions above are explicit and tested.

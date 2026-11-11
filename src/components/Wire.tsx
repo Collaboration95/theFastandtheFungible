@@ -1,9 +1,11 @@
 import { XRPL_LABEL, type RunSnapshot } from '../../shared/contracts/index.js'
 import { whenSGT } from '../../shared/presentation'
+import type { ReactNode } from 'react'
+import Icon from './Icon'
 
 // Never dump event.data: it can contain a delivery token, headers, or paid body.
-function safeFields(data: Record<string, unknown>, prefix = '', depth = 0): [string, string][] {
-  const result: [string, string][] = []
+function safeFields(data: Record<string, unknown>, prefix = '', depth = 0): [string, ReactNode][] {
+  const result: [string, ReactNode][] = []
   for (const [key, value] of Object.entries(data)) {
     const name = prefix ? `${prefix}.${key}` : key
     if (depth < 2 && ['request', 'response', 'http', 'quote', 'receipt', 'verification'].includes(key) && value && typeof value === 'object' && !Array.isArray(value)) {
@@ -22,7 +24,7 @@ function safeFields(data: Record<string, unknown>, prefix = '', depth = 0): [str
     } else if (['contentDigest', 'sha256', 'digest', 'quoteHash'].includes(key) && typeof value === 'string' && /^(sha256:)?[a-f0-9]{64}$/i.test(value)) {
       result.push([name, value])
     } else if (['verified', 'digestMatches'].includes(key) && typeof value === 'boolean') {
-      result.push([name, value ? 'manifest root ✓' : 'manifest root not verified'])
+      result.push([name, value ? <>manifest root verified <Icon name="check" size={16} /></> : 'manifest root not verified'])
     } else if (key === 'currency' && value === 'SGD') {
       result.push([name, 'SGD'])
     } else if (key === 'status' && typeof value === 'string' && /^(NOT_FOUND|SETTLED|DELIVERY_PENDING|DELIVERY_FAILED|VERIFIED)$/.test(value)) {

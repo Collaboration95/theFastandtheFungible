@@ -83,7 +83,7 @@ describe('visible internals', () => {
     expect(html).toContain('402')
     expect(html).toContain('/w/[id]/articles/[id]')
     expect(html).toContain('PAYMENT-REQUIRED')
-    expect(html).toContain('manifest root ✓')
+    expect(html).toContain('manifest root verified')
     expect(html).toContain('Verified delivery')
     expect(html).toContain('a'.repeat(64))
     expect(html).toContain('b'.repeat(64))

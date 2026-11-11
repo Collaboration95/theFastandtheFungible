@@ -254,7 +254,7 @@ test('hosted writers have public pages, honest earnings and narrow reads in two 
     await expect(catalogue.getByText('Team-authored · unverified', { exact: true }).first()).toBeVisible()
     await expect(catalogue.getByText('unverified writer')).toHaveCount(0)
     await expect(catalogue).toContainText('Your retained history only')
-    await expect(catalogue.getByRole('link', { name: 'Publish your notes ↗' })).toHaveAttribute('href', /docs\/publishing.md$/)
+    await expect(catalogue.getByRole('link', { name: 'Publish your notes', exact: true })).toHaveAttribute('href', /docs\/publishing.md$/)
     await expect(catalogue).not.toContainText('real independent writers')
     expect(await v.page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     await v.page.screenshot({ path: evidencePath(`writers-nov11/writers-${index ? 390 : 1440}.png`), fullPage: true })
