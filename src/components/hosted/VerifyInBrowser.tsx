@@ -27,6 +27,7 @@ export default function VerifyInBrowser({ run }: { run: RunSnapshot }) {
   const result = state.result
   const failed = result?.checks.filter(check => check.status === 'FAIL').length ?? 0
   const passed = result?.checks.filter(check => check.status === 'PASS').length ?? 0
+  const skipped = result?.checks.filter(check => check.status === 'SKIP').length ?? 0
   return <section className="ra-hv" aria-labelledby="ra-hv-title">
     <h2 id="ra-hv-title">{testnet ? 'Verify on XRPL in your browser' : 'Verify in your browser'}</h2>
     {state.step === 'idle' && <><p>Re-check this run’s receipts here: writer signatures, passage hashes and the audit log{testnet ? ', then every payment on a public XRPL Testnet node' : ''}. The result doesn’t rely on our server.</p>
@@ -34,7 +35,7 @@ export default function VerifyInBrowser({ run }: { run: RunSnapshot }) {
     {(state.step === 'fetch' || state.step === 'check') && <p role="status" className="ra-hv-busy"><span className="ra-spin" aria-hidden="true" />{state.step === 'fetch' ? 'Downloading receipts.json…' : testnet ? 'Checking signatures and reading XRPL Testnet…' : 'Checking signatures and hashes…'}</p>}
     {state.step === 'error' && <><p role="alert" className="ra-err">{state.error} Nothing was changed.</p><button type="button" className="ra-btn" onClick={() => void start()}>Try again</button></>}
     {result && <div>
-      <p role="status" className={`ra-hv-head ${result.ok ? 'is-ok' : 'is-bad'}`}>{result.ok ? `All ${passed} checks passed` : `${failed} of ${result.checks.length} checks failed`}{result.ok && !testnet && <small> · ledger checks skipped: simulated payments</small>}</p>
+      <p role="status" className={`ra-hv-head ${result.ok ? 'is-ok' : 'is-bad'}`}>{result.ok ? skipped ? `${passed} passed · ${skipped} not checked` : `All ${passed} checks passed` : `${failed} of ${result.checks.length} checks failed`}{result.ok && !testnet && <small> · ledger checks skipped: simulated payments</small>}</p>
       <ul className="ra-hv-groups">{result.groups.map(group => <li key={group.id} className={`is-${group.status.toLowerCase()}`}>
         <details open={group.status === 'FAIL'}>
           <summary><i aria-hidden="true"><Icon name={mark[group.status]} size={16} /></i><span>{(!testnet && simulatedTitle[group.id]) || group.title}</span><small>{group.status === 'SKIP' ? testnet || group.id === 'identity' ? 'not checked' : 'simulated' : `${group.passed}/${group.total}`}<span className="ra-sr"> {word[group.status]}</span></small></summary>

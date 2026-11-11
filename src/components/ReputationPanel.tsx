@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { ReputationRecord, ReputationSummary, RunSnapshot } from '../../shared/contracts/index.js'
 import { usePublisherCard, writerName } from './WriterChip'
-import WriterEarnings from './WriterEarnings'
+import WriterEarnings, { writerTitle } from './WriterEarnings'
 import { useHosted } from '../hosted'
 
 type Row = { slug: string; name: string; writers: string[]; claimed?: number; record?: ReputationRecord; score: ReputationSummary }
@@ -31,7 +31,7 @@ function PublisherRow({ row }: { row: Row }) {
   const { record, score } = row
   const writers = [...new Set([...row.writers, ...(card?.writers.map(writer => writer.slug) ?? [])])]
   return <tbody><tr>
-    <th scope="row"><button type="button" className="ra-link" aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>{card?.name ?? row.name}</button></th>
+    <th scope="row"><button type="button" className="ra-link" aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>{writerTitle(card?.name ?? row.name)}</button></th>
     <td>{score.T.toFixed(2)}</td><td>{record ? `${record.passes} / ${record.fails}` : '0 / 0'}</td><td className={score.status === 'delisted' ? 'ra-error-text' : undefined}>{score.status === 'active' ? 'Active' : score.status === 'delisted' ? 'Delisted' : 'Quarantined'}</td>
   </tr>{expanded && <tr><td colSpan={4}><p>Honesty {score.H.toFixed(2)} · Coverage {score.C.toFixed(2)} · Refunds {record?.refunds ?? 0} · Refusals {record?.refusals ?? 0}</p><p>Bylines: {writers.map(slug => writerName(slug, card)).join(', ') || 'Not listed'}</p><a href={import.meta.env.MODE === 'browser-demo' ? `${import.meta.env.BASE_URL}?writers=1` : `/w/${row.slug}`} target="_blank" rel="noreferrer">Visit writer’s site ↗</a></td></tr>}</tbody>
 }

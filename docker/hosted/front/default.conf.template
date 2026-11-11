@@ -37,8 +37,9 @@ server {
   proxy_next_upstream off;
   proxy_intercept_errors on;
   error_page 502 504 =503 /paused.html;
-  location = /livez { return 200 'alive'; }
-  location = /startupz { return 200 'started'; }
+  # Plain text, so a browser shows the word instead of downloading an octet-stream file (R8 sweep H20).
+  location = /livez { default_type text/plain; return 200 'alive'; }
+  location = /startupz { default_type text/plain; return 200 'started'; }
   location = /paused.html { internal; root /usr/share/nginx/html; }
   # Cloud Run's edge reserves some paths ending in "z"; /ready is the public
   # readiness path for uptime checks and maps to the VM's /readyz.

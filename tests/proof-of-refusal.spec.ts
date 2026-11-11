@@ -80,10 +80,10 @@ test('a visitor shares a refusal; anyone can open and check it; nobody else’s 
   expect(await serious(proof)).toEqual([])
   await shot(proof, 'hosted-proof-1440')
   // One count: the total before the browser check is the total after it, and what the browser skips is named.
-  const total = (await proof.locator('.facts').innerText()).match(/(\d+) of (\d+) checks passed when shared/)![2]
+  const shared = (await proof.locator('.facts').innerText()).match(/(\d+) passed · (\d+) not checked/)!, total = String(Number(shared[1]) + Number(shared[2]))
   await expect(proof.locator('.chip .full')).toBeVisible(); await expect(proof.locator('.chip .short')).toBeHidden()
   await proof.getByRole('button', { name: 'Verify on XRPL in your browser' }).click()
-  await expect(proof.locator('#vout .vhead')).toHaveText(new RegExp(`^(?:All ${total}|\\d+ of ${total}) checks passed$`), { timeout: 30000 })
+  await expect(proof.locator('#vout .vhead')).toHaveText(new RegExp(`^(?:All ${total} checks passed|\\d+ passed · \\d+ not checked)$`), { timeout: 30000 })
   await expect(proof.locator('#vout .note')).toContainText('Skipped here: writer credentials')
   await expect(proof.locator('#vout')).toContainText('Answer anchored on XRPL Testnet')
   await expect(proof.locator('#vout')).toContainText('reading s.altnet.rippletest.net (read-only)')
@@ -110,7 +110,7 @@ test('a visitor shares a refusal; anyone can open and check it; nobody else’s 
   expect(await serious(phone.page)).toEqual([])
   await shot(phone.page, 'hosted-proof-390')
   await phone.page.getByRole('button', { name: 'Verify on XRPL in your browser' }).click()
-  await expect(phone.page.locator('#vout .vhead')).toHaveText(new RegExp(`^(?:All ${total}|\\d+ of ${total}) checks passed$`), { timeout: 30000 })
+  await expect(phone.page.locator('#vout .vhead')).toHaveText(new RegExp(`^(?:All ${total} checks passed|\\d+ passed · \\d+ not checked)$`), { timeout: 30000 })
   expect(await phone.page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await shot(phone.page, 'hosted-proof-verified-390')
 

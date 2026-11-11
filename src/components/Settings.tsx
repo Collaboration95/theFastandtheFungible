@@ -21,7 +21,7 @@ export default function Settings({ universal, budgetMinor, notify, onBack, onUni
     window.addEventListener('keydown', esc)
     return () => window.removeEventListener('keydown', esc)
   }, [onBack])
-  return <main className="ra-settings">
+  return <main id="main" tabIndex={-1} className="ra-settings">
     <button type="button" className="ra-back" onClick={onBack}><Icon name="left" />Back<kbd>Esc</kbd></button>
     <h1>Settings</h1>
     {error && <p role="alert">{error}</p>}

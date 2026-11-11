@@ -67,6 +67,59 @@ export class RefusalProofs {
   count(db: DatabaseSync, where = '1=1', ...params: (string | number)[]) { return Number(db.prepare(`SELECT count(*) AS n FROM refusal_proofs WHERE ${where}`).get(...params)!.n) }
 
   /**
+   * Everything a proof needs before it is written, and every reason it may not be written. Used by `create` and, without
+   * writing, by `preflight`, so what the page offers is what the server will then do. An unexpected failure is reported as
+   * a stated reason (and logged for the operator), never as a bare error: a visitor who was offered the button must not
+   * be told "try again" for a run that can never be shared.
+   */
+  private async prepare(run: RunSnapshot, options: { hosted: boolean; principal: string; now: number }): Promise<{ snapshot: ProofSnapshot; json: string; size: number }> {
+    const { now } = options
+    try {
+      const bundle = sanitizeBundle(receiptBundle(this.store, run.runId), run)
+      const anchor = bundle.ledgerAnchor
+      if (!anchor || anchor.txHash !== run.ledgerAnchor?.txHash) throw new ProofError(409, 'anchor_missing', 'No ledger anchor is recorded for this run, so it can’t be shared.')
+      // Offline checks only (hash chain, anchor binding, "refused, never signed"); the ledger read happens in the visitor's own browser.
+      const checked = await verifyAnswer(bundle)
+      if (!checked.ok) {
+        console.warn(`[proof] ${run.runId.slice(0, 8)} failed the offline checks: ${checked.checks.filter(check => check.status === 'FAIL').map(check => check.check).join(', ')}`)
+        throw new ProofError(409, 'verification_failed', 'This run’s receipts did not pass the offline checks, so it can’t be shared.')
+      }
+      const id = randomBytes(16).toString('hex')
+      const fixture = [run.labels.research, run.labels.decision].some(label => /^fixture\b/i.test(label))
+      const { summary, found } = describeRefusal(run)
+      const snapshot = ProofSnapshotSchema.parse({
+        version: PROOF_VERSION, id, createdAt: new Date(now).toISOString(), question: run.question, askedAt: run.events[0]?.at ?? new Date(now).toISOString(),
+        environment: { surface: options.hosted ? 'hosted' : 'local', network: 'XRPL Testnet', models: fixture ? 'fixture' : 'live', label: `${options.hosted ? 'Shared ' : ''}XRPL Testnet demo · ${fixture ? 'fixture' : 'live'} models · no real value` },
+        outcome: { summary: clip(summary, 240) }, found, bought: { count: 0, spentMinor: 0, currency: 'SGD' }, anchor,
+        verification: { ok: true, passed: checked.checks.filter(check => check.status === 'PASS').length, skipped: checked.checks.filter(check => check.status === 'SKIP').length, total: checked.checks.length, at: new Date(now).toISOString() },
+        bundle,
+      })
+      const json = canonical(snapshot)
+      const size = Buffer.byteLength(json)
+      if (size > PROOF_MAX_BYTES) {
+        console.warn(`[proof] ${run.runId.slice(0, 8)} is ${size} bytes, over the ${PROOF_MAX_BYTES} limit`)
+        throw new ProofError(409, 'too_large', 'This run’s receipts are too large to share.')
+      }
+      return { snapshot, json, size }
+    } catch (error) {
+      if (error instanceof ProofError) throw error
+      console.warn(`[proof] ${run.runId.slice(0, 8)} could not be packaged: ${error instanceof Error ? `${error.name}: ${error.message}`.slice(0, 200) : 'unknown error'}`)
+      throw new ProofError(409, 'verification_failed', 'This run’s receipts could not be packaged into a verifiable proof, so it can’t be shared.')
+    }
+  }
+
+  /** The reason a run that passed the cheap rules still cannot be shared, or undefined when `create` would succeed. Writes nothing. */
+  async preflight(runId: string, now = Date.now()): Promise<ProofError | undefined> {
+    if (this.forRun(runId, now)) return undefined
+    let run: RunSnapshot
+    try { run = this.store.getRun(runId) } catch { return new ProofError(404, 'not_found', 'Run not found.') }
+    const eligibility = refusalEligibility(run, now)
+    if (!eligibility.ok) return new ProofError(409, eligibility.code, eligibility.message)
+    try { await this.prepare(run, { hosted: false, principal: '', now }) } catch (error) { if (error instanceof ProofError) return error; throw error }
+    return undefined
+  }
+
+  /**
    * One proof per run, ever: a second request returns the first snapshot untouched (the permalink never changes).
    * The caller has already proven the run belongs to the requester (hosted: the gateway's run ownership check).
    */
@@ -83,25 +136,8 @@ export class RefusalProofs {
       const limited = this.store.hostedState(db => this.count(db, 'principal=? AND created>?', options.principal, since) >= HOSTED_PROOFS_PER_SESSION || this.count(db) >= HOSTED_PROOFS_TOTAL)
       if (limited) throw new ProofError(429, 'proof_limit', 'This session has shared as many proofs as the demo allows.')
     }
-    const bundle = sanitizeBundle(receiptBundle(this.store, runId), run)
-    const anchor = bundle.ledgerAnchor
-    if (!anchor || anchor.txHash !== run.ledgerAnchor?.txHash) throw new ProofError(409, 'anchor_missing', 'No ledger anchor is recorded for this run, so it can’t be shared.')
-    // Offline checks only (hash chain, anchor binding, "refused, never signed"); the ledger read happens in the visitor's own browser.
-    const checked = await verifyAnswer(bundle)
-    if (!checked.ok) throw new ProofError(409, 'verification_failed', 'This run’s receipts did not pass the offline checks, so it can’t be shared.')
-    const id = randomBytes(16).toString('hex')
-    const fixture = [run.labels.research, run.labels.decision].some(label => /^fixture\b/i.test(label))
-    const { summary, found } = describeRefusal(run)
-    const snapshot = ProofSnapshotSchema.parse({
-      version: PROOF_VERSION, id, createdAt: new Date(now).toISOString(), question: run.question, askedAt: run.events[0]?.at ?? new Date(now).toISOString(),
-      environment: { surface: options.hosted ? 'hosted' : 'local', network: 'XRPL Testnet', models: fixture ? 'fixture' : 'live', label: `${options.hosted ? 'Shared ' : ''}XRPL Testnet demo · ${fixture ? 'fixture' : 'live'} models · no real value` },
-      outcome: { summary: clip(summary, 240) }, found, bought: { count: 0, spentMinor: 0, currency: 'SGD' }, anchor,
-      verification: { ok: true, passed: checked.checks.filter(check => check.status === 'PASS').length, skipped: checked.checks.filter(check => check.status === 'SKIP').length, total: checked.checks.length, at: new Date(now).toISOString() },
-      bundle,
-    })
-    const json = canonical(snapshot)
-    const size = Buffer.byteLength(json)
-    if (size > PROOF_MAX_BYTES) throw new ProofError(409, 'too_large', 'This run’s receipts are too large to share.')
+    const { snapshot, json, size } = await this.prepare(run, { ...options, now })
+    const { id } = snapshot
     const expires = options.hosted ? Math.max(Date.parse(HOSTED_PROOF_RETAIN_UNTIL), now + 2 * 86_400_000) : now + 3650 * 86_400_000
     this.store.hostedState(db => db.prepare('INSERT OR IGNORE INTO refusal_proofs (id, run_id, principal, created, expires, sha256, size, json) VALUES (?,?,?,?,?,?,?,?)').run(id, runId, options.principal, now, expires, sha(json), size, json))
     const stored = this.forRun(runId, now)

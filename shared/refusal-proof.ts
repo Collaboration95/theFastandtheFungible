@@ -11,8 +11,10 @@ import { declineSummary } from './decline.js'
 
 export const PROOF_VERSION = 'refusal-proof-v1'
 export const PROOF_ID = /^[a-f0-9]{32}$/
-/** A snapshot is at most this large, receipts included (a typical refusal is 5-110 KiB). */
-export const PROOF_MAX_BYTES = 256 * 1024
+/** A snapshot is at most this large, receipts included. A refusal is 4-125 KiB with the offline planner and grows with every
+ * article a live plan finds (signed manifests) and every free source it reads, so the cap leaves room for a broad question
+ * (R8-B; was 256 KiB). 400 proofs at the cap are still under 300 MB. */
+export const PROOF_MAX_BYTES = 768 * 1024
 /** Hosted retention: the shared demo ends 20 Nov 00:00 SGT; pages stay up through 20 Nov UTC. */
 export const HOSTED_PROOF_RETAIN_UNTIL = '2026-11-21T00:00:00Z'
 export const HOSTED_PROOFS_PER_SESSION = 5
@@ -22,8 +24,23 @@ const ANCHOR_WAIT_MS = 120_000
 /** The same refusal the hosted gateway applies to questions: keys and email addresses are never published. */
 export const PRIVATE_QUESTION = /-----BEGIN .*PRIVATE KEY|\b(?:sk-|ra_agent_)[A-Za-z0-9_-]{16,}|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i
 
-export type ProofBlockCode = 'not_finished' | 'purchased' | 'no_budget' | 'answered' | 'simulated' | 'anchor_pending' | 'anchor_missing' | 'private_question' | 'too_large' | 'verification_failed'
+export type ProofBlockCode = 'not_finished' | 'purchased' | 'no_budget' | 'answered' | 'near_match' | 'simulated' | 'anchor_pending' | 'anchor_missing' | 'private_question' | 'too_large' | 'verification_failed'
 export type Eligibility = { ok: true } | { ok: false; code: ProofBlockCode; message: string }
+
+const NEAR_STOP = new Set('what which how does did can could should would will are was were the and for with from our your its this that these those when where why who whom not has have had been being into than then over about after before'.split(' '))
+/** Content words of a question or title, folded so "injected" and "injection" meet. */
+const nearTerms = (text: string) => new Set((text.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase().match(/[a-z0-9]+/g) ?? [])
+  .filter(word => word.length >= 3 && !NEAR_STOP.has(word)).map(word => word.replace(/(?:ations?|ions?|ings?|ed|es|s)$/, '').slice(0, 6)))
+/** A paid article whose title is nearly the question itself and that the decision model still declined as "wouldn't add enough".
+ * Publishing that as a refusal would show a reader a decline they can see was wrong, so it is not offered (H8-08). */
+export function nearMatchDecline(run: Pick<RunSnapshot, 'question' | 'decisions'>): string | undefined {
+  const asked = nearTerms(run.question)
+  for (const round of run.decisions) for (const row of round.rows) {
+    if (row.verdict !== 'SKIP_LOW_VALUE' || row.candidate.tier !== 'PAID') continue
+    const title = nearTerms(row.candidate.title), shared = [...title].filter(term => asked.has(term)).length
+    if (shared >= 4 && shared / title.size >= 0.6) return row.candidate.title
+  }
+}
 
 /** Why a run can or cannot be shared as a proof of refusal. Words are for the visitor; codes are for tests and the API. */
 export function refusalEligibility(run: RunSnapshot, now = Date.now()): Eligibility {
@@ -36,6 +53,7 @@ export function refusalEligibility(run: RunSnapshot, now = Date.now()): Eligibil
   // "judged none worth buying", which a S$0 budget can't show (H5: offered live on a Free question).
   if (run.budgetMinor === 0) return no('no_budget', 'This question had no budget, so there was nothing to refuse. Ask with a budget to share a proof of refusal.')
   if (run.answers.some(answer => answer.claims.length > 0)) return no('answered', 'This run answered from free sources, so there is no refusal to prove.')
+  if (nearMatchDecline(run)) return no('near_match', 'Not offered: the closest article looked relevant but scored below the bar, so this refusal wouldn’t be a fair example. Try asking it another way.')
   if (run.labels.settlement !== XRPL_LABEL) return no('simulated', 'Simulated payments leave nothing on the ledger, so there is nothing to prove. Use XRPL Testnet to share a refusal.')
   if (PRIVATE_QUESTION.test(run.question)) return no('private_question', 'The question looks like it contains a key or an email address, so it can’t be published.')
   if (!run.ledgerAnchor) {

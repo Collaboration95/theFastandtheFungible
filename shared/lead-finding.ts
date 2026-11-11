@@ -12,8 +12,18 @@ const stems = (text: string) => [...new Set(words(text).map(stem))]
  * Keep source bytes (including identifier punctuation) intact for quotation. */
 const segmenter = new Intl.Segmenter('en', { granularity: 'sentence' })
 export const answerBoilerplate = (text: string) => /\breference (?:defines the operation-specific fields|describes .* as part of a larger)\b|^(?:Author interpretation|I run|I have|I spent|Here is|Speaking|Verify|Confirm|Inspect|Retain|Keep|Read|Treat|Report|Include|Test|Distinguish|Explain|Consider|Avoid|Compare|Query|Estimate|Where an amendment|Do not|Creating a pool is not evidence|The public XRPL reference describes|For an agent builder)\b|^(?:Applications?|Integrations?|Clients?|Developers?)\b[^.!?]{0,60}\bshould\b|\b(?:I recommend|we recommend|my recommendation|integration recommendation|a reminder that|was no exception)\b/i.test(text)
+/** A segment that ends on an abbreviation is not the end of a sentence: "…deposits, U.S. Treasury bills." must not be cut after
+ * "U.S." (R8 E3). Country initials, "e.g."/"i.e.", "No.", company and title abbreviations, and a single capital + period. */
+const ABBREVIATION_END = /(?:\b(?:U\.S|U\.K|U\.N|E\.U|e\.g|i\.e|vs|etc|Inc|Ltd|Corp|Co|Dr|Mr|Mrs|Ms|St|Jr|Sr|No|Nos|approx|cf|Fig|al)\.|\b[A-Z]\.)$/
 export function sentences(text: string): string[] {
-  return Array.from(segmenter.segment(text), part => part.segment.trim()).filter(Boolean)
+  const parts: string[] = []
+  for (const { segment } of segmenter.segment(text)) {
+    const last = parts.at(-1)
+    // Merge the raw segments (whitespace included) so the result stays an exact substring of the source.
+    if (last !== undefined && ABBREVIATION_END.test(last.trimEnd())) parts[parts.length - 1] = last + segment
+    else parts.push(segment)
+  }
+  return parts.map(part => part.trim()).filter(Boolean)
 }
 /** A long sentence may lose a trailing explanatory clause, never a conditional
  * premise or a qualification/negation. The extract remains an exact substring. */
@@ -51,17 +61,39 @@ export function onTopicSentence(question: string, text: string, firstRequirement
  * Shared by the screen and export; callers enforce delivered-passage access first.
  */
 export function leadFinding(question: string, claims: Claim[], delivered?: ContentEnvelope[], firstRequirement?: string, candidates: PublicCandidate[] = []): { text: string; claim: Claim }[] {
-  const ranked = rankLeadSentences(question, claims, delivered, firstRequirement, candidates)
-  const terms = words(question)
+  let ranked = rankLeadSentences(question, claims, delivered, firstRequirement, candidates)
   // An off-topic sentence never leads; a complement may still come from the rest.
-  const first = ranked.find(item => item.onTopic)
+  let first = ranked.find(item => item.onTopic)
+  if (!first) {
+    // Nothing passed the strict rules. Retry with two things relaxed, so an on-topic answer is not replaced by an apology (R8 C2):
+    // a place or period the question only qualifies ("… in Singapore", "… on Testnet") that no delivered text names, and the
+    // later clauses of a multi-part question, which cannot veto a sentence that answers the first. The sentence must still
+    // cover the first clause's own words, and the answer view says which qualifier the sources never mention.
+    const relaxed = rankLeadSentences(question, claims, delivered, firstRequirement, candidates, { relaxed: true })
+    // "Covers the question" is judged on its first clause: a two-clause question ("…, and can my agent pay it with XRP on Testnet?") must not veto a sentence that answers the first.
+    const clause = new Set(stems(clausesOf(question)[0] ?? question))
+    first = relaxed.find(item => item.onTopic && [...clause].filter(term => stems(item.text).includes(term)).length / Math.max(1, clause.size) >= 0.4)
+    if (first) ranked = relaxed
+  }
   if (!first) return []
+  const terms = words(question)
   const selected = [first]
-  // Include a complementary question term or the adjacent explanation.
+  // A second sentence only when it answers something the question asked beyond the first sentence (a later clause), and says
+  // something the first did not: never an off-question template, never the first sentence again (R8 A5, B3).
   // A complete numeric comparison already states both ends of the change.
   if (!(/lead[- ]times?|shorter/i.test(question) && /\bfrom\b.*\bto\b/i.test(first.text) && /weeks?/i.test(first.text)) || /\band\b|, how/i.test(question)) {
+    const covered = new Set(stems(first.text))
+    const open = facetTerms(question).map(stem).filter(term => !touches(covered, term))
+    // A rare question term the first sentence lacks, as before; or a term of a later clause the first sentence leaves open.
     const missing = terms.filter(term => !words(first.text).includes(term) && ranked.filter(item => words(item.text).includes(term)).length <= Math.max(1, ranked.length / 3))
-    const second = ranked.find(item => item.text !== first.text && !item.shared && !item.tail && (missing.some(term => words(item.text).includes(term)) || (/\bfield|flag|setting|type|header|transaction\b/i.test(question) && /[a-z][A-Z]/.test(item.text))) && item.text.length + first.text.length < 620)
+    const second = ranked.find(item => {
+      if (item.text === first.text || !item.onTopic || item.shared || item.tail || item.text.length + first.text.length >= 620) return false
+      // It must cover a real share of the question, not one word the whole question shares with every article ("xrpl"), and say
+      // something new rather than the first sentence again.
+      const own = new Set(stems(item.text))
+      if (item.cover < 0.2 || jaccard(own, covered) >= 0.5) return false
+      return missing.some(term => words(item.text).includes(term)) || open.some(term => touches(own, term)) || (/\bfield|flag|setting|type|header|transaction\b/i.test(question) && /[a-z][A-Z]/.test(item.text))
+    })
     if (second) selected.push(second)
   }
   let remaining = 40
@@ -73,17 +105,45 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
   })
 }
 
+/** A term is in a set of stems, allowing one to be the start of the other ("settl" in "settlement"): the light stemmer does not fold them. */
+const touches = (set: Set<string>, term: string) => set.has(term) || (term.length >= 5 && [...set].some(own => own.length >= 5 && (own.startsWith(term) || term.startsWith(own))))
+const jaccard = (a: Set<string>, b: Set<string>) => { const shared = [...a].filter(term => b.has(term)).length; return shared / Math.max(1, a.size + b.size - shared) }
+/** What the question asks beyond its first clause: the terms of the later clauses that the first clause does not use. */
+const MODAL = new Set('can could should would may might will shall must'.split(' '))
+const clausesOf = (question: string) => question.split(/[?;]\s*|,\s*(?:and\s+)?(?=(?:what|which|how|when|why|who|where|should|can|does|do|is|are)\b)|\s+and\s+(?=(?:what|which|how|when|why|who|where|should|can|does|do)\b)/i).map(clause => clause.trim()).filter(Boolean)
+function facetTerms(question: string): string[] {
+  const clauses = clausesOf(question)
+  const first = new Set(words(clauses[0] ?? ''))
+  // A modal ("can", "should") is how the question is asked, not a thing it asks about.
+  return [...new Set(clauses.slice(1).flatMap(words))].filter(term => !first.has(term) && !MODAL.has(term))
+}
+/** Places and periods the question only qualifies ("in Singapore", "on Testnet", "under the Payment Services Act"): they narrow the question
+ * but are not what it asks about. Whole names, capitalised words only. */
+export function qualifierNames(question: string): string[] {
+  return [...question.matchAll(/\b(?:in|on|for|under|within|across|from|near|around)\s+(?:the\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/g)].map(match => match[1])
+}
+/** The qualifiers of the question that none of these texts names, for a line under the lead: the sources answered the question
+ * in general, and say nothing about the qualifier. */
+export function missingQualifiers(question: string, texts: string[]): string[] {
+  const corpus = texts.join(' ').toLowerCase()
+  return qualifierNames(question).filter(name => !name.toLowerCase().split(/\s+/).some(part => new RegExp(`\\b${part}\\b`).test(corpus)))
+}
+
 /** One candidate lead sentence with its score and the signals the selector needs:
  * `named` it names an answer of the asked kind, `cover`/`weighted` the share of the
  * question's terms (plain / rarity-weighted) it covers, `shared` it is a template
  * repeated across articles, `tail` it follows boilerplate in its passage, `onTopic`
  * it may lead (a which/what question never leads with an unrelated sentence). */
 export type RankedSentence = { text: string; claim: Claim; score: number; ci: number; si: number; named: boolean; cover: number; weighted: number; shared: boolean; tail: boolean; onTopic: boolean }
+/** A lowercase conjunction, relative or subordinator opening an extract: the extract is the tail of a longer sentence. */
+const FRAGMENT_START = /^(?:and|but|or|so|nor|yet|which|while|whereas|although|though|because|then|that|who|whose|where|when|if|unless|since|as)\b/
+/** A sentence that only makes sense after the one before it ("They are not a determination…") cannot open an answer. */
+const POINTS_BACK = /^(?:They|These|Those|Such|Both|He|She|Their|It|This|Its)\b/
 const skip = (text: string, claim: Claim, ci: number, si: number): RankedSentence => ({ text, claim, score: 0, ci, si, named: false, cover: 0, weighted: 0, shared: false, tail: false, onTopic: false })
 
 /** Every eligible answer sentence of the validated claims, best first. Exported so
  * tests and the development replay can inspect the ranking. */
-export function rankLeadSentences(question: string, claims: Claim[], delivered?: ContentEnvelope[], firstRequirement?: string, candidates: PublicCandidate[] = []): RankedSentence[] {
+export function rankLeadSentences(question: string, claims: Claim[], delivered?: ContentEnvelope[], firstRequirement?: string, candidates: PublicCandidate[] = [], options: { relaxed?: boolean } = {}): RankedSentence[] {
   if (delivered) claims = claims.flatMap(claim => claim.citations.flatMap(ref => {
     const content = delivered.find(c => sameSource(c, ref))
     const span = content?.spans.find(s => s.id === ref.spanId && content.body.includes(s.text))
@@ -106,7 +166,11 @@ export function rankLeadSentences(question: string, claims: Claim[], delivered?:
   const transactionName = (name: string) => /(?:Create|Finish|Cancel|Set|Delete|Deposit|Withdraw|Bid|Vote|Accept|Fund|Claim|Cash)$|^Set[A-Z]/.test(name)
   const opening = firstFact.match(/^[A-Za-z]+\b/)?.[0]
   const entities = (firstFact.match(/\b[A-Z][a-z]+(?:[A-Z][a-z]+)*\b/g) ?? []).filter(name => !STOP.has(name.toLowerCase()) && name.length > 1 && (name !== opening || /[a-z][A-Z]/.test(name)))
-  const entityPatterns = entities.map(name => new RegExp(`\\b${name}\\b`, 'i'))
+  // A qualifier ("in Singapore") is still required of the delivered text unless the caller relaxes it for a second pass.
+  const qualifierWords = new Set(options.relaxed ? qualifierNames(question).flatMap(name => name.split(/\s+/)) : [])
+  // A relaxed pass checks the topic against the first clause only.
+  const topicFact = options.relaxed ? clausesOf(firstFact)[0] ?? firstFact : firstFact
+  const entityPatterns = entities.filter(name => !qualifierWords.has(name)).map(name => new RegExp(`\\b${name}\\b`, 'i'))
   const named = firstRequirement?.match(/\b[A-Z][a-z]+(?:[A-Z][a-z]+)+\b/g) ?? []
   const asked = askedKind(firstFact)
   // Pool statistics: how common each question term is among the candidate sentences
@@ -127,12 +191,14 @@ export function rankLeadSentences(question: string, claims: Claim[], delivered?:
     // topical overlap in this cited passage, then rank its answer sentence.
     const subject = `${title} ${metadata?.facets.join(' ') ?? ''} ${claim.text}`
     const entityContext = `${subject} ${content?.body ?? ''}`
-    if (!topicMatches(firstFact, subject) || !entityPatterns.every(pattern => pattern.test(entityContext))) return []
+    if (!topicMatches(topicFact, subject) || !entityPatterns.every(pattern => pattern.test(entityContext))) return []
     const context = words(claim.text)
     const contextOverlap = terms.filter(term => context.includes(term)).length
     return answerExtracts(claim.text).map((text, si) => {
     const lower = text.toLowerCase(), tokens = words(text)
     if (answerBoilerplate(text)) return skip(text, claim, ci, si)
+    // A clause that continues an earlier sentence ("which reveals the secret", "and the writer…") is not an answer on its own.
+    if (FRAGMENT_START.test(text) || POINTS_BACK.test(text)) return skip(text, claim, ci, si)
     if (/^(?:This (?:article|note|guide|source)\b|This is a team-authored|This team-authored|The implementation record|For a reader assessing|For an? .*integration|I recommend|Test missing|This is an integration recommendation|Reproduction requires|The four .*entries|Some .*examples use different headers|See\b|Code:|Sources?:)|(?:[\w-]+\/)+[\w.-]+\.(?:ts|md|tsx)\b/i.test(text)) return skip(text, claim, ci, si)
     const overlap = terms.filter(term => tokens.includes(term)).length
     const semanticOverlap = expanded.filter(term => tokens.includes(term)).length

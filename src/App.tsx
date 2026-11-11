@@ -36,6 +36,7 @@ import ChatThread, { type ChatMessage } from './components/ChatThread'
 import ReputationPanel from './components/ReputationPanel'
 import CommandPalette, { type Command } from './components/CommandPalette'
 import { deriveRunState } from './runState'
+import { planNotice, writtenOffline } from './notices'
 import Icon from './components/Icon'
 import { modifier } from './shortcuts'
 import { exampleQuestions } from '../shared/contracts/examples'
@@ -459,9 +460,9 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
   const banner = hosted ? error && <p className="ra-banner" role="alert">{error}</p>
     : (error || healthError) && <p className="ra-banner" role="alert">{error || "Can’t reach the ResearchAgent server."} <button className="ra-link" onClick={() => window.location.reload()}>Try again</button></p>
   const state = hosted && homeState(hosted)
-  if (tab === 'writers') return provide(<Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}><main className="ra-writers-view"><h1>Writers</h1>{writersError && <p role="alert">{writersError}</p>}{writersLoading ? <p role="status" className="ra-writer-loading"><AgentSprite animation="search" />Loading writer reputation…</p> : <ReputationPanel records={reputation} run={shown} full={run} />}{overlays}</main></Layout>)
+  if (tab === 'writers') return provide(<Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}><main id="main" tabIndex={-1} className="ra-writers-view"><h1>Writers</h1>{writersError && <p role="alert">{writersError}</p>}{writersLoading ? <p role="status" className="ra-writer-loading"><AgentSprite animation="search" />Loading writer reputation…</p> : <ReputationPanel records={reputation} run={shown} full={run} />}{overlays}</main></Layout>)
   if (screen === 'settings' && !hosted) return provide(<Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
-    <Suspense fallback={<main className="ra-settings"><h1>Settings</h1><p role="status">Loading settings…</p></main>}><Settings universal={universal} budgetMinor={universalMinor} settlement={settlement} notify={notify} onBack={closeSettings} onNotify={chooseNotify}
+    <Suspense fallback={<main id="main" tabIndex={-1} className="ra-settings"><h1>Settings</h1><p role="status">Loading settings…</p></main>}><Settings universal={universal} budgetMinor={universalMinor} settlement={settlement} notify={notify} onBack={closeSettings} onNotify={chooseNotify}
       onUniversal={on => { setUniversal(on); prefs.set(universalKey, on ? '1' : '0') }} onBudget={minor => { setUniversalMinor(minor); prefs.set(universalMinorKey, String(minor)) }} /></Suspense>
     {overlays}
   </Layout>)
@@ -472,10 +473,10 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
   </Layout>)
 
   if (screen === 'home' || screen === 'settings' || !shown) return provide(<Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
-    <main className={`ra-home-wrap${hosted ? ' is-hosted' : ''}`}>
+    <main id="main" tabIndex={-1} className={`ra-home-wrap${hosted ? ' is-hosted' : ''}`}>
       {banner}
       {hosted && state
-        ? <Ask onAsk={sendAsk} busy={!canAsk(state) || sending || !!pending || !!waiting || (!!shown && !finished)} above={waiting ? <HostedWaiting onCancel={() => setWaiting(undefined)} /> : pendingCard} settlement={settlement} draft={draft} onDraft={setDraft} picked={Math.min(picked, Math.floor(questionCap(hosted.status) / 5) * 5)} onPick={setPicked}
+        ? <Ask onAsk={sendAsk} busy={!canAsk(state) || sending || !!pending || !!waiting || (!!shown && !finished)} above={waiting ? <HostedWaiting hosted={hosted} onCancel={() => setWaiting(undefined)} /> : pendingCard} settlement={settlement} draft={draft} onDraft={setDraft} picked={Math.min(picked, Math.floor(questionCap(hosted.status) / 5) * 5)} onPick={setPicked}
             intro={<HostedIntro hosted={hosted} state={state} />} closed={!canAsk(state)} budgetMax={Math.floor(questionCap(hosted.status) / 5) * 5} composerNote={canAsk(state) ? <HostedComposerNote hosted={hosted} state={state} /> : undefined}
             placeholder={settlement.startsWith('XRPL') ? 'Ask about XRPL payments, escrow, x402 or agent wallets…' : undefined} examplesLabel="Questions that answer well today" />
         : <Ask onAsk={sendAsk} busy={healthError || sending || !!pending || (!!shown && !finished)} above={pendingCard} settlement={settlement} universalMinor={!browserDemo && universal ? universalMinor : undefined} onSettings={openSettings} draft={draft} onDraft={setDraft} picked={picked} onPick={setPicked}
@@ -487,7 +488,7 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
 
   return provide(<Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
     <div className="ra-ws">
-      <main className="ra-brief">
+      <main id="main" tabIndex={-1} className="ra-brief">
         <h1 className="ra-q">{shown.question}</h1>
         <MobileSpend run={shown} onRetry={id => void retry(id)} onReceipt={setReceipt} />
         <RunActivity run={shown} actualTerminal={!!run && isTerminal(run)} onStop={() => void stopRun()} stopping={stopping} onShowWork={() => setWork(true)} />
@@ -497,8 +498,8 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
         {model.phase === 'recovering' && <Notice>Payment verified. Resume the answer to finish recovery. <button className="ra-link" onClick={() => { const paid = shown.intents.find(i => i.status === 'VERIFIED' && (!shown.checkpoint?.intentId || i.intentId === shown.checkpoint.intentId)); if (paid) void retry(paid.intentId) }}>Resume answer</button></Notice>}
         {model.phase === 'recovering' && shown.intents.some(i => i.escrow?.mode === 'key-reveal') && <Notice>Waiting for the writer to release the key. Funds return after the ledger confirms cancellation if the writer doesn’t release it.</Notice>}
         {shown.phase === 'FAILED' && model.phase !== 'recovering' && <Notice tone="error">{shown.intents.some(i => i.status === 'DELIVERY_FAILED') ? 'Delivery incomplete. Retry delivery in Payments.' : 'The run could not finish. Start a new question.'}</Notice>}
-        {shown.labels.research.startsWith('fixture') && !!health.labels && !health.labels.research.startsWith('fixture') && <Notice tone="warn">Written from offline extracts: the model was unavailable.</Notice>}
-        {shown.labels.plan?.startsWith('fixture') && !!health.labels && !health.labels.research.startsWith('fixture') && <Notice tone="warn">Planned with offline rules: the planner was unavailable.</Notice>}
+        {writtenOffline(shown) && !!health.labels && !health.labels.research.startsWith('fixture') && <Notice tone="warn">Written from offline extracts: the model was unavailable.</Notice>}
+        {!!health.labels && !health.labels.research.startsWith('fixture') && planNotice(shown.labels.plan) && <Notice tone="warn">{planNotice(shown.labels.plan)}</Notice>}
         {shown.labels.decision.startsWith('fixture') && !!health.labels && !health.labels.decision.startsWith('fixture') && <Notice tone="warn">Decided by offline rules: the decision model was unavailable.</Notice>}
         {/* The hosted demo searches by keyword by design: its environment indicator says so once, not a warning on every answer. */}
         {!hosted && shown.labels.search?.startsWith('keyword') && !!health.labels && !health.labels.research.startsWith('fixture') && <Notice tone="warn">Keyword search only: embeddings were unavailable.</Notice>}

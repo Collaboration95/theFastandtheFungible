@@ -1,7 +1,7 @@
 import type { RunSnapshot } from '../../../shared/contracts'
 import { isTerminal } from '../../stage'
 import { stopLine } from '../../stopLine'
-import type { Hosted } from '../../hosted'
+import { aheadText, type Hosted } from '../../hosted'
 
 /** Hosted run screen: the queue position while another visitor's run holds the demo, and Stop's outcome per purchase. */
 export default function HostedRunNotice({ hosted, run, onCancel, stopping }: { hosted: Hosted; run: RunSnapshot; onCancel: () => void; stopping: boolean }) {
@@ -10,7 +10,7 @@ export default function HostedRunNotice({ hosted, run, onCancel, stopping }: { h
   const stopped = run.stopped || run.phase === 'STOPPED'
   if (queued && (queued.position ?? 0) > 0 && !stopped && !isTerminal(run)) return <section className="ra-hqueue" role="status" aria-label="Waiting for a turn">
     <span className="ra-spin" aria-hidden="true" />
-    <p><b>Waiting for a turn · {queued.position === 1 ? 'next in line' : `number ${queued.position} in line`}</b><span>The demo answers one question at a time. Yours starts automatically; nothing is spent while it waits (at most 90 seconds).</span></p>
+    <p><b>Waiting for a turn · {aheadText(queued.position ?? 1)}</b><span>That usually takes under a minute. Yours starts automatically, and nothing is spent while it waits (at most 90 seconds).</span></p>
     <button type="button" className="ra-btn" disabled={stopping} onClick={onCancel}>Cancel</button>
   </section>
   if (!stopped) return null

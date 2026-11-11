@@ -4,7 +4,12 @@
 import { clip, explorerTx, sgd, type ProofSnapshot } from '../shared/refusal-proof.js'
 
 const esc = (text: string) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
-const utc = (iso: string) => `${new Date(iso).toISOString().slice(0, 16).replace('T', ' ')} UTC`
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+/** Singapore time ("11 Nov 2026, 14:35 SGT"): this is a Singapore event's page, and the machine-readable <time datetime> stays in UTC. */
+const sgt = (iso: string) => {
+  const d = new Date(new Date(iso).getTime() + 8 * 3_600_000), pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}, ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} SGT`
+}
 const short = (hash: string) => `${hash.slice(0, 10)}…${hash.slice(-8)}`
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`
 const MARK = '<svg class="mark" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M9 4H4v16h5M15 4h5v16h-5M9 15l6-6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg>'
@@ -81,7 +86,7 @@ const draw = result => {
     for (const c of g.checks) { const row = el('li'); row.append(el('span', '', mark[c.status]), el('span', '', c.check + ' — ' + c.detail)); ul.append(row) }
     d.append(s, ul); li.append(d); groups.append(li)
   }
-  const headline = !result.ok ? failed + ' of ' + total + ' checks failed' : passed === total ? 'All ' + total + ' checks passed' : passed + ' of ' + total + ' checks passed'
+  const headline = !result.ok ? failed + ' of ' + total + ' checks failed' : passed === total ? 'All ' + total + ' checks passed' : passed + ' passed · ' + skipped.length + ' not checked'
   const skippedNote = skipped.length ? ' Skipped here: ' + skipped.join(' and ') + '. ' + (skipped.length === 1 ? 'It' : 'They') + ' can’t be checked from the receipts alone.' : ''
   out.replaceChildren(el('p', 'vhead ' + (result.ok ? 'ok' : 'bad'), headline), groups,
     el('p', 'note', 'Ran in this browser' + (result.endpoint ? ', reading ' + result.endpoint + ' (read-only)' : '') + '.' + skippedNote + ' Same checks as the open-source verifier; the result doesn’t rely on our server.'))
@@ -142,7 +147,7 @@ export function renderProofPage(snapshot: ProofSnapshot, { mode, origin = '', no
 <p class="eyebrow">${HELD}<span>Proof of refusal</span></p>
 <h1>Refused to spend.</h1>
 <p class="lede">An AI agent was given a budget and a question. It read the paid options, judged none worth buying, and spent nothing. The record below is on XRPL Testnet.</p>
-<figure class="ask"><p class="label">The question</p><blockquote>${esc(question)}</blockquote><p class="meta">Asked <time datetime="${esc(asked)}">${utc(asked)}</time> · shared <time datetime="${esc(snapshot.createdAt)}">${utc(snapshot.createdAt)}</time></p></figure>
+<figure class="ask"><p class="label">The question</p><blockquote>${esc(question)}</blockquote><p class="meta">Asked <time datetime="${esc(asked)}">${sgt(asked)}</time> · shared <time datetime="${esc(snapshot.createdAt)}">${sgt(snapshot.createdAt)}</time></p></figure>
 <dl class="stats"><div><dt>Paid articles found</dt><dd>${found.paid}</dd></div><div><dt>Writers</dt><dd>${found.writers}</dd></div><div><dt>Articles bought</dt><dd>0</dd></div><div class="zero"><dt>Money spent</dt><dd>${sgd(0)}</dd></div></dl>
 <h2>Why nothing was bought</h2>
 <p>${esc(snapshot.outcome.summary)}</p>
@@ -152,7 +157,7 @@ ${items ? `<ul class="items" aria-label="Paid articles considered">${items}</ul>
 <div><dt>Anchored on</dt><dd><a href="${esc(explorerTx(anchor.txHash))}" target="_blank" rel="noopener noreferrer">XRPL Testnet transaction ${esc(short(anchor.txHash))}</a> <span class="note">· ledger ${anchor.ledgerIndex}</span></dd></div>
 <div><dt>Anchor account</dt><dd class="mono">${esc(anchor.account)}</dd></div>
 <div><dt>Audit log head</dt><dd class="mono">${esc(anchor.head)}</dd></div>
-<div><dt>Checks</dt><dd><span class="ok">${verification.passed} of ${verification.total} checks passed</span> <span class="note">when shared${verification.skipped ? ` · ${verification.skipped} more need the ledger or a writer lookup${mode === 'page' ? '; the browser check below runs the ledger ones' : ''}` : ''}</span></dd></div>
+<div><dt>Checks</dt><dd>${verification.skipped ? `<span class="ok">${verification.passed} passed</span> <span class="note">· ${verification.skipped} not checked yet: they need the ledger or a writer lookup${mode === 'page' ? '. The browser check below runs the ledger ones' : ''}</span>` : `<span class="ok">All ${verification.total} checks passed</span> <span class="note">when shared</span>`}</dd></div>
 <div><dt>Where</dt><dd>${esc(env.label)}</dd></div>
 </dl>
 ${verify}

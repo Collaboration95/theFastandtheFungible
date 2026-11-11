@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { Mark } from '../format'
 import Icon from './Icon'
-import { useHosted } from '../hosted'
+import { HOSTED_DAILY_QUESTIONS, useHosted } from '../hosted'
 
 /** One exchange: the user's message, then the reply once it arrives (none while waiting, or while a plan card is open). */
 export interface ChatMessage { id: number; question: string; reply?: string; label?: string; error?: string }
@@ -35,7 +35,7 @@ export default function ChatThread({ messages, onSend, busy = false, above }: Ch
     setText('')
     void onSend(question)
   }
-  return <main className="ra-chatpage" aria-label="Chat">
+  return <main id="main" tabIndex={-1} className="ra-chatpage" aria-label="Chat">
     <h1 className="ra-sr">Conversation</h1>
     <div className="ra-thread" role="log" aria-live="polite" aria-label="Conversation">
       {messages.map(message => <div key={message.id} className="ra-turn">
@@ -63,7 +63,7 @@ export default function ChatThread({ messages, onSend, busy = false, above }: Ch
           <Icon name="send" />
         </button>
       </form>
-      <p className="ra-chat-note">{hosted ? 'Research questions go to Home, where they get a budget.' : 'Questions about companies or markets go to Home, where they get a budget.'}</p>
+      <p className="ra-chat-note">{hosted ? `Research questions go to Home, where they get a budget. A chat reply counts as one of your ${HOSTED_DAILY_QUESTIONS} questions a day.` : 'Questions about companies or markets go to Home, where they get a budget.'}</p>
     </div>
   </main>
 }

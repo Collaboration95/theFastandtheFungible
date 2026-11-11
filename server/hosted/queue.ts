@@ -9,6 +9,8 @@ export class HostedQueue {
   constructor(private config: Config, private now: () => number = Date.now) { this.timer = setInterval(() => this.tick(), 250); this.timer.unref() }
   get canQueue() { return !this.active || this.waiting.length < LIMITS.waiting }
   get busy() { return Boolean(this.active) }
+  /** Questions ahead of a new one: the one running plus those waiting. */
+  get depth() { return (this.active ? 1 : 0) + this.waiting.length }
   capacity() { this.tick(); if (this.active && this.waiting.length >= LIMITS.waiting) throw new HostedError(429, 'queue_full') }
   enqueue(id: string, run: () => Promise<void>, expire: () => void) {
     requireAdmissions(this.config, this.now()); this.capacity()

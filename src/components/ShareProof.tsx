@@ -5,7 +5,7 @@ import { useHosted } from '../hosted'
 import './share-proof.css'
 
 /** Reasons worth saying out loud in the decline view. Everything else (a purchase, a free answer) is not this feature's business. */
-const SAYS = new Set(['no_budget', 'simulated', 'anchor_pending', 'anchor_missing', 'private_question', 'too_large', 'verification_failed'])
+const SAYS = new Set(['no_budget', 'near_match', 'simulated', 'anchor_pending', 'anchor_missing', 'private_question', 'too_large', 'verification_failed'])
 const POLL_MS = 3000, POLL_LIMIT = 40
 const ERRORS: Record<string, string> = { proof_limit: 'You’ve shared as many proofs as this session allows today.' }
 
@@ -39,7 +39,8 @@ export default function ShareProof({ run }: { run: RunSnapshot }) {
     }
     void read()
     return () => { abort.abort(); clearTimeout(timer) }
-  }, [run.runId])
+    // Also re-read when the anchor lands, so "opens once the answer is anchored" never sits beside "Anchored on XRPL" (H8-16).
+  }, [run.runId, run.ledgerAnchor?.txHash])
   useEffect(() => {
     if (step === 'confirm') heading.current?.focus()
     else if (step === 'idle' && restoreFocus.current) { restoreFocus.current = false; trigger.current?.focus() }
@@ -54,6 +55,8 @@ export default function ShareProof({ run }: { run: RunSnapshot }) {
       setStep('idle')
     } catch (failure) {
       if (failure instanceof ApiError && failure.code && ERRORS[failure.code]) setError(ERRORS[failure.code])
+      // Any other reason the server gave is its own plain sentence: show it, never the generic line.
+      else if (failure instanceof ApiError && failure.detail) { setError(failure.detail); void getRefusalProof(run.runId).then(setStatus, () => undefined) }
       else {
         // Ask the server why, so the visitor reads its words rather than a status code.
         try { const again = await getRefusalProof(run.runId); setStatus(again); setError(again.eligible ? 'The proof page could not be created. Nothing was published; try again.' : again.message) }
