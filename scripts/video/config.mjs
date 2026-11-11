@@ -26,13 +26,10 @@ export const FPS = 30
 /** Page background of the app and the site; cards and fades use it so cuts stay calm. */
 export const PAPER = '#FAF8F3'
 
-/**
- * The hosted questions. The first buys from the team-authored writers (the x402 question: right article, one purchase, a
- * lead that names PAYMENT-REQUIRED and PAYMENT-SIGNATURE; the RLUSD preset regressed on hosted, mock-judge round 9, H9-01).
- * The second is declined.
- */
+/** The prepared hosted run follows the third preset introduced by #499. */
+export const HISTORICAL_MCP_QUESTION = 'What does an x402 402 Payment Required response contain?'
 export const QUESTIONS = {
-  buy: 'What does an x402 402 Payment Required response contain?',
+  buy: "How does the writer get paid, and what stops the agent from reading the article and then refusing to pay?",
   // A news question (so it is planned, not chatted) that shares no vocabulary with any writer or free source: nothing is
   // answerable from free sources, so the decline is a clean refusal that can be shared. (Macro words such as "outlook" and
   // "prices" match the open central-bank records and get a free answer instead.)

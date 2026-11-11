@@ -20,7 +20,20 @@ Source: title-card. Label: XRPL Testnet · no real value.
 
 **Record after redeploy.** Show the actual hosted URL, plan at 1×, purchase reason and Trace search comparison.
 
-Ask a question and set a budget. The sandbox writes answers live and uses fixed buying rules. Only policy code pays. It checks free sources, then can buy one article per round. The payment card records why it bought; Show work compares the searches with the plan confirmed here.
+How does the writer get paid, and what stops the agent from reading the article and then refusing to pay? Set a budget. This run bought one S$0.40 article. Only policy code pays. The answer says: the writer gets paid by publishing the article's key on the XRP Ledger: the payment waits in an escrow that only that key can open, so an agent cannot read the article unless the writer is paid. Show work compares the searches with the confirmed plan.
+
+Prepared third preset after #499: “How does the writer get paid, and what stops the agent from reading the article and then refusing to pay?”
+
+Observed reference **T3-1**, 12 Nov, local HOSTED=1 with live DeepSeek and fixed buying rules:
+one **S$0.40** key-reveal purchase of `product-writer-paid`, Testnet XRP test funds.
+Observed lead, verbatim:
+
+> the writer gets paid by publishing the article's key on the XRP Ledger: the payment waits in an escrow that only that key can open, so an agent cannot read the article unless the writer is paid.
+
+Its [EscrowFinish](https://testnet.xrpl.org/transactions/BC2B4BAD2D7E7615E3A3B6A74888899F433615EE99D4E0ACD75F5CC9C2BA9F01) belongs to T3-1. The fresh hosted take remains
+**record after redeploy**: confirm its actual question, lead and S$0.40 purchase,
+then follow that take's own EscrowFinish. Never substitute the earlier x402 or
+recorded-corner payment link. Recheck the voice against the actual new result.
 
 Source: hosted-ask. Label: Live sandbox · XRPL Testnet · live answers, rule-based buying · team-authored writers · no real value.
 
@@ -70,7 +83,7 @@ Source: close-card. Label: XRPL Testnet only · no real value.
 
 Run `make video-record` for local scenes; `--list` prints scene IDs. Hosted scenes
 `hosted-ask`, `hosted-decline` and `ledger` are marked **record after redeploy**.
-The hosted question is “What does an x402 402 Payment Required response contain?”;
+The hosted question is “How does the writer get paid, and what stops the agent from reading the article and then refusing to pay?”;
 the optional refusal question is “Which airlines ordered new narrowbody jets at the 2026 Farnborough Airshow?”.
 After redeploy the recorder must be deliberately re-enabled for those scenes.
 

@@ -52,6 +52,28 @@ the credential setup script, fund wallets, or create ledger objects. Models and
 buyer payments stay fixture/simulated. No engine, UI or server hook is added.
 Every listener uses ephemeral ports; never 5100, 8788 or 8790.
 
+## Prepared run after #499
+
+Shot 2 uses the exact third preset: **“How does the writer get paid, and what stops the agent from reading the article and then refusing to pay?”**
+The observed lead in T3-1 was:
+
+> the writer gets paid by publishing the article's key on the XRP Ledger: the payment waits in an escrow that only that key can open, so an agent cannot read the article unless the writer is paid.
+
+That local HOSTED=1 measurement used live DeepSeek, fixed buying rules and one
+**S$0.40** key-reveal purchase of `product-writer-paid` on XRPL Testnet.
+Its [EscrowFinish](https://testnet.xrpl.org/transactions/BC2B4BAD2D7E7615E3A3B6A74888899F433615EE99D4E0ACD75F5CC9C2BA9F01) is the T3-1 reference, not the old x402 payment.
+The primary hosted take is still **record after redeploy**. Check that take's
+actual lead and purchase, then follow its own EscrowFinish. Retain **live answers,
+rule-based buying** only for an actual live-answer take; inspect fallback provenance.
+Shot 2's owner voice text now reads this question and observed lead; recheck full
+cut duration against the owner's audio. The 360-word limit is unchanged.
+
+Re-record local home/corner and Writers footage against #499 so visible presets
+are current. Historical MCP, Python and replay footage keep their original
+questions, transaction links, labels and dates. No historical x402 take becomes
+a writer-payment take. The identity-only local free question remains setup for
+signed writer metadata, with no purchase.
+
 ## Release pins
 
 Video pins share `publishedReleases` in `shared/links.json` with the builders'

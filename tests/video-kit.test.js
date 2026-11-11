@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest'
 import { THEMES, lineHtml, paletteColor, parseLine, plain, redactLine } from '../scripts/video/lib/ansi.mjs'
 import { clockText, fillTokens, placeSentences, planShot, resolveRef, resolveSegments, speedLabel, speechText, splitSentences, splitSubtitles, srtTime, timeCues, toSrt } from '../scripts/video/lib/timeline.mjs'
 import { assertPublished, checkVideoPins } from '../scripts/video/lib/release-pins.mjs'
-import { RELEASE_TAG, TGZ, WHEEL, QUESTIONS } from '../scripts/video/config.mjs'
+import { RELEASE_TAG, TGZ, WHEEL, QUESTIONS, HISTORICAL_MCP_QUESTION } from '../scripts/video/config.mjs'
 import { CLAUDE_PROMPT, SCENES, hasTeamAuthoredResult } from '../scripts/video/scenes.mjs'
 import { sessionEnv } from '../scripts/video/lib/terminal.mjs'
 
@@ -182,9 +182,24 @@ describe('the video stays honest', () => {
     expect(QUESTIONS.decline).not.toMatch(/\b(outlook|prices?|rates?|yields?|bonds?|bank|inflation|forecast)\b/i)
     for (const question of [QUESTIONS.buy, QUESTIONS.decline]) expect(norm(script), question).toContain(norm(question.replace(/\s+/g, ' ')))
   })
-  it('asks Claude Code the same question as the hosted ask, and the script shows that prompt', () => {
-    expect(CLAUDE_PROMPT).toContain(`'${QUESTIONS.buy}'`)
-    expect(norm(script)).toContain(norm(`ask_expert '${QUESTIONS.buy}' with budget_sgd=2`))
+  it('preserves the actual historical MCP question separately from the new hosted preset', () => {
+    expect(CLAUDE_PROMPT).toContain(`'${HISTORICAL_MCP_QUESTION}'`)
+    expect(HISTORICAL_MCP_QUESTION).not.toBe(QUESTIONS.buy)
+    expect(norm(script)).toContain(norm(`ask_expert '${HISTORICAL_MCP_QUESTION}' with budget_sgd=2`))
+  })
+  it('uses the exact third preset and its own measured payment for the deferred hosted run', () => {
+    expect(QUESTIONS.buy).toBe('How does the writer get paid, and what stops the agent from reading the article and then refusing to pay?')
+    const hosted = spec.shots.find(s => s.id === 's2-sandbox')
+    expect(hosted.vo).toContain(QUESTIONS.buy)
+    expect(hosted.vo).toContain('S$0.40')
+    expect(hosted.deferred).toBe('record after redeploy')
+    const guide = readFileSync(join(root, 'docs/submission/video/README.md'), 'utf8')
+    for (const text of [script, guide]) {
+      expect(text).toContain(QUESTIONS.buy)
+      expect(text).toContain('the writer gets paid by publishing the article\'s key on the XRP Ledger')
+      expect(text).toContain('https://testnet.xrpl.org/transactions/BC2B4BAD2D7E7615E3A3B6A74888899F433615EE99D4E0ACD75F5CC9C2BA9F01')
+      expect(text).toContain('T3-1')
+    }
   })
   it('starts terminal sessions from an allowlist: no key, token or seed is inherited', () => {
     const before = { ...process.env }
