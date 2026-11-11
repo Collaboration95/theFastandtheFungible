@@ -23,7 +23,7 @@ export const PROTOCOL_GLOSSARY = [
   ['checks', 'CheckCreate', 'CheckCash', 'capped payment', 'cashes'],
   ['payment channel', 'payment channels', 'micropayments', 'PaymentChannelCreate', 'PaymentChannelFund', 'PaymentChannelClaim'],
   ['travel rule', 'fatf', 'vasps', 'originator and beneficiary information'],
-  ['key reveal', 'keyreveal', 'key delivery', 'reveal key', 'ciphertext', 'encryption key'],
+  ['key reveal', 'keyreveal', 'key delivery', 'reveal key', 'ciphertext', 'encryption key', 'decryption key', 'never reveals', 'key not delivered', 'non-delivery of the key'],
   // C5 (11 Nov): vocabulary for the sourced explainers added in the same change. Names only; it never adds evidence.
   ['crypto-condition', 'crypto condition', 'conditional escrow', 'PREIMAGE-SHA-256', 'preimage', 'fulfillment', 'hash lock', 'hash locked'],
   ['TicketCreate', 'TicketSequence', 'ticket limit', 'xrpl tickets'],
@@ -40,10 +40,12 @@ export const PROTOCOL_GLOSSARY = [
 // R9-C: "whether" is a question word like "what" or "which" (live planners open requested facts with it), and "then" only
 // orders clauses ("reading the article and then refusing to pay"); neither names a subject.
 const STOP = new Set('a an the of at in on to for and or with its it is are was were be did does do what how why when which whether who can will should from about this that their have has had by as into before after then today must need needs lets let get does every just than more much many each actually use used using i my me an agent please tell work know server no independent accessible evidence missing dated figures still unanswered happen happens'.split(' '))
-export const topicWords = (text: string): string[] => [...new Set((text.normalize('NFKC').replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase().match(/[a-z0-9]+/g) ?? []).filter(w => w.length > 1 && !STOP.has(w)).map(w => w.replace(/(?:ing|ed)$/, m => w.length > 5 ? '' : m).replace(/(?<!s)s$/, m => w.length > 3 ? '' : m)))]
+/** The same light inflection rule for query words, phrases and answer ranking. */
+export const topicStem = (w: string) => w.replace(/(?:ing|ed)$/, m => w.length > 5 ? '' : m).replace(/(?<!s)s$/, m => w.length > 3 ? '' : m)
+export const topicWords = (text: string): string[] => [...new Set((text.normalize('NFKC').replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase().match(/[a-z0-9]+/g) ?? []).filter(w => w.length > 1 && !STOP.has(w)).map(topicStem))]
 // Normalize the fixed vocabulary once rather than for each query word and hit.
 const groupWords = new Map(PROTOCOL_GLOSSARY.map(group => [group, new Set(group.flatMap(topicWords))]))
-const phraseWords = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, ' ').split(' ').map(w => w.replace(/(?:ing|ed)$/, m => w.length > 5 ? '' : m).replace(/(?<!s)s$/, m => w.length > 3 ? '' : m)).join(' ')
+const phraseWords = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, ' ').split(' ').map(topicStem).join(' ')
 const phraseText = (text: string) => ` ${phraseWords(text)} `
 const aliasKeys = new Map<string, string>(PROTOCOL_GLOSSARY.flat().map(p => [p, phraseText(p)]))
 export type TopicDocument = { words: ReadonlySet<string>; phrases: string }
@@ -55,7 +57,7 @@ const phraseIn = (normalized: string, phrase: string) => normalized.includes(ali
  * was scanned against the whole glossary thousands of times per run (about a third of a fixture ask's event-loop
  * time). The results depend only on the text; keep the most recent ones, frozen so no caller can alter a shared result.
  */
-const memoByText = <T>(compute: (text: string) => T, { entries = 512, maxLength = 4096 } = {}): ((text: string) => T) => {
+export const memoByText = <T>(compute: (text: string) => T, { entries = 512, maxLength = 4096 } = {}): ((text: string) => T) => {
   const cache = new Map<string, T>()
   return text => {
     if (text.length > maxLength) return compute(text)
@@ -67,7 +69,10 @@ const memoByText = <T>(compute: (text: string) => T, { entries = 512, maxLength 
   }
 }
 const matchingGroups = memoByText((query: string) => {
-  const normalized = phraseText(query)
+  // Safety vocabulary with an intervening source adjective still names prompt injection. This changes vocabulary,
+  // not the original words or their overlap denominator ("malicious document instructions", for example).
+  const safety = /\b(?:malicious|untrusted)\s+(?:\w+\s+){0,2}(?:instructions|content)\b/i.test(query)
+  const normalized = phraseText(`${query}${safety ? ' prompt injection' : ''}`)
   return Object.freeze(PROTOCOL_GLOSSARY.filter(group => (group[0] !== 'did' || /\bDID(?:Set|Delete)?\b/.test(query) || /decentralized identifier/i.test(query)) && group.some(p => phraseIn(normalized, p))))
 })
 /** topicWords of a query-side text, shared and frozen; topicWords itself still returns a fresh array. */
@@ -128,7 +133,9 @@ export function familyMemberWords(family: string): Set<string> {
  * paid?" is about writer payment, and "worth buying" about what was bought. Folding is local to those floors, so search,
  * title matching and the protocol families keep their exact words.
  */
-const SAME_WORD = new Map<string, readonly string[]>([['pay', ['pay', 'paid', 'payment']], ['buy', ['buy', 'bought']]])
+// QUAL: "spend money" is buying here ("Can the language model in ResearchAgent spend money on its own?" is answered by
+// "How does ResearchAgent decide which article is worth buying?"), so spend and spent are forms of buy.
+const SAME_WORD = new Map<string, readonly string[]>([['pay', ['pay', 'paid', 'payment']], ['buy', ['buy', 'bought', 'spend', 'spent']]])
 const BASE_OF = new Map([...SAME_WORD].flatMap(([base, forms]) => forms.map(form => [form, base] as const)))
 /**
  * The share of a query's topic words a document names, directly or through a glossary group both name, and how many.

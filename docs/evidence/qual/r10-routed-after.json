@@ -1,0 +1,2298 @@
+[
+  {
+    "id": "reserves",
+    "repetition": 1,
+    "question": "How much XRP reserve does an agent wallet need, and how much does each open escrow or trust line add?",
+    "phase": "DONE",
+    "planMs": 1139.76675,
+    "askMs": 3245.225834,
+    "scopeLabel": "DeepSeek · deepseek-flash",
+    "plan": {
+      "restatement": "The XRP reserve an agent wallet needs on the XRP Ledger and how much each open escrow or trust line adds.",
+      "subqueries": [
+        "XRPL base reserve requirement account 2026",
+        "XRPL owner reserve per escrow trust line",
+        "XRPL reserve requirements escrow trust line agent wallet"
+      ]
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "Current XRPL base account reserve in XRP, with date"
+      },
+      {
+        "id": "r2",
+        "text": "Current XRPL owner reserve per object in XRP, with date"
+      },
+      {
+        "id": "r3",
+        "text": "How much each open escrow adds to an agent wallet's XRP reserve"
+      },
+      {
+        "id": "r4",
+        "text": "How much each trust line adds to an agent wallet's XRP reserve"
+      }
+    ],
+    "labels": {
+      "research": "DeepSeek · deepseek-flash",
+      "decision": "fixture · metadata-fixture",
+      "publisher": "local",
+      "settlement": "SIMULATED SGD · no real funds",
+      "search": "keyword only (embeddings unavailable)",
+      "plan": "DeepSeek · deepseek-flash"
+    },
+    "bought": [
+      "xrpl-reserves"
+    ],
+    "spentMinor": 40,
+    "lead": [
+      "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings."
+    ],
+    "conclusion": "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings. The reserve is held separately from the money the wallet intends to send.",
+    "openGaps": [],
+    "facts": {
+      "answered": 4,
+      "total": 4,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "Current XRPL base account reserve in XRP, with date",
+          "status": "supported"
+        },
+        {
+          "id": "r2",
+          "text": "Current XRPL owner reserve per object in XRP, with date",
+          "status": "supported"
+        },
+        {
+          "id": "r3",
+          "text": "How much each open escrow adds to an agent wallet's XRP reserve",
+          "status": "supported"
+        },
+        {
+          "id": "r4",
+          "text": "How much each trust line adds to an agent wallet's XRP reserve",
+          "status": "supported"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "complete",
+      "line": "4 of 4 answered",
+      "judge": "fixture · metadata-fixture"
+    },
+    "fallbacks": [
+      {
+        "fallback": true,
+        "reason": "guard"
+      }
+    ],
+    "answer": {
+      "lead": [
+        {
+          "text": "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings.",
+          "claim": {
+            "id": "claim-1",
+            "text": "Current Mainnet base account reserve is 1 XRP.",
+            "stance": "SUPPORTS",
+            "citations": [
+              {
+                "resourceId": "xrpl-reserves",
+                "version": "v2",
+                "spanId": "p1"
+              }
+            ]
+          }
+        }
+      ],
+      "conclusion": "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings. The reserve is held separately from the money the wallet intends to send.",
+      "claims": [
+        {
+          "id": "claim-1",
+          "text": "Current Mainnet base account reserve is 1 XRP.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-reserves",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-2",
+          "text": "Current Mainnet owner reserve is 0.2 XRP per owned object.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-reserves",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-3",
+          "text": "Each open escrow adds 0.2 XRP to the owner reserve requirement.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-reserves",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-4",
+          "text": "Each trust line adds 0.2 XRP to the owner reserve requirement.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-reserves",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-5",
+          "text": "These figures are a dated reference, not a permanent constant, since validators can change reserves through fee voting.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-reserves",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        }
+      ],
+      "openGaps": [],
+      "version": 2,
+      "provider": "deepseek",
+      "model": "deepseek-flash"
+    },
+    "coverage": [
+      {
+        "answerVersion": 1,
+        "judge": "fixture · metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r2",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r3",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r4",
+            "status": "missing"
+          }
+        ]
+      },
+      {
+        "answerVersion": 2,
+        "judge": "fixture · metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "supported",
+            "claimIds": [
+              "claim-1",
+              "claim-2",
+              "claim-3",
+              "claim-4",
+              "claim-5"
+            ]
+          },
+          {
+            "requirementId": "r2",
+            "status": "supported",
+            "claimIds": [
+              "claim-1",
+              "claim-2",
+              "claim-3",
+              "claim-4",
+              "claim-5"
+            ]
+          },
+          {
+            "requirementId": "r3",
+            "status": "supported",
+            "claimIds": [
+              "claim-1",
+              "claim-2",
+              "claim-3",
+              "claim-4",
+              "claim-5"
+            ]
+          },
+          {
+            "requirementId": "r4",
+            "status": "supported",
+            "claimIds": [
+              "claim-1",
+              "claim-2",
+              "claim-3",
+              "claim-4",
+              "claim-5"
+            ]
+          }
+        ]
+      }
+    ],
+    "evidence": [
+      {
+        "resourceId": "xrpl-reserves",
+        "version": "v2",
+        "spanId": "p1",
+        "text": "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings. Other networks can differ, and validators can change these figures through fee voting, so they are a dated reference, not a permanent application constant. The reserve is held separately from the money the wallet intends to send. [1] According to the XRPL documentation, validators can change reserves through fee voting. [1]"
+      }
+    ]
+  },
+  {
+    "id": "credentials",
+    "repetition": 1,
+    "question": "What does an XRPL Credential prove, and which transactions create and accept one?",
+    "phase": "DONE",
+    "planMs": 1474.0141249999979,
+    "askMs": 5668.346957999998,
+    "scopeLabel": "DeepSeek · deepseek-flash",
+    "plan": {
+      "restatement": "What an XRPL Credential proves and which transactions create and accept one.",
+      "subqueries": [
+        "XRPL Credential ledger object what it proves",
+        "XRPL CredentialCreate CredentialAccept transactions",
+        "XRPL credentials documentation"
+      ]
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "What an XRPL Credential proves and who issues it"
+      },
+      {
+        "id": "r2",
+        "text": "Which XRPL transaction creates a Credential"
+      },
+      {
+        "id": "r3",
+        "text": "Which XRPL transaction accepts a Credential"
+      },
+      {
+        "id": "r4",
+        "text": "How CredentialAccept completes the credential lifecycle"
+      }
+    ],
+    "labels": {
+      "research": "DeepSeek · deepseek-flash",
+      "decision": "fixture · metadata-fixture",
+      "publisher": "local",
+      "settlement": "SIMULATED SGD · no real funds",
+      "search": "keyword only (embeddings unavailable)",
+      "plan": "DeepSeek · deepseek-flash"
+    },
+    "bought": [
+      "xrpl-tx-credentialaccept",
+      "xrpl-tx-credentialcreate"
+    ],
+    "spentMinor": 80,
+    "lead": [
+      "CredentialAccept records the subject account's acceptance of a credential issued to it.",
+      "CredentialCreate issues a provisional on-ledger credential to a subject account."
+    ],
+    "conclusion": "CredentialAccept records the subject account's acceptance of a credential issued to it. CredentialCreate issues a provisional on-ledger credential to a subject account. The issuer, subject and CredentialType identify the credential being accepted. The subject normally must accept the credential before permission checks can rely on it. An expired or deleted credential cannot establish a current permission merely because it once appeared in history. Trust depends on the issuer and purpose; a credential does not certify every article or grant universal payment-service approval.",
+    "openGaps": [
+      {
+        "text": "What an XRPL Credential proves and who issues it"
+      }
+    ],
+    "facts": {
+      "answered": 3,
+      "total": 4,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "What an XRPL Credential proves and who issues it",
+          "status": "missing"
+        },
+        {
+          "id": "r2",
+          "text": "Which XRPL transaction creates a Credential",
+          "status": "supported"
+        },
+        {
+          "id": "r3",
+          "text": "Which XRPL transaction accepts a Credential",
+          "status": "supported"
+        },
+        {
+          "id": "r4",
+          "text": "How CredentialAccept completes the credential lifecycle",
+          "status": "supported"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "round-limit",
+      "line": "3 of 4 answered · three-round limit reached",
+      "judge": "fixture · metadata-fixture"
+    },
+    "fallbacks": [],
+    "answer": {
+      "lead": [
+        {
+          "text": "CredentialAccept records the subject account's acceptance of a credential issued to it.",
+          "claim": {
+            "id": "claim-2",
+            "text": "CredentialAccept records the subject account's acceptance of a credential issued to it.",
+            "stance": "SUPPORTS",
+            "citations": [
+              {
+                "resourceId": "xrpl-tx-credentialaccept",
+                "version": "v1",
+                "spanId": "p1"
+              }
+            ]
+          }
+        },
+        {
+          "text": "CredentialCreate issues a provisional on-ledger credential to a subject account.",
+          "claim": {
+            "id": "claim-1",
+            "text": "CredentialCreate issues a provisional on-ledger credential to a subject account.",
+            "stance": "SUPPORTS",
+            "citations": [
+              {
+                "resourceId": "xrpl-tx-credentialcreate",
+                "version": "v1",
+                "spanId": "p1"
+              }
+            ]
+          }
+        }
+      ],
+      "conclusion": "CredentialAccept records the subject account's acceptance of a credential issued to it. CredentialCreate issues a provisional on-ledger credential to a subject account. The issuer, subject and CredentialType identify the credential being accepted. The subject normally must accept the credential before permission checks can rely on it. An expired or deleted credential cannot establish a current permission merely because it once appeared in history. Trust depends on the issuer and purpose; a credential does not certify every article or grant universal payment-service approval.",
+      "claims": [
+        {
+          "id": "claim-1",
+          "text": "CredentialCreate issues a provisional on-ledger credential to a subject account.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-credentialcreate",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-2",
+          "text": "CredentialAccept records the subject account's acceptance of a credential issued to it.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-credentialaccept",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-3",
+          "text": "The subject normally must accept the credential before permission checks can rely on it.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-credentialcreate",
+              "version": "v1",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "claim-4",
+          "text": "Trust depends on the issuer and purpose; a credential does not certify every article or grant universal payment-service approval.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-credentialcreate",
+              "version": "v1",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "claim-5",
+          "text": "Creation by an issuer alone is not acceptance by the subject.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-credentialaccept",
+              "version": "v1",
+              "spanId": "p2"
+            }
+          ]
+        }
+      ],
+      "openGaps": [
+        {
+          "text": "What an XRPL Credential proves and who issues it"
+        }
+      ],
+      "version": 3,
+      "provider": "deepseek",
+      "model": "deepseek-flash"
+    },
+    "coverage": [
+      {
+        "answerVersion": 1,
+        "judge": "fixture · metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r2",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r3",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r4",
+            "status": "missing"
+          }
+        ]
+      },
+      {
+        "answerVersion": 2,
+        "judge": "fixture · metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r2",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r3",
+            "status": "supported",
+            "claimIds": [
+              "claim-1"
+            ]
+          },
+          {
+            "requirementId": "r4",
+            "status": "supported",
+            "claimIds": [
+              "claim-1",
+              "claim-2",
+              "claim-3",
+              "claim-4"
+            ]
+          }
+        ]
+      },
+      {
+        "answerVersion": 3,
+        "judge": "fixture · metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r2",
+            "status": "supported",
+            "claimIds": [
+              "claim-1"
+            ]
+          },
+          {
+            "requirementId": "r3",
+            "status": "supported",
+            "claimIds": [
+              "claim-2"
+            ]
+          },
+          {
+            "requirementId": "r4",
+            "status": "supported",
+            "claimIds": [
+              "claim-2",
+              "claim-5"
+            ]
+          }
+        ]
+      }
+    ],
+    "evidence": [
+      {
+        "resourceId": "xrpl-tx-credentialaccept",
+        "version": "v1",
+        "spanId": "p1",
+        "text": "According to XRPL documentation, CredentialAccept records the subject account's acceptance of a credential issued to it. [1]"
+      },
+      {
+        "resourceId": "xrpl-tx-credentialaccept",
+        "version": "v1",
+        "spanId": "p2",
+        "text": "The issuer, subject and CredentialType identify the credential being accepted. Creation by an issuer alone is not acceptance by the subject. An expired or deleted credential cannot establish a current permission merely because it once appeared in history. Acceptance concerns the attestation's lifecycle, not a guarantee that every statement by the subject is true. [1]"
+      },
+      {
+        "resourceId": "xrpl-tx-credentialcreate",
+        "version": "v1",
+        "spanId": "p1",
+        "text": "According to XRPL documentation, CredentialCreate issues a provisional on-ledger credential to a subject account. [1]"
+      },
+      {
+        "resourceId": "xrpl-tx-credentialcreate",
+        "version": "v1",
+        "spanId": "p2",
+        "text": "CredentialType is issuer-defined binary data encoded as hexadecimal, not a globally unique legal classification. The subject normally must accept the credential before permission checks can rely on it. Expiration and URI can qualify the attestation. Trust depends on the issuer and purpose; a credential does not certify every article or grant universal payment-service approval. [1]"
+      }
+    ]
+  },
+  {
+    "id": "x402",
+    "repetition": 1,
+    "question": "What does an x402 402 response contain, and can my agent pay it with XRP on Testnet?",
+    "phase": "DONE",
+    "planMs": 1667.8955840000053,
+    "askMs": 3901.605292,
+    "scopeLabel": "DeepSeek · deepseek-flash",
+    "plan": {
+      "restatement": "What an x402 402 response contains and whether an agent can pay it with XRP on Testnet.",
+      "subqueries": [
+        "x402 402 response contents payment requirements",
+        "x402 XRP payment support Testnet",
+        "x402 protocol payment header scheme network asset"
+      ]
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "What fields an x402 402 response contains, including payment requirements"
+      },
+      {
+        "id": "r2",
+        "text": "Whether x402 supports paying with XRP"
+      },
+      {
+        "id": "r3",
+        "text": "Whether x402 payments can run on XRPL Testnet"
+      }
+    ],
+    "labels": {
+      "research": "DeepSeek · deepseek-flash",
+      "decision": "fixture · metadata-fixture",
+      "publisher": "local",
+      "settlement": "SIMULATED SGD · no real funds",
+      "search": "keyword only (embeddings unavailable)",
+      "plan": "DeepSeek · deepseek-flash"
+    },
+    "bought": [
+      "product-x402-response"
+    ],
+    "spentMinor": 40,
+    "lead": [
+      "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
+      "An agent can pay a 402 in XRP on Testnet, network xrpl:1."
+    ],
+    "conclusion": "An HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. An agent can pay a 402 in XRP on Testnet, network xrpl:1. The XRPL exact scheme quotes a native XRP Payment in integer drops, and ResearchAgent's writers accept exactly that. A successful HTTP response can include PAYMENT-RESPONSE with settlement details.",
+    "openGaps": [],
+    "facts": {
+      "answered": 3,
+      "total": 3,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "What fields an x402 402 response contains, including payment requirements",
+          "status": "supported"
+        },
+        {
+          "id": "r2",
+          "text": "Whether x402 supports paying with XRP",
+          "status": "supported"
+        },
+        {
+          "id": "r3",
+          "text": "Whether x402 payments can run on XRPL Testnet",
+          "status": "supported"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "complete",
+      "line": "3 of 3 answered",
+      "judge": "fixture · metadata-fixture"
+    },
+    "fallbacks": [],
+    "answer": {
+      "lead": [
+        {
+          "text": "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
+          "claim": {
+            "id": "claim-3",
+            "text": "An agent can pay a 402 in XRP on Testnet, network xrpl:1; the XRPL exact scheme quotes a native XRP Payment in integer drops.",
+            "stance": "SUPPORTS",
+            "citations": [
+              {
+                "resourceId": "product-x402-response",
+                "version": "v2",
+                "spanId": "p1"
+              }
+            ]
+          }
+        },
+        {
+          "text": "An agent can pay a 402 in XRP on Testnet, network xrpl:1.",
+          "claim": {
+            "id": "claim-3",
+            "text": "An agent can pay a 402 in XRP on Testnet, network xrpl:1; the XRPL exact scheme quotes a native XRP Payment in integer drops.",
+            "stance": "SUPPORTS",
+            "citations": [
+              {
+                "resourceId": "product-x402-response",
+                "version": "v2",
+                "spanId": "p1"
+              }
+            ]
+          }
+        }
+      ],
+      "conclusion": "An HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. An agent can pay a 402 in XRP on Testnet, network xrpl:1. The XRPL exact scheme quotes a native XRP Payment in integer drops, and ResearchAgent's writers accept exactly that. A successful HTTP response can include PAYMENT-RESPONSE with settlement details.",
+      "claims": [
+        {
+          "id": "claim-1",
+          "text": "The PAYMENT-REQUIRED header carries base64-encoded JSON with x402Version 2, resource (the protected URL), and accepts listing payment options.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "product-x402-response",
+              "version": "v2",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "claim-2",
+          "text": "Each accepted option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra holds scheme-specific details, and an optional error explains the refusal.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "product-x402-response",
+              "version": "v2",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "claim-3",
+          "text": "An agent can pay a 402 in XRP on Testnet, network xrpl:1; the XRPL exact scheme quotes a native XRP Payment in integer drops.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "product-x402-response",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-4",
+          "text": "The retry carries the selected accepted requirements plus a scheme-specific payment payload; a valid signature does not establish that a transaction completed.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "product-x402-response",
+              "version": "v2",
+              "spanId": "p3"
+            }
+          ]
+        }
+      ],
+      "openGaps": [],
+      "version": 2,
+      "provider": "deepseek",
+      "model": "deepseek-flash"
+    },
+    "coverage": [
+      {
+        "answerVersion": 1,
+        "judge": "fixture · metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r2",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r3",
+            "status": "missing"
+          }
+        ]
+      },
+      {
+        "answerVersion": 2,
+        "judge": "fixture · metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "supported",
+            "claimIds": [
+              "claim-3"
+            ]
+          },
+          {
+            "requirementId": "r2",
+            "status": "supported",
+            "claimIds": [
+              "claim-3"
+            ]
+          },
+          {
+            "requirementId": "r3",
+            "status": "supported",
+            "claimIds": [
+              "claim-3"
+            ]
+          }
+        ]
+      }
+    ],
+    "evidence": [
+      {
+        "resourceId": "product-x402-response",
+        "version": "v2",
+        "spanId": "p1",
+        "text": "According to the X402 v2 specification, an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. An agent can pay a 402 in XRP on Testnet, network xrpl:1. The XRPL exact scheme quotes a native XRP Payment in integer drops, and ResearchAgent's writers accept exactly that. [1] [2] [3] [4]"
+      },
+      {
+        "resourceId": "product-x402-response",
+        "version": "v2",
+        "spanId": "p2",
+        "text": "The header carries base64-encoded JSON: x402Version is 2, resource identifies the protected URL, and accepts lists payment options. Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details. An optional error explains the refusal, and extensions can advertise additional capabilities. Base64 is an encoding, not encryption or proof that the seller is trustworthy. [1] [2]"
+      },
+      {
+        "resourceId": "product-x402-response",
+        "version": "v2",
+        "spanId": "p3",
+        "text": "The retry carries the selected accepted requirements and a scheme-specific payment payload. A successful HTTP response can include PAYMENT-RESPONSE with settlement details. Verification and settlement are distinct steps: a syntactically valid signature does not establish that a transaction completed. Network and asset support must agree across the client, server and facilitator. [1] [2]"
+      }
+    ]
+  },
+  {
+    "id": "injection",
+    "repetition": 1,
+    "question": "How can I stop a prompt-injected AI agent from draining its wallet?",
+    "phase": "DONE",
+    "planMs": 1339.0562090000021,
+    "askMs": 3424.5369999999966,
+    "scopeLabel": "DeepSeek · deepseek-flash",
+    "plan": {
+      "restatement": "How to prevent a prompt-injected AI agent from draining its wallet.",
+      "subqueries": [
+        "prevent prompt injection AI agent draining wallet",
+        "AI agent wallet spending limits policy controls prompt injection",
+        "x402 agent payment security prompt injection safeguards"
+      ]
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "Sourced guidance on securing agent payments against prompt injection"
+      }
+    ],
+    "labels": {
+      "research": "DeepSeek · deepseek-flash",
+      "decision": "fixture · metadata-fixture",
+      "publisher": "local",
+      "settlement": "SIMULATED SGD · no real funds",
+      "search": "keyword only (embeddings unavailable)",
+      "plan": "DeepSeek · deepseek-flash"
+    },
+    "bought": [
+      "product-prompt-injection"
+    ],
+    "spentMinor": 40,
+    "lead": [
+      "prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments."
+    ],
+    "conclusion": "Prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments. Policy enforces the admitted budget, source limit, wallet daily authority and one charge per intent. Untrusted article text cannot change those limits, choose signing keys or turn a research instruction into additional wallet authority.",
+    "openGaps": [],
+    "facts": {
+      "answered": 1,
+      "total": 1,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "Sourced guidance on securing agent payments against prompt injection",
+          "status": "supported"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "complete",
+      "line": "1 of 1 answered",
+      "judge": "fixture · metadata-fixture"
+    },
+    "fallbacks": [],
+    "answer": {
+      "lead": [
+        {
+          "text": "prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments.",
+          "claim": {
+            "id": "claim-1",
+            "text": "Prompt injection cannot raise spending authorization; the user budget is the sole authorization, and deterministic policy code performs purchases while the language model cannot sign payments.",
+            "stance": "SUPPORTS",
+            "citations": [
+              {
+                "resourceId": "product-prompt-injection",
+                "version": "v1",
+                "spanId": "p1"
+              }
+            ]
+          }
+        }
+      ],
+      "conclusion": "Prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments. Policy enforces the admitted budget, source limit, wallet daily authority and one charge per intent. Untrusted article text cannot change those limits, choose signing keys or turn a research instruction into additional wallet authority.",
+      "claims": [
+        {
+          "id": "claim-1",
+          "text": "Prompt injection cannot raise spending authorization; the user budget is the sole authorization, and deterministic policy code performs purchases while the language model cannot sign payments.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "product-prompt-injection",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-2",
+          "text": "Recommendations pass through independent spending checks enforcing the admitted budget, source limit, wallet daily authority and one charge per intent; untrusted text cannot change limits or signing keys.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "product-prompt-injection",
+              "version": "v1",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "claim-3",
+          "text": "Practical guidance: keep budgets small, review receipts, and use the operator pause control when suspicious activity appears; pause blocks new reservations but submitted payments still need reconciliation.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "product-prompt-injection",
+              "version": "v1",
+              "spanId": "p4"
+            }
+          ]
+        },
+        {
+          "id": "claim-4",
+          "text": "The guarantee is bounded payment authority, not immunity to misleading content; a malicious passage might still influence which evidence looks attractive within the existing allowance.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "product-prompt-injection",
+              "version": "v1",
+              "spanId": "p4"
+            }
+          ]
+        }
+      ],
+      "openGaps": [],
+      "version": 2,
+      "provider": "deepseek",
+      "model": "deepseek-flash"
+    },
+    "coverage": [
+      {
+        "answerVersion": 1,
+        "judge": "fixture · metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "missing"
+          }
+        ]
+      },
+      {
+        "answerVersion": 2,
+        "judge": "fixture · metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "supported",
+            "claimIds": [
+              "claim-1"
+            ]
+          }
+        ]
+      }
+    ],
+    "evidence": [
+      {
+        "resourceId": "product-prompt-injection",
+        "version": "v1",
+        "spanId": "p1",
+        "text": "According to ResearchAgent security documentation, prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments. [1] [2]"
+      },
+      {
+        "resourceId": "product-prompt-injection",
+        "version": "v1",
+        "spanId": "p2",
+        "text": "The decision model can recommend whether evidence is useful, but recommendations pass through independent spending checks. Policy enforces the admitted budget, source limit, wallet daily authority and one charge per intent. Untrusted article text cannot change those limits, choose signing keys or turn a research instruction into additional wallet authority. The plan confirmation precedes spending; there is no separate approval for each article. [1] [2]"
+      },
+      {
+        "resourceId": "product-prompt-injection",
+        "version": "v1",
+        "spanId": "p4",
+        "text": "Author interpretation: a malicious passage might still influence which evidence looks attractive within the existing allowance. Keep budgets small, review receipts and use the operator pause control when suspicious activity appears. Pause blocks new reservations while already submitted payments still require reconciliation. The guarantee is bounded payment authority, not immunity to all misleading content. Sources accessed 10 November 2026. [2] [3]"
+      }
+    ]
+  },
+  {
+    "id": "submitters",
+    "repetition": 1,
+    "question": "What's the difference between EscrowFinish and EscrowCancel, and who can submit each one?",
+    "phase": "DONE",
+    "planMs": 1629.3690829999978,
+    "askMs": 3237.303249999997,
+    "scopeLabel": "DeepSeek · deepseek-flash",
+    "plan": {
+      "restatement": "The difference between XRPL EscrowFinish and EscrowCancel transactions and who is authorized to submit each.",
+      "subqueries": [
+        "XRPL EscrowFinish EscrowCancel difference who can submit",
+        "XRPL escrow transaction types finish cancel authorization"
+      ]
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "What EscrowFinish does and who can submit it on the XRPL"
+      },
+      {
+        "id": "r2",
+        "text": "What EscrowCancel does and who can submit it on the XRPL"
+      },
+      {
+        "id": "r3",
+        "text": "How the two transactions differ in effect and authorization"
+      }
+    ],
+    "labels": {
+      "research": "DeepSeek · deepseek-flash",
+      "decision": "fixture · metadata-fixture",
+      "publisher": "local",
+      "settlement": "SIMULATED SGD · no real funds",
+      "search": "keyword only (embeddings unavailable)",
+      "plan": "DeepSeek · deepseek-flash"
+    },
+    "bought": [
+      "xrpl-escrow"
+    ],
+    "spentMinor": 40,
+    "lead": [
+      "EscrowFinish releases escrowed funds when its requirements are satisfied; EscrowCancel returns expired escrowed funds to the sender.",
+      "Any account may submit EscrowFinish or EscrowCancel; funds go only to the destination or back to the owner."
+    ],
+    "conclusion": "EscrowFinish releases escrowed funds when its requirements are satisfied; EscrowCancel returns expired escrowed funds to the sender. Any account may submit EscrowFinish or EscrowCancel; funds go only to the destination or back to the owner. Expiration alone does not submit that cancellation transaction.",
+    "openGaps": [
+      {
+        "text": "How the two transactions differ in effect and authorization"
+      }
+    ],
+    "facts": {
+      "answered": 2,
+      "total": 3,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "What EscrowFinish does and who can submit it on the XRPL",
+          "status": "supported"
+        },
+        {
+          "id": "r2",
+          "text": "What EscrowCancel does and who can submit it on the XRPL",
+          "status": "supported"
+        },
+        {
+          "id": "r3",
+          "text": "How the two transactions differ in effect and authorization",
+          "status": "missing"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "no-eligible-purchase",
+      "line": "2 of 3 answered · no source worth buying for the rest",
+      "judge": "fixture · metadata-fixture"
+    },
+    "fallbacks": [],
+    "answer": {
+      "lead": [
+        {
+          "text": "EscrowFinish releases escrowed funds when its requirements are satisfied; EscrowCancel returns expired escrowed funds to the sender.",
+          "claim": {
+            "id": "claim-1",
+            "text": "EscrowFinish releases escrowed funds when its requirements are satisfied.",
+            "stance": "SUPPORTS",
+            "citations": [
+              {
+                "resourceId": "xrpl-escrow",
+                "version": "v2",
+                "spanId": "p1"
+              }
+            ]
+          }
+        },
+        {
+          "text": "Any account may submit EscrowFinish or EscrowCancel; funds go only to the destination or back to the owner.",
+          "claim": {
+            "id": "claim-1",
+            "text": "EscrowFinish releases escrowed funds when its requirements are satisfied.",
+            "stance": "SUPPORTS",
+            "citations": [
+              {
+                "resourceId": "xrpl-escrow",
+                "version": "v2",
+                "spanId": "p1"
+              }
+            ]
+          }
+        }
+      ],
+      "conclusion": "EscrowFinish releases escrowed funds when its requirements are satisfied; EscrowCancel returns expired escrowed funds to the sender. Any account may submit EscrowFinish or EscrowCancel; funds go only to the destination or back to the owner. Expiration alone does not submit that cancellation transaction.",
+      "claims": [
+        {
+          "id": "claim-1",
+          "text": "EscrowFinish releases escrowed funds when its requirements are satisfied.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-escrow",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-2",
+          "text": "EscrowCancel returns expired escrowed funds to the sender.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-escrow",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-3",
+          "text": "Any account may submit EscrowFinish or EscrowCancel; funds go only to the destination or back to the owner.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-escrow",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-4",
+          "text": "The two differ in effect: Finish releases funds on satisfaction of requirements, Cancel returns expired funds to the sender, and both are submittable by any account.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-escrow",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        }
+      ],
+      "openGaps": [
+        {
+          "text": "How the two transactions differ in effect and authorization"
+        }
+      ],
+      "version": 2,
+      "provider": "deepseek",
+      "model": "deepseek-flash"
+    },
+    "coverage": [
+      {
+        "answerVersion": 1,
+        "judge": "fixture · metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r2",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r3",
+            "status": "missing"
+          }
+        ]
+      },
+      {
+        "answerVersion": 2,
+        "judge": "fixture · metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "supported",
+            "claimIds": [
+              "claim-1",
+              "claim-2",
+              "claim-3",
+              "claim-4"
+            ]
+          },
+          {
+            "requirementId": "r2",
+            "status": "supported",
+            "claimIds": [
+              "claim-1",
+              "claim-2",
+              "claim-3",
+              "claim-4"
+            ]
+          },
+          {
+            "requirementId": "r3",
+            "status": "missing"
+          }
+        ]
+      }
+    ],
+    "evidence": [
+      {
+        "resourceId": "xrpl-escrow",
+        "version": "v2",
+        "spanId": "p1",
+        "text": "XRPL escrow locks funds until its time or cryptographic conditions permit release; it does not judge whether purchased prose is useful or true. EscrowFinish releases escrowed funds when its requirements are satisfied; EscrowCancel returns expired escrowed funds to the sender. Any account may submit EscrowFinish or EscrowCancel; funds go only to the destination or back to the owner. EscrowCreate establishes the obligation. Expiration alone does not submit that cancellation transaction. [1] [2] [3] According to the XRPL documentation, a cancellation returns funds to the escrow owner. [3]"
+      }
+    ]
+  },
+  {
+    "id": "no-show",
+    "repetition": 1,
+    "question": "If my agent pays for an article and the writer never reveals the key, what happens to my money?",
+    "phase": "DONE",
+    "planMs": 1542.1076250000042,
+    "askMs": 3940.105542000005,
+    "scopeLabel": "DeepSeek · deepseek-flash",
+    "plan": {
+      "restatement": "What happens to the payment if a writer never reveals the key after an agent pays for an article.",
+      "subqueries": [
+        "XRPL escrow key reveal payment writer never publishes key",
+        "XRPL escrow refund if condition not fulfilled timeout",
+        "x402 paywalled article escrow key reveal refund"
+      ]
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "How the payment is held in an XRPL escrow until the writer reveals the key"
+      },
+      {
+        "id": "r2",
+        "text": "What happens to the funds if the writer never reveals the key, including any refund or timeout"
+      },
+      {
+        "id": "r3",
+        "text": "Whether the buyer can recover the payment when the key is not revealed"
+      }
+    ],
+    "labels": {
+      "research": "DeepSeek · deepseek-flash",
+      "decision": "fixture · metadata-fixture",
+      "publisher": "local",
+      "settlement": "SIMULATED SGD · no real funds",
+      "search": "keyword only (embeddings unavailable)",
+      "plan": "DeepSeek · deepseek-flash"
+    },
+    "bought": [
+      "product-escrow-no-show"
+    ],
+    "spentMinor": 40,
+    "lead": [
+      "The buyer's money stays locked if the writer never reveals the key; after CancelAfter the buyer can recover escrow principal by cancellation with EscrowCancel."
+    ],
+    "conclusion": "The buyer's money stays locked if the writer never reveals the key; after CancelAfter the buyer can recover escrow principal by cancellation with EscrowCancel. EscrowCreate supplies a Condition and the expiry window; EscrowFinish supplies the matching Fulfillment, which reveals the secret. If the writer never completes delivery, policy waits for the validated deadline and submits cancellation of the original object. Anyone may submit an eligible EscrowCancel, but the locked principal returns to the escrow owner, not the caller who happens to submit it. Once a successful finish has released payment, the old escrow cannot be canceled; a subsequent quality dispute requires a separate writer-signed refund.",
+    "openGaps": [],
+    "facts": {
+      "answered": 3,
+      "total": 3,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "How the payment is held in an XRPL escrow until the writer reveals the key",
+          "status": "supported"
+        },
+        {
+          "id": "r2",
+          "text": "What happens to the funds if the writer never reveals the key, including any refund or timeout",
+          "status": "supported"
+        },
+        {
+          "id": "r3",
+          "text": "Whether the buyer can recover the payment when the key is not revealed",
+          "status": "supported"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "complete",
+      "line": "3 of 3 answered",
+      "judge": "fixture · metadata-fixture"
+    },
+    "fallbacks": [],
+    "answer": {
+      "lead": [
+        {
+          "text": "The buyer's money stays locked if the writer never reveals the key; after CancelAfter the buyer can recover escrow principal by cancellation with EscrowCancel.",
+          "claim": {
+            "id": "claim-2",
+            "text": "If the writer never reveals the key, funds stay locked; after CancelAfter the buyer can recover escrow principal via EscrowCancel, and expiry permits cancellation but does not automatically return funds.",
+            "stance": "SUPPORTS",
+            "citations": [
+              {
+                "resourceId": "product-escrow-no-show",
+                "version": "v2",
+                "spanId": "p1"
+              }
+            ]
+          }
+        }
+      ],
+      "conclusion": "The buyer's money stays locked if the writer never reveals the key; after CancelAfter the buyer can recover escrow principal by cancellation with EscrowCancel. EscrowCreate supplies a Condition and the expiry window; EscrowFinish supplies the matching Fulfillment, which reveals the secret. If the writer never completes delivery, policy waits for the validated deadline and submits cancellation of the original object. Anyone may submit an eligible EscrowCancel, but the locked principal returns to the escrow owner, not the caller who happens to submit it. Once a successful finish has released payment, the old escrow cannot be canceled; a subsequent quality dispute requires a separate writer-signed refund.",
+      "claims": [
+        {
+          "id": "claim-1",
+          "text": "Payment is held in an XRPL conditional escrow using PREIMAGE-SHA-256: EscrowCreate supplies a Condition and expiry window, and EscrowFinish supplies the matching Fulfillment that reveals the secret.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "product-escrow-no-show",
+              "version": "v2",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "claim-2",
+          "text": "If the writer never reveals the key, funds stay locked; after CancelAfter the buyer can recover escrow principal via EscrowCancel, and expiry permits cancellation but does not automatically return funds.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "product-escrow-no-show",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-3",
+          "text": "If delivery never completes, policy waits for the validated deadline and submits cancellation; anyone may submit an eligible EscrowCancel, but principal returns to the escrow owner, not the caller.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "product-escrow-no-show",
+              "version": "v2",
+              "spanId": "p3"
+            }
+          ]
+        },
+        {
+          "id": "claim-4",
+          "text": "The buyer can recover the payment by cancellation after the deadline; once a successful finish has released payment, the old escrow cannot be canceled and a dispute requires a separate writer-signed refund.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "product-escrow-no-show",
+              "version": "v2",
+              "spanId": "p4"
+            }
+          ]
+        }
+      ],
+      "openGaps": [],
+      "version": 2,
+      "provider": "deepseek",
+      "model": "deepseek-flash"
+    },
+    "coverage": [
+      {
+        "answerVersion": 1,
+        "judge": "fixture · metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r2",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r3",
+            "status": "missing"
+          }
+        ]
+      },
+      {
+        "answerVersion": 2,
+        "judge": "fixture · metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "supported",
+            "claimIds": [
+              "claim-2"
+            ]
+          },
+          {
+            "requirementId": "r2",
+            "status": "supported",
+            "claimIds": [
+              "claim-2"
+            ]
+          },
+          {
+            "requirementId": "r3",
+            "status": "supported",
+            "claimIds": [
+              "claim-1",
+              "claim-2"
+            ]
+          }
+        ]
+      }
+    ],
+    "evidence": [
+      {
+        "resourceId": "product-escrow-no-show",
+        "version": "v2",
+        "spanId": "p1",
+        "text": "The buyer's money stays locked if the writer never reveals the key; after CancelAfter the buyer can recover escrow principal by cancellation with EscrowCancel. Expiry permits cancellation but does not automatically return funds. [1] [2]"
+      },
+      {
+        "resourceId": "product-escrow-no-show",
+        "version": "v2",
+        "spanId": "p2",
+        "text": "XRPL conditional escrow uses PREIMAGE-SHA-256. EscrowCreate supplies a Condition and the expiry window; EscrowFinish supplies the matching Fulfillment, which reveals the secret. FinishAfter, when present, sets the earliest release time. CancelAfter sets the expiration boundary. The timing checks use ledger close time rather than the buyer laptop clock, so a visible countdown alone does not establish eligibility. [1] [2]"
+      },
+      {
+        "resourceId": "product-escrow-no-show",
+        "version": "v2",
+        "spanId": "p3",
+        "text": "If the writer never completes delivery, policy waits for the validated deadline and submits cancellation of the original object. Anyone may submit an eligible EscrowCancel, but the locked principal returns to the escrow owner, not the caller who happens to submit it. Creating, finishing or canceling an escrow consumes XRP transaction fees; cancellation does not refund those fees. [1] [2]"
+      },
+      {
+        "resourceId": "product-escrow-no-show",
+        "version": "v2",
+        "spanId": "p4",
+        "text": "Author interpretation: first reconcile the original escrow and its terminal history. A missing object without complete history does not prove cancellation or release. Once a successful finish has released payment, the old escrow cannot be canceled; a subsequent quality dispute requires a separate writer-signed refund. ResearchAgent preserves the original intent and transaction identity during recovery instead of charging again for an uncertain outcome. Sources accessed 10 November 2026. [1] [2]"
+      }
+    ]
+  },
+  {
+    "id": "RLUSD-1",
+    "repetition": 1,
+    "question": "Can an XRPL escrow hold RLUSD today, and what must the issuer enable before a buyer can lock it?",
+    "phase": "DONE",
+    "planMs": 1607.9125840000052,
+    "askMs": 3466.739459000004,
+    "scopeLabel": "DeepSeek · deepseek-flash",
+    "plan": {
+      "restatement": "Whether XRPL escrows can hold RLUSD today and what the issuer must enable before a buyer can lock it.",
+      "subqueries": [
+        "XRPL escrow RLUSD token support",
+        "XRPL escrow token escrow amendment issuer enable",
+        "XRPL RLUSD escrow requirements issuer"
+      ]
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "Whether XRPL escrow can hold RLUSD today, with the date"
+      },
+      {
+        "id": "r2",
+        "text": "What the RLUSD issuer must enable before a buyer can lock it in escrow"
+      }
+    ],
+    "labels": {
+      "research": "DeepSeek · deepseek-flash",
+      "decision": "fixture · metadata-fixture",
+      "publisher": "local",
+      "settlement": "SIMULATED SGD · no real funds",
+      "search": "keyword only (embeddings unavailable)",
+      "plan": "DeepSeek · deepseek-flash"
+    },
+    "bought": [
+      "team-rlusd"
+    ],
+    "spentMinor": 40,
+    "lead": [
+      "Not today: an XRPL escrow can hold official RLUSD only after its issuer enables AllowTrustLineLocking, and the RLUSD issuer had not enabled it on Mainnet or Testnet when the team checked on 11 November 2026."
+    ],
+    "conclusion": "Not today: an XRPL escrow can hold official RLUSD only after its issuer enables AllowTrustLineLocking, and the RLUSD issuer had not enabled it on Mainnet or Testnet when the team checked on 11 November 2026. The TokenEscrow amendment (XLS-85), which lets an escrow hold issued tokens, is already enabled on both networks, so the issuer flag is the remaining blocker. Only the issuer can set that flag, with an AccountSet transaction; a buyer or writer cannot set it for them. An issuer can change its flags later, so check the issuer account on the intended network before relying on this answer.",
+    "openGaps": [],
+    "facts": {
+      "answered": 2,
+      "total": 2,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "Whether XRPL escrow can hold RLUSD today, with the date",
+          "status": "supported"
+        },
+        {
+          "id": "r2",
+          "text": "What the RLUSD issuer must enable before a buyer can lock it in escrow",
+          "status": "supported"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "complete",
+      "line": "2 of 2 answered",
+      "judge": "fixture · metadata-fixture"
+    },
+    "fallbacks": [],
+    "answer": {
+      "lead": [
+        {
+          "text": "Not today: an XRPL escrow can hold official RLUSD only after its issuer enables AllowTrustLineLocking, and the RLUSD issuer had not enabled it on Mainnet or Testnet when the team checked on 11 November 2026.",
+          "claim": {
+            "id": "claim-1",
+            "text": "As of 11 November 2026, XRPL escrow cannot hold official RLUSD because the issuer had not enabled AllowTrustLineLocking on Mainnet or Testnet.",
+            "stance": "SUPPORTS",
+            "citations": [
+              {
+                "resourceId": "team-rlusd",
+                "version": "v4",
+                "spanId": "p1"
+              }
+            ]
+          }
+        }
+      ],
+      "conclusion": "Not today: an XRPL escrow can hold official RLUSD only after its issuer enables AllowTrustLineLocking, and the RLUSD issuer had not enabled it on Mainnet or Testnet when the team checked on 11 November 2026. The TokenEscrow amendment (XLS-85), which lets an escrow hold issued tokens, is already enabled on both networks, so the issuer flag is the remaining blocker. Only the issuer can set that flag, with an AccountSet transaction; a buyer or writer cannot set it for them. An issuer can change its flags later, so check the issuer account on the intended network before relying on this answer.",
+      "claims": [
+        {
+          "id": "claim-1",
+          "text": "As of 11 November 2026, XRPL escrow cannot hold official RLUSD because the issuer had not enabled AllowTrustLineLocking on Mainnet or Testnet.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "team-rlusd",
+              "version": "v4",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-2",
+          "text": "The issuer must enable AllowTrustLineLocking via an AccountSet transaction; only the issuer can set it, not a buyer or writer.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "team-rlusd",
+              "version": "v4",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-3",
+          "text": "The TokenEscrow amendment (XLS-85) is already enabled on both networks, so the issuer flag is the remaining blocker.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "team-rlusd",
+              "version": "v4",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-4",
+          "text": "Issuers can change flags later, so the issuer account on the intended network should be checked before relying on this answer.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "team-rlusd",
+              "version": "v4",
+              "spanId": "p2"
+            }
+          ]
+        }
+      ],
+      "openGaps": [],
+      "version": 2,
+      "provider": "deepseek",
+      "model": "deepseek-flash"
+    },
+    "coverage": [
+      {
+        "answerVersion": 1,
+        "judge": "fixture · metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r2",
+            "status": "missing"
+          }
+        ]
+      },
+      {
+        "answerVersion": 2,
+        "judge": "fixture · metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "supported",
+            "claimIds": [
+              "claim-1",
+              "claim-2",
+              "claim-3",
+              "claim-4"
+            ]
+          },
+          {
+            "requirementId": "r2",
+            "status": "supported",
+            "claimIds": [
+              "claim-1",
+              "claim-2",
+              "claim-3",
+              "claim-4"
+            ]
+          }
+        ]
+      }
+    ],
+    "evidence": [
+      {
+        "resourceId": "team-rlusd",
+        "version": "v4",
+        "spanId": "p1",
+        "text": "Not today: an XRPL escrow can hold official RLUSD only after its issuer enables AllowTrustLineLocking, and the RLUSD issuer had not enabled it on Mainnet or Testnet when the team checked on 11 November 2026. The TokenEscrow amendment (XLS-85), which lets an escrow hold issued tokens, is already enabled on both networks, so the issuer flag is the remaining blocker. Only the issuer can set that flag, with an AccountSet transaction; a buyer or writer cannot set it for them. [1] [2] [3] [4] [5]"
+      },
+      {
+        "resourceId": "team-rlusd",
+        "version": "v4",
+        "spanId": "p2",
+        "text": "RLUSD escrow support cannot be inferred from an XRP key-reveal purchase. An issuer can change its flags later, so check the issuer account on the intended network before relying on this answer. The docs contain no verified list of Singapore banks piloting RLUSD settlement in 2026. We cannot name banks from this evidence. [3] [4]"
+      }
+    ]
+  },
+  {
+    "id": "reserves-repeat",
+    "repetition": 1,
+    "question": "How much XRP reserve does an agent wallet need, and how much does each open escrow or trust line add?",
+    "phase": "DONE",
+    "planMs": 1657.5743329999968,
+    "askMs": 3539.0262079999957,
+    "scopeLabel": "DeepSeek · deepseek-flash",
+    "plan": {
+      "restatement": "The XRP reserve an agent wallet needs on the XRP Ledger and how much each open escrow or trust line adds.",
+      "subqueries": [
+        "XRPL base reserve account reserve requirement",
+        "XRPL owner reserve per escrow trust line",
+        "XRPL reserve requirements agent wallet escrows trust lines"
+      ]
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "XRPL base account reserve requirement, with current figures"
+      },
+      {
+        "id": "r2",
+        "text": "XRPL owner reserve added per open escrow"
+      },
+      {
+        "id": "r3",
+        "text": "XRPL owner reserve added per trust line"
+      },
+      {
+        "id": "r4",
+        "text": "How escrows and trust lines count toward an agent wallet's total XRP reserve"
+      }
+    ],
+    "labels": {
+      "research": "DeepSeek · deepseek-flash",
+      "decision": "fixture · metadata-fixture",
+      "publisher": "local",
+      "settlement": "SIMULATED SGD · no real funds",
+      "search": "keyword only (embeddings unavailable)",
+      "plan": "DeepSeek · deepseek-flash"
+    },
+    "bought": [
+      "xrpl-reserves"
+    ],
+    "spentMinor": 40,
+    "lead": [
+      "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings."
+    ],
+    "conclusion": "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings. The reserve is held separately from the money the wallet intends to send. Base reserve supports the account's existence; owner reserve constrains ledger objects. Removing an object can release its reserve requirement. Treating every XRP in a balance as transferable would therefore confuse several distinct accounting concepts. Reserves are not payments to validators, and the documentation permits reserved XRP to pay transaction costs.",
+    "openGaps": [],
+    "facts": {
+      "answered": 4,
+      "total": 4,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "XRPL base account reserve requirement, with current figures",
+          "status": "supported"
+        },
+        {
+          "id": "r2",
+          "text": "XRPL owner reserve added per open escrow",
+          "status": "supported"
+        },
+        {
+          "id": "r3",
+          "text": "XRPL owner reserve added per trust line",
+          "status": "supported"
+        },
+        {
+          "id": "r4",
+          "text": "How escrows and trust lines count toward an agent wallet's total XRP reserve",
+          "status": "supported"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "complete",
+      "line": "4 of 4 answered",
+      "judge": "fixture · metadata-fixture"
+    },
+    "fallbacks": [],
+    "answer": {
+      "lead": [
+        {
+          "text": "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings.",
+          "claim": {
+            "id": "claim-1",
+            "text": "XRPL base account reserve is 1 XRP at current Mainnet settings.",
+            "stance": "SUPPORTS",
+            "citations": [
+              {
+                "resourceId": "xrpl-reserves",
+                "version": "v2",
+                "spanId": "p1"
+              }
+            ]
+          }
+        }
+      ],
+      "conclusion": "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings. The reserve is held separately from the money the wallet intends to send. Base reserve supports the account's existence; owner reserve constrains ledger objects. Removing an object can release its reserve requirement. Treating every XRP in a balance as transferable would therefore confuse several distinct accounting concepts. Reserves are not payments to validators, and the documentation permits reserved XRP to pay transaction costs.",
+      "claims": [
+        {
+          "id": "claim-1",
+          "text": "XRPL base account reserve is 1 XRP at current Mainnet settings.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-reserves",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-2",
+          "text": "Each owned object, including an escrow, adds an owner reserve of 0.2 XRP.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-reserves",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-3",
+          "text": "Each owned object, including a trust line, adds an owner reserve of 0.2 XRP.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-reserves",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-4",
+          "text": "Escrows and trust lines count as owned ledger objects subject to the owner reserve, and removing an object can release its reserve requirement.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-reserves",
+              "version": "v2",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "claim-5",
+          "text": "Reserve figures can change through validator fee voting and differ by network, so they are a dated reference rather than a permanent constant.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-reserves",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        }
+      ],
+      "openGaps": [],
+      "version": 2,
+      "provider": "deepseek",
+      "model": "deepseek-flash"
+    },
+    "coverage": [
+      {
+        "answerVersion": 1,
+        "judge": "fixture · metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r2",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r3",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r4",
+            "status": "missing"
+          }
+        ]
+      },
+      {
+        "answerVersion": 2,
+        "judge": "fixture · metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "supported",
+            "claimIds": [
+              "claim-1",
+              "claim-2",
+              "claim-3",
+              "claim-5"
+            ]
+          },
+          {
+            "requirementId": "r2",
+            "status": "supported",
+            "claimIds": [
+              "claim-1",
+              "claim-2",
+              "claim-3",
+              "claim-5"
+            ]
+          },
+          {
+            "requirementId": "r3",
+            "status": "supported",
+            "claimIds": [
+              "claim-1",
+              "claim-2",
+              "claim-3",
+              "claim-5"
+            ]
+          },
+          {
+            "requirementId": "r4",
+            "status": "supported",
+            "claimIds": [
+              "claim-1",
+              "claim-2",
+              "claim-3",
+              "claim-5"
+            ]
+          }
+        ]
+      }
+    ],
+    "evidence": [
+      {
+        "resourceId": "xrpl-reserves",
+        "version": "v2",
+        "spanId": "p1",
+        "text": "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings. Other networks can differ, and validators can change these figures through fee voting, so they are a dated reference, not a permanent application constant. The reserve is held separately from the money the wallet intends to send. [1] According to the XRPL documentation, validators can change reserves through fee voting. [1]"
+      },
+      {
+        "resourceId": "xrpl-reserves",
+        "version": "v2",
+        "spanId": "p2",
+        "text": "Base reserve supports the account's existence; owner reserve constrains ledger objects. Escrows, offers and signer lists can affect the latter. Removing an object can release its reserve requirement. Reserves are not payments to validators, and the documentation permits reserved XRP to pay transaction costs. Treating every XRP in a balance as transferable would therefore confuse several distinct accounting concepts. [1]"
+      }
+    ]
+  },
+  {
+    "id": "x402-repeat",
+    "repetition": 1,
+    "question": "What does an x402 402 response contain, and can my agent pay it with XRP on Testnet?",
+    "phase": "DONE",
+    "planMs": 1181.0095000000147,
+    "askMs": 3224.3479579999985,
+    "scopeLabel": "DeepSeek · deepseek-flash",
+    "plan": {
+      "restatement": "What an x402 402 response contains and whether an agent can pay it with XRP on Testnet.",
+      "subqueries": [
+        "x402 402 response contents payment requirements",
+        "x402 XRP payment support Testnet",
+        "x402 protocol payment header scheme network asset"
+      ]
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "What fields an x402 402 response contains, including payment requirements"
+      },
+      {
+        "id": "r2",
+        "text": "Whether x402 supports paying with XRP, and on which networks including Testnet"
+      }
+    ],
+    "labels": {
+      "research": "DeepSeek · deepseek-flash",
+      "decision": "fixture · metadata-fixture",
+      "publisher": "local",
+      "settlement": "SIMULATED SGD · no real funds",
+      "search": "keyword only (embeddings unavailable)",
+      "plan": "DeepSeek · deepseek-flash"
+    },
+    "bought": [
+      "product-x402-response"
+    ],
+    "spentMinor": 40,
+    "lead": [
+      "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
+      "An agent can pay a 402 in XRP on Testnet, network xrpl:1."
+    ],
+    "conclusion": "An HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. An agent can pay a 402 in XRP on Testnet, network xrpl:1. The XRPL exact scheme quotes a native XRP Payment in integer drops, and ResearchAgent's writers accept exactly that. A successful HTTP response can include PAYMENT-RESPONSE with settlement details.",
+    "openGaps": [],
+    "facts": {
+      "answered": 2,
+      "total": 2,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "What fields an x402 402 response contains, including payment requirements",
+          "status": "supported"
+        },
+        {
+          "id": "r2",
+          "text": "Whether x402 supports paying with XRP, and on which networks including Testnet",
+          "status": "supported"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "complete",
+      "line": "2 of 2 answered",
+      "judge": "fixture · metadata-fixture"
+    },
+    "fallbacks": [],
+    "answer": {
+      "lead": [
+        {
+          "text": "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
+          "claim": {
+            "id": "claim-3",
+            "text": "An agent can pay a 402 in XRP on Testnet, network xrpl:1; the XRPL exact scheme quotes a native XRP Payment in integer drops.",
+            "stance": "SUPPORTS",
+            "citations": [
+              {
+                "resourceId": "product-x402-response",
+                "version": "v2",
+                "spanId": "p1"
+              }
+            ]
+          }
+        },
+        {
+          "text": "An agent can pay a 402 in XRP on Testnet, network xrpl:1.",
+          "claim": {
+            "id": "claim-3",
+            "text": "An agent can pay a 402 in XRP on Testnet, network xrpl:1; the XRPL exact scheme quotes a native XRP Payment in integer drops.",
+            "stance": "SUPPORTS",
+            "citations": [
+              {
+                "resourceId": "product-x402-response",
+                "version": "v2",
+                "spanId": "p1"
+              }
+            ]
+          }
+        }
+      ],
+      "conclusion": "An HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. An agent can pay a 402 in XRP on Testnet, network xrpl:1. The XRPL exact scheme quotes a native XRP Payment in integer drops, and ResearchAgent's writers accept exactly that. A successful HTTP response can include PAYMENT-RESPONSE with settlement details.",
+      "claims": [
+        {
+          "id": "claim-1",
+          "text": "The PAYMENT-REQUIRED header carries base64-encoded JSON with x402Version (2), resource (the protected URL), and accepts (a list of payment options).",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "product-x402-response",
+              "version": "v2",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "claim-2",
+          "text": "Each accepted option names scheme, network, amount, asset, payTo and maxTimeoutSeconds, with extra carrying scheme-specific details; an optional error explains refusal and extensions can advertise capabilities.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "product-x402-response",
+              "version": "v2",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "claim-3",
+          "text": "An agent can pay a 402 in XRP on Testnet, network xrpl:1; the XRPL exact scheme quotes a native XRP Payment in integer drops.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "product-x402-response",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-4",
+          "text": "The retry carries the selected accepted requirements and a scheme-specific payment payload; a successful response can include PAYMENT-RESPONSE with settlement details.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "product-x402-response",
+              "version": "v2",
+              "spanId": "p3"
+            }
+          ]
+        }
+      ],
+      "openGaps": [],
+      "version": 2,
+      "provider": "deepseek",
+      "model": "deepseek-flash"
+    },
+    "coverage": [
+      {
+        "answerVersion": 1,
+        "judge": "fixture · metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r2",
+            "status": "missing"
+          }
+        ]
+      },
+      {
+        "answerVersion": 2,
+        "judge": "fixture · metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "supported",
+            "claimIds": [
+              "claim-3"
+            ]
+          },
+          {
+            "requirementId": "r2",
+            "status": "supported",
+            "claimIds": [
+              "claim-3"
+            ]
+          }
+        ]
+      }
+    ],
+    "evidence": [
+      {
+        "resourceId": "product-x402-response",
+        "version": "v2",
+        "spanId": "p1",
+        "text": "According to the X402 v2 specification, an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. An agent can pay a 402 in XRP on Testnet, network xrpl:1. The XRPL exact scheme quotes a native XRP Payment in integer drops, and ResearchAgent's writers accept exactly that. [1] [2] [3] [4]"
+      },
+      {
+        "resourceId": "product-x402-response",
+        "version": "v2",
+        "spanId": "p2",
+        "text": "The header carries base64-encoded JSON: x402Version is 2, resource identifies the protected URL, and accepts lists payment options. Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details. An optional error explains the refusal, and extensions can advertise additional capabilities. Base64 is an encoding, not encryption or proof that the seller is trustworthy. [1] [2]"
+      },
+      {
+        "resourceId": "product-x402-response",
+        "version": "v2",
+        "spanId": "p3",
+        "text": "The retry carries the selected accepted requirements and a scheme-specific payment payload. A successful HTTP response can include PAYMENT-RESPONSE with settlement details. Verification and settlement are distinct steps: a syntactically valid signature does not establish that a transaction completed. Network and asset support must agree across the client, server and facilitator. [1] [2]"
+      }
+    ]
+  },
+  {
+    "id": "RLUSD-2",
+    "repetition": 1,
+    "question": "Can an XRPL escrow hold RLUSD today, and what must the issuer enable before a buyer can lock it?",
+    "phase": "DONE",
+    "planMs": 1312.843458999996,
+    "askMs": 3454.925125000009,
+    "scopeLabel": "DeepSeek · deepseek-flash",
+    "plan": {
+      "restatement": "Whether XRPL escrows can hold RLUSD today and what the issuer must enable before a buyer can lock it.",
+      "subqueries": [
+        "XRPL escrow RLUSD token support",
+        "XRPL escrow token escrow amendment issuer requirements",
+        "RLUSD issuer enable token escrow XRPL"
+      ]
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "Whether XRPL escrow can hold RLUSD today, with the enabling amendment and date"
+      },
+      {
+        "id": "r2",
+        "text": "What the RLUSD issuer must enable before a buyer can lock RLUSD in escrow"
+      },
+      {
+        "id": "r3",
+        "text": "Any issuer-side settings or flags required for token escrow on XRPL"
+      }
+    ],
+    "labels": {
+      "research": "DeepSeek · deepseek-flash",
+      "decision": "fixture · metadata-fixture",
+      "publisher": "local",
+      "settlement": "SIMULATED SGD · no real funds",
+      "search": "keyword only (embeddings unavailable)",
+      "plan": "DeepSeek · deepseek-flash"
+    },
+    "bought": [
+      "team-rlusd"
+    ],
+    "spentMinor": 40,
+    "lead": [
+      "Not today: an XRPL escrow can hold official RLUSD only after its issuer enables AllowTrustLineLocking, and the RLUSD issuer had not enabled it on Mainnet or Testnet when the team checked on 11 November 2026."
+    ],
+    "conclusion": "Not today: an XRPL escrow can hold official RLUSD only after its issuer enables AllowTrustLineLocking, and the RLUSD issuer had not enabled it on Mainnet or Testnet when the team checked on 11 November 2026. The TokenEscrow amendment (XLS-85), which lets an escrow hold issued tokens, is already enabled on both networks, so the issuer flag is the remaining blocker. Only the issuer can set that flag, with an AccountSet transaction; a buyer or writer cannot set it for them. An issuer can change its flags later, so check the issuer account on the intended network before relying on this answer.",
+    "openGaps": [],
+    "facts": {
+      "answered": 3,
+      "total": 3,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "Whether XRPL escrow can hold RLUSD today, with the enabling amendment and date",
+          "status": "supported"
+        },
+        {
+          "id": "r2",
+          "text": "What the RLUSD issuer must enable before a buyer can lock RLUSD in escrow",
+          "status": "supported"
+        },
+        {
+          "id": "r3",
+          "text": "Any issuer-side settings or flags required for token escrow on XRPL",
+          "status": "supported"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "complete",
+      "line": "3 of 3 answered",
+      "judge": "fixture · metadata-fixture"
+    },
+    "fallbacks": [],
+    "answer": {
+      "lead": [
+        {
+          "text": "Not today: an XRPL escrow can hold official RLUSD only after its issuer enables AllowTrustLineLocking, and the RLUSD issuer had not enabled it on Mainnet or Testnet when the team checked on 11 November 2026.",
+          "claim": {
+            "id": "claim-1",
+            "text": "XRPL escrow cannot hold official RLUSD today; the issuer must enable AllowTrustLineLocking, which was not enabled on Mainnet or Testnet as of 11 November 2026.",
+            "stance": "SUPPORTS",
+            "citations": [
+              {
+                "resourceId": "team-rlusd",
+                "version": "v4",
+                "spanId": "p1"
+              }
+            ]
+          }
+        }
+      ],
+      "conclusion": "Not today: an XRPL escrow can hold official RLUSD only after its issuer enables AllowTrustLineLocking, and the RLUSD issuer had not enabled it on Mainnet or Testnet when the team checked on 11 November 2026. The TokenEscrow amendment (XLS-85), which lets an escrow hold issued tokens, is already enabled on both networks, so the issuer flag is the remaining blocker. Only the issuer can set that flag, with an AccountSet transaction; a buyer or writer cannot set it for them. An issuer can change its flags later, so check the issuer account on the intended network before relying on this answer.",
+      "claims": [
+        {
+          "id": "claim-1",
+          "text": "XRPL escrow cannot hold official RLUSD today; the issuer must enable AllowTrustLineLocking, which was not enabled on Mainnet or Testnet as of 11 November 2026.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "team-rlusd",
+              "version": "v4",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-2",
+          "text": "The TokenEscrow amendment (XLS-85), letting escrow hold issued tokens, is already enabled on both networks; the issuer flag is the remaining blocker.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "team-rlusd",
+              "version": "v4",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-3",
+          "text": "Only the issuer can set that flag, via an AccountSet transaction; a buyer or writer cannot set it for them.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "team-rlusd",
+              "version": "v4",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-4",
+          "text": "Issuer flags can change later, so the issuer account on the intended network should be checked before relying on this answer.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "team-rlusd",
+              "version": "v4",
+              "spanId": "p2"
+            }
+          ]
+        }
+      ],
+      "openGaps": [],
+      "version": 2,
+      "provider": "deepseek",
+      "model": "deepseek-flash"
+    },
+    "coverage": [
+      {
+        "answerVersion": 1,
+        "judge": "fixture · metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r2",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r3",
+            "status": "missing"
+          }
+        ]
+      },
+      {
+        "answerVersion": 2,
+        "judge": "fixture · metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "supported",
+            "claimIds": [
+              "claim-1",
+              "claim-2",
+              "claim-3",
+              "claim-4"
+            ]
+          },
+          {
+            "requirementId": "r2",
+            "status": "supported",
+            "claimIds": [
+              "claim-1",
+              "claim-2",
+              "claim-3",
+              "claim-4"
+            ]
+          },
+          {
+            "requirementId": "r3",
+            "status": "supported",
+            "claimIds": [
+              "claim-1",
+              "claim-2",
+              "claim-3"
+            ]
+          }
+        ]
+      }
+    ],
+    "evidence": [
+      {
+        "resourceId": "team-rlusd",
+        "version": "v4",
+        "spanId": "p1",
+        "text": "Not today: an XRPL escrow can hold official RLUSD only after its issuer enables AllowTrustLineLocking, and the RLUSD issuer had not enabled it on Mainnet or Testnet when the team checked on 11 November 2026. The TokenEscrow amendment (XLS-85), which lets an escrow hold issued tokens, is already enabled on both networks, so the issuer flag is the remaining blocker. Only the issuer can set that flag, with an AccountSet transaction; a buyer or writer cannot set it for them. [1] [2] [3] [4] [5]"
+      },
+      {
+        "resourceId": "team-rlusd",
+        "version": "v4",
+        "spanId": "p2",
+        "text": "RLUSD escrow support cannot be inferred from an XRP key-reveal purchase. An issuer can change its flags later, so check the issuer account on the intended network before relying on this answer. The docs contain no verified list of Singapore banks piloting RLUSD settlement in 2026. We cannot name banks from this evidence. [3] [4]"
+      }
+    ]
+  }
+]

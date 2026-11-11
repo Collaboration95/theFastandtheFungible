@@ -1,0 +1,1472 @@
+{
+  "fraudProofs": [],
+  "schemaVersion": 3,
+  "identityVersion": 1,
+  "contributions": {
+    "version": "structural-v1",
+    "semanticStatus": "not independently verified",
+    "purchases": [
+      {
+        "intentId": "cfa5ea4f-3002-4112-aecb-4b3afbac96ca:1:xrpl-reserves:v2",
+        "sourceKey": "xrpl-reserves@v2",
+        "status": "VERIFIED",
+        "grossMinor": 40,
+        "refundMinor": 0,
+        "netMinor": 40,
+        "refundStatus": "none",
+        "assessment": "not assessed",
+        "structuralUse": "cited",
+        "links": [
+          {
+            "answerVersion": 2,
+            "claimId": "claim-1",
+            "claim": "Current Mainnet base account reserve is 1 XRP.",
+            "citation": "[\"xrpl-reserves@v2\",\"p1\"]",
+            "spanId": "p1",
+            "passage": "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings. Other networks can differ, and validators can change these figures through fee voting, so they are a dated reference, not a permanent application constant. The reserve is held separately from the money the wallet intends to send. [1] According to the XRPL documentation, validators can change reserves through fee voting. [1]",
+            "manifestRoot": "d5e92f8525089c8d823b44bee1c25462b66cd24cb8ab2ad6c74bf9052f1fd1f7",
+            "grantIntentId": "cfa5ea4f-3002-4112-aecb-4b3afbac96ca:1:xrpl-reserves:v2",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "claim-2",
+            "claim": "Current Mainnet owner reserve is 0.2 XRP per owned object.",
+            "citation": "[\"xrpl-reserves@v2\",\"p1\"]",
+            "spanId": "p1",
+            "passage": "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings. Other networks can differ, and validators can change these figures through fee voting, so they are a dated reference, not a permanent application constant. The reserve is held separately from the money the wallet intends to send. [1] According to the XRPL documentation, validators can change reserves through fee voting. [1]",
+            "manifestRoot": "d5e92f8525089c8d823b44bee1c25462b66cd24cb8ab2ad6c74bf9052f1fd1f7",
+            "grantIntentId": "cfa5ea4f-3002-4112-aecb-4b3afbac96ca:1:xrpl-reserves:v2",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "claim-3",
+            "claim": "Each open escrow adds 0.2 XRP to the owner reserve requirement.",
+            "citation": "[\"xrpl-reserves@v2\",\"p1\"]",
+            "spanId": "p1",
+            "passage": "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings. Other networks can differ, and validators can change these figures through fee voting, so they are a dated reference, not a permanent application constant. The reserve is held separately from the money the wallet intends to send. [1] According to the XRPL documentation, validators can change reserves through fee voting. [1]",
+            "manifestRoot": "d5e92f8525089c8d823b44bee1c25462b66cd24cb8ab2ad6c74bf9052f1fd1f7",
+            "grantIntentId": "cfa5ea4f-3002-4112-aecb-4b3afbac96ca:1:xrpl-reserves:v2",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "claim-4",
+            "claim": "Each trust line adds 0.2 XRP to the owner reserve requirement.",
+            "citation": "[\"xrpl-reserves@v2\",\"p1\"]",
+            "spanId": "p1",
+            "passage": "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings. Other networks can differ, and validators can change these figures through fee voting, so they are a dated reference, not a permanent application constant. The reserve is held separately from the money the wallet intends to send. [1] According to the XRPL documentation, validators can change reserves through fee voting. [1]",
+            "manifestRoot": "d5e92f8525089c8d823b44bee1c25462b66cd24cb8ab2ad6c74bf9052f1fd1f7",
+            "grantIntentId": "cfa5ea4f-3002-4112-aecb-4b3afbac96ca:1:xrpl-reserves:v2",
+            "retained": true
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "claim-5",
+            "claim": "These figures are a dated reference, not a permanent constant, since validators can change reserves through fee voting.",
+            "citation": "[\"xrpl-reserves@v2\",\"p1\"]",
+            "spanId": "p1",
+            "passage": "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings. Other networks can differ, and validators can change these figures through fee voting, so they are a dated reference, not a permanent application constant. The reserve is held separately from the money the wallet intends to send. [1] According to the XRPL documentation, validators can change reserves through fee voting. [1]",
+            "manifestRoot": "d5e92f8525089c8d823b44bee1c25462b66cd24cb8ab2ad6c74bf9052f1fd1f7",
+            "grantIntentId": "cfa5ea4f-3002-4112-aecb-4b3afbac96ca:1:xrpl-reserves:v2",
+            "retained": true
+          }
+        ]
+      }
+    ]
+  },
+  "requirements": [
+    {
+      "id": "r1",
+      "text": "Current XRPL base account reserve in XRP, with date"
+    },
+    {
+      "id": "r2",
+      "text": "Current XRPL owner reserve per object in XRP, with date"
+    },
+    {
+      "id": "r3",
+      "text": "How much each open escrow adds to an agent wallet's XRP reserve"
+    },
+    {
+      "id": "r4",
+      "text": "How much each trust line adds to an agent wallet's XRP reserve"
+    }
+  ],
+  "runId": "cfa5ea4f-3002-4112-aecb-4b3afbac96ca",
+  "label": "SIMULATED SGD · no real funds; DeepSeek · deepseek-flash; writer identity unverified; team-authored explainer · sources cited · not an independent writer · Testnet; team-authored · real content · not an independent writer · Testnet",
+  "answers": [
+    {
+      "lead": [],
+      "conclusion": "Matched articles supplied no citable answer · nothing bought",
+      "claims": [],
+      "openGaps": [
+        {
+          "text": "Current XRPL base account reserve in XRP, with date"
+        },
+        {
+          "text": "Current XRPL owner reserve per object in XRP, with date"
+        },
+        {
+          "text": "How much each open escrow adds to an agent wallet's XRP reserve"
+        },
+        {
+          "text": "How much each trust line adds to an agent wallet's XRP reserve"
+        }
+      ],
+      "version": 1,
+      "provider": "fixture",
+      "model": "extractive-fixture"
+    },
+    {
+      "lead": [
+        {
+          "text": "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings.",
+          "claim": {
+            "id": "claim-1",
+            "text": "Current Mainnet base account reserve is 1 XRP.",
+            "stance": "SUPPORTS",
+            "citations": [
+              {
+                "resourceId": "xrpl-reserves",
+                "version": "v2",
+                "spanId": "p1"
+              }
+            ]
+          }
+        }
+      ],
+      "conclusion": "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings. The reserve is held separately from the money the wallet intends to send.",
+      "claims": [
+        {
+          "id": "claim-1",
+          "text": "Current Mainnet base account reserve is 1 XRP.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-reserves",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-2",
+          "text": "Current Mainnet owner reserve is 0.2 XRP per owned object.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-reserves",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-3",
+          "text": "Each open escrow adds 0.2 XRP to the owner reserve requirement.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-reserves",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-4",
+          "text": "Each trust line adds 0.2 XRP to the owner reserve requirement.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-reserves",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-5",
+          "text": "These figures are a dated reference, not a permanent constant, since validators can change reserves through fee voting.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-reserves",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        }
+      ],
+      "openGaps": [],
+      "version": 2,
+      "provider": "deepseek",
+      "model": "deepseek-flash"
+    }
+  ],
+  "sources": [
+    {
+      "profileId": "open-records",
+      "resourceId": "open-grid-operator-demand-statistics-may-15-2026",
+      "version": "v1",
+      "title": "Grid Operator Demand Statistics – May 15, 2026",
+      "publisher": "Open Records",
+      "body": "## Regional Demand and Capacity Notices\n\nOn May 15, 2026, the regional transmission organization covering the eastern interconnection published its daily demand forecast. The forecast projected a peak load of 118,400 megawatts for the operating day ending May 16, 2026. The same notice reported a preliminary peak of 116,900 megawatts for May 14, 2026. A separate filing from the western balancing authority stated that its operating reserve margin stood at 14.2 percent as of 06:00 local time on May 15, 2026. The filing cited a total available capacity of 82,300 megawatts against a forecast peak of 72,100 megawatts. No emergency declarations were issued by either organization for the period covered.\n\n## Nuclear and Thermal Outage Reports\n\nThe Nuclear Regulatory Commission's daily event report for May 15, 2026, listed one unplanned reactor trip at a boiling water reactor in the midwest. The trip occurred at 02:17 local time, and the reactor was reported at zero percent power by 02:45. The licensee notified the NRC as required under 10 CFR 50.72. A separate report from the same day indicated that a coal-fired unit in the southeast returned to service after a maintenance outage that began on April 28, 2026. The unit's nameplate capacity is 780 megawatts. The operator filed a notice of synchronization with the regional reliability coordinator at 11:03 local time on May 15, 2026.\n\n## Natural Gas and Hydro Conditions\n\nThe Energy Information Administration released its weekly natural gas storage report on May 15, 2026. The report showed working gas in storage at 2,410 billion cubic feet as of May 9, 2026. That figure was 18 percent above the five-year average for the same week. In the Pacific Northwest, the Bonneville Power Administration reported that snowpack water equivalent in the Columbia River basin was 92 percent of normal as of May 14, 2026. The agency's daily generation report for May 15, 2026, showed hydroelectric output at 11,200 average megawatts. The same report listed total system load at 14,800 average megawatts for the previous day.\n\n## Market Prices and Interchange Schedules\n\nThe independent system operator for the central region published its day-ahead market results for May 15, 2026. The average locational marginal price for the on-peak period was 34.12 dollars per megawatt-hour. The off-peak average was 26.78 dollars per megawatt-hour. The maximum hourly price was 61.50 dollars per megawatt-hour, recorded at hour ending 17:00. The minimum was 18.90 dollars per megawatt-hour at hour ending 04:00. Scheduled interchange with neighboring balancing authorities totaled 3,450 megawatts for the peak hour. A separate report from the southwest power pool indicated that its market clearing price for the same day averaged 29.45 dollars per megawatt-hour.\n\n## International Grid and Policy Notes\n\nIn Japan, the Organization for Cross-regional Coordination of Transmission Operators published its supply and demand outlook for the week of May 11 to May 17, 2026. The outlook projected a maximum demand of 102,000 megawatts for the Tokyo area on May 15, 2026. The reserve rate was forecast at 8.7 percent. The same document noted that the Hokuriku area had a forecast reserve rate of 12.1 percent for the same day. In Taiwan, the Taiwan Power Company reported a system peak of 36,200 megawatts on May 14, 2026. The company's daily operating report for May 15, 2026, listed a reserve margin of 10.3 percent at the time of the afternoon peak. TSMC filed a notice with the Taiwan Stock Exchange on May 15, 2026, regarding a scheduled maintenance period at one of its fabrication facilities. The filing stated that the maintenance would not affect the company's full-year production guidance. The Bank of Japan published a research note on May 15, 2026, that included a reference to electricity consumption in the industrial sector for the first quarter of 2026. The note stated that industrial electricity sales were 1.2 percent lower than in the same quarter of 2025. No policy changes were announced in the note.\n\n## Regulatory Filings and Grid Reliability Metrics\n\nThe North American Electric Reliability Corporation posted its monthly reliability metrics for April 2026 on May 15, 2026. The report listed a total of 14 transmission-related events that required reporting under the group's event analysis process. Of those, 9 were classified as loss of load events, and 5 were classified as loss of generation events. The report also stated that the average duration of transmission outages was 3.4 hours. A separate filing from the Federal Energy Regulatory Commission on May 15, 2026, accepted a tariff revision from a transmission owner in the mid-Atlantic region. The revision updates the formula rate for annual transmission revenue requirements. The accepted filing has an effective date of June 1, 2026. The commission also issued a notice of proposed rulemaking on May 15, 2026, regarding interconnection queue reforms. The notice has a comment period ending on July 14, 2026.\n\n## Weather and Demand Response Program Activity\n\nThe National Weather Service issued a heat advisory on May 15, 2026, for portions of the southern plains. The advisory was in effect from 12:00 to 20:00 local time. Forecast high temperatures ranged from 99 to 104 degrees Fahrenheit. The regional transmission organization for the area activated its demand response program at 14:00 local time on May 15, 2026. The program dispatch called for 1,200 megawatts of load reduction. The organization reported that 980 megawatts were actually delivered by 15:00 local time. A separate demand response event was called by a utility in the desert southwest on the same day. That event requested 300 megawatts of reduction and reported a delivery of 275 megawatts. No reliability issues were reported during either event. The California Independent System Operator published its final demand response summary for May 14, 2026, on May 15, 2026. The summary showed a total of 450 megawatts of load reduction from participating resources.",
+      "spans": [
+        {
+          "id": "p1",
+          "text": "On May 15, 2026, the regional transmission organization covering the eastern interconnection published its daily demand forecast. The forecast projected a peak load of 118,400 megawatts for the operating day ending May 16, 2026. The same notice reported a preliminary peak of 116,900 megawatts for May 14, 2026. A separate filing from the western balancing authority stated that its operating reserve margin stood at 14.2 percent as of 06:00 local time on May 15, 2026. The filing cited a total available capacity of 82,300 megawatts against a forecast peak of 72,100 megawatts. No emergency declarations were issued by either organization for the period covered.",
+          "label": "Regional Demand and Capacity Notices"
+        },
+        {
+          "id": "p2",
+          "text": "The Nuclear Regulatory Commission's daily event report for May 15, 2026, listed one unplanned reactor trip at a boiling water reactor in the midwest. The trip occurred at 02:17 local time, and the reactor was reported at zero percent power by 02:45. The licensee notified the NRC as required under 10 CFR 50.72. A separate report from the same day indicated that a coal-fired unit in the southeast returned to service after a maintenance outage that began on April 28, 2026. The unit's nameplate capacity is 780 megawatts. The operator filed a notice of synchronization with the regional reliability coordinator at 11:03 local time on May 15, 2026.",
+          "label": "Nuclear and Thermal Outage Reports"
+        },
+        {
+          "id": "p3",
+          "text": "The Energy Information Administration released its weekly natural gas storage report on May 15, 2026. The report showed working gas in storage at 2,410 billion cubic feet as of May 9, 2026. That figure was 18 percent above the five-year average for the same week. In the Pacific Northwest, the Bonneville Power Administration reported that snowpack water equivalent in the Columbia River basin was 92 percent of normal as of May 14, 2026. The agency's daily generation report for May 15, 2026, showed hydroelectric output at 11,200 average megawatts. The same report listed total system load at 14,800 average megawatts for the previous day.",
+          "label": "Natural Gas and Hydro Conditions"
+        },
+        {
+          "id": "p4",
+          "text": "The independent system operator for the central region published its day-ahead market results for May 15, 2026. The average locational marginal price for the on-peak period was 34.12 dollars per megawatt-hour. The off-peak average was 26.78 dollars per megawatt-hour. The maximum hourly price was 61.50 dollars per megawatt-hour, recorded at hour ending 17:00. The minimum was 18.90 dollars per megawatt-hour at hour ending 04:00. Scheduled interchange with neighboring balancing authorities totaled 3,450 megawatts for the peak hour. A separate report from the southwest power pool indicated that its market clearing price for the same day averaged 29.45 dollars per megawatt-hour.",
+          "label": "Market Prices and Interchange Schedules"
+        },
+        {
+          "id": "p5",
+          "text": "In Japan, the Organization for Cross-regional Coordination of Transmission Operators published its supply and demand outlook for the week of May 11 to May 17, 2026. The outlook projected a maximum demand of 102,000 megawatts for the Tokyo area on May 15, 2026. The reserve rate was forecast at 8.7 percent. The same document noted that the Hokuriku area had a forecast reserve rate of 12.1 percent for the same day. In Taiwan, the Taiwan Power Company reported a system peak of 36,200 megawatts on May 14, 2026. The company's daily operating report for May 15, 2026, listed a reserve margin of 10.3 percent at the time of the afternoon peak. TSMC filed a notice with the Taiwan Stock Exchange on May 15, 2026, regarding a scheduled maintenance period at one of its fabrication facilities. The filing stated that the maintenance would not affect the company's full-year production guidance. The Bank of Japan published a research note on May 15, 2026, that included a reference to electricity consumption in the industrial sector for the first quarter of 2026. The note stated that industrial electricity sales were 1.2 percent lower than in the same quarter of 2025. No policy changes were announced in the note.",
+          "label": "International Grid and Policy Notes"
+        },
+        {
+          "id": "p6",
+          "text": "The North American Electric Reliability Corporation posted its monthly reliability metrics for April 2026 on May 15, 2026. The report listed a total of 14 transmission-related events that required reporting under the group's event analysis process. Of those, 9 were classified as loss of load events, and 5 were classified as loss of generation events. The report also stated that the average duration of transmission outages was 3.4 hours. A separate filing from the Federal Energy Regulatory Commission on May 15, 2026, accepted a tariff revision from a transmission owner in the mid-Atlantic region. The revision updates the formula rate for annual transmission revenue requirements. The accepted filing has an effective date of June 1, 2026. The commission also issued a notice of proposed rulemaking on May 15, 2026, regarding interconnection queue reforms. The notice has a comment period ending on July 14, 2026.",
+          "label": "Regulatory Filings and Grid Reliability Metrics"
+        },
+        {
+          "id": "p7",
+          "text": "The National Weather Service issued a heat advisory on May 15, 2026, for portions of the southern plains. The advisory was in effect from 12:00 to 20:00 local time. Forecast high temperatures ranged from 99 to 104 degrees Fahrenheit. The regional transmission organization for the area activated its demand response program at 14:00 local time on May 15, 2026. The program dispatch called for 1,200 megawatts of load reduction. The organization reported that 980 megawatts were actually delivered by 15:00 local time. A separate demand response event was called by a utility in the desert southwest on the same day. That event requested 300 megawatts of reduction and reported a delivery of 275 megawatts. No reliability issues were reported during either event. The California Independent System Operator published its final demand response summary for May 14, 2026, on May 15, 2026. The summary showed a total of 450 megawatts of load reduction from participating resources.",
+          "label": "Weather and Demand Response Program Activity"
+        }
+      ],
+      "verification": {
+        "manifest": {
+          "schemaVersion": 2,
+          "publisherSlug": "open-records",
+          "articleId": "open-grid-operator-demand-statistics-may-15-2026",
+          "version": "v1",
+          "wallet": "rEhHosCtMxUjb8rGRAgCS4GaMgagTGb5qo",
+          "pubKey": "EDA211FB75CF3D6A0B2465971D0C4766370647CEF730EC60C505B6E48881C393DD",
+          "priceMinor": 0,
+          "leaves": [
+            "52e6599009f8ed7ac1c545b8fb83f47e30d6eedbdac072883677498241ee1e36",
+            "475fc35b0a84177efb204e6004cc0ea7fcab264d8de979620824eafe0aebfddc",
+            "cbc2568380c930e6a15be238832c7e3056bca92a810b1f7e7985b2c6aef2ba55",
+            "bec7de26493bcdb8385e8f15e8bc3a9f840ded58c05f5e40e744049cad5ced46",
+            "0c6762dc7804de0fc4f075d2e1443feb983a3376f4082f10a9d1b0bf98214203",
+            "683ce18e66187a71acbb0f43954cb51815d4ad0e30ed857873dbb3cb9f5dcde7",
+            "2cc0a503ad476f7977f959d10df74231cbbc907c3c9f35062b1daeda47e862cd"
+          ],
+          "root": "d666bb1572add8cee29025968b18c7d6f95db7d96a678c4a626840c7cc1434e2",
+          "claims": [
+            {
+              "id": "p1:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "52e6599009f8ed7ac1c545b8fb83f47e30d6eedbdac072883677498241ee1e36"
+            },
+            {
+              "id": "p2:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "475fc35b0a84177efb204e6004cc0ea7fcab264d8de979620824eafe0aebfddc"
+            },
+            {
+              "id": "p3:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "cbc2568380c930e6a15be238832c7e3056bca92a810b1f7e7985b2c6aef2ba55"
+            },
+            {
+              "id": "p3:numeric-series",
+              "kind": "numeric-series",
+              "leaf": "cbc2568380c930e6a15be238832c7e3056bca92a810b1f7e7985b2c6aef2ba55"
+            },
+            {
+              "id": "p4:numeric-series",
+              "kind": "numeric-series",
+              "leaf": "bec7de26493bcdb8385e8f15e8bc3a9f840ded58c05f5e40e744049cad5ced46"
+            },
+            {
+              "id": "p5:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "0c6762dc7804de0fc4f075d2e1443feb983a3376f4082f10a9d1b0bf98214203"
+            },
+            {
+              "id": "p5:numeric-series",
+              "kind": "numeric-series",
+              "leaf": "0c6762dc7804de0fc4f075d2e1443feb983a3376f4082f10a9d1b0bf98214203"
+            },
+            {
+              "id": "p7:dated-figure",
+              "kind": "dated-figure",
+              "leaf": "2cc0a503ad476f7977f959d10df74231cbbc907c3c9f35062b1daeda47e862cd"
+            }
+          ],
+          "wordCount": 1003,
+          "publishedAt": "2026-05-15",
+          "relevance": 1,
+          "sig": "C2F892357DEDEFBBCDA4988468DE67CFBE2C466E0B3AB49A0D2F67FA3A66B6428F054F9E3CC852B6EBEC8DE0A8F98B5717313AEC771DB381D831DF3EFD234300"
+        },
+        "salts": [
+          "adb47b5511d23426f5a42ee241499f8c",
+          "4e031b6879907680a61c703ba88735f7",
+          "d556970afb76785d4c5d41b0396448d8",
+          "1890797f6170b35bdf9c1e579acf01e0",
+          "76cadb6a689bb9dc1ddae7df3b564ea1",
+          "5f9f26c47913c5c8ed50c3c1fc282f9f",
+          "2fdba833649382fb4b93b3dcbbdd1ea1"
+        ]
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-reserves",
+      "version": "v2",
+      "title": "What XRP account reserves does an agent wallet need?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored)",
+      "body": "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings. Other networks can differ, and validators can change these figures through fee voting, so they are a dated reference, not a permanent application constant. The reserve is held separately from the money the wallet intends to send. [1] According to the XRPL documentation, validators can change reserves through fee voting. [1]\n\nBase reserve supports the account's existence; owner reserve constrains ledger objects. Escrows, offers and signer lists can affect the latter. Removing an object can release its reserve requirement. Reserves are not payments to validators, and the documentation permits reserved XRP to pay transaction costs. Treating every XRP in a balance as transferable would therefore confuse several distinct accounting concepts. [1]\n\nFor an agent builder, my recommendation is to estimate spendable XRP from validated account state and the network's reserve settings before authorizing a payment. Include pending object creation in that estimate. A wallet with enough principal for a purchase may still lack room for the escrow object or transaction fee. Report the failed prerequisite precisely rather than silently switching assets or increasing funding authority. [1]\n\nTest provisioning with an account near its required reserve, an additional owned object, and removal of that object. Keep the funding source and network in the experiment record. The documentation's special treatment of initial trust lines is another reason to query actual state rather than assume that every account has the same object cost. This is an integration recommendation derived from reserve mechanics, not evidence that a particular deployed wallet passed those cases. Sources accessed 11 November 2026. [1]",
+      "spans": [
+        {
+          "id": "p1",
+          "text": "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings. Other networks can differ, and validators can change these figures through fee voting, so they are a dated reference, not a permanent application constant. The reserve is held separately from the money the wallet intends to send. [1] According to the XRPL documentation, validators can change reserves through fee voting. [1]"
+        },
+        {
+          "id": "p2",
+          "text": "Base reserve supports the account's existence; owner reserve constrains ledger objects. Escrows, offers and signer lists can affect the latter. Removing an object can release its reserve requirement. Reserves are not payments to validators, and the documentation permits reserved XRP to pay transaction costs. Treating every XRP in a balance as transferable would therefore confuse several distinct accounting concepts. [1]"
+        },
+        {
+          "id": "p3",
+          "text": "For an agent builder, my recommendation is to estimate spendable XRP from validated account state and the network's reserve settings before authorizing a payment. Include pending object creation in that estimate. A wallet with enough principal for a purchase may still lack room for the escrow object or transaction fee. Report the failed prerequisite precisely rather than silently switching assets or increasing funding authority. [1]"
+        },
+        {
+          "id": "p4",
+          "text": "Test provisioning with an account near its required reserve, an additional owned object, and removal of that object. Keep the funding source and network in the experiment record. The documentation's special treatment of initial trust lines is another reason to query actual state rather than assume that every account has the same object cost. This is an integration recommendation derived from reserve mechanics, not evidence that a particular deployed wallet passed those cases. Sources accessed 11 November 2026. [1]"
+        }
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-asset-provisioning",
+      "version": "v3",
+      "title": "Agent payment assets: stablecoin trust lines, token escrow and DEX provisioning",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "Dated Testnet asset and reserve observations: why trust lines and provisioning do not establish RLUSD escrow support or a production exchange rate.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r3d1Tdrw9qZCq2p48egJZj6wNCdcStCz6K",
+      "family": "team-asset-provisioning",
+      "facets": [
+        "RLUSD",
+        "XLS-85",
+        "stablecoin",
+        "DEX",
+        "reserve"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-asset-provisioning",
+      "relevance": 0.7025571178182318,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-asset-provisioning",
+        "version": "v3",
+        "wallet": "r3d1Tdrw9qZCq2p48egJZj6wNCdcStCz6K",
+        "pubKey": "EDE1CEBFF98BE4105473BEEB6BE54814F76F9A45B04BB27C4ED535A1E29DE41AE2",
+        "priceMinor": 40,
+        "leaves": [
+          "a7aba193a2918945492932f36ad6a7c28bce3fe76ade1c2a259629c12f31e515",
+          "ea264a6a8e2d76d0491329e51064292cf9caf65cda9df71610f513b0cd910df5",
+          "f3db9779223e5ee681727f3e16ba2dfc6d85cc8f83051bb7ac73aa82d4cc57b8",
+          "23eb75ce21f306e3736303269264e2995ebecf13aeeb80f93b106b3fc56d54a7",
+          "2fd444e401af1104c37145d6037f773facdb8cd90af417246bc85dcc96b50fdb",
+          "b7967844a892f0d1727952d5ce0beca3da1eeb33413efa0a981ae9f4e14dbf2b",
+          "f668743c3b57bb8450fc117e435d500b437ebb74d8b10810633b41ab944886a9",
+          "214b3f52e8a6ce60c18a0ec2bd46e6f670c289d566d0e8ee8752591374b9ecf7"
+        ],
+        "root": "578246ffcbfea61728f0fb8419d49d96c80024241dc2d46b1b0edc93f9e1a641",
+        "claims": [],
+        "wordCount": 666,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.7025571178182318,
+        "sig": "7FEFD26190C2624BC946D51CEE81960150A083FEE94B62A741D1F2C67251C46FD296ECCE240AB1519EA2503A346047714480E550B17FDE014A7B0A780E772E01"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-reserves",
+      "version": "v2",
+      "title": "What XRP account reserves does an agent wallet need?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Primary-source guide to what xrp account reserves does an agent wallet need?. Includes integration considerations and evidence boundaries.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+      "family": "xrpl-reserves",
+      "facets": [
+        "XRPL",
+        "account",
+        "reserves",
+        "balance",
+        "funding"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-reserves",
+      "relevance": 0.8472076815176623,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-reserves",
+        "version": "v2",
+        "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+        "pubKey": "ED35C13027D23D06D2219C016CEF0113DE60126DCDD5995203C0E3771AE37906ED",
+        "priceMinor": 40,
+        "leaves": [
+          "207c1b2d74e00f928262becb1b54194a71d16fae8448425f41fd2b30112a8f81",
+          "06fac22c8018a9e594c95d1f0f18dfe36e9f522da5ca25fb87bfa017d85f5bde",
+          "8f33c3c4af9d65bd3fbe3378b7bc4bad73b98dc92eacf7532b7ef6f7347e4c5a",
+          "3c6ad0b3aeebc5f956a9d08b0d52afcfec637f2755741036e1c6bb4d053eccfe"
+        ],
+        "root": "d5e92f8525089c8d823b44bee1c25462b66cd24cb8ab2ad6c74bf9052f1fd1f7",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "207c1b2d74e00f928262becb1b54194a71d16fae8448425f41fd2b30112a8f81",
+            "covers": {
+              "entity": "XRPL",
+              "measure": "fee"
+            }
+          }
+        ],
+        "wordCount": 290,
+        "publishedAt": "2026-11-11",
+        "relevance": 0.8472076815176623,
+        "sig": "7E0F68955C5594825BA542E485DE41F437D6E7858011C4D81F14286AB30F35DD1DCB8DFC27CB946742CE007D83B43516BC017A3E23371FE1824BCD872E66D70F"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-rlusd",
+      "version": "v4",
+      "title": "RLUSD escrow today: AllowTrustLineLocking issuer permission and TEST-SGD",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "Why RLUSD cannot be escrowed today without issuer permission, and what AllowTrustLineLocking means for token escrow experiments.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r3d1Tdrw9qZCq2p48egJZj6wNCdcStCz6K",
+      "family": "team-rlusd",
+      "facets": [
+        "RLUSD escrow blockers and the TEST-SGD substitute",
+        "rlusd",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-rlusd",
+      "relevance": 0.6457656293079287,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-rlusd",
+        "version": "v4",
+        "wallet": "r3d1Tdrw9qZCq2p48egJZj6wNCdcStCz6K",
+        "pubKey": "EDE1CEBFF98BE4105473BEEB6BE54814F76F9A45B04BB27C4ED535A1E29DE41AE2",
+        "priceMinor": 40,
+        "leaves": [
+          "d9282b947b5c37b8f92f68fda01ac7af5ecafc1c27f915bd21cc099560234132",
+          "44a7372e568859becafb258b9a86efa58577ae993ccbaf5f61bc38c527f63234",
+          "b83199f2b88dccc0cf9524d687afa8eee4f3cc642a371c808d5444e8c5d4d57f",
+          "28c89865e5fb375e411e0409758216e399b64114f7b920a4b93c600c90253db1"
+        ],
+        "root": "938effd352dc770222e44e5b2832101cfaf57df64db0cebf4dfab9d2bdb61758",
+        "claims": [],
+        "wordCount": 338,
+        "publishedAt": "2026-11-11",
+        "relevance": 0.6457656293079287,
+        "sig": "EE09F4B66723AE67853CAA447DD32ED703760533CF9E879848B3A2679DB267B250B4E67D96F3CBAB33DA175EF64198147D8F575C9085E500516A05B3C6520D03"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-tx-trustset",
+      "version": "v1",
+      "title": "What does TrustSet do on XRPL?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced explanation of TrustSet and its practical limits.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+      "family": "xrpl-tx-trustset",
+      "facets": [
+        "XRPL",
+        "TrustSet",
+        "Trust Set",
+        "transaction"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-tx-trustset",
+      "relevance": 0.8265078755283991,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-tx-trustset",
+        "version": "v1",
+        "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+        "pubKey": "ED35C13027D23D06D2219C016CEF0113DE60126DCDD5995203C0E3771AE37906ED",
+        "priceMinor": 40,
+        "leaves": [
+          "168dc34d3276dedd321ea712c44cd9ed378a52df9e61d9fda471399818800f4e",
+          "9a008445065006452f232476899527dcde799c08a63434d6a4f6b2099b6b805e",
+          "fe27ae7c0f4e673c1c82684e574ee10babec33fbc318d11a9b94d83850a1cbf3",
+          "233f911aeff6e018988add4cbc3c227f0802d46fefe51d19350e5b537675a64a"
+        ],
+        "root": "ec7ee6ab291a6fb8878b3a4a9751c3b1692f978c21681b63d5b2bff139ee8c3e",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "168dc34d3276dedd321ea712c44cd9ed378a52df9e61d9fda471399818800f4e",
+            "covers": {
+              "entity": "TrustSet",
+              "measure": "issuer"
+            }
+          }
+        ],
+        "wordCount": 191,
+        "publishedAt": "2026-11-10",
+        "relevance": 0.8265078755283991,
+        "sig": "9B060C6A9D4AECF71862471389FE9F20C25A19F3646C5AE472907C044FB8EB736617BF50E7833EFA5A4B79026949345D5F4F38E3DFA49767FA4AA46C9B6EE60D"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-fees",
+      "version": "v3",
+      "title": "EscrowFinish fulfillment fees: XRP drops and SGD prices in the app",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "Measured Testnet costs and accounting: how XRP drops differ from the SGD price shown in the app, including principal and fees.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r3d1Tdrw9qZCq2p48egJZj6wNCdcStCz6K",
+      "family": "team-fees",
+      "facets": [
+        "EscrowFinish fulfillment fees and XRP drops",
+        "fees",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-fees",
+      "relevance": 0.6554397454490856,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-fees",
+        "version": "v3",
+        "wallet": "r3d1Tdrw9qZCq2p48egJZj6wNCdcStCz6K",
+        "pubKey": "EDE1CEBFF98BE4105473BEEB6BE54814F76F9A45B04BB27C4ED535A1E29DE41AE2",
+        "priceMinor": 40,
+        "leaves": [
+          "98d886b070cb07e7d8b942bdc347005923f1497a077297083ff201786fb0318e",
+          "b7f75cb6f8b57b5c9953d89eb2892b818e8b147e788576f1c345968577b73f3f",
+          "4581c57114b46e16396cf99b637741cf59c15d6f557f1f4bd4ec86f42b418de9",
+          "5541e338dbf414dc1eb866c1988d319f22560630537ced01608fb02b6464a669",
+          "8af17e3e2585df2c3e9c33fc9ad025bd2439642958bb8de23307a4d97d1fadba",
+          "baca2c23510896fe6819cdbcb55e92835d677787ad0a7455b416a894b0c97988"
+        ],
+        "root": "bf856a43263ccc3b4833a74c4bf30b454529b08cd133ff00ff625af7ed37a369",
+        "claims": [],
+        "wordCount": 450,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.6554397454490856,
+        "sig": "B96E55B3E9763DF586525B83115534FC277864A64059A95EAFD3E6F05CBF9E8F22DD132B08EB91050EEF9314C318458DE8946515D380BE2AD4F30C89FBD1B609"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-tx-escrowcreate",
+      "version": "v1",
+      "title": "What does EscrowCreate do on XRPL?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced explanation of EscrowCreate and its practical limits.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+      "family": "xrpl-tx-escrowcreate",
+      "facets": [
+        "XRPL",
+        "EscrowCreate",
+        "Escrow Create",
+        "transaction"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-tx-escrowcreate",
+      "relevance": 0.820046093497608,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-tx-escrowcreate",
+        "version": "v1",
+        "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+        "pubKey": "ED35C13027D23D06D2219C016CEF0113DE60126DCDD5995203C0E3771AE37906ED",
+        "priceMinor": 40,
+        "leaves": [
+          "d2d2453c4d3b7c7b29c56bee89d0d8d2e0e7e012ba6996a52bf8f721c079a493",
+          "3d25c690790ce4ce2a49c1feb4a52042c5b171b0733eef89be92a6efb3e159f4",
+          "c525172735efef3f9a58bf24b4b7f47cfd0fc76bb9db783960db0d097c9e6690",
+          "3a605e56686af67892e6a4de93f0834e51822656e8924a09971bb9e748d38f6e"
+        ],
+        "root": "2ccf4c734da67eb645b761790c7379673d06d4c168b97750140697871928a29c",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "d2d2453c4d3b7c7b29c56bee89d0d8d2e0e7e012ba6996a52bf8f721c079a493",
+            "covers": {
+              "entity": "EscrowCreate",
+              "measure": "funds"
+            }
+          }
+        ],
+        "wordCount": 192,
+        "publishedAt": "2026-11-10",
+        "relevance": 0.820046093497608,
+        "sig": "E4CE5E42D7FA4BDFDF4CE5FD7E98A7336C0BF4BDB59C326D31F19CA3CC7EB5F64C3E9F371670CA7A3F149EBC6DCFB42177BA6BBEB5001358F7ECF26356B00902"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-credentials",
+      "version": "v3",
+      "title": "XRPL Credentials: writer trust, article accuracy and identity evidence",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "How XRPL Credentials change writer identity checks without proving an article accurate or boosting trust scores.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r3d1Tdrw9qZCq2p48egJZj6wNCdcStCz6K",
+      "family": "team-credentials",
+      "facets": [
+        "Writer Credentials",
+        " trust and refund responsibility",
+        "credentials",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-credentials",
+      "relevance": 0.6242140975224614,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-credentials",
+        "version": "v3",
+        "wallet": "r3d1Tdrw9qZCq2p48egJZj6wNCdcStCz6K",
+        "pubKey": "EDE1CEBFF98BE4105473BEEB6BE54814F76F9A45B04BB27C4ED535A1E29DE41AE2",
+        "priceMinor": 40,
+        "leaves": [
+          "d9c7a4b50fb78176de13c5896cb27d1a4ec2ff8c3c7f4147e163c064ec590459",
+          "f7c50ad70447e83912a2d0c5f1d20c87a5cf69f339375107eca57b6561d0d62c",
+          "eed2af579c1cb5e449d085d991a2200bd5a5da864a7ed4d4233ea042e226c6b3",
+          "d298cd6ad36ce67e13abc41bf8a0079d79eec8ef4d251ddf6c38c41ecc254184",
+          "8a65e7c6befb895004be23e203ef1e199fbb3098fb7944c128ab9ddceac443fa",
+          "75576b40a0a4181151052e0cdde86964a2848c0f6712bc61d1647d79478ca2a0",
+          "fe8857b46e811121977c11149aab1b9f2d435cb56a8b3ba699353a30c4bb1e25",
+          "bc2c144af0f9c194bb31adc31f29643cd6e48f4d282446d967039d5dabf13046"
+        ],
+        "root": "63569ee90b9b27ea2ccd001419b606b913a81e4bed49aa83b76cfd99290bf67c",
+        "claims": [],
+        "wordCount": 520,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.6242140975224614,
+        "sig": "28192896AEE35C82B1B4B66DE66692B8EF31DD1CAAE17A42E0D9A0550F33A0F8116ABDEA400EA7A1FDCC11488AEB2822CF545A70D57757E85DBBF72585DDF009"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-x402",
+      "version": "v3",
+      "title": "x402 payment headers and delivery failure modes: budgets and one charge per intent",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "What x402 headers an XRPL buyer sends, payment and delivery failure modes, policy spending authority and retry idempotency.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "r3d1Tdrw9qZCq2p48egJZj6wNCdcStCz6K",
+      "family": "team-x402",
+      "facets": [
+        "x402 headers",
+        " budgets and one charge per intent",
+        "x402",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-x402",
+      "relevance": 0.47490859169528443,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-x402",
+        "version": "v3",
+        "wallet": "r3d1Tdrw9qZCq2p48egJZj6wNCdcStCz6K",
+        "pubKey": "EDE1CEBFF98BE4105473BEEB6BE54814F76F9A45B04BB27C4ED535A1E29DE41AE2",
+        "priceMinor": 40,
+        "leaves": [
+          "569a336ff2dbcedbc7058865288e8361146d2796159a340a78ae09c35c99caef",
+          "ae734e21fb42a05655e320e7888698c307c5545e2e827b50195f7f27c55ba853",
+          "f2cfe44568413e687be0a0e97587d55a757b271c2eda46561c2aaded8cd48c84",
+          "a58965a337f8853a45bee11ab204462f9b1a1c69dfd769fa4530955dd0b52a8d",
+          "260a15e7807dcffb6ef5e3473d62171fe0ab1c17b93cd260e6d46ebddef6214a",
+          "c41afa18494f8be5d6a1cc0e66df60a24901afb8ad77e091442afd91271830b5",
+          "21f7d16d039dbc9bb707e8d27ea5ceba3654cf5623cef0cd63e7fd1488cf0ea6"
+        ],
+        "root": "fa859fb792557c0dfe67d6d5be8cf10d996bd84d388fcbb0b9b4d660d33b5df7",
+        "claims": [],
+        "wordCount": 373,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.47490859169528443,
+        "sig": "042FE995932BD27C9FBB78A4BBA98D815384D194F75ABFAD6240D2C9E259F7713EFCDE14BA3989C36B897FA4A6AEF5379256A11FE14E6011EF59B0795BD4C80A"
+      }
+    },
+    {
+      "profileId": "open-records",
+      "resourceId": "open-grid-operator-demand-statistics-may-15-2026",
+      "version": "v1",
+      "title": "Grid Operator Demand Statistics – May 15, 2026",
+      "publisher": "Open Records",
+      "preview": "A dated compilation of grid demand statistics and related public filings from several regions.",
+      "price": {
+        "amountMinor": 0,
+        "currency": "SGD"
+      },
+      "family": "grid-demand",
+      "facets": [
+        "grid",
+        "demand",
+        "statistics"
+      ],
+      "authority": 2,
+      "tier": "FREE",
+      "license": {
+        "kind": "SYNTHETIC",
+        "attribution": "Open Records"
+      },
+      "publisherSlug": "open-records",
+      "writerSlug": "open-records",
+      "url": "/w/open-records/articles/open-grid-operator-demand-statistics-may-15-2026",
+      "relevance": 0.09088656375689982
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-trust-lines",
+      "version": "v1",
+      "title": "What are XRPL trust lines and issuer risk?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Primary-source guide to what are xrpl trust lines and issuer risk?. Includes integration considerations and evidence boundaries.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+      "family": "xrpl-trust-lines",
+      "facets": [
+        "XRPL",
+        "trust lines",
+        "IOU",
+        "issuer",
+        "stablecoins"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-trust-lines",
+      "relevance": 0.8245611309765626,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-trust-lines",
+        "version": "v1",
+        "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+        "pubKey": "ED35C13027D23D06D2219C016CEF0113DE60126DCDD5995203C0E3771AE37906ED",
+        "priceMinor": 40,
+        "leaves": [
+          "bd9aeeab675fd3475fd0c5a3d5911c4c799847c7b4a2a09abc50ed72040dd9bb",
+          "0c18e4717e64168b6bff923b8b44a0bd83681556c47ebb312385933fb89fb09c",
+          "101dec8ce303c8b68075606d700eeff8525e50e5df9d9ad7b97d3d493c18a8de",
+          "dc4ed24ad159a800669432bba916964ec52f11045dc657bcfe39e869e6233f96"
+        ],
+        "root": "c705691623ebea350bac3818ae4ca6cd3efa09a68d65866d24bd3b8da1d1b25d",
+        "claims": [],
+        "wordCount": 246,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.8245611309765626,
+        "sig": "928A4653952BA96404BA391EC7549E6EA139F7FEA3ED8203A1FFEFB7CAEB36165227F1ED936841839D7A3D56DF51CDD231186FF1C3C2AE20776F4EC6FF555807"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-tx-ledgerstatefix",
+      "version": "v1",
+      "title": "What does LedgerStateFix do on XRPL?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced explanation of LedgerStateFix and its practical limits.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+      "family": "xrpl-tx-ledgerstatefix",
+      "facets": [
+        "XRPL",
+        "LedgerStateFix",
+        "Ledger State Fix",
+        "transaction"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-tx-ledgerstatefix",
+      "relevance": 0.7100076865664174,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-tx-ledgerstatefix",
+        "version": "v1",
+        "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+        "pubKey": "ED35C13027D23D06D2219C016CEF0113DE60126DCDD5995203C0E3771AE37906ED",
+        "priceMinor": 40,
+        "leaves": [
+          "fbc83640267da009c09c88809d2a00955f854fdc3df3f12a0d9a47c2f6d4512d",
+          "6fa4282a43a0ee7608886cbda7a0ce445c92010071583570c3d7f7b35b69f637",
+          "c7411dc4f9d8fcfe11ea9b14da240727b58a4ccc3db09ec39005ae892355df54",
+          "b84fc052ba969dced803d687cf9b69484e48dc4494763586af321cb7a662eeb5"
+        ],
+        "root": "aee4995d15221397fc5d2ecf260bafbc09661d25c922ae077679f0069a2b905b",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "fbc83640267da009c09c88809d2a00955f854fdc3df3f12a0d9a47c2f6d4512d",
+            "covers": {
+              "entity": "LedgerStateFix",
+              "measure": "ledger-state inconsistencies"
+            }
+          }
+        ],
+        "wordCount": 194,
+        "publishedAt": "2026-11-10",
+        "relevance": 0.7100076865664174,
+        "sig": "CAA6BA9CE04DF7837FBE3BA3E200B76B48A055C1E0BD9516E4C0271C5E438EB565573454FA216FD1AF992E82A6EEAA7F33AF6A0F29465515D90EB437873AF802"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-tx-accountdelete",
+      "version": "v1",
+      "title": "What does AccountDelete do on XRPL?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced explanation of AccountDelete and its practical limits.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+      "family": "xrpl-tx-accountdelete",
+      "facets": [
+        "XRPL",
+        "AccountDelete",
+        "Account Delete",
+        "transaction"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-tx-accountdelete",
+      "relevance": 0.7087540118384166,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-tx-accountdelete",
+        "version": "v1",
+        "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+        "pubKey": "ED35C13027D23D06D2219C016CEF0113DE60126DCDD5995203C0E3771AE37906ED",
+        "priceMinor": 40,
+        "leaves": [
+          "9188e974dc5cf29e27ee0414fc9b398ccf77e9d53663ff16dc769f5ac9bceca8",
+          "b033c42d9cd94ff7a9056a0520acda7475991ef3136c8635db89f180cd77e3f7",
+          "b3c048329e7121c0b4c18f937edf98645ae3965caf8f6dc7edfbbea6294aa02c",
+          "d5deb4a917cee93baf9e315023bebee03a1a0ce548ad7b3f488650bd6c9919e1"
+        ],
+        "root": "236b8a9b3942588f28a187734a469b527d80f53712230e27e06ebf99a0e4be85",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "9188e974dc5cf29e27ee0414fc9b398ccf77e9d53663ff16dc769f5ac9bceca8",
+            "covers": {
+              "entity": "AccountDelete",
+              "measure": "account"
+            }
+          }
+        ],
+        "wordCount": 187,
+        "publishedAt": "2026-11-10",
+        "relevance": 0.7087540118384166,
+        "sig": "DC930A336B7B5CD36E7DA8E811E2E38437C8AEB6249038DD29204B5501153A5994D6B33C7EDB4A60A82E45C17DBD2AB546DEC0E5CCDA9B3275322365CDAD960B"
+      }
+    },
+    {
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-tx-accountset",
+      "version": "v1",
+      "title": "What does AccountSet do on XRPL?",
+      "publisher": "ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet",
+      "preview": "Sourced explanation of AccountSet and its practical limits.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+      "family": "xrpl-tx-accountset",
+      "facets": [
+        "XRPL",
+        "AccountSet",
+        "Account Set",
+        "transaction"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders · XRPL explainers (team-authored)"
+      },
+      "publisherSlug": "team-xrpl-explainers",
+      "writerSlug": "team-xrpl-explainers",
+      "url": "/w/team-xrpl-explainers/articles/xrpl-tx-accountset",
+      "relevance": 0.7014539351529024,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-tx-accountset",
+        "version": "v1",
+        "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+        "pubKey": "ED35C13027D23D06D2219C016CEF0113DE60126DCDD5995203C0E3771AE37906ED",
+        "priceMinor": 40,
+        "leaves": [
+          "5264b217843a6f477befcd89cb1a4a5dbc0114303678f5a65fef6fde3f18b606",
+          "de770dd2c7fb68f57d6f05d3155f062720da6db62a2d246e9193f5df5322cc90",
+          "2ccc816220f4f3efb3918fad97c94384dd224c9f6fa0222d03d6ef634ca78b3a",
+          "f220b1f9386927a7b4b3bf8277f0e6c82784055a1b354b0aa384fc0ac6280455"
+        ],
+        "root": "94da908c66af3a54c1b3bccd3515394fa79c509418a84fcb4e8e7940ea67773e",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "5264b217843a6f477befcd89cb1a4a5dbc0114303678f5a65fef6fde3f18b606",
+            "covers": {
+              "entity": "AccountSet",
+              "measure": "issuer"
+            }
+          }
+        ],
+        "wordCount": 183,
+        "publishedAt": "2026-11-10",
+        "relevance": 0.7014539351529024,
+        "sig": "9AE17512E73C300666E4201E137358BCA386115E196986EC190CD1FBA057BDB431AA17995EF6C1D5263269C81F9C469D1A05EEFDEA56636FCE8DF219C00AD10C"
+      }
+    }
+  ],
+  "intents": [
+    {
+      "intentId": "cfa5ea4f-3002-4112-aecb-4b3afbac96ca:1:xrpl-reserves:v2",
+      "runId": "cfa5ea4f-3002-4112-aecb-4b3afbac96ca",
+      "profileId": "team-xrpl-explainers",
+      "resourceId": "xrpl-reserves",
+      "version": "v2",
+      "amountMinor": 40,
+      "status": "VERIFIED",
+      "createdAt": "2026-11-11T17:17:28.264Z",
+      "submittingAt": "2026-11-11T17:17:28.266Z",
+      "settledAt": "2026-11-11T17:17:28.273Z",
+      "quote": {
+        "profileId": "team-xrpl-explainers",
+        "resourceId": "xrpl-reserves",
+        "version": "v2",
+        "runId": "cfa5ea4f-3002-4112-aecb-4b3afbac96ca",
+        "intentId": "cfa5ea4f-3002-4112-aecb-4b3afbac96ca:1:xrpl-reserves:v2",
+        "quoteId": "{\"amount\":\"40000\",\"articleId\":\"xrpl-reserves\",\"manifestRoot\":\"d5e92f8525089c8d823b44bee1c25462b66cd24cb8ab2ad6c74bf9052f1fd1f7\",\"payTo\":\"rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ\",\"quoteId\":\"0fb9c865-5b35-4b20-907a-7c4b3c1eb4e9\",\"version\":\"v2\"}",
+        "quoteHash": "C8852D9AD456B5AB1BDA77B55D87D3724F124D41503912D7025791F5CC354593",
+        "amountMinor": 40,
+        "currency": "SGD",
+        "expiresAt": "2026-11-11T17:18:28.263Z",
+        "contentDigest": "d5e92f8525089c8d823b44bee1c25462b66cd24cb8ab2ad6c74bf9052f1fd1f7",
+        "payment": {
+          "rail": "simulated",
+          "network": "xrpl:1",
+          "asset": "XRP",
+          "payTo": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+          "amountDrops": "40000",
+          "invoiceId": "C8852D9AD456B5AB1BDA77B55D87D3724F124D41503912D7025791F5CC354593"
+        }
+      },
+      "paidPath": "/w/team-xrpl-explainers/articles/xrpl-reserves",
+      "receiptId": "x402-4774C36BBADBD8353DCE9A1A1A9727BD5963917548E7A74767DD11BF414ADCAC",
+      "txHash": "4774C36BBADBD8353DCE9A1A1A9727BD5963917548E7A74767DD11BF414ADCAC"
+    }
+  ],
+  "grants": [
+    {
+      "runId": "cfa5ea4f-3002-4112-aecb-4b3afbac96ca",
+      "resourceId": "xrpl-reserves",
+      "version": "v2",
+      "intentId": "cfa5ea4f-3002-4112-aecb-4b3afbac96ca:1:xrpl-reserves:v2",
+      "contentDigest": "d5e92f8525089c8d823b44bee1c25462b66cd24cb8ab2ad6c74bf9052f1fd1f7",
+      "grantedAt": "2026-11-11T17:17:28.274Z"
+    }
+  ],
+  "receipts": [
+    {
+      "receiptId": "x402-4774C36BBADBD8353DCE9A1A1A9727BD5963917548E7A74767DD11BF414ADCAC",
+      "intentId": "cfa5ea4f-3002-4112-aecb-4b3afbac96ca:1:xrpl-reserves:v2",
+      "runId": "cfa5ea4f-3002-4112-aecb-4b3afbac96ca",
+      "resourceId": "xrpl-reserves",
+      "version": "v2",
+      "amountMinor": 40,
+      "currency": "SGD",
+      "settledAt": "2026-11-11T17:17:28.273Z",
+      "label": "SIMULATED SGD · no real funds"
+    }
+  ],
+  "payments": [
+    {
+      "asset": "XRP",
+      "kind": "purchase",
+      "label": "SIMULATED SGD · no real funds",
+      "network": "SIMULATED rail, no real funds",
+      "runId": "cfa5ea4f-3002-4112-aecb-4b3afbac96ca",
+      "intentId": "cfa5ea4f-3002-4112-aecb-4b3afbac96ca:1:xrpl-reserves:v2",
+      "surface": "web",
+      "principal": "d824092a6f52fe35ee9ad02c025f339675c4fc23bf8100efa12514eff044c8f1",
+      "policyVersion": "wallet-v1",
+      "writer": "team-xrpl-explainers",
+      "resourceId": "xrpl-reserves",
+      "version": "v2",
+      "payee": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+      "payer": "",
+      "amountMinor": 40,
+      "currency": "SGD",
+      "amountDrops": "40000",
+      "txHash": "4774C36BBADBD8353DCE9A1A1A9727BD5963917548E7A74767DD11BF414ADCAC",
+      "invoiceId": "C8852D9AD456B5AB1BDA77B55D87D3724F124D41503912D7025791F5CC354593",
+      "ledgerIndex": "",
+      "explorerUrl": "",
+      "status": "VERIFIED",
+      "refundTxHash": "",
+      "refundAmountMinor": "",
+      "refundExplorerUrl": "",
+      "reservedAt": "2026-11-11T17:17:28.264Z",
+      "settledAt": "2026-11-11T17:17:28.273Z"
+    }
+  ],
+  "proofs": [
+    {
+      "resourceId": "open-grid-operator-demand-statistics-may-15-2026",
+      "version": "v1",
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "open-records",
+        "articleId": "open-grid-operator-demand-statistics-may-15-2026",
+        "version": "v1",
+        "wallet": "rEhHosCtMxUjb8rGRAgCS4GaMgagTGb5qo",
+        "pubKey": "EDA211FB75CF3D6A0B2465971D0C4766370647CEF730EC60C505B6E48881C393DD",
+        "priceMinor": 0,
+        "leaves": [
+          "52e6599009f8ed7ac1c545b8fb83f47e30d6eedbdac072883677498241ee1e36",
+          "475fc35b0a84177efb204e6004cc0ea7fcab264d8de979620824eafe0aebfddc",
+          "cbc2568380c930e6a15be238832c7e3056bca92a810b1f7e7985b2c6aef2ba55",
+          "bec7de26493bcdb8385e8f15e8bc3a9f840ded58c05f5e40e744049cad5ced46",
+          "0c6762dc7804de0fc4f075d2e1443feb983a3376f4082f10a9d1b0bf98214203",
+          "683ce18e66187a71acbb0f43954cb51815d4ad0e30ed857873dbb3cb9f5dcde7",
+          "2cc0a503ad476f7977f959d10df74231cbbc907c3c9f35062b1daeda47e862cd"
+        ],
+        "root": "d666bb1572add8cee29025968b18c7d6f95db7d96a678c4a626840c7cc1434e2",
+        "claims": [
+          {
+            "id": "p1:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "52e6599009f8ed7ac1c545b8fb83f47e30d6eedbdac072883677498241ee1e36"
+          },
+          {
+            "id": "p2:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "475fc35b0a84177efb204e6004cc0ea7fcab264d8de979620824eafe0aebfddc"
+          },
+          {
+            "id": "p3:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "cbc2568380c930e6a15be238832c7e3056bca92a810b1f7e7985b2c6aef2ba55"
+          },
+          {
+            "id": "p3:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "cbc2568380c930e6a15be238832c7e3056bca92a810b1f7e7985b2c6aef2ba55"
+          },
+          {
+            "id": "p4:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "bec7de26493bcdb8385e8f15e8bc3a9f840ded58c05f5e40e744049cad5ced46"
+          },
+          {
+            "id": "p5:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "0c6762dc7804de0fc4f075d2e1443feb983a3376f4082f10a9d1b0bf98214203"
+          },
+          {
+            "id": "p5:numeric-series",
+            "kind": "numeric-series",
+            "leaf": "0c6762dc7804de0fc4f075d2e1443feb983a3376f4082f10a9d1b0bf98214203"
+          },
+          {
+            "id": "p7:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "2cc0a503ad476f7977f959d10df74231cbbc907c3c9f35062b1daeda47e862cd"
+          }
+        ],
+        "wordCount": 1003,
+        "publishedAt": "2026-05-15",
+        "relevance": 1,
+        "sig": "C2F892357DEDEFBBCDA4988468DE67CFBE2C466E0B3AB49A0D2F67FA3A66B6428F054F9E3CC852B6EBEC8DE0A8F98B5717313AEC771DB381D831DF3EFD234300"
+      },
+      "salts": [
+        "adb47b5511d23426f5a42ee241499f8c",
+        "4e031b6879907680a61c703ba88735f7",
+        "d556970afb76785d4c5d41b0396448d8",
+        "1890797f6170b35bdf9c1e579acf01e0",
+        "76cadb6a689bb9dc1ddae7df3b564ea1",
+        "5f9f26c47913c5c8ed50c3c1fc282f9f",
+        "2fdba833649382fb4b93b3dcbbdd1ea1"
+      ]
+    },
+    {
+      "resourceId": "xrpl-reserves",
+      "version": "v2",
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-xrpl-explainers",
+        "articleId": "xrpl-reserves",
+        "version": "v2",
+        "wallet": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+        "pubKey": "ED35C13027D23D06D2219C016CEF0113DE60126DCDD5995203C0E3771AE37906ED",
+        "priceMinor": 40,
+        "leaves": [
+          "207c1b2d74e00f928262becb1b54194a71d16fae8448425f41fd2b30112a8f81",
+          "06fac22c8018a9e594c95d1f0f18dfe36e9f522da5ca25fb87bfa017d85f5bde",
+          "8f33c3c4af9d65bd3fbe3378b7bc4bad73b98dc92eacf7532b7ef6f7347e4c5a",
+          "3c6ad0b3aeebc5f956a9d08b0d52afcfec637f2755741036e1c6bb4d053eccfe"
+        ],
+        "root": "d5e92f8525089c8d823b44bee1c25462b66cd24cb8ab2ad6c74bf9052f1fd1f7",
+        "claims": [
+          {
+            "id": "p1:named-source",
+            "kind": "named-source",
+            "leaf": "207c1b2d74e00f928262becb1b54194a71d16fae8448425f41fd2b30112a8f81",
+            "covers": {
+              "entity": "XRPL",
+              "measure": "fee"
+            }
+          }
+        ],
+        "wordCount": 290,
+        "publishedAt": "2026-11-11",
+        "relevance": 0.8472076815176623,
+        "sig": "7E0F68955C5594825BA542E485DE41F437D6E7858011C4D81F14286AB30F35DD1DCB8DFC27CB946742CE007D83B43516BC017A3E23371FE1824BCD872E66D70F"
+      },
+      "salts": [
+        "51f2d1ddf7a1f314b34bd4a7a31d895e",
+        "391f572cda595240bb11ec21f4b99d16",
+        "980684d97a213acb1cec3ad6a1d0b0a6",
+        "bd11eba84b22cd1c073af1da1c7ac603"
+      ],
+      "intentId": "cfa5ea4f-3002-4112-aecb-4b3afbac96ca:1:xrpl-reserves:v2"
+    }
+  ],
+  "audit": {
+    "anchor": {
+      "seq": 2,
+      "hash": "6d968e78aacfdccde17c0474ff27324d2c2d804ce7b8ac8617b3031c93ec89cf"
+    },
+    "entries": [
+      {
+        "seq": 3,
+        "at": "2026-11-11T17:17:28.085Z",
+        "prevHash": "6d968e78aacfdccde17c0474ff27324d2c2d804ce7b8ac8617b3031c93ec89cf",
+        "hash": "338b9b40be80bbcb854eb693fa859593cdf83b2fbeeee76e51b152dbcfd194de",
+        "runId": "cfa5ea4f-3002-4112-aecb-4b3afbac96ca",
+        "intentId": null,
+        "surface": "web",
+        "principal": "d824092a6f52fe35ee9ad02c025f339675c4fc23bf8100efa12514eff044c8f1",
+        "kind": "admission",
+        "data": {
+          "admittedMinor": 200,
+          "agentMaxMinor": null,
+          "day": "2026-11-11",
+          "hireReserveMinor": 0,
+          "labels": {
+            "decision": "fixture · metadata-fixture",
+            "publisher": "local",
+            "research": "DeepSeek · deepseek-flash (pending)",
+            "settlement": "SIMULATED SGD · no real funds"
+          },
+          "maxMinor": 200,
+          "paused": false,
+          "policyVersion": "wallet-v1",
+          "questionCommitment": "8f7ce4c6d5c775a3b3d809b440fc9da1b45b5292dce35089648c4a0ce4de88a9",
+          "requestedMinor": 200,
+          "surfaceDailyMinor": null,
+          "surfaceRemainingMinor": 2000,
+          "walletDailyMinor": 2000,
+          "walletRemainingMinor": 2000
+        }
+      },
+      {
+        "seq": 4,
+        "at": "2026-11-11T17:17:28.256Z",
+        "prevHash": "338b9b40be80bbcb854eb693fa859593cdf83b2fbeeee76e51b152dbcfd194de",
+        "hash": "196dcb5f2b33dc3d99bf1f711654a9f0597aee1031093c93698ae7992938b4a4",
+        "runId": "cfa5ea4f-3002-4112-aecb-4b3afbac96ca",
+        "intentId": null,
+        "surface": "web",
+        "principal": "d824092a6f52fe35ee9ad02c025f339675c4fc23bf8100efa12514eff044c8f1",
+        "kind": "decision",
+        "data": {
+          "calibration": null,
+          "candidatesJudged": 12,
+          "fallbackReason": null,
+          "model": "metadata-fixture",
+          "promptVersion": null,
+          "provider": "fixture",
+          "round": 1,
+          "selectedResourceId": "xrpl-reserves",
+          "selectedSourceKey": "xrpl-reserves@v2",
+          "threshold": 0.2,
+          "verdicts": {
+            "BUY": 3,
+            "SKIP_LOW_VALUE": 9
+          }
+        }
+      },
+      {
+        "seq": 5,
+        "at": "2026-11-11T17:17:28.265Z",
+        "prevHash": "196dcb5f2b33dc3d99bf1f711654a9f0597aee1031093c93698ae7992938b4a4",
+        "hash": "2c6002c4ef9b06010d6150345f56cac07cb7c0af844f13dadaa44d679e78b5d0",
+        "runId": "cfa5ea4f-3002-4112-aecb-4b3afbac96ca",
+        "intentId": "cfa5ea4f-3002-4112-aecb-4b3afbac96ca:1:xrpl-reserves:v2",
+        "surface": "web",
+        "principal": "d824092a6f52fe35ee9ad02c025f339675c4fc23bf8100efa12514eff044c8f1",
+        "kind": "reserve",
+        "data": {
+          "amountMinor": 40,
+          "committedMinor": 0,
+          "payTo": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+          "perSourceCapMinor": 100,
+          "policyVersion": "wallet-v1",
+          "profileId": "team-xrpl-explainers",
+          "quoteHash": "C8852D9AD456B5AB1BDA77B55D87D3724F124D41503912D7025791F5CC354593",
+          "rail": "simulated",
+          "resourceId": "xrpl-reserves",
+          "runBudgetMinor": 200,
+          "source": null,
+          "version": "v2",
+          "walletDailyMinor": 2000
+        }
+      },
+      {
+        "seq": 6,
+        "at": "2026-11-11T17:17:28.269Z",
+        "prevHash": "2c6002c4ef9b06010d6150345f56cac07cb7c0af844f13dadaa44d679e78b5d0",
+        "hash": "83b19384aedd0172cba6ad9d34509d46e755aa1c0dadb5b3b3ed663fc8ef1c78",
+        "runId": "cfa5ea4f-3002-4112-aecb-4b3afbac96ca",
+        "intentId": "cfa5ea4f-3002-4112-aecb-4b3afbac96ca:1:xrpl-reserves:v2",
+        "surface": "web",
+        "principal": "d824092a6f52fe35ee9ad02c025f339675c4fc23bf8100efa12514eff044c8f1",
+        "kind": "sign",
+        "data": {
+          "amountMinor": 40,
+          "lastLedgerSequence": 448604382,
+          "paused": false,
+          "payTo": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+          "policyVersion": "wallet-v1",
+          "rail": "simulated",
+          "txHash": "4774C36BBADBD8353DCE9A1A1A9727BD5963917548E7A74767DD11BF414ADCAC",
+          "walletDailyMinor": 2000
+        }
+      },
+      {
+        "seq": 7,
+        "at": "2026-11-11T17:17:28.274Z",
+        "prevHash": "83b19384aedd0172cba6ad9d34509d46e755aa1c0dadb5b3b3ed663fc8ef1c78",
+        "hash": "00cbc800cb5adf14acc395291f2412c3c10fa0a3932c2a291baa90f6c6ea5d4d",
+        "runId": "cfa5ea4f-3002-4112-aecb-4b3afbac96ca",
+        "intentId": "cfa5ea4f-3002-4112-aecb-4b3afbac96ca:1:xrpl-reserves:v2",
+        "surface": "web",
+        "principal": "d824092a6f52fe35ee9ad02c025f339675c4fc23bf8100efa12514eff044c8f1",
+        "kind": "settle",
+        "data": {
+          "amountDrops": "40000",
+          "amountMinor": 40,
+          "asset": "XRP",
+          "deliveredAmount": null,
+          "label": "SIMULATED SGD · no real funds",
+          "ledgerIndex": null,
+          "payTo": "rUvmvjWA3cBVse1GmP1fU2bdbbPcW4BZCJ",
+          "payer": null,
+          "policyVersion": "wallet-v1",
+          "profileId": "team-xrpl-explainers",
+          "receiptId": "x402-4774C36BBADBD8353DCE9A1A1A9727BD5963917548E7A74767DD11BF414ADCAC",
+          "resourceId": "xrpl-reserves",
+          "settledAt": "2026-11-11T17:17:28.273Z",
+          "txHash": "4774C36BBADBD8353DCE9A1A1A9727BD5963917548E7A74767DD11BF414ADCAC",
+          "version": "v2"
+        }
+      },
+      {
+        "seq": 8,
+        "at": "2026-11-11T17:17:28.275Z",
+        "prevHash": "00cbc800cb5adf14acc395291f2412c3c10fa0a3932c2a291baa90f6c6ea5d4d",
+        "hash": "43dc114fdcd869ad794227c4b1744be216930bb370694dd5f17e16eca7216364",
+        "runId": "cfa5ea4f-3002-4112-aecb-4b3afbac96ca",
+        "intentId": "cfa5ea4f-3002-4112-aecb-4b3afbac96ca:1:xrpl-reserves:v2",
+        "surface": "web",
+        "principal": "d824092a6f52fe35ee9ad02c025f339675c4fc23bf8100efa12514eff044c8f1",
+        "kind": "deliver",
+        "data": {
+          "accessible": false,
+          "contentDigest": "d5e92f8525089c8d823b44bee1c25462b66cd24cb8ab2ad6c74bf9052f1fd1f7",
+          "passageCount": 4,
+          "resourceId": "xrpl-reserves",
+          "version": "v2"
+        }
+      },
+      {
+        "seq": 9,
+        "at": "2026-11-11T17:17:28.275Z",
+        "prevHash": "43dc114fdcd869ad794227c4b1744be216930bb370694dd5f17e16eca7216364",
+        "hash": "a6537a5654c3f51f0a09634967ac300de19c07baad80e00c9f6d8229b8b1e1ec",
+        "runId": "cfa5ea4f-3002-4112-aecb-4b3afbac96ca",
+        "intentId": "cfa5ea4f-3002-4112-aecb-4b3afbac96ca:1:xrpl-reserves:v2",
+        "surface": "web",
+        "principal": "d824092a6f52fe35ee9ad02c025f339675c4fc23bf8100efa12514eff044c8f1",
+        "kind": "proof",
+        "data": {
+          "contentDigest": "d5e92f8525089c8d823b44bee1c25462b66cd24cb8ab2ad6c74bf9052f1fd1f7",
+          "failedClaimIds": [],
+          "resourceId": "xrpl-reserves",
+          "status": "VERIFIED",
+          "verified": true,
+          "version": "v2"
+        }
+      }
+    ],
+    "head": "a6537a5654c3f51f0a09634967ac300de19c07baad80e00c9f6d8229b8b1e1ec"
+  }
+}

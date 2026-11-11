@@ -17,7 +17,6 @@ import { freeDraft, followUpSearch, hitsByPublisher, retrieve, sanitizeGaps, usa
 import { resolveCitation, validateClaims } from './citations.js'
 import { FIXTURE_GAP_RULES, fixtureSupports, followUpQuery, INSTRUCTION, STATUS_RANK, type CoverageEvidence } from './requirements.js'
 import { isProtocolQuery, titleCovers } from '../../shared/relevance.js'
-import { openGapsAfterLead } from '../../shared/open-gaps.js'
 import type { Plan } from '../../shared/contracts/index.js'
 
 export type RunLoopOptions = {
@@ -173,8 +172,9 @@ export class RunLoop {
     }
     if (requirements) {
       coverage ??= await this.assessCoverage(runId, answer)
-      // H9-10 (R9-B): the coverage rewrite keeps the rule research.ts applies, so MCP and the SDK never list a fact the lead answers.
-      answer.openGaps = openGapsAfterLead(run.question, { lead: answer.lead, openGaps: requirements.filter(r => coverage!.entries.find(e => e.requirementId === r.id)?.status !== 'supported').map(r => ({ text: r.text.replace(/\s*&\s*/g, ' and ') })) })
+      // One judgment drives gaps, the checklist, the COVERAGE event and the next purchase. A display-only lexical
+      // match cannot conceal a missing, partial, conflicting or unchecked requested fact.
+      answer.openGaps = requirements.filter(r => coverage!.entries.find(e => e.requirementId === r.id)?.status !== 'supported').map(r => ({ text: r.text.replace(/\s*&\s*/g, ' and ') }))
     }
     this.store.addAnswer(runId, structuredClone(answer), result.impact ? structuredClone(result.impact) : undefined)
     this.store.appendEvent(runId, { type: 'ANSWER_READY', label: previous ? 'Answer updated with verified evidence.' : 'Free answer checked.', data: { answerVersion: answer.version, durationMs: Date.now() - compositionStarted } })
@@ -466,7 +466,7 @@ export class RunLoop {
         const readSources = publicSources(run.candidates.filter(candidate => contents.some(content => sameSource(content, candidate))))
         let decision: Awaited<ReturnType<typeof decide>>
         try {
-          decision = await decide({ signal: this.signal(runId), question: run.question, conclusion: answer.conclusion, gap, requirement: Boolean(target), candidates: run.candidates, readSources, accessibleEvidence: contents, verifiedPurchases: this.verifiedPurchases(run), boughtResourceIds: run.intents.filter(intent => !['SKIPPED', 'FAILED_NOT_SETTLED'].includes(intent.status)).map(intent => intent.source ? sourceKey(intent) : intent.resourceId), budgetMinor: run.budgetMinor, spentMinor: run.spentMinor, reservedMinor: run.reservedMinor, perSourceCapMinor: run.perSourceCapMinor, round, probeWallets: run.candidates.flatMap(c => c.wallet && this.store.probeAvailable(c.wallet) ? [c.wallet] : []), provider: this.options.provider, threshold: this.options.threshold, ...(this.options.reputation ? { reputation: this.options.reputation.summaries() } : {}) })
+          decision = await decide({ signal: this.signal(runId), question: run.question, conclusion: answer.conclusion, gap, requirement: Boolean(target), ...(target ? { otherFacts: purchasable!.filter(r => r.id !== target.id).map(r => r.text) } : {}), candidates: run.candidates, readSources, accessibleEvidence: contents, verifiedPurchases: this.verifiedPurchases(run), boughtResourceIds: run.intents.filter(intent => !['SKIPPED', 'FAILED_NOT_SETTLED'].includes(intent.status)).map(intent => intent.source ? sourceKey(intent) : intent.resourceId), budgetMinor: run.budgetMinor, spentMinor: run.spentMinor, reservedMinor: run.reservedMinor, perSourceCapMinor: run.perSourceCapMinor, round, probeWallets: run.candidates.flatMap(c => c.wallet && this.store.probeAvailable(c.wallet) ? [c.wallet] : []), provider: this.options.provider, threshold: this.options.threshold, ...(this.options.reputation ? { reputation: this.options.reputation.summaries() } : {}) })
         } catch (error) {
           if (!(error instanceof DecisionUnavailableError)) throw error
           if (this.signal(runId).aborted) { this.trace(runId, 'STOPPED', 'Provider work cancelled after Stop.'); return }

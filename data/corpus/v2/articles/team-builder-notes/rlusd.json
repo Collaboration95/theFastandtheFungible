@@ -1,10 +1,10 @@
 {
   "articleId": "team-rlusd",
-  "version": "v3",
+  "version": "v4",
   "publisherSlug": "team-builder-notes",
   "writerSlug": "team-builder-notes",
   "title": "RLUSD escrow today: AllowTrustLineLocking issuer permission and TEST-SGD",
-  "publishedAt": "2026-11-07",
+  "publishedAt": "2026-11-11",
   "tier": "PAID",
   "priceMinor": 40,
   "abstract": "Why RLUSD cannot be escrowed today without issuer permission, and what AllowTrustLineLocking means for token escrow experiments.",
@@ -15,15 +15,37 @@
     "Testnet"
   ],
   "family": "team-rlusd",
-  "body": "RLUSD escrow support cannot be inferred from an XRP key-reveal purchase. The team documented official RLUSD as blocked until its issuer enables AllowTrustLineLocking. Our alternative is TEST-SGD, an IOU issued by our own Testnet issuer with no real value. It stands in for RLUSD in a mechanism experiment; it is neither official RLUSD nor evidence of stablecoin adoption. The docs contain no verified list of Singapore banks piloting RLUSD settlement in 2026. We cannot name banks from this evidence.\n\nA dedicated issuer creates TEST-SGD tokens on Testnet for experiments; these tokens carry no economic value and substitute for RLUSD only in mechanism tests. S$ prices map 1:1 to TEST-SGD; this is neither a peg nor a backing claim.\n\nThe issuer is separate from buyer and writer. Policy rejects issuer-as-party, missing permission, nonzero transfer fees, frozen/unauthorized lines, insufficient balance or destination limit before create signing. This is a conservative subset of XLS-85: no transfer-fee arithmetic or freeze exception is claimed. Settlement checks the writer RippleState balance delta (currency, issuer, sign and exact value), never the requested Amount as proof of delivery. Cancellation checks the buyer's returned balance delta. The buyer retains its original budget reservation while an outcome is unresolved.\n\nThe issuer, buyer and writer are separate parties. The experimental issuer enables token locking before the buyer and writer establish eligible trust lines. A successful TEST-SGD escrow proves only that this configured stand-in worked on Testnet. It does not change the official RLUSD issuer's permissions or establish a live bank settlement partnership.",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/accountset",
+      "accessedAt": "2026-11-11"
+    },
+    {
+      "url": "https://xrpl.org/resources/known-amendments",
+      "accessedAt": "2026-11-11"
+    },
+    {
+      "url": "https://livenet.xrpl.org/accounts/rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+      "accessedAt": "2026-11-11"
+    },
+    {
+      "url": "https://testnet.xrpl.org/accounts/rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV",
+      "accessedAt": "2026-11-11"
+    },
+    {
+      "url": "https://github.com/XRPLF/XRPL-Standards/blob/master/XLS-0085-token-escrow/README.md",
+      "accessedAt": "2026-11-11"
+    }
+  ],
+  "body": "Not today: an XRPL escrow can hold official RLUSD only after its issuer enables AllowTrustLineLocking, and the RLUSD issuer had not enabled it on Mainnet or Testnet when the team checked on 11 November 2026. The TokenEscrow amendment (XLS-85), which lets an escrow hold issued tokens, is already enabled on both networks, so the issuer flag is the remaining blocker. Only the issuer can set that flag, with an AccountSet transaction; a buyer or writer cannot set it for them. [1] [2] [3] [4] [5]\n\nRLUSD escrow support cannot be inferred from an XRP key-reveal purchase. An issuer can change its flags later, so check the issuer account on the intended network before relying on this answer. The docs contain no verified list of Singapore banks piloting RLUSD settlement in 2026. We cannot name banks from this evidence. [3] [4]\n\nThe issuer is separate from buyer and writer. Policy rejects issuer-as-party, missing permission, nonzero transfer fees, frozen/unauthorized lines, insufficient balance or destination limit before create signing. This is a conservative subset of XLS-85: no transfer-fee arithmetic or freeze exception is claimed. Settlement checks the writer RippleState balance delta (currency, issuer, sign and exact value), never the requested Amount as proof of delivery. Cancellation checks the buyer's returned balance delta. The buyer retains its original budget reservation while an outcome is unresolved.\n\nBuild note, TEST-SGD stand-in: our alternative is TEST-SGD, an IOU issued by our own Testnet issuer with no real value. It stands in for RLUSD in a mechanism experiment; it is neither official RLUSD nor evidence of stablecoin adoption. S$ prices map 1:1 to TEST-SGD; this is neither a peg nor a backing claim. The experimental issuer enables token locking before the buyer and writer establish eligible trust lines. A successful TEST-SGD escrow proves only that this configured stand-in worked on Testnet; it does not change the official RLUSD issuer's permissions or establish a live bank settlement partnership. Sources accessed 11 November 2026.",
   "passages": [
     {
       "id": "p1",
-      "text": "RLUSD escrow support cannot be inferred from an XRP key-reveal purchase. The team documented official RLUSD as blocked until its issuer enables AllowTrustLineLocking. Our alternative is TEST-SGD, an IOU issued by our own Testnet issuer with no real value. It stands in for RLUSD in a mechanism experiment; it is neither official RLUSD nor evidence of stablecoin adoption. The docs contain no verified list of Singapore banks piloting RLUSD settlement in 2026. We cannot name banks from this evidence."
+      "text": "Not today: an XRPL escrow can hold official RLUSD only after its issuer enables AllowTrustLineLocking, and the RLUSD issuer had not enabled it on Mainnet or Testnet when the team checked on 11 November 2026. The TokenEscrow amendment (XLS-85), which lets an escrow hold issued tokens, is already enabled on both networks, so the issuer flag is the remaining blocker. Only the issuer can set that flag, with an AccountSet transaction; a buyer or writer cannot set it for them. [1] [2] [3] [4] [5]"
     },
     {
       "id": "p2",
-      "text": "A dedicated issuer creates TEST-SGD tokens on Testnet for experiments; these tokens carry no economic value and substitute for RLUSD only in mechanism tests. S$ prices map 1:1 to TEST-SGD; this is neither a peg nor a backing claim."
+      "text": "RLUSD escrow support cannot be inferred from an XRP key-reveal purchase. An issuer can change its flags later, so check the issuer account on the intended network before relying on this answer. The docs contain no verified list of Singapore banks piloting RLUSD settlement in 2026. We cannot name banks from this evidence. [3] [4]"
     },
     {
       "id": "p3",
@@ -31,11 +53,11 @@
     },
     {
       "id": "p4",
-      "text": "The issuer, buyer and writer are separate parties. The experimental issuer enables token locking before the buyer and writer establish eligible trust lines. A successful TEST-SGD escrow proves only that this configured stand-in worked on Testnet. It does not change the official RLUSD issuer's permissions or establish a live bank settlement partnership."
+      "text": "Build note, TEST-SGD stand-in: our alternative is TEST-SGD, an IOU issued by our own Testnet issuer with no real value. It stands in for RLUSD in a mechanism experiment; it is neither official RLUSD nor evidence of stablecoin adoption. S$ prices map 1:1 to TEST-SGD; this is neither a peg nor a backing claim. The experimental issuer enables token locking before the buyer and writer establish eligible trust lines. A successful TEST-SGD escrow proves only that this configured stand-in worked on Testnet; it does not change the official RLUSD issuer's permissions or establish a live bank settlement partnership. Sources accessed 11 November 2026."
     }
   ],
   "factMenu": {
-    "p1": {
+    "p2": {
       "entity": "Singapore",
       "measure": "settlement",
       "period": "twenty twenty six"
@@ -46,7 +68,8 @@
     },
     "p4": {
       "entity": "RLUSD",
-      "measure": "settlement"
+      "measure": "settlement",
+      "period": "twenty twenty six"
     }
   }
 }

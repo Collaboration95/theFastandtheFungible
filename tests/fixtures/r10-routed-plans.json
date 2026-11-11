@@ -1,0 +1,241 @@
+{
+  "label": "Fresh local HOSTED=1 DeepSeek plans, 12 November 2026; fixture decisions, simulated settlement; captured on QUAL 7237044b before routed fixes. Original MJ10 raw plans were deleted by its review cleanup.",
+  "questions": [
+    {
+      "id": "reserves",
+      "question": "How much XRP reserve does an agent wallet need, and how much does each open escrow or trust line add?",
+      "budgetMinor": 200,
+      "modal": {
+        "restatement": "The XRP reserve an agent wallet needs on the XRP Ledger and how much each open escrow or trust line adds.",
+        "subqueries": [
+          "XRP Ledger base reserve requirement account",
+          "XRP Ledger owner reserve per object escrow trust line",
+          "XRPL reserve escrow trust line cost"
+        ],
+        "requirements": [
+          "Current XRP Ledger base account reserve and owner reserve per object, with figures",
+          "How much an open escrow adds to an agent wallet's XRP reserve",
+          "How much an open trust line adds to an agent wallet's XRP reserve"
+        ]
+      },
+      "run": {
+        "restatement": "The XRP reserve an agent wallet needs on the XRP Ledger and how much each open escrow or trust line adds.",
+        "subqueries": [
+          "XRP Ledger base reserve requirement account",
+          "XRP Ledger owner reserve per object escrow trust line",
+          "XRPL reserve escrow trust line cost"
+        ],
+        "requirements": [
+          "Current XRP Ledger base account reserve and owner reserve per object, with figures",
+          "How much an open escrow adds to an agent wallet's XRP reserve",
+          "How much an open trust line adds to an agent wallet's XRP reserve"
+        ]
+      },
+      "observed": {
+        "bought": [
+          "xrpl-reserves"
+        ],
+        "spentMinor": 40,
+        "lead": [
+          "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings."
+        ]
+      }
+    },
+    {
+      "id": "credentials",
+      "question": "What does an XRPL Credential prove, and which transactions create and accept one?",
+      "budgetMinor": 200,
+      "modal": {
+        "restatement": "What an XRPL Credential proves and which transactions create and accept one.",
+        "subqueries": [
+          "XRPL Credential ledger object what it proves",
+          "XRPL CredentialCreate CredentialAccept transactions",
+          "XRPL credentials documentation"
+        ],
+        "requirements": [
+          "What an XRPL Credential proves and what it contains",
+          "Which XRPL transaction creates a Credential",
+          "Which XRPL transaction accepts a Credential and what acceptance does"
+        ]
+      },
+      "run": {
+        "restatement": "What an XRPL Credential proves and which transactions create and accept one.",
+        "subqueries": [
+          "XRPL Credential ledger object what it proves",
+          "XRPL CredentialCreate CredentialAccept transactions",
+          "XRPL credentials documentation"
+        ],
+        "requirements": [
+          "What an XRPL Credential proves and what it contains",
+          "Which XRPL transaction creates a Credential",
+          "Which XRPL transaction accepts a Credential and what acceptance does"
+        ]
+      },
+      "observed": {
+        "bought": [
+          "xrpl-tx-credentialaccept"
+        ],
+        "spentMinor": 40,
+        "lead": [
+          "CredentialAccept records the subject account's acceptance of a credential issued to it.",
+          "The issuer, subject and CredentialType identify the credential being accepted."
+        ]
+      }
+    },
+    {
+      "id": "x402",
+      "question": "What does an x402 402 response contain, and can my agent pay it with XRP on Testnet?",
+      "budgetMinor": 200,
+      "modal": {
+        "restatement": "What an x402 402 Payment Required response contains and whether an agent can pay it with XRP on Testnet.",
+        "subqueries": [
+          "x402 402 Payment Required response fields",
+          "x402 payment requirements XRP XRPL",
+          "x402 XRPL Testnet XRP payment support"
+        ],
+        "requirements": [
+          "What an x402 402 Payment Required response contains, including payment requirement fields",
+          "Whether x402 supports paying with XRP on the XRPL Testnet"
+        ]
+      },
+      "run": {
+        "restatement": "What an x402 402 Payment Required response contains and whether an agent can pay it with XRP on Testnet.",
+        "subqueries": [
+          "x402 402 Payment Required response fields",
+          "x402 payment requirements XRP XRPL",
+          "x402 XRPL Testnet XRP payment support"
+        ],
+        "requirements": [
+          "What an x402 402 Payment Required response contains, including payment requirement fields",
+          "Whether x402 supports paying with XRP on the XRPL Testnet"
+        ]
+      },
+      "observed": {
+        "bought": [
+          "product-x402-response"
+        ],
+        "spentMinor": 40,
+        "lead": [
+          "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
+          "An agent can pay a 402 in XRP on Testnet, network xrpl:1."
+        ]
+      }
+    },
+    {
+      "id": "injection",
+      "question": "How can I stop a prompt-injected AI agent from draining its wallet?",
+      "budgetMinor": 200,
+      "modal": {
+        "restatement": "How to prevent a prompt-injected AI agent from draining its wallet.",
+        "subqueries": [
+          "prevent prompt injection AI agent wallet draining",
+          "AI agent spending limits policy controls prompt injection",
+          "x402 agent payment security prompt injection safeguards"
+        ],
+        "requirements": [
+          "Safeguards specific to x402 or XRPL agent payments against prompt-injected spending"
+        ]
+      },
+      "run": {
+        "restatement": "How to prevent a prompt-injected AI agent from draining its wallet.",
+        "subqueries": [
+          "prevent prompt injection AI agent wallet draining",
+          "AI agent spending limits policy controls prompt injection",
+          "x402 agent payment security prompt injection safeguards"
+        ],
+        "requirements": [
+          "Safeguards specific to x402 or XRPL agent payments against prompt-injected spending"
+        ]
+      },
+      "observed": {
+        "bought": [
+          "product-prompt-injection"
+        ],
+        "spentMinor": 40,
+        "lead": []
+      }
+    },
+    {
+      "id": "submitters",
+      "question": "What's the difference between EscrowFinish and EscrowCancel, and who can submit each one?",
+      "budgetMinor": 200,
+      "modal": {
+        "restatement": "How XRPL EscrowFinish and EscrowCancel differ and who is authorized to submit each.",
+        "subqueries": [
+          "XRPL EscrowFinish EscrowCancel difference who can submit",
+          "XRPL escrow transaction types EscrowFinish EscrowCancel authorization"
+        ],
+        "requirements": [
+          "What EscrowFinish does and who can submit it on the XRPL",
+          "What EscrowCancel does and who can submit it on the XRPL",
+          "How EscrowFinish and EscrowCancel differ in effect and authorization"
+        ]
+      },
+      "run": {
+        "restatement": "How XRPL EscrowFinish and EscrowCancel differ and who is authorized to submit each.",
+        "subqueries": [
+          "XRPL EscrowFinish EscrowCancel difference who can submit",
+          "XRPL escrow transaction types EscrowFinish EscrowCancel authorization"
+        ],
+        "requirements": [
+          "What EscrowFinish does and who can submit it on the XRPL",
+          "What EscrowCancel does and who can submit it on the XRPL",
+          "How EscrowFinish and EscrowCancel differ in effect and authorization"
+        ]
+      },
+      "observed": {
+        "bought": [
+          "xrpl-escrow"
+        ],
+        "spentMinor": 40,
+        "lead": [
+          "EscrowFinish releases escrowed funds when its requirements are satisfied; EscrowCancel returns expired escrowed funds to the sender.",
+          "Any account may submit EscrowFinish or EscrowCancel; funds go only to the destination or back to the owner."
+        ]
+      }
+    },
+    {
+      "id": "no-show",
+      "question": "If my agent pays for an article and the writer never reveals the key, what happens to my money?",
+      "budgetMinor": 200,
+      "modal": {
+        "restatement": "If an agent pays for an article and the writer never reveals the key, the question is what happens to the money.",
+        "subqueries": [
+          "agent pays for article writer never reveals key what happens to money",
+          "payment for article key not delivered refund or dispute",
+          "agent payment finality when seller fails to deliver key"
+        ],
+        "requirements": [
+          "Whether a payment made by an agent for an article is final once sent or can be reversed",
+          "What recourse exists if the writer never reveals the key after payment",
+          "Whether payment finality or spending controls limit recovery of the money",
+          "What the agent's payment terms say about non-delivery of the key"
+        ]
+      },
+      "run": {
+        "restatement": "If an agent pays for an article and the writer never reveals the key, the question is what happens to the money.",
+        "subqueries": [
+          "agent pays for article writer never reveals key what happens to money",
+          "payment for article key not delivered refund or dispute",
+          "agent payment finality when seller fails to deliver key"
+        ],
+        "requirements": [
+          "Whether a payment made by an agent for an article is final once sent or can be reversed",
+          "What recourse exists if the writer never reveals the key after payment",
+          "Whether payment finality or spending controls limit recovery of the money",
+          "What the agent's payment terms say about non-delivery of the key"
+        ]
+      },
+      "observed": {
+        "bought": [
+          "product-payment-finality",
+          "product-writer-paid"
+        ],
+        "spentMinor": 80,
+        "lead": [
+          "The ledger checks the key, not the article's quality: if a revealed article breaks a signed promise, the refund is a payment the writer must sign, and that writer's trust score drops."
+        ]
+      }
+    }
+  ]
+}

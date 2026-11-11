@@ -1,6 +1,7 @@
 import { stripCitationMarkers } from '../../shared/finding-text.js'
 import { onTopic, questionTerms, summarizeAnswer } from '../../shared/answer-summary.js'
 import { sourceKey, sameSource } from '../../shared/source-identity.js'
+import { isProtocolQuery } from '../../shared/relevance.js'
 import { LEGACY_SOURCE_INSTRUCTION } from './untrusted.js'
 import { requestedPassageScores } from './fact-selection.js'
 import { reportModelFallback, type ModelFallbackReason } from '../telemetry.js'
@@ -261,7 +262,7 @@ function fixture(question: string, contents: ContentEnvelope[], candidates: Publ
     if (!selected.includes(item) && !selected.some(e => e.claim.text === item.claim.text)) selected.push(item)
   }
   // One claim per requested fact the evidence states (#208), as the live prompt asks: a fact the evidence answers is cited.
-  for (const text of requirements) {
+  for (const text of [...requirements, ...(isProtocolQuery(question) ? [question] : [])]) {
     if (selected.some(e => fixtureSupports({ text }, e.claim.text))) continue
     const best = evidence.find(e => fixtureSupports({ text }, e.claim.text) && !selected.includes(e))
     if (!best) continue
@@ -380,7 +381,8 @@ async function composeAnswer(input: WriteAnswerInput): Promise<{ answer: Answer;
   // After a purchase, an answer with no cited claim says what was bought (the summary keeps only its known refusals).
   if (!answer.claims.length) answer = { ...answer, conclusion: empty }
   // H9-10: a gap the lead answers is not open.
-  answer = { ...answer, openGaps: openGapsAfterLead(input.question, answer) }
+  // Without requested facts the first open gap is what a legacy run buys for: keep the strict rules there (QUAL).
+  answer = { ...answer, openGaps: openGapsAfterLead(input.question, answer, { strict: !input.requirements?.length }) }
   return { answer: AnswerSchema.parse(answer), ...(input.previous ? { impact: compareAnswers(input.previous, answer, contents, priorContents(contents, input.candidates, input.previous)) } : {}), ...(answer.provider === 'fixture' && fallback ? { fallback } : {}) }
 }
 

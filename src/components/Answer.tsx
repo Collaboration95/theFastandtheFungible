@@ -1,21 +1,23 @@
 import { findingText } from '../../shared/finding-text.js'
-import { summarizeAnswer } from '../../shared/answer-summary.js'
+import { leadLine, sentenceStart, summarizeAnswer } from '../../shared/answer-summary.js'
 import { declineSummary, paidNoAnswerSummary } from '../../shared/decline.js'
-import { openGapsAfterLead } from '../../shared/open-gaps.js'
+import { legacyOpenGapsAfterLead } from '../../shared/legacy-open-gaps.js'
 import { keywordCoverage, searchWords } from '../../publisher/search-text.js'
 import AnchorStatus from './AnchorStatus'
-import ShareProof from './ShareProof'
 import { sameSource } from '../../shared/source-identity.js'
 /* eslint-disable react-refresh/only-export-components -- Shared validation for impact/report components. */
-import type { ReactNode } from 'react'
+import { lazy, Suspense, type ReactNode } from 'react'
 import { AnswerSchema, type Answer as AnswerData, type Citation, type Claim, type RunSnapshot } from '../../shared/contracts/index.js'
 import { getAccessibleContent } from './Sources'
 import { articleCount, candidateOf, citationKey, plainVerdict, purchaseCounts } from '../format'
 import Icon from './Icon'
-import { VERDICT_WORDS } from '../../shared/refusal-proof.js'
+import { ANSWER_VERDICT_WORDS } from '../../shared/answer-verdict-words.js'
 import { VERDICT_LABEL } from '../copy'
 import { answerBoilerplate, leadFinding, missingQualifiers, remainingClaims } from '../../shared/lead-finding.js'
 import { FACT_STATUS, factsSummary } from '../../shared/coverage.js'
+
+// Proof sharing is needed only after an answer; keep it off the initial search load.
+const ShareProof = lazy(() => import('./ShareProof').catch(() => ({ default: () => null })))
 
 export function getValidatedAnswer(run: RunSnapshot, answer?: AnswerData): AnswerData | undefined {
   const parsed = AnswerSchema.safeParse(answer)
@@ -51,9 +53,8 @@ export const citationNumbers = (answers: AnswerData[]): Map<string, number> => c
 /** A finding reads as a sentence: closing punctuation, and a capital when an extract starts mid-sentence ("prompt injection
  * cannot…", "the only supported…", "key-reveal escrow makes…", H5, R8 D2). Identifiers keep their case: only a plain lowercase
  * word (or hyphenated words) is capitalised, never x402, tesSUCCESS or a command such as npm or rippled. */
-const KEEP_LOWER = new Set(['rippled', 'xrpl', 'npm', 'npx', 'pnpm', 'pip', 'curl', 'wget', 'git'])
 export const finding = (text: string) => {
-  const trimmed = text.trim().replace(/^[a-z]+(?:-[a-z]+)*(?=[\s,;:])/, word => KEEP_LOWER.has(word.split('-')[0]) ? word : word[0].toUpperCase() + word.slice(1))
+  const trimmed = sentenceStart(text.trim())
   return /[.!?…]["')\]”’]*$/.test(trimmed) ? trimmed : `${trimmed}.`
 }
 
@@ -70,16 +71,19 @@ export default function Answer({ run, onCitation, view, compare, onCompare, repo
     // The status line above says "Done in …"; this block carries the one plain sentence for the outcome, then the reasons.
     // After a payment it never says "nothing was bought" (H9-03): it says what was bought and that none of it answered.
     const { paid } = purchaseCounts(run)
-    return <section className="ra-verdict" aria-label="Research answer"><div className="ra-answer-heading"><h2 className="ra-caption">Answer</h2>{report}</div><p>{paid ? paidNoAnswerSummary(paid) : run.receipts.length ? 'No verified answer is available from these purchases.' : declineSummary(run)}</p>{considered.length > 0 && <details className="ra-why-not" open={considered.length <= 6 || undefined}><summary><span>{paid ? 'Why there’s no answer' : 'Why nothing was bought'}</span><span className="ra-why-count"> · {articleCount(considered.length)} considered</span></summary><ul>{considered.map(({ key, row }) => <li key={key}><b>{row.candidate.title}</b><span className="ra-why-verdict">{plainVerdict(row, run).stamp === 'Would buy' ? 'Would buy' : VERDICT_WORDS[row.verdict] ?? VERDICT_LABEL[row.verdict] ?? row.verdict}</span><p>{row.reason}</p></li>)}</ul></details>}<AnchorStatus run={run} /><ShareProof run={run} /><a href="https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs/publishing.md">Write about this topic →</a></section>
+    return <section className="ra-verdict" aria-label="Research answer"><div className="ra-answer-heading"><h2 className="ra-caption">Answer</h2>{report}</div><p>{paid ? paidNoAnswerSummary(paid) : run.receipts.length ? 'No verified answer is available from these purchases.' : declineSummary(run)}</p>{considered.length > 0 && <details className="ra-why-not" open={considered.length <= 6 || undefined}><summary><span>{paid ? 'Why there’s no answer' : 'Why nothing was bought'}</span><span className="ra-why-count"> · {articleCount(considered.length)} considered</span></summary><ul>{considered.map(({ key, row }) => <li key={key}><b>{row.candidate.title}</b><span className="ra-why-verdict">{plainVerdict(row, run).stamp === 'Would buy' ? 'Would buy' : ANSWER_VERDICT_WORDS[row.verdict] ?? VERDICT_LABEL[row.verdict] ?? row.verdict}</span><p>{row.reason}</p></li>)}</ul></details>}<AnchorStatus run={run} /><Suspense fallback={null}><ShareProof run={run} /></Suspense><a href="https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs/publishing.md">Write about this topic →</a></section>
   }
   if (!answer) return <section className="ra-verdict" aria-label="Research answer" aria-busy={!['FAILED','STOPPED'].includes(run.phase)}><h2 className="ra-caption">Answer</h2>{['FAILED','STOPPED'].includes(run.phase) ? <p>No verified answer is available. Ask again to begin a new run.</p> : <div className="ra-vtext is-skel" aria-hidden="true"><i /><i /><i /></div>}</section>
   const delivered = run.candidates.flatMap(candidate => { const content = getAccessibleContent(run, candidate); return content ? [content] : [] })
   const summary = answer.lead ? answer : summarizeAnswer(run.question, answer, delivered.filter(c => answer.claims.some(claim => claim.citations.some(ref => sameSource(c, ref)))), run.candidates)
   const lead = summary.lead ?? []
   const leadText = lead.map(item => item.text).join(' ')
-  const context = summary.conclusion.startsWith(leadText) ? summary.conclusion.slice(leadText.length).trim() : summary.conclusion
-  // H9-10: "Still unanswered" never lists what the lead above answers (the same rule the server applies).
-  const openGaps = openGapsAfterLead(run.question, { lead, openGaps: answer.openGaps })
+  // The conclusion opens with the lead, capitalised as a sentence since QUAL (H9-13); answers stored earlier open with it verbatim.
+  const opening = [leadLine(lead.map(item => item.text)), leadText].find(text => summary.conclusion.startsWith(text))
+  const context = opening !== undefined ? summary.conclusion.slice(opening.length).trim() : summary.conclusion
+  // Planned answers share the stored judgment with the checklist and trace. Legacy snapshots retain H9-10's lead rule.
+  const facts = factsSummary(run, answer.version)
+  const openGaps = facts ? facts.facts.filter(fact => fact.status !== 'supported').map(fact => ({ text: fact.text.replace(/\s*&\s*/g, ' and ') })) : legacyOpenGapsAfterLead(run.question, { lead, openGaps: answer.openGaps })
   // The sources answered the question in general and never name a place or period it qualified ("… in Singapore"): say so.
   const unnamed = lead.length ? missingQualifiers(run.question, lead.flatMap(item => delivered.filter(content => item.claim.citations.some(ref => sameSource(content, ref))).map(content => `${content.title} ${content.body}`))) : []
   const added = answer.claims.filter(c => !baseline?.claims.some(b => b.text === c.text))

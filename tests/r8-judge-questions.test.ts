@@ -92,6 +92,10 @@ describe('round-8 judge questions, end to end with fixture models', () => {
     store.close(); server.closeAllConnections(); await new Promise<void>(done => server.close(() => done())); app.locals.journal.close()
   })
   const ask = async (question: string, budgetMinor = 200, requirements = fixtureRequirements(question, {}), subqueries?: string[]) => {
+    // Each question has its own wallet history; the enlarged bank must not exhaust an earlier question's daily cap.
+    store.close(); store = new Store(':memory:')
+    const client = new PublisherClient({ baseUrl: `http://127.0.0.1:${(server.address() as { port: number }).port}` })
+    loop = new RunLoop(store, client, new PurchaseManager(store, client), undefined, { provider: new FixtureDecisionProvider() })
     const run = store.createRun(question, budgetMinor)
     store.updateRun(run.runId, { checkpoint: { plan: { ...fixturePlan(question), ...(subqueries ? { subqueries } : {}) }, answers: {}, requirements: withIds(requirements) } })
     await loop.start(run.runId)
@@ -119,8 +123,10 @@ describe('round-8 judge questions, end to end with fixture models', () => {
     expect(final.phase).toBe('DONE')
     expect(final.spentMinor).toBeLessThanOrEqual(200)
   }, 60_000)
-  it('A2 buys one article per clause: the 402 response explainer, then the XRP-on-Testnet explainer, and stops', async () => {
-    expect((await ask(X402)).bought).toEqual(['product-x402-response', 'product-x402-xrpl-settlement'])
+  // P1: the 402 response explainer now also says an agent can pay a 402 in XRP on Testnet (network xrpl:1), so one article
+  // answers both clauses and the second purchase is gone.
+  it('A2 buys one article: the 402 response explainer answers both clauses, and stops', async () => {
+    expect((await ask(X402)).bought).toEqual(['product-x402-response'])
   }, 60_000)
   // H8-05: the live planner words the requested facts differently on every run; the article titled with the question
   // is admitted and preferred from the question alone, so each wording buys it first.
@@ -189,20 +195,23 @@ describe('round-8 judge questions, end to end with fixture models', () => {
   it('C3 leads with what EscrowCancel does, from the reference it bought', async () => {
     const { bought, final } = await ask(FINISH_CANCEL)
     expect(bought).toEqual(['xrpl-tx-escrowcancel'])
-    expect(final.answers.at(-1)!.lead!.map(l => l.text)).toEqual(["EscrowCancel returns expired escrowed principal to the sender after the ledger's cancellation deadline."])
+    // QUAL: the "who can submit" clause is answered in the lead too, by the reference's own sentence.
+    expect(final.answers.at(-1)!.lead!.map(l => l.text)).toEqual(["EscrowCancel returns expired escrowed principal to the sender after the ledger's cancellation deadline.", 'Any account may submit the cancellation, identifying the original Owner and OfferSequence.'])
   }, 60_000)
   it.each([
     [['The difference between EscrowFinish and EscrowCancel', 'Who can submit EscrowFinish and EscrowCancel']],
     [['How EscrowFinish and EscrowCancel differ', 'Which accounts can submit each one']],
     [['EscrowFinish vs EscrowCancel and who may submit each']],
-  ])('C3 always has a lead: a capitalised, cited sentence naming one side, whatever the planner calls the facts: %j', async texts => {
+  ])('C3 always has a lead: capitalised, cited sentences, the first naming one side, whatever the planner calls the facts: %j', async texts => {
     const { bought, final } = await ask(FINISH_CANCEL, 200, texts.map(text => ({ text })))
     expect(bought).toContain('xrpl-tx-escrowcancel')
     const lead = final.answers.at(-1)!.lead!
     expect(lead.length).toBeGreaterThan(0)
+    // QUAL: a second sentence may answer the "who can submit" clause without naming a side ("Any account may submit the
+    // cancellation…"); the first still names one.
+    expect(lead[0].text).toMatch(/Escrow(?:Finish|Cancel)/)
     for (const item of lead) {
       expect(item.text).toMatch(/^[A-Z]/)
-      expect(item.text).toMatch(/Escrow(?:Finish|Cancel)/)
       expect(final.contents.some(c => item.claim.citations.some(ref => ref.resourceId === c.resourceId) && c.body.includes(item.text))).toBe(true)
     }
   }, 60_000)
@@ -214,8 +223,30 @@ describe('round-8 judge questions, end to end with fixture models', () => {
   ])('a plural "which transactions" question buys the EscrowFinish and EscrowCancel references and stops: %s', async question => {
     expect((await ask(question)).bought).toEqual(['xrpl-tx-escrowfinish', 'xrpl-tx-escrowcancel'])
   }, 60_000)
-  it('the H10 shape still buys PermissionedDomainSet after PermissionedDomainDelete: "domain" is no family\'s name', async () => {
-    expect((await ask('Which transaction type creates or modifies a permissioned domain on the XRP Ledger?')).bought).toContain('xrpl-tx-permissioneddomainset')
+  it.each([
+    'Which transaction type creates or modifies a permissioned domain on the XRP Ledger?',
+    'Which XRPL transaction updates a permissioned domain?',
+    'What transaction configures a permissioned domain on XRPL?',
+  ])('H10 buys PermissionedDomainSet first and no Delete: %s', async question => {
+    const { bought } = await ask(question)
+    expect(bought[0]).toBe('xrpl-tx-permissioneddomainset')
+    expect(bought).not.toContain('xrpl-tx-permissioneddomaindelete')
+  }, 60_000)
+  it.each([
+    'What transactions release or return an XRPL escrow?',
+    'Which XRPL transactions release an escrow or return its funds?',
+    'Which transactions finish or cancel an XRPL escrow?',
+  ])('buys only the two releasing or returning members: %s', async question => {
+    expect((await ask(question)).bought.sort()).toEqual(['xrpl-tx-escrowcancel', 'xrpl-tx-escrowfinish'])
+  }, 60_000)
+  it.each([
+    'Can the language model in ResearchAgent spend money on its own?',
+    'Can ResearchAgent language models spend money independently?',
+    'Can the ResearchAgent language model buy articles by itself?',
+  ])('B2 fixture planner buys the decision explainer: %s', async question => {
+    const { bought, final } = await ask(question)
+    expect(bought).toEqual(['product-how-it-decides'])
+    expect(final.answers.at(-1)!.conclusion).toMatch(/policy|cannot sign/i)
   }, 60_000)
 })
 
@@ -341,6 +372,12 @@ describe('R8-A2 coverage stop: a further purchase must add part of the requested
   it('R8-A3: still lets PermissionedDomainSet follow PermissionedDomainDelete; "domain" names no glossary family', async () => {
     const gap = 'Which transaction type creates or modifies a permissioned domain on the XRP Ledger'
     expect((await verdict({ question: gap, gap, candidates: [candidate('xrpl-tx-permissioneddomainset')], verifiedPurchases: [candidate('xrpl-tx-permissioneddomaindelete')] })).reason).not.toBe(REPEATS_PURCHASES)
+  })
+  it.each([
+    ['Which XRPL transaction creates a Credential?', 'xrpl-tx-credentialcreate', 'xrpl-tx-escrowcreate'],
+    ['Which XRPL transaction creates an escrow?', 'xrpl-tx-escrowcreate', 'xrpl-tx-credentialcreate'],
+  ])('a bought create from another family does not answer %s', async (gap, wanted, bought) => {
+    expect((await verdict({ question: gap, gap, candidates: [candidate(wanted)], verifiedPurchases: [candidate(bought)] })).reason).not.toBe(REPEATS_PURCHASES)
   })
   it('a live decision provider is never affected', async () => {
     const live: DecisionProvider = { name: 'openai', model: 'gpt-6-luna', judgeRound: async () => ({ gapMaterial: 1 }), judgeCandidate: async () => ({ addressesGap: 0.9, originality: { original: 0.9, rewrite: 0.05, overlap: 0.05 }, credibility: 0.9 }) }

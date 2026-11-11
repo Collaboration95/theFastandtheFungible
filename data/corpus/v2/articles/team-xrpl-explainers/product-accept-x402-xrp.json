@@ -1,0 +1,81 @@
+{
+  "articleId": "product-accept-x402-xrp",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "How do I accept x402 payments in XRP on my own API?",
+  "publishedAt": "2026-11-11",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced guide for an API owner: the 402 challenge to send, how a signed XRP Payment is verified and settled on XRPL Testnet, and which checks stop a retry from charging twice.",
+  "tags": [
+    "x402",
+    "accept payments",
+    "API",
+    "XRP",
+    "XRPL",
+    "Testnet",
+    "facilitator"
+  ],
+  "family": "product-accept-x402-xrp",
+  "sources": [
+    {
+      "url": "https://github.com/coinbase/x402/blob/0e6e8c55d86b4f14234fb6e49a4052074fb93e57/specs/transports-v2/http.md",
+      "accessedAt": "2026-11-11"
+    },
+    {
+      "url": "https://xrpl-x402.t54.ai/docs/xrpl-scheme",
+      "accessedAt": "2026-11-11"
+    },
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/374743dda22c3c08ccd15548bd2f0099ba1f379c/docs/x402-xrpl.md",
+      "accessedAt": "2026-11-11"
+    },
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/374743dda22c3c08ccd15548bd2f0099ba1f379c/examples/x402-key-reveal-escrow/README.md",
+      "accessedAt": "2026-11-11"
+    },
+    {
+      "url": "https://xrpl.org/docs/concepts/transactions/finality-of-results",
+      "accessedAt": "2026-11-11"
+    }
+  ],
+  "body": "Your API answers an unpaid request with HTTP 402 and a PAYMENT-REQUIRED header that quotes an exact XRP amount in drops, your account as payTo and network xrpl:1 for Testnet. The client retries with PAYMENT-SIGNATURE carrying a signed Payment, and your facilitator checks the terms and submits it; your server serves the resource only after a validated tesSUCCESS. [1] [2] [3] According to the XRPL x402 scheme, native XRP amounts are quoted in integer drops. [2]\n\nThe Starter Kit's payment integration, the x402-xrpl package, implements the exact scheme for native XRP Payments, and the t54 reference documents that scheme and its verify and settle steps. ResearchAgent's writers run this flow: each writer hosts its own facilitator, quotes 1,000 drops per Singapore cent and binds article, version and passage commitment into the invoice. [2] [3] [4]\n\nCheck every retry before you serve: the payee, exact amount, network, invoice and expiry must match your quote, and a resubmitted signed transaction must return the same response instead of a second charge. Settlement is final only in a validated ledger. The tested compatibility covers native XRP exact payments; it does not establish RLUSD or escrow support with external facilitators. [3] [4] [5]\n\nAuthor interpretation: start on Testnet with valueless test XRP, keep each quote and signed transaction so a timeout never becomes a second payment, and add key-reveal escrow only if your buyers need payment bound to delivery. Testnet XRP has no real value. Sources accessed 11 November 2026. [3] [4]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "Your API answers an unpaid request with HTTP 402 and a PAYMENT-REQUIRED header that quotes an exact XRP amount in drops, your account as payTo and network xrpl:1 for Testnet. The client retries with PAYMENT-SIGNATURE carrying a signed Payment, and your facilitator checks the terms and submits it; your server serves the resource only after a validated tesSUCCESS. [1] [2] [3] According to the XRPL x402 scheme, native XRP amounts are quoted in integer drops. [2]"
+    },
+    {
+      "id": "p2",
+      "text": "The Starter Kit's payment integration, the x402-xrpl package, implements the exact scheme for native XRP Payments, and the t54 reference documents that scheme and its verify and settle steps. ResearchAgent's writers run this flow: each writer hosts its own facilitator, quotes 1,000 drops per Singapore cent and binds article, version and passage commitment into the invoice. [2] [3] [4]"
+    },
+    {
+      "id": "p3",
+      "text": "Check every retry before you serve: the payee, exact amount, network, invoice and expiry must match your quote, and a resubmitted signed transaction must return the same response instead of a second charge. Settlement is final only in a validated ledger. The tested compatibility covers native XRP exact payments; it does not establish RLUSD or escrow support with external facilitators. [3] [4] [5]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: start on Testnet with valueless test XRP, keep each quote and signed transaction so a timeout never becomes a second payment, and add key-reveal escrow only if your buyers need payment bound to delivery. Testnet XRP has no real value. Sources accessed 11 November 2026. [3] [4]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "XRP",
+      "measure": "payment"
+    },
+    "p2": {
+      "entity": "Singapore",
+      "measure": "flow"
+    },
+    "p3": {
+      "entity": "XRP",
+      "measure": "return"
+    },
+    "p4": {
+      "entity": "XRP",
+      "measure": "quote",
+      "period": "twenty twenty six"
+    }
+  }
+}

@@ -6,12 +6,17 @@ export const FACT_STATUS: Record<CoverageStatus, string> = { supported: 'Answere
 export type FactsSummary = { answered: number; total: number; facts: { id: string; text: string; status: CoverageStatus }[]; foundFree: boolean; stopReason?: StopReason; line: string; judge?: string; error?: string }
 
 /** The checklist for one answer version (the latest by default); undefined for runs without requested facts. */
-export function factsSummary(run: Pick<RunSnapshot, 'checkpoint' | 'answers' | 'spentMinor' | 'decisions'>, version = run.answers.reduce((max, a) => Math.max(max, a.version), 0)): FactsSummary | undefined {
+export function factsSummary(run: Pick<RunSnapshot, 'checkpoint' | 'answers' | 'spentMinor' | 'decisions'> & { question?: string }, version = run.answers.reduce((max, a) => Math.max(max, a.version), 0)): FactsSummary | undefined {
   const checkpoint = RunCheckpointSchema.safeParse(run.checkpoint)
   if (!checkpoint.success || !checkpoint.data.requirements?.length) return undefined
   const coverage = checkpoint.data.coverage?.find(c => c.answerVersion === version)
   if (!coverage) return undefined
-  const facts = checkpoint.data.requirements.map(r => ({ id: r.id, text: r.text, status: coverage.entries.find(e => e.requirementId === r.id)?.status ?? 'unknown' as CoverageStatus }))
+  // The stored judgment is also the trace and spending-loop judgment. Reconcile evidence in that judgment, never
+  // promote a fact only in the display: that used to show completion beside an unchanged missing-fact trace.
+  const facts = checkpoint.data.requirements.map(r => {
+    const status = coverage.entries.find(e => e.requirementId === r.id)?.status ?? 'unknown' as CoverageStatus
+    return { id: r.id, text: r.text, status }
+  })
   const answered = facts.filter(f => f.status === 'supported').length
   const followUp = checkpoint.data.followUp
   // The focused search found a fact free when its re-answer (always v2) was kept.
