@@ -44,6 +44,7 @@ export function factSupportBoundary(fact: string, passage: string): boolean {
     }
     if (/\b(?:who|submitters?|eligible accounts?|which accounts?)\b/i.test(fact) && /\bsubmit\w*\b/i.test(fact)
       && !/\b(?:anyone|any account|(?:the )?(?:owner|sender|buyer|writer|destination|subject|issuer))\b[^.!?]{0,90}\b(?:may|can|must|allowed to)\s+submit\b|\bsubmitted by\s+(?:any|the|an?)\b/i.test(passage)) return false
+    if (/\bsubmit\w*\b/i.test(fact) && answerNames('transaction', fact, '').some(name => !new RegExp(`\\b${name}\\b`).test(passage))) return false
     if (/\bvot(?:e|es|ing)\b/i.test(fact) && !sentences(passage).some(text => !answerBoilerplate(text) && /\bvot(?:e|es|ing)\b/i.test(text) && !/\b(?:neither|no|not|without)\b[^.!?]{0,80}\bvot/i.test(text))) return false
     if (/\bcredentials?\b/i.test(fact) && /\bcontains?\b/i.test(fact)
       && ![/\bissuer\b/i, /\bsubject\b/i, /\b(?:type|CredentialType)\b/i].every(pattern => pattern.test(passage))) return false

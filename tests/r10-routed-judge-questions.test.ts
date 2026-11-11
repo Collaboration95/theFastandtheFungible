@@ -100,6 +100,11 @@ it.each(['What an XRPL Credential proves', 'What XRPL Credentials attest to', 'W
 it('does not remove the empty-lead state when the delivered claims lack an answer', () => {
   expect(leadFinding(wordings.injection[0], [], [])).toEqual([])
 })
+it.each(['Who can submit EscrowCancel?', 'Which accounts may submit EscrowCancel?', 'Eligible submitters for EscrowCancel'])('a different transaction or recipient cannot establish submitter eligibility: %s', text => {
+  for (const passage of ['Any account may submit EscrowFinish. [1]', 'EscrowCancel returns principal to the owner. [1]']) {
+    expect(fixtureCoverage([{ id: 'role', text }], [{ ref: 'p1', text: passage }])).toEqual({ role: 'missing' })
+  }
+})
 it.each(['Whether RLUSD supports escrow on 1 January 2027', 'RLUSD issuer permission as of 2027', 'The TokenEscrow activation date in 2027'])('retains an unsupported date instead of borrowing an unrelated figure: %s', text => {
   expect(fixtureCoverage([{ id: 'dated', text }], [{ ref: 'p1', text: 'RLUSD requires AllowTrustLineLocking; the issuer had not enabled it on 11 November 2026.' }])).toEqual({ dated: 'missing' })
 })
