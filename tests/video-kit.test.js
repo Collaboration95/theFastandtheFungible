@@ -7,7 +7,8 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { THEMES, lineHtml, paletteColor, parseLine, plain, redactLine } from '../scripts/video/lib/ansi.mjs'
 import { clockText, fillTokens, placeSentences, planShot, resolveRef, resolveSegments, speedLabel, speechText, splitSentences, splitSubtitles, srtTime, timeCues, toSrt } from '../scripts/video/lib/timeline.mjs'
-import { QUESTIONS } from '../scripts/video/config.mjs'
+import { assertPublished, checkVideoPins } from '../scripts/video/lib/release-pins.mjs'
+import { RELEASE_TAG, TGZ, WHEEL, QUESTIONS } from '../scripts/video/config.mjs'
 import { CLAUDE_PROMPT, SCENES } from '../scripts/video/scenes.mjs'
 import { sessionEnv } from '../scripts/video/lib/terminal.mjs'
 
@@ -160,7 +161,7 @@ describe('the video stays honest', () => {
   })
   it('marks replay footage as a replay and the writer kinds as what they are', () => {
     const refund = spec.shots.find(s => s.id === 's3-refund')
-    expect(refund.label).toMatch(/^Replay of a recorded Testnet run/)
+    expect(refund.label).toMatch(/Local replay.*recorded Testnet escrow/)
     expect(refund.label).toMatch(/fictional writers/)
     const claude = spec.shots.find(s => s.id === 's4-claude')
     expect(claude.label).toMatch(/team-authored writer · real content · not an independent writer/)
@@ -175,8 +176,8 @@ describe('the video stays honest', () => {
     const words = enabled.reduce((sum, s) => sum + s.vo.split(/\s+/).length, 0)
     expect(words).toBeLessThan(360)
   })
-  it('keeps the proof-of-refusal shot on, with a decline that is clean and a script that names the recorded questions', () => {
-    expect(spec.shots.find(s => s.id === 's3b-refusal').enabled).toBe(true)
+  it('reuses the refusal voice-file ID for zero-question verification and preserves the optional safe decline', () => {
+    expect(spec.shots.find(s => s.id === 's3b-refusal').segments.every(s => s.scene === 'judges-corner')).toBe(true)
     // "outlook" and "prices" match the open central-bank records, which answer from free sources and leave no refusal to prove.
     expect(QUESTIONS.decline).not.toMatch(/\b(outlook|prices?|rates?|yields?|bonds?|bank|inflation|forecast)\b/i)
     for (const question of [QUESTIONS.buy, QUESTIONS.decline]) expect(norm(script), question).toContain(norm(question.replace(/\s+/g, ' ')))
@@ -193,5 +194,33 @@ describe('the video stays honest', () => {
       expect(Object.keys(env).filter(k => /KEY|TOKEN|SEED|SECRET|PASSWORD/i.test(k))).toEqual([])
       expect(env.REL).toBe('https://example.org')
     } finally { for (const k of Object.keys(process.env)) if (!(k in before)) delete process.env[k] }
+  })
+})
+
+
+describe('VID-3 release pins and local recording boundaries', () => {
+  it('pins the same published release list as the builders corner and rejects an unpublished tag', () => {
+    expect(RELEASE_TAG).toBe('v1.1.1')
+    expect(() => assertPublished()).not.toThrow()
+    expect(() => assertPublished('v9.9.9')).toThrow(/not a published release/)
+    for (const url of [TGZ, WHEEL]) expect(url).toContain('/v1.1.1/')
+  })
+  it.runIf(process.env.CHECK_RELEASE_URLS === '1')('checks real release and uploaded package assets through gh', async () => {
+    await checkVideoPins()
+  }, 90000)
+  it('defers every hosted-URL scene and keeps the primary hosted ask out of the partial cut', () => {
+    for (const id of ['hosted-ask', 'hosted-decline', 'ledger']) expect(SCENES.find(s => s.id === id).defer).toBe('record after redeploy')
+    expect(spec.shots.find(s => s.id === 's2-sandbox').deferred).toBe('record after redeploy')
+    expect(spec.shots.find(s => s.id === 's2-sandbox').label).toContain('live answers, rule-based buying')
+  })
+  it('keeps owner voice text and the cut in sync, including deferred shots', () => {
+    const voice = readFileSync(join(root, 'docs/submission/video/voiceover.txt'), 'utf8')
+    for (const shot of spec.shots) expect(norm(voice)).toContain(norm(shot.vo))
+  })
+  it('uses gh downloads or committed receipts, never GitHub browser/raw fetches', () => {
+    const source = readFileSync(join(root, 'scripts/video/scenes.mjs'), 'utf8')
+    expect(source).not.toMatch(/page.goto\(`\$\{REPO\}/)
+    expect(source).not.toContain('raw.githubusercontent.com')
+    expect(source).toContain('MCP result must visibly say team-authored')
   })
 })

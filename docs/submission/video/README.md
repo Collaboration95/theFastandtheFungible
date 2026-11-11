@@ -1,127 +1,96 @@
-# Demo video kit
+# Demo video kit · VID-3
 
-Everything for the required demo video except your voice. Agents recorded the footage from
-real runs, captioned it, and cut a draft with a synthetic voice so you can check timing.
-You record the voice-over (about 30 minutes) or approve a text-to-speech track; the
-decision is A4 on [#265](https://github.com/Collaboration95/theFastandtheFungible/issues/265).
-The shots and words are in the [script](../demo-video-script.md); the cut itself is
-[shots.json](shots.json).
-
-| File | What it is |
-|---|---|
-| `scratch/video/out/ResearchAgent-demo-DRAFT-synthetic-voice.mp4` | 1920×1080 H.264 draft: footage, labels, burned-in subtitles, synthetic voice |
-| `scratch/video/out/ResearchAgent-demo-NOVOICE-clean.mp4` | same picture and labels, no audio, nothing else on screen: record over this |
-| `scratch/video/out/ResearchAgent-demo-NOVOICE-cues.mp4` | same, with a timecode and each sentence at the time to say it (recording aid, not for upload) |
-| [timing.csv](timing.csv), [timing.json](timing.json) | shot and sentence times, labels, and which footage each segment uses |
-| [captions.srt](captions.srt), [voiceover.txt](voiceover.txt) | subtitles timed to the synthetic read; the plain words, one block per shot |
-
-`scratch/` is gitignored: the MP4s stay on the Mac that built them. Nothing is uploaded anywhere.
-
-## Re-record (one command)
+The cut and owner voice text follow §3 of the final pitch shot list. Nine original
+shot/voice-file IDs are retained. `s3b-refusal` now shows zero-question verification;
+`s6-try` shows writer identity. `s2-sandbox` is **record after redeploy** and excluded
+from assembly, so the available cut is explicitly PARTIAL. No synthetic voice is
+produced. No media is committed.
 
 ```sh
-make video-record                                    # every scene, about 12 minutes
-make video-record ARGS="--scenes hosted-ask"         # one scene
+make video-record
+make video-record ARGS="--list"
+make video-record ARGS="--scenes judges-corner,key-check,writer-credentials --target local"
+make video-assemble ARGS="--voice none"
 ```
 
-Needs `ffmpeg`, `tmux`, Playwright's Chromium (`npx playwright install chromium`), network,
-and for the Claude Code scene a logged-in `claude`. A pass asks the hosted demo at most
-**4 questions** (it waits while the demo is busy). If the demo is not `ready` the recorder
-starts a local `HOSTED=1` stack instead and the captions say so; `--target hosted` refuses
-to fall back, `--wait-hosted` waits for `ready`. Each clip's `scratch/video/clips/<scene>.json`
-names where its footage came from.
+Media defaults to `/Users/speedpowermac/Documents/ChatGPT/tftf-wt/video-out/vid-3/`:
+`clips/` holds MP4s, sidecars and private working transcripts; `out/` holds silent
+partial cuts and `last-build.json`. Use VIDEO_DIR for a distinct take. Sidecars
+retain actual timing marks and verification results; accelerated waits in the
+assembled cut show speed and elapsed time. All output is 1920×1080, 30 fps.
 
-| Scene | Shot | Real source |
+## Scenes and provenance
+
+| Scene | Source | State |
 |---|---|---|
-| `title-card`, `close-card` | 1, 8 | cards drawn from the README's own lockup and text |
-| `hosted-ask` | 2 | the hosted demo, one question, one Testnet purchase, "Verify on XRPL" |
-| `replay-key-reveal` | 3 | the public replay, then the EscrowFinish on the XRPL explorer |
-| `hosted-decline` | 3b | the hosted demo, a declined question and its proof of refusal |
-| `claude-mcp` | 4 | the real `claude` CLI with the real MCP server, Testnet faucet wallets |
-| `python-verify`, `ledger` | 5 | the released Python wheel; the public `/ledger/` page |
-| `try-testnet` | 6 | `npx … try --testnet` from the v1.1.0 release (re-recordable on v1.1.1 the same way) |
-| `builder-feedback` | 7 | `docs/BUILDER-FEEDBACK.md` on GitHub |
+| title-card / close-card | Local static cards, no mascot | Record locally |
+| judges-corner | Current-main local HOSTED=1, unchanged 11 Nov sandbox bundle; real public Testnet reads | No question consumed |
+| key-check | Current-main local replay, fictional writer, recorded Testnet escrow; fresh browser hashing | Requires actual match |
+| writer-credentials | X2 local HOSTED=1 harness, real Testnet identity, simulated buyer | Three operator-issued credentials; not KYC or quality |
+| replay-key-reveal | Current-main replay served on an ephemeral port | Recorded, fictional writer; writer-signed refund |
+| builder-feedback | Card from committed ledger-dry-run output, observed 11 Nov | Unsigned Testnet/Mainnet verdicts; nothing submitted |
+| claude-mcp | Published v1.1.1 tgz, real Claude Code call + Testnet | Visible label must say team-authored |
+| python-verify | Published v1.1.1 wheel, committed recorded sandbox receipts | Real read-only ledger checks |
+| try-testnet | Optional published v1.1.1 CLI | Fictional writers, fixture models, Testnet |
+| hosted-ask / hosted-decline / ledger | Actual deployed URLs | **Record after redeploy**; recorder skips them |
 
-Terminal scenes are real sessions captured screen by screen and drawn at 1080p. Output is not
-mocked or edited; the renderer only shows your home directory as `~` and hides the personal
-usage figures in Claude Code's status line. The recorder removes its test MCP server and
-work folder afterwards (Claude Code keeps a "trusted folder" entry for `~/ra-demo`).
+`--target local` is the default and the only enabled target in this lane. There
+is no automatic hosted probe or hosted question. The existing hosted ask body
+remains for the next pass; re-enable it deliberately after redeploy and capture
+all marks before removing shot deferral. Keep **live answers, rule-based buying**.
+Never relabel old footage as a new release or a deployed feature.
 
-## Re-assemble (one command)
+Writers first asks a local zero-budget question to obtain signed search metadata;
+there is no purchase. The local stack rebuilds the app and reuses the existing X2 evidence harness.
+It reads existing mode-0600 operator writer key files privately, passes them only
+to the child, and generates throwaway keys for fictional writers. It does not run
+the credential setup script, fund wallets, or create ledger objects. Models and
+buyer payments stay fixture/simulated. No engine, UI or server hook is added.
+Every listener uses ephemeral ports; never 5100, 8788 or 8790.
+
+## Release pins
+
+Video pins share `publishedReleases` in `shared/links.json` with the builders'
+corner. The regression rejects an unpublished tag. Before recording, the kit
+checks v1.1.1 and its uploaded tgz/wheel through the existing release-link helper.
+Run the live test with:
 
 ```sh
-make video-assemble          # about a minute: draft, no-voice and cues cuts, plus captions and timing
-make video-assemble ARGS="--plan"                  # print the timeline only
-make video-assemble ARGS="--only s2-sandbox"       # rebuild one shot
+CHECK_RELEASE_URLS=1 npx vitest run tests/video-kit.test.js
 ```
 
-Waits longer than a shot allows are sped up and labelled "Sped up ×N · real time shown"
-with a clock, so footage is never silently accelerated. To drop or reorder a shot, edit
-[shots.json](shots.json) (`"enabled": false`, or `--without s6-try`).
+Terminal assets are fetched using authenticated `gh release download`. Python
+receipts are copied from `public/judge/hosted-run-nov11.receipts.json`. No GitHub
+browser access, raw-URL fetch or synthetic result substitution is used.
+Current-main features postdate v1.1.1; the published tools prove compatibility,
+not inclusion of those features in the release.
 
-## Your voice
+## Owner audio
 
-1. Watch `NOVOICE-cues.mp4`, then read [voiceover.txt](voiceover.txt).
-2. Record each shot as its own file, named by shot id, in `scratch/video/voice/owner/`:
-   `s1-title.wav`, `s2-sandbox.wav`, … Start speaking at the time in `timing.csv`; a shot
-   stretches to fit a longer read. Keep Testnet and "no real value" wording as written.
-3. `make video-assemble ARGS="--voice owner"` writes `ResearchAgent-demo-OWNER-voice.mp4`
-   (add `--subs` to burn subtitles timed to the synthetic read; for upload, let YouTube
-   time your transcript instead). One continuous recording works too:
-   `--voice-file take.wav` lays it over the no-voice cut from 0:00.
-4. Check the cut against the label rules in the script, upload **unlisted**, then follow
-   "After recording" in the script.
+`voiceover.txt` and `demo-video-script.md` contain the exact owner lines, with the
+specified local-acceptance alternative for the corner. Record each shot's audio
+as `voice/owner/<shot-id>.wav` under VIDEO_DIR. `--voice owner` requires every
+selected shot's recording. `--voice-file <take.wav>` accepts a continuous owner
+track; `--voice none` uses text-only timing estimates at 150 words/minute. Recheck
+the duration with the actual voice. No `say`/TTS fallback is allowed.
 
-## State (second pass, 11 Nov)
+Before calling the cut final: re-record the hosted URL after orchestrator redeploy,
+retain true source/model/writer labels, check a real key match and actual pass/skip
+counts, and verify why-bought plus the Trace search comparison. Owner upload and
+public video links remain in pinned issue #265. No upload is performed here.
 
-The first pass (morning) predated v1.1.0 and showed the planner and model fallback notices, so
-every scene was re-recorded on **11 Nov, about 11:30–12:00 SGT**, from current `main` at v1.1.0
-(`3157fe41`). The hosted demo ran v1.1.0 with live DeepSeek planning and answers and a labelled
-fixture purchase decision (its chip reads "live answers, rule-based buying"). The cut is **2:55
-with shot 3b** and about 2:35 without it.
+## VID-3 recorded acceptance
 
-| Scene | Source of this footage |
-|---|---|
-| `hosted-ask` | the hosted demo: "What does an x402 402 Payment Required response contain?", one S$0.40 Testnet purchase, "Anchoring…" becomes "Anchored on XRPL", "Run the checks" ends on "26 passed · 2 not checked" |
-| `hosted-decline` | the hosted demo: "Which airlines ordered new narrowbody jets at the 2026 Farnborough Airshow?", "No source covers this question yet. Nothing was bought.", Publish proof page, the live proof page ("Refused to spend.") |
-| `claude-mcp` | real `claude` CLI (Claude Code 2.1.322) and the v1.1.0 MCP tgz on the same x402 question: one S$0.40 purchase, three explorer links |
-| `python-verify`, `try-testnet` | the v1.1.0 wheel (`PASS testnet 12/12`, `RESULT PASS`) and the v1.1.0 tgz (`try --testnet`, `RESULT PASS` in 63 s this run) |
-| `replay-key-reveal`, `ledger`, `builder-feedback` | the public replay and EscrowFinish on the explorer, `/ledger/` (61/61 validated), `BUILDER-FEEDBACK.md` on GitHub |
-| `title-card`, `close-card` | cards drawn from the README lockup |
+Captured from local product source `61d46489` (current main at lane start), with
+published v1.1.1 CLI artifacts. Nine clean scene clips are in video-out/vid-3/clips.
+Corner: **45 passed · 2 not checked**, zero admission/run requests. Key:
+**sha256(key) = lock ✓**, public Testnet ledger 22224890. Writers: **3** live badges,
+local zero-budget question, no purchase. Python: **46 passed, 0 failed, 2 skipped**,
+**11/11** Testnet checks and anchor ledger 22228575. MCP: actual v1.1.1 call,
+**S$0.40 / S$2.00**, team-authored label, create/finish/anchor links.
 
-- **Shot 3b is on.** "Publish proof page" works on the hosted demo again (#462). The question is
-  deliberately off the library: it shares no words with any writer or free source, so no
-  fictional-writer record is read. Words like "outlook" or "prices" match the open central-bank
-  records, get a free answer, and leave nothing to refuse. Its voice-over now says "no source
-  covered the question" (the proof page shows 0 paid articles found).
-- **x402 instead of RLUSD.** On v1.1.0 the hosted RLUSD preset bought three articles and led
-  with EscrowCreate (fixed in v1.1.1, #473); the x402 question buys one in about 20 s, and from
-  v1.1.1 it is also the first preset.
-- Recorder fixes this pass: the verify wait accepts "N passed · K not checked" (the app says
-  that when some checks were skipped), `hosted-ask` waits for the anchor line, and the terminal
-  scenes switch off npm's upgrade notice.
-- No personal data on screen: home paths show as `~`, no email, no key or seed, and Claude
-  Code's usage figures are blanked. The demo flipped to `paused` once mid-recording and one take
-  was retried; the pass asked the hosted demo 9 questions in total (several passes).
-
-**Left for you** (the voice and the upload, tracked as A4 on #265), and what to know first:
-
-1. Record the voice-over, or approve the synthetic one; upload **unlisted**; set the links.
-2. Claude Code's prose calls the source "one team-authored explainer from an unverified writer,
-   not an independent one", but the closing Labels line it prints says "Fixture models and
-   fictional writers". That line is the v1.1.0 MCP tool's own label; v1.1.1 names team-authored
-   sources instead, so a `claude-mcp` re-record on v1.1.1 (`make video-record ARGS="--scenes
-   claude-mcp"`) puts the new label on camera. The caption on the shot says team-authored, and the
-   voice-over's "labelled as ours" matches Claude's prose.
-3. The hosted card says "26 passed · 2 not checked", not "All N checks passed". The Python
-   verifier skips two checks on the same kind of export (writer credentials, which need an
-   online lookup, and historical origin, which this receipt format doesn't need), so the two
-   are most likely those; I did not open the browser card's groups to confirm. The voice-over
-   doesn't claim "all".
-4. The proof page's own chip says "fixture models", while the app chip says "live answers,
-   rule-based buying". Both are true (answers are live, buying is rule-based); the caption uses
-   the app's wording.
-5. The "writer never reveals the key" question exported a receipt that failed Verify on v1.1.0
-   (it read free sources with no writer signature); v1.1.1 drops such sources from exports
-   (#472). None of the recorded questions reads one.
-6. The voice is macOS `say` (Samantha): a placeholder for timing, not for upload.
+Terminal timing was corrected: JPEG concat inputs use a millisecond timebase,
+so marks no longer drift (78.742 s transcript → 78.733 s MP4, within one frame).
+The authenticated gh download is launched with `npx --package <local-tgz>
+researchagent-mcp`, since a local archive passed as the executable returns
+Permission denied. No product or gate threshold changed.

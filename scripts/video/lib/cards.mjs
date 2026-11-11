@@ -39,7 +39,7 @@ export function titleCardHtml({ mark }) {
     h1{font-size:112px;letter-spacing:-.035em;font-weight:650;margin:30px 0 14px}
     p.sub{font-size:38px;color:var(--muted);margin:0 0 54px;letter-spacing:-.01em}
     img{height:84px}</style>
-    <div class="wrap"><img src="${pathToFileURL(mark)}" alt=""><h1>ResearchAgent</h1><p class="sub">Research with a wallet.</p>
+    <div class="wrap"><img src="${pathToFileURL(mark)}" alt=""><h1>ResearchAgent</h1><p class="sub">Paid on delivery. Proven on the ledger.</p>
     <span class="pill"><span class="dot"></span>XRPL Testnet · no real value</span></div>`
 }
 
@@ -50,7 +50,23 @@ export function closeCardHtml({ lockup, repo }) {
     h1{font-size:60px;letter-spacing:-.03em;font-weight:620;margin:0 0 20px}
     p.lede{font-size:30px;line-height:1.45;color:var(--muted);max-width:1060px;margin:0 0 52px}
     p.url{font:500 36px 'Geist Mono',monospace;color:var(--ink);margin:0 0 40px}</style>
-    <div class="wrap"><img src="${pathToFileURL(lockup)}" alt="ResearchAgent"><h1>Research with a wallet.</h1>
+    <div class="wrap"><img src="${pathToFileURL(lockup)}" alt="ResearchAgent"><h1>Paid on delivery. Proven on the ledger.</h1>
     <p class="lede">It answers from free sources first, then pays writers for the articles it is still missing, over x402 on the XRP Ledger, inside a budget you set. A model recommends; only policy code can pay.</p>
-    <p class="url">${repo}</p><span class="pill"><span class="dot"></span>XRPL Testnet only · no real value</span></div>`
+    <p class="url" style="font-size:25px">Sandbox: ra-front-651013803640.asia-southeast1.run.app<br>Replay: collaboration95.github.io/theFastandtheFungible/demo/<br>${repo}</p><span class="pill"><span class="dot"></span>XRPL Testnet only · no real value</span></div>`
+}
+
+/** Historical RPC output, rendered from the unchanged committed probe. Never a submitted transaction. */
+export function dryRunCardHtml(evidence) {
+  if (!evidence.unsigned || evidence.submitted) throw new Error('expected unsigned, unsubmitted probe')
+  const rows = evidence.results.map(r => `<tr><td>${r.network}</td><td>RLUSD</td><td>${r.rlusd.engine_result}</td><td>${r.rlusd.ledger_index}</td></tr>`).join('')
+  const control = evidence.results.find(r => r.network === 'Testnet')?.control
+  if (!control?.engine_result || !control.ledger_index) throw new Error('Missing recorded Testnet control verdict')
+  return `<!doctype html><meta charset="utf-8"><style>${base}
+    .wrap{align-items:flex-start;text-align:left;padding:80px;box-sizing:border-box}
+    h1{font-size:52px;margin:20px 0}p,td,th{font-size:27px;line-height:1.5}table{border-collapse:collapse;width:100%}td,th{padding:18px;border-bottom:1px solid #ccc;text-align:left}code{font-family:'Geist Mono'}small{font-size:22px;color:var(--muted)}</style>
+    <div class="wrap"><span class="pill">Recorded unsigned simulate results · Testnet + Mainnet reads · nothing signed/submitted</span>
+    <h1>Ask rippled before signing.</h1><table><tr><th>Network</th><th>Token</th><th>Verdict</th><th>Ledger index</th></tr>${rows}
+    <tr><td>Testnet</td><td>TEST-SGD control</td><td>${control.engine_result}</td><td>${control.ledger_index}</td></tr></table>
+    <p>Measured signing fees: buyer 12 drops · writer 423 drops<br>Unsigned autofill: 10 / 350 drops · simulation charges nothing<br>No-show principal returns only after an EscrowCancel validates.</p>
+    <small>Observed ${evidence.observedAt} · docs/evidence/dry-run-nov12/result.json<br>TEST-SGD is a no-value stand-in · sandbox pays Testnet XRP · mainnet spending disabled</small></div>`
 }
