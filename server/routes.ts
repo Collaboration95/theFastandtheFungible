@@ -183,7 +183,11 @@ async function createConfiguredApi(options: ApiOptions = {}) {
     return task
   }
   const faultsAvailable = config.PUBLISHER_FAULTS === '1' && ['localhost', '127.0.0.1', '[::1]'].includes(new URL(publisherUrl).hostname)
-  const context: ApiContext = { work, store, client, payer, purchases, loop, reputation, labels, mcpPolicy, publisherUrl, launch, streams, sseGzip: config.HOSTED === '1' && config.HOSTED_SSE_GZIP !== '0', onStreamOpen: runId => { if (config.HOSTED === '1') { lastSnapshot.set(runId, Date.now()); if (['DONE','FAILED','STOPPED'].includes(store.getRun(runId).phase)) terminalSnapshots.add(runId) } }, onStreamEmpty: runId => { clearTimeout(snapshotTimers.get(runId)); snapshotTimers.delete(runId); lastSnapshot.delete(runId); terminalSnapshots.delete(runId) }, reportDir, reportJobs, progress }
+  const context: ApiContext = { work, store, client, payer, purchases, loop, reputation, labels, mcpPolicy, publisherUrl, launch, streams, trackWork: job => {
+    // Planning has its own capacity, but shutdown must still wait for its final durable writes.
+    const pending = job.then(() => {}, () => {})
+    jobs.add(pending); void pending.then(() => jobs.delete(pending))
+  }, sseGzip: config.HOSTED === '1' && config.HOSTED_SSE_GZIP !== '0', onStreamOpen: runId => { if (config.HOSTED === '1') { lastSnapshot.set(runId, Date.now()); if (['DONE','FAILED','STOPPED'].includes(store.getRun(runId).phase)) terminalSnapshots.add(runId) } }, onStreamEmpty: runId => { clearTimeout(snapshotTimers.get(runId)); snapshotTimers.delete(runId); lastSnapshot.delete(runId); terminalSnapshots.delete(runId) }, reportDir, reportJobs, progress }
   let readiness: HostedReadiness | undefined
   if (hosted && queue) {
     const payerWatch = new PayerWatch()

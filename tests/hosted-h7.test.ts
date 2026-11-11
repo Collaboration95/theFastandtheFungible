@@ -315,3 +315,30 @@ it('allows 15 completed plans without using a question and returns plan_limit fo
   const sixteenth = await post(url, '/api/scope', { ...person, 'Idempotency-Key': 'plan-16' }, { question, clarify: 'never' })
   expect([sixteenth.status, sixteenth.json().error]).toEqual([429, 'plan_limit'])
 })
+
+
+it('waits for a pending plan and its durable writes before closing the hosted database', async () => {
+  const dir = resources().tempDir('h7-plan-drain-'), controlPath = join(dir, 'control.json')
+  for (const [key, value] of Object.entries({ HOSTED: '1', HOSTED_ORIGIN: 'https://demo.example', HOSTED_TRUSTED_PROXY: '127.0.0.1', HOSTED_IP_HMAC_KEY: 'x'.repeat(40), HOSTED_CONTROL_PATH: controlPath, SETTLEMENT_RAIL: 'simulated', LLM_PROVIDER: 'fixture', DECISION_PROVIDER: 'fixture' })) vi.stubEnv(key, value)
+  writeFileSync(controlPath, JSON.stringify({ admissionsPaused: false, spendingPaused: false, reasonCode: 'test', expiresAt: '2026-11-19T16:00:00Z' }))
+  let finish!: () => void
+  vi.spyOn(scopePlanner, 'scope').mockImplementation(() => new Promise(resolve => {
+    finish = () => resolve({ label: 'fixture · test', questions: [], plan: { restatement: 'XRPL', subqueries: ['XRPL'] } })
+  }))
+  const api = await createApiApp({ dbPath: join(dir, 'app.db'), publisherUrl: 'http://127.0.0.1:1', hostedReadiness: async () => true })
+  const server = api.app.listen(0, '127.0.0.1'); await once(server, 'listening')
+  cleanup.push(async () => { finish?.(); server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve())); await api.close() })
+  const url = `http://127.0.0.1:${(server.address() as { port: number }).port}`
+  const person = await visitor(url, '198.51.100.72')
+  const plan = post(url, '/api/scope', { ...person, 'Idempotency-Key': 'draining-plan' }, { question: 'How does XRPL escrow work?' })
+  await vi.waitFor(() => expect(finish).toBeTypeOf('function'))
+  let closed = false
+  const closing = api.close().then(() => { closed = true })
+  expect(api.work.signal.aborted).toBe(true)
+  await new Promise<void>(resolve => setImmediate(resolve))
+  expect(closed).toBe(false)
+  finish()
+  expect((await plan).status).toBe(200)
+  await closing
+  expect(closed).toBe(true)
+})

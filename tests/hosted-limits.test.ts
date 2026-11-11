@@ -315,3 +315,19 @@ it('migrates already-started holds without resetting the question count, and lea
   expect(upgraded.reserve('judge', 'draft', 'XRPL', '203.0.113.90', 0, 'scope', {}).id).toBe(draft.id)
   expect(upgraded.remaining('judge').questions).toBe(4)
 })
+
+
+it('closes waiting plans immediately and drains the running plan before releasing its lane', async () => {
+  const lane = new HostedPlanLane({ concurrent: 1, waiting: 1, waitMs: 20000 })
+  let finish!: () => void
+  const running = lane.run(() => new Promise<void>(resolve => { finish = resolve }))
+  const queuedWork = vi.fn(async () => undefined)
+  const queued = lane.run(queuedWork)
+  const refused = expect(queued).rejects.toMatchObject({ status: 503, code: 'demo_unavailable' })
+  lane.close(); await refused
+  expect(lane.depth).toBe(1)
+  await expect(lane.run(queuedWork)).rejects.toMatchObject({ status: 503, code: 'demo_unavailable' })
+  expect(queuedWork).not.toHaveBeenCalled()
+  finish(); await running
+  expect(lane.depth).toBe(0)
+})

@@ -61,14 +61,16 @@ export const PLANNING = { concurrent: 2, waiting: 6, waitMs: 20000 } as const
  */
 export class HostedPlanLane {
   private running = 0
-  private waiting: { resolve: () => void; timer: ReturnType<typeof setTimeout> }[] = []
+  private closed = false
+  private waiting: { resolve: () => void; reject: (error: HostedError) => void; timer: ReturnType<typeof setTimeout> }[] = []
   constructor(private readonly limits: { concurrent: number; waiting: number; waitMs: number } = PLANNING) {}
   get depth() { return this.running + this.waiting.length }
   async run<T>(fn: () => Promise<T>): Promise<T> {
+    if (this.closed) throw new HostedError(503, 'demo_unavailable')
     if (this.running >= this.limits.concurrent) {
       if (this.waiting.length >= this.limits.waiting) throw new HostedError(429, 'busy')
       await new Promise<void>((resolve, reject) => {
-        const entry = { resolve, timer: setTimeout(() => { this.waiting.splice(this.waiting.indexOf(entry), 1); reject(new HostedError(429, 'busy')) }, this.limits.waitMs) }
+        const entry = { resolve, reject, timer: setTimeout(() => { this.waiting.splice(this.waiting.indexOf(entry), 1); reject(new HostedError(429, 'busy')) }, this.limits.waitMs) }
         this.waiting.push(entry)
       })
     } else this.running++
@@ -76,5 +78,9 @@ export class HostedPlanLane {
       const next = this.waiting.shift()
       if (next) { clearTimeout(next.timer); next.resolve() } else this.running--
     }
+  }
+  close() {
+    this.closed = true
+    for (const entry of this.waiting.splice(0)) { clearTimeout(entry.timer); entry.reject(new HostedError(503, 'demo_unavailable')) }
   }
 }

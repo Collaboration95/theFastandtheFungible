@@ -66,6 +66,7 @@ const questionOf = (value: unknown) => {
 export function hostedRouter(context: ApiContext, config: Config, limits: HostedLimits, queue: HostedQueue, ready: () => Promise<boolean>, initialized: () => Promise<boolean>, payerFunds: () => PayerFunds = () => 'unknown') {
   const router = Router(), { store, loop } = context
   const planning = new HostedPlanLane()
+  context.work.signal.addEventListener('abort', () => planning.close(), { once: true })
   const execute = <T>(hold: Hold, fn: () => T) => hostedExecution.run({ limits, holdId: hold.id, principal: hold.principal },fn)
   const ownHistory = (principal: string) => store.listPastRuns(Number.NaN,principal).filter(r => { const h = limits.forRun(r.runId); return h && h.created + 86400000 > limits.now() })
   const status = async (principal = ''): Promise<DemoStatus> => {
@@ -115,16 +116,20 @@ export function hostedRouter(context: ApiContext, config: Config, limits: Hosted
     // H7: planning does not wait for the one running question (it took 9 to 21 s, or answered 429 `busy`, whenever another
     // visitor's run held the demo). It is one model call that moves no money, inside this hold's model-dollar envelope; only
     // a question's start queues. A small separate lane bounds how many plans run at once.
-    limits.update(hold.id,{state:'active'})
-    try {
-      const result = await planning.run(() => {
-        requireAdmissions(config)
-        if (context.work.signal.aborted) throw new HostedError(503,'demo_unavailable')
-        return execute(hold,() => scopeWithPlanner(question,{ ...(req.body.clarify === 'never' ? {clarify:'never' as const}:{}),signal:context.work.signal }))
-      })
-      limits.update(hold.id,{scope_result:JSON.stringify(result)})
-      res.json(result)
-    } finally { limits.update(hold.id,{state:'draft'}) }
+    const job = (async () => {
+      limits.update(hold.id,{state:'active'})
+      try {
+        const result = await planning.run(() => {
+          requireAdmissions(config)
+          if (context.work.signal.aborted) throw new HostedError(503,'demo_unavailable')
+          return execute(hold,() => scopeWithPlanner(question,{ ...(req.body.clarify === 'never' ? {clarify:'never' as const}:{}),signal:context.work.signal }))
+        })
+        limits.update(hold.id,{scope_result:JSON.stringify(result)})
+        return result
+      } finally { limits.update(hold.id,{state:'draft'}) }
+    })()
+    context.trackWork?.(job)
+    res.json(await job)
   })
   router.post('/runs', async (req,res) => {
     limits.existing(res.locals.hostedSession.principal,keyOf(req.get('Idempotency-Key')),'submit',req.body)
