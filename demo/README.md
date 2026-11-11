@@ -12,3 +12,52 @@ Raw snapshots are audited as well as every staged prefix: paid bodies require a
 VERIFIED intent, delivered grant and GRANT trace; nested body fields must match
 delivered content. The historical capture SHA/date remain in each JSON. Normal
 app pace is real; only explicit replay/recording uses staged financial history.
+
+All scenario links open their recorded run: `/demo/` and `?scenario=UC3-key-reveal`
+select “Key reveal + refund (start here)” (11 Nov); `?scenario=UC-key-reveal`
+selects “Writer never reveals: money back” (7 Nov). `?scenario=UC3-testnet`
+selects “Plain payment”. Simulated recordings retain their explicit labels.
+The canonical replay label includes the recording date, fictional writers and
+“no real value”. At phone widths, expand “Replay · Testnet demo” to see the
+full label, scenario picker, Pause and installation instructions. The banner
+carries the disclosure because the shared app intentionally hides its local
+environment pill in browser-demo mode. Reduced-motion pacing is unchanged.
+
+L12 owns `site/demo/` rebuilds until its PR merges; FIN should rebuild after
+that merge when publishing. Build output is ignored and ships via site publishing.
+
+The entry indexes the six recordings by scenario, run ID and question. It downloads
+and validates only the selected recording; other recordings load when selected or
+opened from the app. There is no idle prefetch. A small loading shell shows the
+selected public question and canonical replay label while its recording loads;
+the app replaces that shell after validation and a paint of the question,
+including when the recording is cached. No recorded answer or payment
+status is shown by the loading shell. Live hash checks use only that
+recording's transaction list. When in-app navigation changes runs, the old live
+ledger sockets close and its proof panel is removed; only the newly displayed
+Testnet run starts a check. The header and app share a preloaded 20 KB subset
+of variable Geist with `font-display: swap`, avoiding a second font request.
+Replay money, hashes and commands use a 14 KB subset of the same variable
+Geist Mono. Both retain all weights, outlines and line metrics; other characters
+fall back to the app's complete fonts. The SIL OFLs are in `fonts/LICENSE-geist`
+and `fonts/LICENSE`. To reproduce them with
+FontTools and Brotli installed:
+
+```sh
+pyftsubset node_modules/@fontsource-variable/geist/files/geist-latin-wght-normal.woff2 --output-file=demo/fonts/geist-latin-wght-normal-replay.woff2 --flavor=woff2 --unicodes=U+0020-007E,U+00A0,U+00B7,U+00D7,U+2010-205F,U+2190-21FF,U+2212,U+2264-2265,U+FEFF,U+FFFD --layout-features='*' --no-recalc-timestamp
+pyftsubset node_modules/@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2 --output-file=demo/fonts/geist-mono-replay.woff2 --flavor=woff2 --unicodes=U+0020-007E,U+00A0,U+00B7,U+2026,U+FEFF,U+FFFD --layout-features='*' --no-recalc-timestamp
+```
+
+The selected trace is module-preloaded from the HTML using the entry's scenario,
+run-ID and default precedence. This downloads one trace while the entry's schema
+dependency arrives; it does not execute a second recording or bypass validation.
+The build stores repeated JSON subtrees once before gzip and encodes long uppercase
+hex as binary base64, including the selected recording's transaction proof. The decoder restores
+independent copies with exactly the original field values. Unit tests round-trip
+all six recordings and three proof lists before any runtime schema or grant checks are applied.
+
+The build emits one stylesheet and inlines it in the HTML, including the lazy
+verifier's styles. This removes a blocking CSS request and avoids a second
+dynamic CSS download. Fonts and images retain their built asset URLs. The
+question's font is ready before app takeover, keeping its glyph area stable.
+If that optional font request fails, the replay still opens using fallback fonts.

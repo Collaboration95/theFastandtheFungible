@@ -95,8 +95,9 @@ test('completed Testnet answer gets its anchor without a reload and polling stop
   await page.goto(`/?run=${run.runId}&pace=real`)
   await expect(page.getByText('Anchoring…', { exact: true }).first()).toBeVisible()
   ready = true
-  const anchor = page.getByRole('link', { name: 'Anchored on XRPL · anchor fee 12 drops (Testnet) · ledger 123' }).first()
+  const anchor = page.getByRole('link', { name: 'Anchored on XRPL · AAAAAAAA…AAAAAAAA · anchor fee 12 drops (Testnet) · ledger 123', exact: true }).first()
   await expect(anchor).toHaveAttribute('href', `https://testnet.xrpl.org/transactions/${'A'.repeat(64)}`)
+  await expect(anchor).toHaveAttribute('title', 'A'.repeat(64))
   const stoppedAt = reads
   await page.waitForTimeout(4500)
   expect(reads).toBe(stoppedAt)
@@ -117,7 +118,9 @@ test('"Anchoring… awaiting validation" keeps polling and resolves to the ancho
   await page.goto(`/?run=${run.runId}&pace=real`)
   await expect(page.getByText('Anchoring… awaiting validation', { exact: true }).first()).toBeVisible()
   await expect(page.getByText('Anchor unavailable', { exact: false })).toHaveCount(0)
-  await expect(page.getByRole('link', { name: 'Anchored on XRPL · anchor fee 12 drops (Testnet) · ledger 456' }).first()).toBeVisible({ timeout: 15_000 })
+  const anchor = page.getByRole('link', { name: 'Anchored on XRPL · AAAAAAAA…AAAAAAAA · anchor fee 12 drops (Testnet) · ledger 456', exact: true }).first()
+  await expect(anchor).toBeVisible({ timeout: 15_000 })
+  await expect(anchor).toHaveAttribute('title', 'A'.repeat(64))
 })
 
 test('an anchored no-purchase decline shows its ledger proof and the Export menu', async ({ page }) => {
@@ -129,9 +132,10 @@ test('an anchored no-purchase decline shows its ledger proof and the Export menu
   await page.route(`**/runs/${run.runId}/events`, route => route.fulfill({ contentType: 'text/event-stream', body: ': heartbeat\n\n' }))
   await page.route(`**/runs/${run.runId}`, route => route.fulfill({ json: run }))
   await page.goto(`/?run=${run.runId}&pace=real`)
-  const proof = page.getByRole('link', { name: 'Anchored on XRPL · no purchase · anchor fee 12 drops (Testnet) · ledger 22152330' })
+  const proof = page.getByRole('link', { name: 'Anchored on XRPL · BBBBBBBB…BBBBBBBB · no purchase · anchor fee 12 drops (Testnet) · ledger 22152330', exact: true })
   await expect(proof).toBeVisible()
   await expect(proof).toHaveAttribute('href', `https://testnet.xrpl.org/transactions/${'B'.repeat(64)}`)
+  await expect(proof).toHaveAttribute('title', 'B'.repeat(64))
   await expect(page.locator('.ra-export > summary')).toBeVisible()
 })
 
@@ -177,7 +181,7 @@ test('the first-visit environment note never opens over a deep-linked result', a
  await expect(page.getByRole('region', { name: 'Research answer' })).toBeVisible()
  await page.waitForTimeout(500)
  await expect(page.locator('#environment-details')).toHaveCount(0)
- await expect(page.getByRole('button', { name: /Demo · simulated payments/ })).toBeVisible() // the indicator itself stays
+ await expect(page.getByRole('button', { name: /Simulated demo · fixture models · no real value/ })).toBeVisible() // the indicator itself stays
 })
 
 test('Lane K decline explains three policy decisions', async ({page}) => {

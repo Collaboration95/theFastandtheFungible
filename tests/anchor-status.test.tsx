@@ -31,7 +31,7 @@ it('labels no purchase, fee and ledger together', () => {
  const run = abstention()
  run.ledgerAnchor = {version:'anchor-v1',network:'xrpl:1',head:'a'.repeat(64),runIdHash:'b'.repeat(64),account:'rAccount',txHash:'c'.repeat(64),ledgerIndex:123,feeDrops:'12'}
  render(<AnchorStatus run={run} />)
- expect(screen.getByText('Anchored on XRPL · no purchase · anchor fee 12 drops (Testnet) · ledger 123')).toBeTruthy()
+ expect(screen.getByRole('link', { name: 'Anchored on XRPL · CCCCCCCC…CCCCCCCC · no purchase · anchor fee 12 drops (Testnet) · ledger 123' }).getAttribute('title')).toBe('c'.repeat(64))
 })
 it('keeps a DONE run visibly unavailable after submission failure', () => {
  const run = abstention()
@@ -57,7 +57,7 @@ it('keeps polling through "Anchoring… awaiting validation" and shows the ancho
   expect(reads).toHaveLength(2) // Pending is not terminal: the second read happened.
   expect(screen.getByText('Anchoring… awaiting validation')).toBeTruthy()
   await act(async () => { await vi.advanceTimersByTimeAsync(2000) })
-  expect(screen.getByText('Anchored on XRPL · no purchase · anchor fee 12 drops (Testnet) · ledger 123')).toBeTruthy()
+  expect(screen.getByRole('link', { name: 'Anchored on XRPL · CCCCCCCC…CCCCCCCC · no purchase · anchor fee 12 drops (Testnet) · ledger 123' })).toBeTruthy()
   const stopped = reads.length
   await act(async () => { await vi.advanceTimersByTimeAsync(10_000) })
   expect(reads).toHaveLength(stopped)

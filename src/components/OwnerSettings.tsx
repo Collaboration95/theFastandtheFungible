@@ -1,3 +1,4 @@
+import { ENV, xrpAmount } from '../../shared/presentation'
 import { useEffect, useState, type ReactNode } from 'react'
 
 type Values = Record<string, string | number>
@@ -51,8 +52,8 @@ const keys = {
 const repo = 'https://github.com/Collaboration95/theFastandtheFungible'
 /** Display names only: saved values stay the stored identifiers. */
 const OPTION_LABEL: Record<string, string> = {
-  simulated: 'Simulated · no real funds',
-  'xrpl-testnet': 'XRPL Testnet · test funds, no value',
+  simulated: ENV.simulatedShort,
+  'xrpl-testnet': ENV.testnet,
   'key-reveal': 'Key-reveal escrow',
   payment: 'Direct payment',
   'TEST-SGD': 'TEST-SGD · test issued asset',
@@ -509,7 +510,7 @@ export default function OwnerSettings({
                       <td>
                         {w.balanceDrops == null
                           ? 'Unavailable'
-                          : (Number(w.balanceDrops) / 1000000).toLocaleString()}
+                          : xrpAmount(w.balanceDrops)}
                       </td>
                     </tr>
                   ))}

@@ -1,4 +1,5 @@
 /** Presentation only. Public validated RPC results, never additions to the signed receipt. */
+import { xrpAmount } from './presentation'
 type Json = Record<string, unknown>
 const obj = (v: unknown): Json => v && typeof v === 'object' && !Array.isArray(v) ? v as Json : {}
 const uint = (v: unknown): v is number => Number.isSafeInteger(v) && Number(v) >= 0
@@ -40,5 +41,5 @@ export function ledgerReceipt(create: Json, finish: Json, feesAtCreate: Json): L
   return { buyer: c.tx.Account, writer: f.tx.Account as string, amount, buyerFee: c.tx.Fee as string, writerFee: f.tx.Fee as string, createLedger: c.ledger, finishLedger: f.ledger, ledgersLater: f.ledger - c.ledger, heldSeconds: f.time - c.time, ownerReserveDrops: settings.ReserveIncrementDrops }
 }
 export function ledgerReceiptLine(r: LedgerReceipt): string {
-  return `Buyer locked ${r.amount} (fee ${r.buyerFee}, paid by the buyer) · writer revealed the key ${r.ledgersLater} ledgers later (fee ${r.writerFee}, paid by the writer) · ${(Number(r.ownerReserveDrops) / 1e6).toFixed(2)} XRP owner reserve held ${r.heldSeconds} s, then released.`
+  return `Buyer locked ${r.amount} (fee ${r.buyerFee}, paid by the buyer) · writer revealed the key ${r.ledgersLater} ledgers later (fee ${r.writerFee}, paid by the writer) · ${xrpAmount(r.ownerReserveDrops)} owner reserve held ${r.heldSeconds} s, then released.`
 }

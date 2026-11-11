@@ -1,3 +1,5 @@
+import { ENV } from '../../shared/presentation'
+import Icon from './Icon'
 import { useEffect, useState } from 'react'
 import type { ReputationRecord, ReputationSummary, RunSnapshot } from '../../shared/contracts/index.js'
 import { usePublisherCard, writerName } from './WriterChip'
@@ -33,7 +35,7 @@ function PublisherRow({ row }: { row: Row }) {
   return <tbody><tr>
     <th scope="row"><button type="button" className="ra-link" aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>{writerTitle(card?.name ?? row.name)}</button></th>
     <td>{score.T.toFixed(2)}</td><td>{record ? `${record.passes} / ${record.fails}` : '0 / 0'}</td><td className={score.status === 'delisted' ? 'ra-error-text' : undefined}>{score.status === 'active' ? 'Active' : score.status === 'delisted' ? 'Delisted' : 'Quarantined'}</td>
-  </tr>{expanded && <tr><td colSpan={4}><p>Honesty {score.H.toFixed(2)} · Coverage {score.C.toFixed(2)} · Refunds {record?.refunds ?? 0} · Refusals {record?.refusals ?? 0}</p><p>Bylines: {writers.map(slug => writerName(slug, card)).join(', ') || 'Not listed'}</p><a href={import.meta.env.MODE === 'browser-demo' ? `${import.meta.env.BASE_URL}?writers=1` : `/w/${row.slug}`} target="_blank" rel="noreferrer">Visit writer’s site ↗</a></td></tr>}</tbody>
+  </tr>{expanded && <tr><td colSpan={4}><p>Honesty {score.H.toFixed(2)} · Coverage {score.C.toFixed(2)} · Refunds {record?.refunds ?? 0} · Refusals {record?.refusals ?? 0}</p><p>Bylines: {writers.map(slug => writerName(slug, card)).join(', ') || 'Not listed'}</p><a href={import.meta.env.MODE === 'browser-demo' ? `${import.meta.env.BASE_URL}?writers=1` : `/w/${row.slug}`} target="_blank" rel="noreferrer">Visit writer’s site <Icon name="external" size={16} /></a></td></tr>}</tbody>
 }
 
 /** The trust matrix (D6), public: Beta honesty H × calibration C = trust T. "Writers" is a working name (X3). */
@@ -47,7 +49,7 @@ export default function ReputationPanel({ records, run, full, presenter = false,
     {presenter && onReset && <div className="ra-panel-h"><button type="button" className="ra-btn" onClick={onReset} title="Presenter only: wipe every reputation record">Reset reputation</button></div>}
     <p className="ra-note">Each writer carries an authorship label. Sales and trust below come from your history.</p>
     <WriterEarnings />
-    {local.length > 0 && <div><h2>Writers · local · Testnet</h2><ul>{local.map(writer => <li key={writer.slug}><a href={`${writer.origin}/w/${writer.slug}/`} target="_blank" rel="noreferrer">{writer.slug}</a> · Testnet · no real value</li>)}</ul></div>}
+    {local.length > 0 && <div><h2>Writers · local · Testnet</h2><ul>{local.map(writer => <li key={writer.slug}><a href={`${writer.origin}/w/${writer.slug}/`} target="_blank" rel="noreferrer">{writer.slug}</a> · {ENV.testnet}</li>)}</ul></div>}
     {list.length === 0 ? <p>No history yet.</p> : <div className="ra-table-scroll"><table>
       <thead><tr><th scope="col">Writer</th><th scope="col">Trust</th><th scope="col">Promise checks passed / failed</th><th scope="col">Status</th></tr></thead>
       {list.map(row => <PublisherRow key={row.slug} row={row} />)}

@@ -1,4 +1,5 @@
 import { WriterVerification } from './WriterVerification.js'
+import Icon from './Icon'
 /* eslint-disable react-refresh/only-export-components -- The publisher-card hook lives next to the chip that uses it. */
 import { useEffect, useState } from 'react'
 import { z } from 'zod'
@@ -41,7 +42,7 @@ export default function WriterChip({ candidate, reputation, variant = 'full' }: 
   const hosted = !!useHosted()
   if (variant === 'row') return trust
   // Hosted links stay on the gateway, which permits only public writer reads.
-  const link = slug ? <a href={import.meta.env.MODE === 'browser-demo' ? `${import.meta.env.BASE_URL}?writers=1` : candidate.source && !hosted ? new URL(`/w/${slug}`, candidate.source.origin).href : `/w/${slug}`} target="_blank" rel="noreferrer" className="ra-writer-n" title="Open the writer’s site in a new tab">{writer} ↗</a> : <span className="ra-writer-n">{writer}</span>
+  const link = slug ? <a href={import.meta.env.MODE === 'browser-demo' ? `${import.meta.env.BASE_URL}?writers=1` : candidate.source && !hosted ? new URL(`/w/${slug}`, candidate.source.origin).href : `/w/${slug}`} target="_blank" rel="noreferrer" className="ra-writer-n" title="Open the writer’s site in a new tab">{writer} <Icon name="external" size={16} /></a> : <span className="ra-writer-n">{writer}</span>
   const verification = <WriterVerification value={candidate.verification} />
   const authorship = ['team-builder-notes', 'team-xrpl-explainers'].includes(candidate.publisherSlug ?? '') && <span className="ra-chip" title={candidate.publisherSlug === 'team-xrpl-explainers' ? 'Team-authored explainer with cited sources. Not an independent writer.' : 'Team-authored notes with real content. Not an independent writer.'}>Team-authored</span>
   const synthetic = candidate.license.kind === 'SYNTHETIC' && <span className="ra-chip is-sim">SYNTHETIC</span>

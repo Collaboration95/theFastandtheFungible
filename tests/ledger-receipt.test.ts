@@ -6,7 +6,9 @@ describe('recorded public Testnet purchases', () => {
   it('reports the hosted B6FDBD22 / 4CCB4E56 pair exactly', () => {
     const receipt = ledgerReceipt(fixture.hostedCreate, fixture.hostedFinish, fixture.hostedFees)
     expect(receipt).toEqual({ buyer: 'rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1', writer: 'r9hkhUEsqcUBAhzp5dfVbPeX37UE6dEQ8c', amount: '40,000 drops', buyerFee: '12', writerFee: '423', createLedger: 22228565, finishLedger: 22228567, ledgersLater: 2, heldSeconds: 2, ownerReserveDrops: '200000' })
-    expect(ledgerReceiptLine(receipt)).toBe('Buyer locked 40,000 drops (fee 12, paid by the buyer) · writer revealed the key 2 ledgers later (fee 423, paid by the writer) · 0.20 XRP owner reserve held 2 s, then released.')
+    expect(ledgerReceiptLine(receipt)).toBe('Buyer locked 40,000 drops (fee 12, paid by the buyer) · writer revealed the key 2 ledgers later (fee 423, paid by the writer) · 0.2 XRP owner reserve held 2 s, then released.')
+    expect(ledgerReceiptLine({ ...receipt, ownerReserveDrops: '1' })).toContain('0.000001 XRP owner reserve')
+    expect(ledgerReceiptLine({ ...receipt, ownerReserveDrops: '9007199254740993' })).toContain('9,007,199,254.740993 XRP owner reserve')
   })
   it('reports the E36AF9F1 / 384CA34F TEST-SGD pair without calling it XRP', () => {
     expect(ledgerReceipt(fixture.tokenCreate, fixture.tokenFinish, fixture.tokenFees)).toEqual({ buyer: 'rshm7hcbFpKiYMKWzhCxmGUi8pd4Bf8Ppn', writer: 'rJDwaPFKQv45eQRxbRPpkCUZGvHMEtwPcg', amount: 'TEST-SGD 0.90 (stand-in for RLUSD, no real value)', buyerFee: '12', writerFee: '423', createLedger: 22128287, finishLedger: 22128289, ledgersLater: 2, heldSeconds: 2, ownerReserveDrops: '200000' })

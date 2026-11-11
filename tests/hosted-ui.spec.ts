@@ -58,7 +58,7 @@ test('first visit: orientation, the visitor’s own question first, one environm
   // Budget control: hosted questions hold at most S$2.00 of test funds.
   await page.locator('.ra-budget-chip').click()
   const budget = page.getByRole('dialog', { name: 'Budget' })
-  await expect(budget.getByRole('group', { name: 'Budget choices' }).getByRole('button')).toHaveText(['Free', 'S$0.5', 'S$1', 'S$2'])
+  await expect(budget.getByRole('group', { name: 'Budget choices' }).getByRole('button')).toHaveText(['Free', 'S$0.50', 'S$1.00', 'S$2.00'])
   await expect(budget.getByRole('spinbutton', { name: 'Custom budget (S$)' })).toHaveAttribute('max', '2')
   await page.keyboard.press('Escape')
   // One environment indicator; details on demand, and nothing else says SIMULATED on Home.
@@ -254,7 +254,7 @@ test('hosted writers have public pages, honest earnings and narrow reads in two 
     await expect(catalogue.getByText('Team-authored · unverified', { exact: true }).first()).toBeVisible()
     await expect(catalogue.getByText('unverified writer')).toHaveCount(0)
     await expect(catalogue).toContainText('Your retained history only')
-    await expect(catalogue.getByRole('link', { name: 'Publish your notes ↗' })).toHaveAttribute('href', /docs\/publishing.md$/)
+    await expect(catalogue.getByRole('link', { name: 'Publish your notes', exact: true })).toHaveAttribute('href', /docs\/publishing.md$/)
     await expect(catalogue).not.toContainText('real independent writers')
     expect(await v.page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     await v.page.screenshot({ path: evidencePath(`writers-nov11/writers-${index ? 390 : 1440}.png`), fullPage: true })

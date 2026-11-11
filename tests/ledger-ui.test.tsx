@@ -64,7 +64,7 @@ it('keeps the static replay tx-only, with no purchase reserve read', () => {
 it('shows the recorded purchase fees, reserve release and provenance after loading the UI', async () => {
   const fields = ledgerReceipt(ledgerFixture.hostedCreate, ledgerFixture.hostedFinish, ledgerFixture.hostedFees)
   render(<LedgerReceipt create={ledgerFixture.hostedCreate.hash} finish={ledgerFixture.hostedFinish.hash} read={async () => ({ fields, readAt: '2026-11-11T07:06:00Z' })} />)
-  expect((await screen.findByText(/Buyer locked 40,000 drops/)).textContent).toBe('Buyer locked 40,000 drops (fee 12, paid by the buyer) · writer revealed the key 2 ledgers later (fee 423, paid by the writer) · 0.20 XRP owner reserve held 2 s, then released.')
+  expect((await screen.findByText(/Buyer locked 40,000 drops/)).textContent).toBe('Buyer locked 40,000 drops (fee 12, paid by the buyer) · writer revealed the key 2 ledgers later (fee 423, paid by the writer) · 0.2 XRP owner reserve held 2 s, then released.')
   expect(screen.getByText(/XRPL Testnet.*validated ledger 22228567/).textContent).toContain('11 Nov 2026, 15:06 SGT')
   expect(screen.getByText(/Create ledger 22228565/).textContent).toContain('historical ledger facts, read-only · no real value')
 })

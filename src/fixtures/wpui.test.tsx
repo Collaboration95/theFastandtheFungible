@@ -349,7 +349,7 @@ describe('budget slider and the universal budget in Settings', () => {
   it('budget choices and custom amounts preserve five-cent budget steps', () => {
     const onChange = vi.fn()
     render(<BudgetPicker value={200} onChange={onChange} />)
-    expect(screen.getByRole('button', { name: 'S$2' }).getAttribute('aria-pressed')).toBe('true')
+    expect(screen.getByRole('button', { name: 'S$2.00' }).getAttribute('aria-pressed')).toBe('true')
     fireEvent.click(screen.getByRole('button', { name: 'Free' }))
     expect(onChange).toHaveBeenCalledWith(0)
     const custom = screen.getByRole('spinbutton', { name: 'Custom budget (S$)' }) as HTMLInputElement
@@ -416,7 +416,7 @@ describe('budget slider and the universal budget in Settings', () => {
     render(<App />)
     fireEvent.change(screen.getByLabelText('Your question'), { target: { value: 'half typed' } })
     fireEvent.click(screen.getByRole('button', { name: 'S$2.00' }))
-    fireEvent.click(screen.getByRole('button', { name: 'S$3' }))
+    fireEvent.click(screen.getByRole('button', { name: 'S$3.00' }))
     fireEvent.click(await screen.findByRole('button', { name: 'Settings' }))
     expect(screen.queryByLabelText('Your question')).toBeNull()
     fireEvent.click(await screen.findByRole('button', { name: /^Back/ }))
@@ -432,14 +432,14 @@ describe('budget slider and the universal budget in Settings', () => {
 
   it('keeps the environment on the header, and Escape closes its details', () => {
     render(<EnvIndicator labels={exampleRun.labels} recording />)
-    const dot = screen.getByRole('button', { name: /Demo · simulated payments/ })
+    const dot = screen.getByRole('button', { name: /Simulated demo · fixture models · no real value/ })
     fireEvent.click(dot)
-    expect(screen.getByRole('region', { name: "What’s real here" }).textContent).toContain('fictional demo writers and labelled team-authored notes')
+    expect(screen.getByRole('region', { name: "What’s real here" }).textContent).toContain('fictional writers and labelled team-authored notes')
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(dot.getAttribute('aria-expanded')).toBe('false')
   })
   it('names the Testnet environment', () => {
     render(<EnvIndicator labels={{ ...exampleRun.labels, settlement: 'XRPL TESTNET · no real value' }} recording />)
-    expect(screen.getByRole('button', { name: /Testnet · test funds/ })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /Testnet demo · no real value/ })).toBeTruthy()
   })
 })

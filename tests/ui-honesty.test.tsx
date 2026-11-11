@@ -59,7 +59,7 @@ describe('anchored abstention', () => {
   const view = (run: ReturnType<typeof abstention>) => renderToStaticMarkup(<Answer run={run} view="latest" onView={() => {}} compare={false} onCompare={() => {}} report={<ReportButton run={run} onReport={() => {}} />} />)
   it('a no-purchase Testnet run shows its ledger proof and the Export menu', () => {
     const html = view(abstention(XRPL_LABEL, true))
-    expect(decoded(html)).toContain('Anchored on XRPL · no purchase · anchor fee 12 drops (Testnet) · ledger 22152330')
+    expect(decoded(html)).toContain('Anchored on XRPL · CCCCCCCC…CCCCCCCC · no purchase · anchor fee 12 drops (Testnet) · ledger 22152330')
     expect(html).toContain(`href="https://testnet.xrpl.org/transactions/${'C'.repeat(64)}"`)
     expect(decoded(html)).toContain('Export')
     expect(decoded(html)).toContain('Download receipts.json')

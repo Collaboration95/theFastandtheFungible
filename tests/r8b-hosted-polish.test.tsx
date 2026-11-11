@@ -71,8 +71,9 @@ describe('Writers page order', () => {
     vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({ scope: 'Your retained history only.', writers: list }) })))
     const { container } = render(<HostedContext.Provider value={hosted()}><WriterEarnings /></HostedContext.Provider>)
     await waitFor(() => expect(container.querySelector('.ra-writer-card')).toBeTruthy())
-    const titles = [...container.querySelectorAll('.ra-writer-earnings > .ra-writer-grid > .ra-writer-card h2')].map(node => node.textContent)
-    expect(titles).toEqual(['ResearchAgent builders ↗', 'ResearchAgent builders ↗', 'indie ↗'])
+    const titles = [...container.querySelectorAll('.ra-writer-earnings > .ra-writer-grid > .ra-writer-card h2')].map(node => node.textContent?.trim())
+    expect(titles).toEqual(['ResearchAgent builders', 'ResearchAgent builders', 'indie'])
+    expect(container.querySelectorAll('.ra-writer-earnings > .ra-writer-grid > .ra-writer-card h2 svg[aria-hidden="true"]')).toHaveLength(3)
     expect([...container.querySelectorAll('.ra-writer-earnings > .ra-writer-grid > .ra-writer-card .ra-writer-by')].map(node => node.textContent)).toEqual(['XRPL explainers', 'Build notes'])
     const demo = container.querySelector('details.ra-writer-demo')!
     expect(demo.hasAttribute('open')).toBe(false)

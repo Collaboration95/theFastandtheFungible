@@ -1,25 +1,55 @@
-/* Replay chrome shares the app tokens: one row that says what this is, its ledger check, the scenario picker and the ways out. */
-.demo-banner { position: relative; z-index: var(--z-header); display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 8px 20px; background: var(--paper); border-bottom: 1px solid var(--rule); color: var(--muted); font: 400 13px/1.5 var(--f-ui); }
-.demo-banner > span { color: var(--ink); font-weight: 600; white-space: nowrap; }
+/* Replay-only chrome: the site mark and workspace controls share the first row. */
+@font-face { font-family: 'Replay Geist Variable'; font-style: normal; font-weight: 100 900; font-display: swap; src: url('./fonts/geist-latin-wght-normal-replay.woff2') format('woff2'); unicode-range: U+0020-007E,U+00A0,U+00B7,U+00D7,U+2010-205F,U+2190-21FF,U+2212,U+2264-2265,U+FEFF,U+FFFD; }
+/* Preserve Geist Mono's variable weights; the full app font covers other scripts on demand. */
+@font-face { font-family: 'Replay Geist Mono'; font-style: normal; font-weight: 100 900; font-display: swap; src: url('./fonts/geist-mono-replay.woff2') format('woff2'); unicode-range: U+0020-007E,U+00A0,U+00B7,U+2026,U+FEFF,U+FFFD; }
+html:root { --f-ui: 'Replay Geist Variable', 'Geist Variable', system-ui, sans-serif; --f-mono: 'Replay Geist Mono', 'Geist Mono Variable', monospace; }
+.demo-skip { position: absolute; top: 8px; left: 16px; z-index: 100; padding: 12px; background: var(--paper); color: var(--ink); transform: translateY(-200%); }
+.demo-skip:focus { transform: none; }
+/* Reuse the app's preloaded, swap-enabled font; keep FIN's generated header intact. */
+html body, body .ra-hdr, body .ra-hdr-note, body .ra-hdr-note kbd { font-family: var(--f-ui); }
+body .ra-hdr nav { display: none; }
+body .ra-hdr-end { margin-left: auto; }
+#root .ra-top { z-index: 51; position: absolute; top: 0; right: 200px; height: 52px; min-height: 52px; padding: 0; border: 0; background: transparent; }
+#root .ra-top .ra-brand, #root .ra-top .ra-caption { display: none; }
+.demo-banner { position: relative; z-index: var(--z-header); background: var(--paper); border-bottom: 1px solid var(--rule); color: var(--muted); font: 400 12px/1.5 var(--f-ui); }
+.demo-shell { padding: 0 16px; min-height: 47px; display: flex; align-items: center; gap: 12px; }
+.demo-shell > summary { color: var(--ink); font-weight: 500; list-style: none; cursor: pointer; }
+.demo-shell > summary::-webkit-details-marker { display: none; }
+.demo-shell > summary::marker { content: ""; }
+.demo-short, .demo-mobile-label { display: none; }
+.demo-options, .demo-controls { display: flex; align-items: center; gap: 8px; }
+.demo-options { margin-left: auto; }
 .demo-banner a { color: var(--ink); }
-.demo-banner summary { cursor: pointer; white-space: nowrap; }
-.demo-controls { display: flex; align-items: center; gap: 8px; margin-left: auto; }
-.demo-banner select { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); padding: 4px 28px 4px 10px; min-height: 32px; }
-.demo-banner button { font: inherit; color: var(--ink); border: 1px solid var(--rule-strong); background: var(--surface); border-radius: var(--radius-sm); padding: 4px 12px; min-height: 32px; }
-.demo-banner .demo-ask { font-weight: 600; white-space: nowrap; }
-.demo-banner > details:not(.demo-transactions) > div { position: absolute; right: 12px; top: 100%; max-width: min(440px,calc(100vw - 24px)); padding: 20px; background: var(--paper); border: 1px solid var(--rule); border-radius: var(--radius-md); box-shadow: var(--shadow-pop); }
+.demo-banner summary { cursor: pointer; }
+.demo-banner select, .demo-banner button { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); padding: 4px 8px; min-height: 32px; max-width: 270px; }
+.demo-banner .demo-ask { white-space: nowrap; }
+.demo-install { white-space: nowrap; }
+.demo-install > div, .demo-tx-list { white-space: normal; position: absolute; right: 12px; top: 100%; width: min(600px,calc(100vw - 24px)); padding: 16px; background: var(--paper); border: 1px solid var(--rule); border-radius: var(--radius-md); box-shadow: var(--shadow-pop); }
 .demo-banner pre { margin: 0 0 12px; white-space: pre-wrap; overflow-wrap: anywhere; font: 12px/1.5 var(--f-mono); color: var(--ink); }
-.demo-transactions summary { display: block; overflow: hidden; text-overflow: ellipsis; }
-.demo-tx-list { position: absolute; left: 12px; right: 12px; top: 100%; max-width: 760px; padding: 12px 20px; background: var(--paper); border: 1px solid var(--rule); border-radius: var(--radius-md); box-shadow: var(--shadow-pop); overflow-wrap: anywhere; }
-.demo-transactions p { margin: 6px 0; }
+.demo-transactions { max-width: 160px; }
+.demo-transactions summary { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.demo-transactions p { margin: 6px 0; overflow-wrap: anywhere; }
 .demo-transactions a { color: var(--ok); }
 .ra-table-scroll { max-width: 100%; overflow-x: auto; }
+@media (max-width: 1100px) and (min-width: 781px) {
+  .demo-transactions { display: none; }
+  .demo-shell > summary { max-width: 50%; }
+}
 @media (max-width: 780px) {
-  .demo-banner { padding: 8px 16px; gap: 4px 12px; }
-  .demo-banner > span { flex: 1 1 100%; white-space: normal; }
-  .demo-controls { margin-left: 0; flex: 1 1 100%; }
+  #root .ra-top { right: 180px; left: 44px; justify-content: flex-end; }
+  #root .ra-top .ra-prov { margin-left: 0; }
+  .demo-shell { display: block; padding: 0 16px; }
+  .demo-shell > summary { display: flex; align-items: center; min-height: 47px; gap: 8px; }
+  .demo-shell > summary::before { order: 1; margin: 0 0 0 2px; }
+  .demo-shell > summary > .demo-label { display: none; }
+  .demo-short { display: inline; }
+  .demo-options { position: absolute; top: 100%; left: 12px; right: 12px; display: flex; flex-direction: column; align-items: stretch; padding: 16px; background: var(--paper); border: 1px solid var(--rule); border-radius: var(--radius-md); box-shadow: var(--shadow-pop); }
+  .demo-shell:not([open]) .demo-options { display: none; }
+  .demo-mobile-label { display: block; margin: 0; color: var(--ink); }
+  .demo-controls { min-width: 0; }
   .demo-banner select { flex: 1; min-width: 0; }
-  .demo-banner a, .demo-banner button, .demo-banner summary { min-height: 44px; display: inline-flex; align-items: center; }
-  .demo-banner select { min-height: 44px; }
-  .demo-transactions summary { display: block; white-space: normal; line-height: 44px; }
+  .demo-banner select, .demo-banner button, .demo-install > summary { min-height: 44px; }
+  .demo-install > summary { display: flex; align-items: center; }
+  .demo-install > div, .demo-tx-list { position: static; width: auto; padding: 8px 0; border: 0; box-shadow: none; }
+  .demo-transactions { max-width: 100%; }
 }

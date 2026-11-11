@@ -1,11 +1,42 @@
 import { XRPL_LABEL, type PurchaseIntent, type Receipt, type PublicCandidate, type RunSnapshot } from './contracts/index.js'
 import { RLUSD_TESTNET_ISSUER, type Asset } from './contracts/asset.js'
+import { buyingLabels } from './execution-labels.js'
 
 export const settlementAssetLabel = (asset?: Asset) => !asset || asset === 'XRP' ? 'XRPL Testnet' : asset.issuer === RLUSD_TESTNET_ISSUER ? 'RLUSD (Testnet)' : asset.label
 
 export const money = (minor: number) => `S$${(minor / 100).toFixed(2)}`
-export const ENV = { testnet: 'Testnet · test funds', simulated: 'Demo · simulated payments' } as const
-export const environmentLabel = (settlement?: string) => settlement?.startsWith('XRPL') ? ENV.testnet : ENV.simulated
+export const ENV = {
+  testnet: 'XRPL Testnet demo · no real value',
+  testnetShort: 'Testnet demo · no real value',
+  simulated: 'Simulated demo · fixture models · no real value',
+  simulatedShort: 'Simulated · no real value',
+  simulatedReceipt: 'Simulated payment · no ledger entry',
+  hosted: 'Shared XRPL Testnet demo · live answers, rule-based buying · no real value',
+  hostedSimulated: 'Shared demo · simulated payments · fixture models · no real value',
+  // A status chip describes configuration; answer provenance belongs to the recorded run.
+  hostedConfigured: (testnet: boolean, buying: keyof typeof buyingLabels) => `Shared ${testnet ? 'XRPL Testnet demo' : 'demo · simulated payments'} · ${buyingLabels[buying]} · no real value`,
+  writers: 'fictional writers and labelled team-authored notes',
+  hostedWriters: 'team-authored writers',
+  localSimulated: (models: string) => `Simulated demo · ${models} · no real value`,
+  localTestnet: (models: string) => `XRPL Testnet demo · ${models} · no real value`,
+  replay: (date: string, testnet = true) => `Replay · ${testnet ? 'XRPL Testnet' : 'simulated payments'}, recorded ${date} · fictional writers · no real value`,
+  replayShort: (testnet = true) => testnet ? 'Replay · Testnet demo' : 'Replay · Simulated demo',
+} as const
+export const environmentLabel = (settlement?: string, models = 'fixture models') => settlement?.startsWith('XRPL') ? ENV.localTestnet(models) : ENV.localSimulated(models)
+/** Human labels retain both providers' real mode without their internal model identifiers. */
+export const modelsLabel = (research?: string, decision?: string) => !research || !decision ? 'models connecting' : research.startsWith('fixture') ? decision.startsWith('fixture') ? 'fixture models' : 'fixture answers, live buying' : decision.startsWith('fixture') ? 'live answers, rule-based buying' : 'live models'
+export const dropsAmount = (drops: string) => BigInt(drops).toLocaleString('en-SG')
+/** XRP amounts follow the explorer; fees remain in drops. */
+export const xrpAmount = (drops: string | null) => {
+  if (drops === null) return '—'
+  const value = BigInt(drops), absolute = value < 0n ? -value : value
+  const fraction = (absolute % 1_000_000n).toString().padStart(6, '0').replace(/0+$/, '')
+  return `${value < 0n ? '-' : ''}${(absolute / 1_000_000n).toLocaleString('en-SG')}${fraction ? `.${fraction}` : ''} XRP`
+}
+/** Transaction and invoice fingerprints, never account addresses. */
+export const shortTx = (hash: string) => hash.length > 16 ? `${hash.slice(0, 8)}…${hash.slice(-8)}`.toUpperCase() : hash.toUpperCase()
+export const dateSGT = (iso: string) => new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Singapore' }).format(new Date(iso))
+export const whenSGT = (iso: string) => `${dateSGT(iso)}, ${new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: 'Asia/Singapore' }).format(new Date(iso))} SGT`
 export const assetMoney = (minor: number, asset?: Asset) => asset && asset !== 'XRP' && asset.currency === 'SGT' ? `TEST-SGD ${(minor / 100).toFixed(2)} · stand-in for RLUSD · no real value` : money(minor)
 export type PaymentPhase = 'quoted' | 'approved by policy' | 'submitted' | 'validated' | 'delivered' | 'verified' | 'challenged' | 'refunded' | 'failed' | 'skipped'
 const PAYMENT: Record<PurchaseIntent['status'], PaymentPhase> = { DECIDED: 'approved by policy', QUOTED: 'quoted', RESERVED: 'approved by policy', SUBMITTING: 'submitted', SETTLED: 'validated', DELIVERY_PENDING: 'delivered', VERIFIED: 'verified', CLAIM_FAILED: 'challenged', CHALLENGED: 'challenged', REFUNDED: 'refunded', CHALLENGE_REJECTED: 'challenged', CHALLENGE_REFUSED: 'challenged', DELIVERY_FAILED: 'failed', FAILED_NOT_SETTLED: 'failed', SKIPPED: 'skipped' }

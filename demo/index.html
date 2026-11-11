@@ -1,4 +1,4 @@
-<!doctype html><html lang="en-SG"><head><meta charset="UTF-8"><meta name="color-scheme" content="light"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Replay · 11 Nov 2026 · ResearchAgent</title><style>.demo-transactions summary { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }</style><!-- site-meta:start -->
+<!doctype html><html lang="en-SG"><head><meta charset="UTF-8"><link rel="preload" as="font" type="font/woff2" crossorigin href="./fonts/geist-latin-wght-normal-replay.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="./fonts/geist-mono-replay.woff2"><meta name="color-scheme" content="light"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Replay · 11 Nov 2026 · ResearchAgent</title><style>.demo-transactions summary { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }</style><!-- site-meta:start -->
 <meta name="description" content="Replay of a recorded key-reveal run on XRPL Testnet, 11 Nov 2026. No real value; fixture models and fictional demo writers.">
 <link rel="icon" href="../brand/favicon.svg">
 <meta property="og:type" content="website">
@@ -15,6 +15,7 @@
 <meta name="twitter:image" content="https://collaboration95.github.io/theFastandtheFungible/brand/og/demo.png">
 <!-- site-meta:end -->
 </head><body>
+<a class="demo-skip" href="#main">Skip to recorded run</a>
 <!-- site-header:start -->
 <style>.ra-hdr{box-sizing:border-box;height:52px;position:sticky;top:0;z-index:50;background:rgba(251,248,242,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid #E8E2D8;font:500 14px/1 "Geist Variable",system-ui,-apple-system,"Segoe UI",sans-serif;color:#24211E}
 .ra-hdr *{box-sizing:border-box}
@@ -48,8 +49,8 @@
 <div class="ra-hdr-end"><a class="ra-live" href="https://ra-front-651013803640.asia-southeast1.run.app">Try it live</a><a class="ra-hdr-gh" href="https://github.com/Collaboration95/theFastandtheFungible">GitHub</a><details class="ra-hdr-menu"><summary>Menu</summary><div><a href="../demo/" aria-current="page">Replay</a><a href="../talk/#key-reveal">How it works</a><a href="../proof/">Proof</a><a href="../progress/">Progress</a><a href="../developers/">Developers</a><a href="../builder-feedback/">Builder feedback</a><a href="https://github.com/Collaboration95/theFastandtheFungible">GitHub</a></div></details></div>
 </div></div>
 <!-- site-header:end -->
-<section class="demo-banner" aria-label="Recorded walkthrough"><span>Replay · recorded on XRPL Testnet</span><details><summary>Run it yourself</summary><div><p>Your own question on real Testnet, no clone. Release · not yet on npm/PyPI/MCP Registry.</p><pre>npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz app --testnet
+<section class="demo-banner" aria-label="Recorded walkthrough"><details class="demo-shell" open><summary><span class="demo-label"></span><span class="demo-short">Replay · Testnet demo</span></summary><div class="demo-options"><p class="demo-label demo-mobile-label"></p><details class="demo-install"><summary>Run it yourself</summary><div><p>Your own question on real Testnet, no clone. Release · not yet on npm/PyPI/MCP Registry.</p><pre>npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz app --testnet
 claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz --testnet
 pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-1.1.1-py3-none-any.whl
-python -m researchagent verify answer.json --ledger</pre><a href="https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.1.1">Release · Mac downloads</a></div></details></section>
+python -m researchagent verify answer.json --ledger</pre><a href="https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.1.1">Release · Mac downloads</a></div></details></div></details></section>
 <div id="root"></div><script>const replayPrefix = document.title.replace(/ResearchAgent$/, ''); const replayTitle = document.querySelector('title'); new MutationObserver(() => { if (!document.title.startsWith(replayPrefix)) document.title = replayPrefix + document.title; }).observe(replayTitle, { childList: true });</script><script type="module" src="./main.ts"></script></body></html>
