@@ -101,7 +101,7 @@ describe('fact menu (#260)', () => {
         expect(delivery.ok).toBe(article.publisherSlug !== 'alphaleak' || article.articleId !== 'alphaleak-kestrel-penang-lead-times')
         expect(proofPasses(article)).toBe(delivery.ok)
       }
-      expect(paid).toBe(255)
+      expect(paid).toBe(257)
       expect(claims).toBeGreaterThan(100)
     } finally { journal.close() }
   })

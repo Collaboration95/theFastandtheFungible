@@ -42,6 +42,9 @@ function answerExtracts(text: string): string[] {
 
 /** The first thing the user asked for: the first requirement, else the first sub-question. */
 const firstFactOf = (question: string, firstRequirement?: string) => {
+  // A contents question keeps the user's first clause when the planner phrases it as a yes/no fact.
+  const firstClause = clausesOf(question)[0] ?? question
+  if (/^(?:which|what)\b.*\b(?:contain|include|carr(?:y|ies))s?\b/i.test(firstClause)) return firstClause
   // A generated entity-basics row is coverage bookkeeping, not a requested fact.
   const requested = firstRequirement && !/^Basic facts on\b/i.test(firstRequirement) ? firstRequirement : undefined
   return (requested ?? question.split(/[,;?]\s*(?:and\s+)?(?=what|which|how|when|why)/i)[0]).replace(/^.*?[.!]\s+(?=(?:what|which|how|when|why|is|can)\b)/i, '')

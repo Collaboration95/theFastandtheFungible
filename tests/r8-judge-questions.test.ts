@@ -92,6 +92,10 @@ describe('round-8 judge questions, end to end with fixture models', () => {
     store.close(); server.closeAllConnections(); await new Promise<void>(done => server.close(() => done())); app.locals.journal.close()
   })
   const ask = async (question: string, budgetMinor = 200, requirements = fixtureRequirements(question, {}), subqueries?: string[]) => {
+    // Each question has its own wallet history; the enlarged bank must not exhaust an earlier question's daily cap.
+    store.close(); store = new Store(':memory:')
+    const client = new PublisherClient({ baseUrl: `http://127.0.0.1:${(server.address() as { port: number }).port}` })
+    loop = new RunLoop(store, client, new PurchaseManager(store, client), undefined, { provider: new FixtureDecisionProvider() })
     const run = store.createRun(question, budgetMinor)
     store.updateRun(run.runId, { checkpoint: { plan: { ...fixturePlan(question), ...(subqueries ? { subqueries } : {}) }, answers: {}, requirements: withIds(requirements) } })
     await loop.start(run.runId)
@@ -219,8 +223,30 @@ describe('round-8 judge questions, end to end with fixture models', () => {
   ])('a plural "which transactions" question buys the EscrowFinish and EscrowCancel references and stops: %s', async question => {
     expect((await ask(question)).bought).toEqual(['xrpl-tx-escrowfinish', 'xrpl-tx-escrowcancel'])
   }, 60_000)
-  it('the H10 shape still buys PermissionedDomainSet after PermissionedDomainDelete: "domain" is no family\'s name', async () => {
-    expect((await ask('Which transaction type creates or modifies a permissioned domain on the XRP Ledger?')).bought).toContain('xrpl-tx-permissioneddomainset')
+  it.each([
+    'Which transaction type creates or modifies a permissioned domain on the XRP Ledger?',
+    'Which XRPL transaction updates a permissioned domain?',
+    'What transaction configures a permissioned domain on XRPL?',
+  ])('H10 buys PermissionedDomainSet first and no Delete: %s', async question => {
+    const { bought } = await ask(question)
+    expect(bought[0]).toBe('xrpl-tx-permissioneddomainset')
+    expect(bought).not.toContain('xrpl-tx-permissioneddomaindelete')
+  }, 60_000)
+  it.each([
+    'What transactions release or return an XRPL escrow?',
+    'Which XRPL transactions release an escrow or return its funds?',
+    'Which transactions finish or cancel an XRPL escrow?',
+  ])('buys only the two releasing or returning members: %s', async question => {
+    expect((await ask(question)).bought.sort()).toEqual(['xrpl-tx-escrowcancel', 'xrpl-tx-escrowfinish'])
+  }, 60_000)
+  it.each([
+    'Can the language model in ResearchAgent spend money on its own?',
+    'Can ResearchAgent language models spend money independently?',
+    'Can the ResearchAgent language model buy articles by itself?',
+  ])('B2 fixture planner buys the decision explainer: %s', async question => {
+    const { bought, final } = await ask(question)
+    expect(bought).toEqual(['product-how-it-decides'])
+    expect(final.answers.at(-1)!.conclusion).toMatch(/policy|cannot sign/i)
   }, 60_000)
 })
 
