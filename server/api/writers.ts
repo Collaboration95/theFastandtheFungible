@@ -3,6 +3,7 @@ import { Router } from 'express'
 import { loadWriterCorpus } from '../../publisher/corpus.js'
 import { confirmedSale, demoSalesByArticle } from '../hosted/writers.js'
 import type { ApiContext } from './context.js'
+import { TEAM_AUTHORED_PUBLISHERS } from '../../shared/writer-authorship.js'
 export function writersRouter(context: ApiContext, hosted: boolean) {
   const router = Router()
   let identities: { at: number; value: ReturnType<ApiContext['client']['writerCatalogue']> } | undefined
@@ -29,9 +30,9 @@ export function writersRouter(context: ApiContext, hosted: boolean) {
       const trust = snapshots.flatMap(r => r.events.filter(e => e.type === 'REPUTATION' && e.data?.publisherSlug === writer.publisherSlug).map(e => ({ at: e.at, value: (e.data?.after as { T?: number } | undefined)?.T }))).filter((p): p is { at: string; value: number } => typeof p.value === 'number' && Number.isFinite(p.value)).sort((a,b) => a.at.localeCompare(b.at)).slice(-100)
       // `publisher` is the publication every receipt, source and proof names; `name` is the byline.
       return { slug: writer.slug, publisherSlug: writer.publisherSlug, name: writer.name, publisher: publisher.name,
-        authorship: publisher.authorship === 'team-authored' ? 'Team-authored' : publisher.synthetic ? 'Fictional writer' : 'Author-supplied · unverified',
+        authorship: TEAM_AUTHORED_PUBLISHERS.has(publisher.slug) ? 'Team-authored' : publisher.synthetic ? 'Fictional writer' : 'Author-supplied · unverified',
         synthetic: publisher.synthetic,
-        verification: publisher.authorship === 'team-authored' ? served?.find(p => p.slug === writer.publisherSlug)?.verification ?? { status: 'check_failed' } : { status: 'unverified' },
+        verification: TEAM_AUTHORED_PUBLISHERS.has(publisher.slug) ? served?.find(p => p.slug === writer.publisherSlug)?.verification ?? { status: 'check_failed' } : { status: 'unverified' },
         articleCount: articles.length, priceRange: articles.length ? [Math.min(...articles.map(a => a.priceMinor)), Math.max(...articles.map(a => a.priceMinor))] : undefined,
         articles: articles.slice(0,100).map(a => ({ id: a.articleId, title: a.title, priceMinor: a.priceMinor, tier: a.tier })),
         sales: sales.map(i => ({ finishHash: i.escrow!.finishHash, refunded: !!i.refund, refundHash: i.refund?.txHash })),

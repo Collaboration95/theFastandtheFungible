@@ -1,4 +1,5 @@
 import { loadConfig } from '../server/config.js'
+import { TEAM_AUTHORED_PUBLISHERS } from '../shared/writer-authorship.js'
 import { requestBodyStatus } from '../server/body-limit.js'
 import { errorEnvelope } from '../shared/contracts/errors.js'
 import { AssetSchema, RLUSD_CURRENCY, RLUSD_TESTNET_ISSUER, amountFor, type Asset } from '../shared/contracts/asset.js'
@@ -201,7 +202,7 @@ export function createPublisherApp(config: PublisherConfig = {}) {
   app.get('/registry', (_req, res) => {
     res.json({ publishers: [...registry.values()].map(({ publisher }) => ({
       slug: publisher.slug, name: publisher.name, kind: publisher.kind, domain: publisher.domain, wallet: publisher.wallet,
-      synthetic: publisher.synthetic, authorship: publisher.authorship, verification: publisher.verification, endpoints: endpointsFor(publisher.slug),
+      synthetic: publisher.synthetic, authorship: TEAM_AUTHORED_PUBLISHERS.has(publisher.slug) ? 'team-authored' : undefined, verification: publisher.verification, endpoints: endpointsFor(publisher.slug),
     })) })
   })
   app.get('/w/:slug/.well-known/agent-publisher.json', (req, res) => {
