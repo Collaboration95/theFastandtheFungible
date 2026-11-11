@@ -41,6 +41,7 @@ Finals release: everything since v1.0.2 (8 Nov), judge-facing changes first. XRP
 
 - Verifier output says "Skipped" in plain words instead of `SKIP`, and the skipped checks explain themselves ("the writer's identity is self-declared; checking it needs an online lookup"). JSON output keeps the `SKIP` status.
 - MCP and SDK answers no longer carry raw `[1] [2]` markers in claim text; citations stay in their bindings.
+- In the Mac app, Export no longer offers "Copy link": the run's `app://` address opens nowhere but that computer. Proof pages keep their own share controls.
 - The README hero and deck slide 10 show a live hosted XRPL run instead of the fictional first-person Kestrel recording; slide 7 shows v1.1.0 verifying a hosted export.
 - Dev loop: shipping and release admission run locally on exact artifacts (#433); developer entry paths repaired (#426); the repo front page has 42 entries instead of 52 (#449).
 

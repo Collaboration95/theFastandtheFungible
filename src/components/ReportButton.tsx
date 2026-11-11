@@ -4,6 +4,7 @@ import type { RunSnapshot } from '../../shared/contracts/index.js'
 import { getValidatedAnswer } from './Answer'
 import { saveReceipts } from '../download'
 import { useHosted } from '../hosted'
+import { shareableRunLink } from '../share-link'
 import { version } from '../../package.json'
 // The verifier pinned to this build's release: older verifiers cannot recompute newer answer commitments (H8-02).
 const WHEEL = `https://github.com/Collaboration95/theFastandtheFungible/releases/download/v${version}/researchagent-${version.replace(/-rc\.(\d+)$/, 'rc$1')}-py3-none-any.whl`
@@ -15,6 +16,7 @@ export default function ReportButton({ run, onReport, busy = false, onCompare }:
   const [copied, setCopied] = useState(false)
   // Hosted: no PDF generation, and a run link opens only in this visitor's browser, so neither is offered.
   const hosted = !!useHosted()
+  const link = typeof window === 'undefined' ? null : shareableRunLink(window.location)
   const available = !!getValidatedAnswer(run, [...run.answers].sort((a, b) => a.version - b.version).at(-1))
   const writing = pending || run.reportStatus === 'GENERATING'
   if (writing) return <span className="ra-progress" role="status"><span className="ra-spin" aria-hidden="true" />Preparing report…</span>
@@ -28,7 +30,7 @@ export default function ReportButton({ run, onReport, busy = false, onCompare }:
     <button type="button" className="ra-btn" onClick={() => { setError(''); saveReceipts(run.runId).catch(() => setError('Couldn’t download receipts.json. Try again.')) }}>Download receipts.json</button>
     <small>Check these receipts yourself with Python 3.10+ (read-only, no keys):<code>pip install {WHEEL}</code><code>researchagent verify receipts.json --ledger</code></small>
     {run.answers.length > 1 && <button type="button" className="ra-btn" onClick={onCompare}>See what changed after the purchase</button>}
-    {!hosted && <button type="button" className="ra-btn" onClick={async () => { setCopied(false); setError(''); try { await navigator.clipboard.writeText(window.location.href); setCopied(true) } catch { setError('Couldn’t copy the link. Try again.') } }}>{copied ? 'Link copied' : 'Copy link'}</button>}
+    {!hosted && link && <button type="button" className="ra-btn" onClick={async () => { setCopied(false); setError(''); try { await navigator.clipboard.writeText(link); setCopied(true) } catch { setError('Couldn’t copy the link. Try again.') } }}>{copied ? 'Link copied' : 'Copy link'}</button>}
     {copied && <span role="status">Link copied</span>}
     {(error || run.reportStatus === 'FAILED') && <span className="ra-err" role="alert">{error || 'Couldn’t create the report. Try again.'}</span>}
   </div></details>
