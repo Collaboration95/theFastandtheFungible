@@ -7,7 +7,7 @@ const Numbers = lazy(() => import('./SandboxNumbersPanel').catch(() => ({ defaul
 export default function SandboxNumbers() {
   const [open,setOpen] = useState(false)
   return <details className="ra-sandbox" onToggle={event => setOpen(event.currentTarget.open)}>
-    <summary>Sandbox scoreboard · aggregate numbers and gate audit</summary>
+    <summary>Sandbox scoreboard</summary>
     {open && <Suspense fallback={<p role="status">Loading sandbox numbers…</p>}><Numbers /></Suspense>}
   </details>
 }
