@@ -9,7 +9,7 @@ afterEach(()=>{cleanup();vi.unstubAllGlobals()})
 it.each(['verified','check_pending','check_failed'])('fresh hosted view renders all team writers with %s and keeps fiction unverified',async status=>{
   vi.stubGlobal('fetch',vi.fn(async()=>({ok:true,json:async()=>({scope:'Your retained history only.',writers:writers.map((w,i)=>({...w,verification:i<3?{...verified,status}:verified}))})})))
   const {container,unmount}=render(<HostedContext.Provider value={{status:{}} as never}><WriterEarnings /></HostedContext.Provider>)
-  await screen.findByText('Open Records ↗')
+  await screen.findByRole('link', {name:'Open Records'})
   const cards=container.querySelectorAll('.ra-writer-grid')[0].querySelectorAll('article')
   expect(cards).toHaveLength(3)
   const label=status==='verified'?'XRPL Credential · issued by ResearchAgent operator (Testnet, identity only, not KYC)':status==='check_pending'?'check pending':'check unavailable'
