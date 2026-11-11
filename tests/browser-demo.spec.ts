@@ -212,6 +212,52 @@ test('scenario links open their run within ten seconds and keep compact, honest 
   } finally { server.kill('SIGTERM'); await once(server, 'exit') }
 })
 
+test('replay shows the selected public question while its recording loads', async ({ browser }, info) => {
+  const root = info.outputPath('pages')
+  await mkdir(`${root}/theFastandtheFungible`, { recursive: true })
+  await cp('site', `${root}/theFastandtheFungible`, { recursive: true })
+  const server = spawn('python3', ['-u', '-m', 'http.server', '0', '--bind', '127.0.0.1', '--directory', root], { stdio: ['ignore', 'pipe', 'ignore'] })
+  try {
+    const [chunk] = await once(server.stdout!, 'data'), port = String(chunk).match(/port (\d+)/)?.[1]
+    const cases: { width: number; nav?: string; navWidth?: number; denied?: boolean }[] = [
+      { width: 1280 }, { width: 390 }, { width: 1280, nav: 'rail' },
+      { width: 1280, navWidth: 300 }, { width: 1280, navWidth: 9999 }, { width: 1280, denied: true },
+    ]
+    for (const options of cases) {
+      const page = await browser.newPage({ viewport: { width: options.width, height: 900 } })
+      await page.addInitScript(({ nav, navWidth, denied }) => {
+        if (denied) Object.defineProperty(window, 'localStorage', { get() { throw Error('Storage denied') } })
+        else {
+          if (nav) localStorage.setItem('researchagent.nav', nav)
+          if (navWidth) localStorage.setItem('researchagent.nav-width', String(navWidth))
+        }
+      }, options)
+      let release!: () => void
+      const recording = new Promise<void>(resolve => { release = resolve })
+      await page.route(/\/assets\/UC3-key-reveal-[^/]+\.js$/, async route => { await recording; await route.continue() })
+      await page.routeWebSocket(/wss:\/\/.*/, ws => ws.close())
+      await page.goto(`http://127.0.0.1:${port}/theFastandtheFungible/demo/`, { waitUntil: 'commit' })
+      const question = recordingIndex.find(item => item.scenario === 'UC3-key-reveal')!.question
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText(question)
+      await expect(page.locator('.demo-loading')).toHaveAttribute('aria-busy', 'true')
+      await expect(page.locator('.demo-shell > summary .demo-label')).toHaveText('Replay · XRPL Testnet, recorded 11 Nov 2026 · fictional writers · no real value')
+      if (options.width === 390) await expect(page.locator('.demo-shell')).not.toHaveAttribute('open', '')
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+      await expect(page.getByRole('status')).toHaveText('Loading recorded run…')
+      await expect(page.locator('.ra-payment, .ra-vtext, .demo-transactions')).toHaveCount(0)
+      await page.evaluate(() => document.fonts.ready)
+      const before = await page.getByRole('heading', { level: 1 }).boundingBox()
+      if (options.width === 390) await page.screenshot({ path: info.outputPath('loading-390.png') })
+      release()
+      await expect(page.locator('.demo-loading')).toHaveCount(0)
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText(question)
+      const after = await page.getByRole('heading', { level: 1 }).boundingBox()
+      for (const key of ['x', 'y', 'width', 'height'] as const) expect(after![key]).toBeCloseTo(before![key], 0)
+      await page.close()
+    }
+  } finally { server.kill('SIGTERM'); await once(server, 'exit') }
+})
+
 test('replay downloads only the requested recording, then loads another scenario on demand', async ({page, browser}, info) => {
  const root=info.outputPath('pages'); await mkdir(`${root}/theFastandtheFungible`,{recursive:true}); await cp('site',`${root}/theFastandtheFungible`,{recursive:true})
  const server=spawn('python3',['-u','-m','http.server','0','--bind','127.0.0.1','--directory',root],{stdio:['ignore','pipe','ignore']})

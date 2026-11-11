@@ -72,10 +72,10 @@ window.fetch = async (input, init) => {
   } else value = active.cards[path]
   return value === undefined ? Response.json({}, { status: 404 }) : Response.json(value)
 }
-// Fetch the app and the selected trace together; API reads wait for that trace's validation.
-const app = import('../src/main')
+// HTML preloads the app alongside the trace. Keep the labelled loading shell
+// until the selected recording validates, then execute the shared app.
 await activeReady
-await app
+await import('../src/main')
 
 const banner = document.querySelector('.demo-banner')!
 const runYourself = banner.querySelector('.demo-install')!
