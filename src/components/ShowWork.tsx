@@ -7,12 +7,14 @@ import DecisionTable from './DecisionTable'
 import Ledger from './Ledger'
 import ModelLabels from './ModelLabels'
 import { candidateOf, money, shortHash } from '../format'
+import { planCheck, type ConfirmedPlan } from '../planCheck'
+import './key-check.css'
 
 type Tab = 'Trace' | 'Wire' | 'Policy' | 'Receipts' | 'Models' | 'Ledger'
 
 /** Press W: the raw persisted events, HTTP exchange, full policy table and receipts.
     Nothing here is needed to follow the answer; it is where the engine's own words live. */
-export default function ShowWork({ run, configured, onClose }: { run: RunSnapshot; configured?: ModeLabels; onClose: () => void }) {
+export default function ShowWork({ run, configured, onClose, confirmed }: { run: RunSnapshot; configured?: ModeLabels; onClose: () => void; /** The plan the visitor confirmed; by default the one this browser recorded just before the run began. */ confirmed?: Pick<ConfirmedPlan, 'subqueries'> }) {
   const dialog = useRef<HTMLDialogElement>(null)
   const [tab, setTab] = useState<Tab>('Trace')
   const tabs: Tab[] = ['Trace', 'Wire', 'Policy', 'Receipts', 'Models', ...(run.labels.settlement === XRPL_LABEL ? ['Ledger' as Tab] : [])]
@@ -22,6 +24,7 @@ export default function ShowWork({ run, configured, onClose }: { run: RunSnapsho
     return () => element?.close()
   }, [])
   const receipts = run.receipts.filter(item => item.runId === run.runId)
+  const plan = planCheck(run, confirmed)
   return <dialog ref={dialog} className="ra-sheet" aria-label="Show work" onCancel={event => { event.preventDefault(); onClose() }}>
     <div className="ra-sheet-h">
       <h2>Show work</h2>
@@ -30,6 +33,7 @@ export default function ShowWork({ run, configured, onClose }: { run: RunSnapsho
     </div>
     <div className="ra-sheet-b" role="tabpanel" aria-label={tab} tabIndex={0}>
       <p className="ra-note">{{ Trace: 'What the agent did, in order.', Wire: 'The requests and responses behind this run.', Policy: 'Why each article was bought or skipped.', Receipts: 'The payment records saved with this run.', Models: 'The providers and substitutions used in this run.', Ledger: 'The transactions on XRPL Testnet.' }[tab]}</p>
+      {tab === 'Trace' && plan && <p className={`ra-plan-check ${plan.ok ? 'is-ok' : 'is-changed'}`}>{!plan.ok && <Icon name="info" size={16} />}{plan.text}</p>}
       {tab === 'Trace' && <Activity run={run} />}
       {tab === 'Wire' && <Wire run={run} />}
       {tab === 'Policy' && <DecisionTable run={run} />}

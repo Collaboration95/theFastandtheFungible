@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { money } from '../format'
 import { PlanSchema, BUDGET, MAX_ROUNDS, type Plan } from '../../shared/contracts/index.js'
 import { useHosted } from '../hosted'
+import { rememberConfirmedPlan } from '../planCheck'
 
 const PLAN_MS = 5000
 
@@ -39,7 +40,9 @@ export default function PlanSheet({ plan, writers, budgetMinor = BUDGET.initialM
     if (fired.current) return
     fired.current = true
     const edited = PlanSchema.safeParse({ ...plan, subqueries: subqueries.map(q => q.trim()).filter(Boolean) })
-    onGo(edited.success ? edited.data : plan)
+    const confirmed = edited.success ? edited.data : plan
+    rememberConfirmedPlan(confirmed) // Show work compares this with the plan the run records ("Ran the plan you confirmed")
+    onGo(confirmed)
   }
   const cancel = () => { if (!fired.current) { fired.current = true; onCancel() } }
   const latest = useRef({ go, cancel })
