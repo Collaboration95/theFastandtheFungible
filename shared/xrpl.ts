@@ -2,7 +2,7 @@
 // Runtime code: import by path, never from shared/contracts/index (the browser bundle).
 import { matchesAmount } from './contracts/asset.js'
 import { createHash } from 'node:crypto'
-import { Client, Wallet, type ECDSA } from 'xrpl'
+import { Client, Wallet, decode, type ECDSA } from 'xrpl'
 import type { LedgerProof, PaymentRequirement } from './contracts/publisher.js'
 
 /** The subset of xrpl.Client the rail uses; tests inject a fake ledger. */
@@ -22,6 +22,13 @@ export function testnetLedger(url = testnetUrl()): Ledger & { close(): Promise<v
   let connecting: Promise<void> | undefined
   return {
     async request(request) {
+      // Enforce at the network boundary, before even connecting. Also inspect
+      // binary simulate requests so tx_blob cannot bypass the JSON field guard.
+      if (request.command === 'simulate') {
+        const containsFulfillment = (value: unknown): boolean => !!value && typeof value === 'object' &&
+          Object.entries(value).some(([key, child]) => key === 'Fulfillment' || containsFulfillment(key === 'tx_blob' && typeof child === 'string' ? decode(child) : child))
+        if (containsFulfillment(request)) throw new Error('Refusing simulate request containing Fulfillment; key must stay private until signed submit')
+      }
       if (!client?.isConnected()) {
         // Signing asks for account, fee and ledger concurrently. Share the connection
         // attempt, or each request can orphan a WebSocket that close() cannot reach.

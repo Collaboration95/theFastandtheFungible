@@ -90,7 +90,7 @@ describe('dry run can only veto an already-authorized signature', () => {
   })
 })
 
-async function purchaseSetup(mode: 'success' | 'create-refused' | 'finish-refused' | 'finish-unavailable' | 'near-deadline' = 'success') {
+async function purchaseSetup(mode: 'success' | 'create-refused' | 'near-deadline' = 'success') {
   vi.stubEnv('ESCROW_MODE', 'key-reveal')
   const c = chain(), original = c.ledger.request.bind(c.ledger)
   vi.spyOn(c.ledger, 'request').mockImplementation(async r => {
@@ -101,8 +101,6 @@ async function purchaseSetup(mode: 'success' | 'create-refused' | 'finish-refuse
     if (r.command === 'simulate') {
       const type = (r.tx_json as { TransactionType: string }).TransactionType
       if (type === 'EscrowCreate' && mode === 'create-refused') return { result: { engine_result: 'tecNO_PERMISSION' } }
-      if (type === 'EscrowFinish' && mode === 'finish-refused') return { result: { engine_result: 'tecNO_TARGET' } }
-      if (type === 'EscrowFinish' && mode === 'finish-unavailable') throw new Error('unknown method')
     }
     return original(r)
   })
@@ -127,7 +125,7 @@ describe('writer guard and purchase evidence', () => {
     expect(s.c.txs.size).toBe(0)
     expect(s.store.getRun(s.run.runId).events.some(e => e.type === 'LEDGER_DRY_RUN' && e.data?.code === 'tecNO_PERMISSION')).toBe(true)
   })
-  for (const mode of ['finish-refused', 'finish-unavailable', 'near-deadline'] as const) it(`${mode} keeps K out of a finish blob and submission`, async () => {
+  for (const mode of ['near-deadline'] as const) it(`${mode} keeps K out of a finish blob and submission`, async () => {
     const s = await purchaseSetup(mode)
     expect(s.store.getRun(s.run.runId).grants).toEqual([])
     expect([...s.c.txs.values()].map(t => t.tx_json.TransactionType)).toEqual(['EscrowCreate'])
@@ -137,7 +135,7 @@ describe('writer guard and purchase evidence', () => {
     expect(JSON.stringify([s.store.getRun(s.run.runId), s.store.auditEntries()])).not.toContain(privateState.secret)
     expect(s.store.getRun(s.run.runId).spentMinor).toBe(0)
   })
-  it('happy path signs a +5 finish, retains fees and records create/finish/anchor reports', async () => {
+  it('happy path signs a +5 finish, retains fees and records create/anchor simulations and writer pre-check', async () => {
     const s = await purchaseSetup()
     expect(s.intent.status).toBe('VERIFIED')
     const txs = [...s.c.txs.values()]
@@ -146,9 +144,11 @@ describe('writer guard and purchase evidence', () => {
     const anchor = await s.payer.anchor(`${'a'.repeat(64)}:${(await import('node:crypto')).createHash('sha256').update(s.run.runId).digest('hex')}`, x => x, async () => undefined)
     await anchor.sent
     const events = s.store.getRun(s.run.runId).events.filter(e => e.type === 'LEDGER_DRY_RUN')
-    expect(events.map(e => e.data?.operation)).toEqual(['EscrowCreate', 'EscrowFinish', 'anchor'])
+    expect(events.map(e => e.data?.operation)).toEqual(['EscrowCreate', 'anchor'])
     expect(events.every(e => e.label.includes('tesSUCCESS') && e.label.includes('not submitted'))).toBe(true)
-    expect(events[1].data?.reportedBy).toBe('writer')
+    const preCheck = s.store.getRun(s.run.runId).events.find(e => e.type === 'LEDGER_PRE_CHECK')!
+    expect(preCheck.label).toBe('Ledger pre-check · escrow found, condition matches · read-only, key not sent')
+    expect(preCheck.data).toMatchObject({ operation: 'EscrowFinish', reportedBy: 'writer' })
     expect(s.store.auditVerify().ok).toBe(true)
   })
 })
