@@ -7,7 +7,6 @@ import type { WriterVerification as Verification } from '../../shared/writer-ver
 import './writer-earnings.css'
 /* eslint-disable react-refresh/only-export-components -- priceRange, writerTitle and orderWriters are pure helpers shared with their tests. */
 type Writer = { slug: string; publisherSlug: string; name: string; publisher?: string; authorship: string; synthetic?: boolean; verification?: Verification; articleCount: number; priceRange?: number[]; articles: { id: string; title: string; priceMinor: number; tier: string }[]; sales: { finishHash: string; refunded: boolean; refundHash?: string }[]; trust: { at: string; value: number }[]; demoSales?: number }
-const price = (minor: number) => `S$${(minor / 100).toFixed(2)}`
 /** One price when the range is a point, "Free" when that price is zero. */
 export const priceRange = (prices: number[]) => {
   if (!prices.length) return 'No articles'
