@@ -57,7 +57,7 @@ export default function WriterEarnings() {
       {team ? <p className="ra-note ra-writer-by">{team}</p> : w.publisher && w.publisher !== w.name && <p className="ra-note ra-writer-by">{`by ${w.name}`}</p>}
       {isFictional(w) || !w.verification || w.verification.status === 'unverified' ? <small className="ra-badge">{kind(w.authorship).replace(/ writer$/, '')} · unverified</small> : <><small className="ra-badge">{kind(w.authorship)}</small> <WriterVerification value={w.verification} /></>}
       {isTeam(w) && w.synthetic && <p className="ra-note">Synthetic demo content</p>}
-      {isTeam(w) && !(w.demoSales ?? w.sales.length) && <p className="ra-note">No sales yet</p>}
+      {isTeam(w) && !w.sales.length && <p className="ra-note" title="Your retained history">No sales yet</p>}
       <dl><div><dt>Articles</dt><dd>{w.articleCount}</dd></div><div><dt>Price range</dt><dd>{priceRange(prices)}</dd></div>
       {w.demoSales !== undefined && <div><dt>Sales on this demo</dt><dd>{salesCount(w.demoSales)}</dd></div>}
       <div><dt>Your purchases</dt><dd>{salesCount(w.sales.length)}</dd></div>
