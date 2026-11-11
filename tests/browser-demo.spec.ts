@@ -266,8 +266,8 @@ test('replay downloads only the requested recording, then loads another scenario
   await page.routeWebSocket(/wss:\/\/.*/,ws=>ws.close())
   const requests:string[]=[];page.on('request',r=>requests.push(new URL(r.url()).pathname))
   const base=`http://127.0.0.1:${port}/theFastandtheFungible/demo/`
-  await page.goto(base);await expect(page.locator('#main:not(.demo-loading) > h1')).toContainText('Kestrel',{timeout:10_000})
-  await expect(page.locator('link[rel="modulepreload"][href*="/assets/main-"]')).toHaveCount(1)
+  const response = await page.goto(base);await expect(page.locator('#main:not(.demo-loading) > h1')).toContainText('Kestrel',{timeout:10_000})
+  expect(await response!.text()).not.toMatch(/<link[^>]+href="[^"]*\/assets\/main-[^"]+\.js"/)
   await expect(page.locator('style[data-replay-styles]')).toHaveCount(1)
   expect(requests.filter(path => path.endsWith('.css'))).toEqual([])
   expect(requests.filter(p=>/\/(?:UC1|UC2|UC3|UC3-testnet|UC-key-reveal)-[A-Za-z0-9_-]{8}\.js$/.test(p))).toEqual([])

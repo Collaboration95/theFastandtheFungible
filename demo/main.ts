@@ -72,8 +72,8 @@ window.fetch = async (input, init) => {
   } else value = active.cards[path]
   return value === undefined ? Response.json({}, { status: 404 }) : Response.json(value)
 }
-// HTML preloads the app alongside the trace. Keep the labelled loading shell
-// until the selected recording validates, then execute the shared app.
+// Keep the labelled loading shell until the selected recording validates.
+// The shared app loads afterward so it does not compete with the public question.
 await activeReady
 // Finish the question's font before handoff so its glyph area stays stable.
 await document.fonts.load('600 24px "Replay Geist Variable"', selected.question)

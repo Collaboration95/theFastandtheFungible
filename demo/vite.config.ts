@@ -36,12 +36,11 @@ export default defineConfig({
           const at = JSON.parse(readFileSync(new URL(`./traces/${scenario}.json`, import.meta.url), 'utf8')).run.events[0].at
           return [scenario, runId, chunk.fileName, question, ENV.replay(dateSGT(at), testnet), ENV.replayShort(testnet)] as const
         })
-        // Download the shared app while the replay entry validates its selected trace.
-        // Preloading does not execute it before the transport shim is installed.
+        // Only the selected trace preloads. The shared app starts after the
+        // question paint, leaving bandwidth for its font and public metadata.
         return { html, tags: [
           // Resolve the same scenario/run precedence as the entry, before its schema dependency arrives.
           { tag: 'script', children: `(${replayLoadingShell.toString()})(${JSON.stringify(recordings).replaceAll('<', '\\u003c')})` },
-          { tag: 'link', attrs: { rel: 'modulepreload', crossorigin: true, href: `/theFastandtheFungible/demo/${app.fileName}` } },
         ] }
       },
     },
