@@ -30,7 +30,7 @@ function ReadStamp({ value }: { value: LedgerFact }) {
 export default function LedgerCheck({ question }: { question: string }) {
   const kind = ledgerKind(question)
   if (!kind || isDesktop()) return null
-  return <Check key={kind} kind={kind} />
+  return <Check key={question} kind={kind} />
 }
 function Check({ kind }: { kind: LedgerKind }) {
   const [reader] = useState(() => () => readLedgerFact(kind))

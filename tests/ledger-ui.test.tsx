@@ -42,3 +42,12 @@ it('a purchase read failure is distinct from a failed receipt and can retry', as
   fireEvent.click(screen.getByRole('button', { name: 'Retry' }))
   await waitFor(() => expect(read).toHaveBeenCalledTimes(2))
 })
+
+it('refreshes a changed question even when it has the same ledger subject', async () => {
+  vi.mocked(readLedgerFact).mockResolvedValueOnce({ network: 'XRPL Testnet', ledger: 1, readAt: '2026-11-11T07:06:00Z', text: 'First read' }).mockResolvedValueOnce({ network: 'XRPL Testnet', ledger: 2, readAt: '2026-11-11T07:07:00Z', text: 'Fresh read' })
+  const r = render(<LedgerCheck question="What are XRPL fees?" />)
+  await screen.findByText('First read')
+  r.rerender(<LedgerCheck question="What fee does EscrowFinish pay?" />)
+  await screen.findByText('Fresh read')
+  expect(screen.queryByText('First read')).toBeNull()
+})

@@ -29,6 +29,6 @@ All connections use exactly the verifier’s two public Testnet endpoints. Deskt
 
 ## Verification
 
-37 new targeted tests pass. Full check:fast, local gate, published PR-head gate and post-merge gate are recorded in the PR / local-gate receipts.
+38 new targeted tests pass. Full check:fast, local gate, published PR-head gate and post-merge gate are recorded in the PR / local-gate receipts.
 
 Nothing was loosened.
