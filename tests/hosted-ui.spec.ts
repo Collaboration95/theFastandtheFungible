@@ -446,3 +446,22 @@ test('A11Y a failed speculative checker download can recover without asking anot
   expect(admissions).toBe(before)
   await context.close()
 })
+
+
+test('A11Y a plan with no clarification auto-starts and leaves keyboard focus on the run', async ({ browser }) => {
+  const { context, page } = await visitor(browser)
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.goto('/')
+  await question(page).fill('What is the XRPL base fee?')
+  await page.getByRole('button', { name: /^Ask/ }).focus(); await page.keyboard.press('Enter')
+  const start = page.getByRole('button', { name: 'Start now' })
+  await expect(start).toBeFocused({ timeout: 30000 })
+  await expect(page.getByRole('dialog', { name: 'Search plan' })).toBeVisible()
+  // Do not click: this is the normal-motion countdown path.
+  await expect(page.locator('h1.ra-q')).toBeFocused({ timeout: 30000 })
+  expect(await page.evaluate(() => document.activeElement !== document.body)).toBe(true)
+  await page.keyboard.press('Tab')
+  await expect(page.getByRole('button', { name: 'Show work', exact: true })).toBeFocused()
+  await expect(page).toHaveTitle(/Answer ready/, { timeout: 60000 })
+  await context.close()
+})
