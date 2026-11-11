@@ -33,10 +33,21 @@ export function manifestMessage(manifest: Omit<Manifest, 'sig'> & { sig?: string
 }
 export const signManifest = (unsigned: Omit<Manifest, 'sig'>, privateKey: string): Manifest => ({ ...unsigned, sig: sign(manifestMessage(unsigned), privateKey) })
 
+const verifiedManifests = new Map<string, boolean>()
 /** The signature verifies and the signing key derives to the payee wallet. */
 export function verifyManifestSignature(manifest: Manifest): boolean {
-  try { return deriveAddress(manifest.pubKey) === manifest.wallet && verify(manifestMessage(manifest), manifest.sig, manifest.pubKey) }
-  catch { return false }
+  let message: string
+  try { message = manifestMessage(manifest) } catch { return false }
+  // Every free read re-checks the same few manifests; an ed25519 verify was ~5% of a fixture ask's event-loop time.
+  // The result is a pure function of these exact bytes, so it is keyed on all of them.
+  const key = sha256(JSON.stringify([message, manifest.sig, manifest.pubKey, manifest.wallet]))
+  const known = verifiedManifests.get(key)
+  if (known !== undefined) return known
+  let valid: boolean
+  try { valid = deriveAddress(manifest.pubKey) === manifest.wallet && verify(message, manifest.sig, manifest.pubKey) } catch { valid = false }
+  if (verifiedManifests.size >= 256) verifiedManifests.delete(verifiedManifests.keys().next().value!)
+  verifiedManifests.set(key, valid)
+  return valid
 }
 
 const sentences = (text: string) => text.split(/(?<=[.!?])\s+/)

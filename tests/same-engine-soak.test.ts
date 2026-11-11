@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { expect, it } from 'vitest'
 // @ts-expect-error manual JavaScript harness is intentionally independent of the application build
-import { compare, deadline, options, burstPass } from '../scripts/soak-same-engine.mjs'
+import { compare, deadline, options, burstPass, checkpointer } from '../scripts/soak-same-engine.mjs'
 function evidence() {
   return { options:{runs:200},asks:Array.from({length:200},(_,index)=>({index,stage:'measured',ok:true,rss:200*1048576,ms:index<100?100:200,pid:1,engineId:'one',workerId:4,storeId:'db'})),samples:Array.from({length:61},()=>({stage:'measured',rss:200*1048576,gapMs:1000,hostSleepMs:0,worker:{loopP99Ms:12}})),restarts:Array.from({length:20},()=>({closed:true})),failures:[] as string[],auditViolations:0 }
 }
@@ -85,4 +85,14 @@ it('replays the historical quick miss without rewriting its measured slope',()=>
   expect(diagnostic.gates.rssSlope.gating).toBe(false)
   expect(diagnostic.pass).toBe(true)
   expect(diagnostic.acceptanceEligible).toBe(false)
+})
+
+it('checkpoints the report at most once per interval, starting with the first ask',()=>{
+  let t=0,saves=0
+  const checkpoint=checkpointer(()=>{saves++},5000,()=>t)
+  checkpoint();expect(saves).toBe(1)
+  for(t=1;t<5000;t+=250)checkpoint()
+  expect(saves).toBe(1)
+  t=5000;checkpoint();expect(saves).toBe(2)
+  t=5001;checkpoint();expect(saves).toBe(2)
 })

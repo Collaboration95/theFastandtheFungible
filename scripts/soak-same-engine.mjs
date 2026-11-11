@@ -41,6 +41,16 @@ export function compare(report) {
   return { gates, valid, pass:valid&&Object.values(gates).every(g=>g.gating===false||g.pass)&&(!report.options.burst||report.burst?.pass===true), acceptanceEligible:!diagnosticSlope&&report.options.runs>=2000, completed:good.length, failed:rows.length-good.length, warmMedianMiB:warm, finalMedianMiB:final, firstP95Ms:p95first, lastP95Ms:p95last, sampleGaps:gaps.length, identityCount:identities.size, loopMethod:'maximum of worker one-second histogram p99s, 10 ms resolution' }
 }
 
+/**
+ * Rewriting the whole report after every ask allocated a multi-MiB string and native write buffer per ask inside
+ * the measured process: RSS covers the harness too. A 2 MiB report rewritten 3,900 times grew RSS outside the JS
+ * heaps by 115 MiB (docs/evidence/soak-nov11). Write at most once per interval instead.
+ */
+export function checkpointer(save, intervalMs=5000, now=Date.now) {
+  let last=-Infinity
+  return ()=>{const t=now();if(t-last>=intervalMs){last=t;save()}}
+}
+
 // Loaded with --import in both host and engine worker, before any engine module.
 export async function installGuard() {
   const channel=new BroadcastChannel('same-engine-soak-'+process.env.SOAK_ID)
@@ -108,6 +118,8 @@ async function run(o) {
   const start=Date.now(), storeId=randomUUID(), dbPath=join(o.dataDir,'app.db')
   const r={schema:'same-engine-soak-v1',label:'BASELINE · SHARED HOST · SYNTHETIC fixtures / SIMULATED rail · not finals acceptance', options:o,harnessSha256:createHash('sha256').update(readFileSync(fileURLToPath(import.meta.url))).digest('hex'),source:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),host:{platform:platform(),release:release(),cpus:cpus().length,node:process.version,load:loadavg()},startedAt:new Date().toISOString(),storeId,pid:process.pid,samples:[],intervals:[],lags:[],asks:[],restarts:[],failures:[],auditViolations:0,burst:{requested:o.burst,pass:false},seedCases:[]}
   const save=()=>writeFileSync(o.output,JSON.stringify(r,null,2)+'\n')
+  // Per-ask progress checkpoint. Stage boundaries, burst, restarts and the final summary still save in full.
+  const checkpoint=checkpointer(save)
   const store=new Store(dbPath)
   // Store creates validated run records; historical event insertion is batched per run.
   try {
@@ -149,7 +161,7 @@ async function run(o) {
     const sdk=createClient({baseUrl:engine.apiUrl,token:engine.apiToken})
     const ask=async(index,s)=>{const uc=['UC1','UC2','UC3','UC4'][(index+o.seed)%4],t=performance.now();const identity={pid:process.pid,engineId:worker.engineId,workerId:worker.workerId,storeId};let row
       try{const result=await sdk.ask(USE_CASES[uc].question+(uc==='UC2'?' (pricing & margins)':''),{budgetSgd:2,idempotencyKey:`soak-${s}-${index}`,signal:AbortSignal.timeout(o.timeoutMs)});const snapshot=await(await fetch(engine.apiUrl+'/api/mcp/runs/'+result.run_id,{headers:{Authorization:'Bearer '+engine.apiToken}})).json();const audit=auditRuns([snapshot],corpus);r.auditViolations+=audit.total;row={ok:result.phase==='DONE',runId:result.run_id,phase:result.phase,reservedMinor:snapshot.reservedMinor};if(snapshot.reservedMinor)r.failures.push('unexplained reservation '+result.run_id)}catch(error){row={ok:false,error:error.message};r.failures.push('ask failed '+index)}
-      r.asks.push({...identity,...row,index,uc,stage:s,ms:performance.now()-t,rss:process.memoryUsage().rss});if(s==='measured')completed++;save()}
+      r.asks.push({...identity,...row,index,uc,stage:s,ms:performance.now()-t,rss:process.memoryUsage().rss});if(s==='measured')completed++;checkpoint()}
     await snapshot('early')
     for(const [s,count] of [['warmup',o.warmup],['measured',o.runs]]){stage=s;const began=Date.now();for(let i=0;i<count;i+=o.concurrency)await Promise.all(Array.from({length:Math.min(o.concurrency,count-i)},(_,j)=>ask(i+j,s)));if(s==='measured'&&Date.now()-began<61000)await new Promise(done=>setTimeout(done,61000-(Date.now()-began)))}
     await snapshot('late')
