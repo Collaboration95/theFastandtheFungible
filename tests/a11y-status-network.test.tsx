@@ -1,4 +1,8 @@
 // @vitest-environment jsdom
+import { renderToStaticMarkup } from 'react-dom/server'
+import PlanSheet from '../src/components/PlanSheet'
+import { HostedContext } from '../src/hosted'
+import { uc2Scope } from '../src/fixtures/run'
 import { afterEach, expect, it, vi } from 'vitest'
 import { act, cleanup, render, screen } from '@testing-library/react'
 import { detectHosted, type HostedDemoStatus } from '../src/api'
@@ -70,4 +74,9 @@ it('schedules the verifier only at idle and cancels unused prefetches', () => {
   vi.stubGlobal('requestIdleCallback', idle); vi.stubGlobal('cancelIdleCallback', cancel)
   const stop = warmVerifier()
   expect(idle).toHaveBeenCalledOnce(); stop(); expect(cancel).toHaveBeenCalledWith(7)
+})
+
+it('explains the existing hosted rule that planning counts even when a run never starts', () => {
+  const html = renderToStaticMarkup(<HostedContext.Provider value={{ status }}><PlanSheet plan={uc2Scope.plan} onGo={() => {}} onCancel={() => {}} /></HostedContext.Provider>)
+  expect(html).toContain('Planning uses one of your daily questions, even if you cancel or the run doesn’t start.')
 })

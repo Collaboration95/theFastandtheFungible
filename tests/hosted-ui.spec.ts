@@ -328,6 +328,7 @@ test('A11Y keyboard Ask → plan → result → verify, idle prefetch, offline r
   expect(await page.evaluate(() => document.activeElement !== document.body)).toBe(true)
   if (await chip.isVisible()) { await expect(page.locator('.ra-chip-opt').first()).toBeFocused(); await chip.focus(); await page.keyboard.press('Enter') }
   await expect(start).toBeFocused()
+  await expect(page.getByRole('dialog', { name: 'Search plan' })).toContainText('Planning uses one of your daily questions')
   expect(verifierLoads).toEqual([]) // No verifier request during home, clarify or plan.
   await page.keyboard.press('Enter')
   const title = page.locator('h1.ra-q')

@@ -78,6 +78,7 @@ export default function PlanSheet({ plan, writers, budgetMinor = BUDGET.initialM
     {editing && <ol className="ra-plan-edit">{subqueries.map((query, index) => <li key={index}><input aria-label={`Search ${index + 1}`} value={query} maxLength={160} onChange={event => setSubqueries(list => list.map((item, i) => i === index ? event.target.value : item))} /></li>)}</ol>}
     <p>Budget <strong>{money(budgetMinor)}</strong> · up to {money(capMinor)} per article</p>
     <p className="ra-note">Nothing is spent until step 3, and never more than {money(budgetMinor)}.</p>
+    {hosted && <p className="ra-note">Planning uses one of your daily questions, even if you cancel or the run doesn’t start.</p>}
     <p role="timer" aria-live="off" aria-label={editing ? 'Paused while you edit' : paused ? 'Automatic start paused. Choose Start now when ready.' : `Starting in ${remaining} seconds`}>{editing ? 'Paused while you edit.' : paused ? 'Automatic start paused. Choose Start now when ready.' : `Starting in ${remaining} s`}</p>
     <div className="ra-plan-bar" aria-hidden="true"><i /></div>
     <div className="ra-plan-act">{!paused && !editing && <button className="ra-btn" onClick={() => setPaused(true)}>Pause countdown</button>}{editing ? <span>Paused while you edit.</span> : (editable || import.meta.env.MODE === 'browser-demo') && <button className="ra-btn" disabled={!editable} onClick={() => setEditing(true)}>Edit</button>}<button className="ra-btn" onClick={cancel}>Cancel</button><button ref={start} className="ra-btn ra-btn-go" onClick={go}>Start now</button></div>
