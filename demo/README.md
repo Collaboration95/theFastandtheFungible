@@ -30,7 +30,8 @@ The entry indexes the six recordings by scenario, run ID and question. It downlo
 and validates only the selected recording; other recordings load when selected or
 opened from the app. There is no idle prefetch. A small loading shell shows the
 selected public question and canonical replay label while its recording loads;
-the app replaces that shell after validation. No recorded answer or payment
+the app replaces that shell after validation and a paint of the question,
+including when the recording is cached. No recorded answer or payment
 status is shown by the loading shell. Live hash checks use only that
 recording's transaction list. When in-app navigation changes runs, the old live
 ledger sockets close and its proof panel is removed; only the newly displayed
