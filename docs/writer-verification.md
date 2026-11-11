@@ -29,7 +29,7 @@ Two origins using the same seller wallet share one cached observation.
 RPC uses the existing `XRPL_RPC_URL` Testnet allowlist. For bounded HTTP reads,
 `wss:` becomes `https:` and standard port 51233 becomes 51234; custom ports are
 preserved. There are at most two active requests, a 64-slot queue, 1.2-second
-request/queue deadlines, 16 KiB response limits and a 15-second, 256-wallet cache.
+request/queue deadlines, 16 KiB response limits and a 5-minute, 256-wallet cache.
 HTTP redirects are refused. Queue saturation, errors, malformed responses and
 wrong network become `check_failed`, displayed as unverified with check unavailable.
 Missing, unaccepted and expired credentials are `unverified`. Only an accepted,
@@ -68,3 +68,64 @@ Protocol reference: [Credential fields and acceptance flag](https://xrpl.org/doc
 See `docs/evidence/round2-n/README.md` for live Testnet and fixture evidence.
 
 Issuer configuration accepts XRPL wire-format `credentialType` hex as before, or `credentialTypeText` (for example `ResearchAgent-writer-2026-11-03`), converted from UTF-8 to uppercase hex. Types must encode 1–64 bytes; if both fields are provided they must agree. Committed evidence stores `credentialTypeText`; runtime observations and XRPL comparisons retain wire-format hex.
+
+## Permissioned Domain
+
+The sandbox operator’s Testnet domain lists the credential tuples accepted for
+identity display. Domain configuration takes precedence over the legacy env array;
+a missing, malformed, unvalidated, wrong-ledger or oversized domain never falls
+back to that array. The app supports 1–4 distinct issuer/type tuples. Without a
+domain, `WRITER_CREDENTIAL_ISSUERS` continues to work; with neither setting, there
+are no identity RPCs. A domain is an identity allowlist, not a restriction on
+searching, buying or publishing. It does not enforce KYC or attest article quality.
+
+The server checks `network_id=1`, reads a validated ledger header and pins both
+`ledger_entry {index: domainId}` and every credential lookup to that same ledger
+hash. It shares that snapshot and wallet observations for **five minutes**. A
+wallet first checked late in the window expires with the snapshot, preventing
+stacked TTLs. Revocation or domain changes can take up to five minutes to appear.
+Expired or unaccepted credentials remain unverified. RPC failures read
+“unverified writer · check unavailable”. Credentials identify the operator’s
+attestation only: the UI title is “Identity, not quality”.
+
+Only **Build notes**, **XRPL explainers** and **Open Records** receive credentials
+of type `researchagent/writer-v1`, expiring **30 November 2026 at 00:00 UTC**.
+Other fictional writers remain fictional and unverified. The displayed label is:
+“XRPL Credential · issued by ResearchAgent operator (Testnet, identity only, not KYC)”.
+The credential link uses its validated `PreviousTxnID` (the acceptance transaction)
+and the domain link uses its ledger index. Neither changes decision input, trust
+weights, policy, spending authority or gate-audit.
+
+### Operator setup and VM hand-off
+
+Run `node scripts/writer-credentials-testnet.mjs` locally where the private hosted
+wallet directory exists. It checks Testnet before creating a new issuer and funds
+that issuer once from the Testnet faucet. The issuer seed is stored mode 0600 at
+`~/.config/researchagent-hosted/wallets/XRPL_CREDENTIAL_ISSUER_SEED`. It reads only
+the three named writer seeds, inside the script, and never prints signing material.
+An unfunded free-only Open Records account receives 2 Testnet XRP from the issuer
+so it can accept its credential and hold its reserve. Fees are capped at 2,000 drops
+per transaction. Before issuing, accepting or creating the domain it reads existing
+ledger objects; repeat runs submit nothing when the setup already exists. Public
+addresses, transaction hashes, ledger indexes and domain evidence are in
+`docs/evidence/writer-credentials-nov12/ledger.json`.
+
+At the next VM redeploy, the orchestrator must add exactly:
+
+```sh
+WRITER_CREDENTIAL_DOMAIN=D0B5DB2A87E03E375B3CF519B2323971C9E4D0300D31F93F8EAA927F0680B998
+```
+
+The issuer seed stays with the operator; the read-only verifier does not need it.
+This lane does not modify the VM or `docker/hosted/**`. Local hosted screenshots
+and latency evidence demonstrate local behavior only; hosted deployment remains
+the orchestrator’s step. FIN-prep can describe a Testnet Permissioned Domain
+listing accepted writer credentials; production would need an appropriate KYB
+issuer and separate operational/compliance work.
+
+Protocol: [PermissionedDomain fields](https://xrpl.org/docs/references/protocol/ledger-data/ledger-entry-types/permissioneddomain).
+
+`domainId` and `credentialTxHash` are optional presentation fields. The v1.1.1
+published wheel and MCP CLI both accept a local export containing them (see the
+published-artifact outputs in this lane's evidence). Normal receipt/report exports
+continue to omit writer observations; no signed proof format changes.

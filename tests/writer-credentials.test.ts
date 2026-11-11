@@ -105,3 +105,109 @@ it('normalizes public text issuer types and rejects conflicting or oversized typ
  expect(CredentialIssuerSchema.safeParse({issuer, label:'Trusted', credentialType:'AB', credentialTypeText:text}).success).toBe(false)
  expect(CredentialIssuerSchema.safeParse({issuer, label:'Trusted', credentialTypeText:'x'.repeat(65)}).success).toBe(false)
 })
+
+const domainId = 'D'.repeat(64)
+const domainNode = { LedgerEntryType: 'PermissionedDomain', AcceptedCredentials: [{ Credential: { Issuer: issuer, CredentialType: 'AB' } }] }
+function domainRpc(domain: unknown = domainNode, change: Record<string, unknown> = {}) {
+ const base = rpc(change)
+ return vi.fn(async (req: Record<string, unknown>) => req.index ? { result: { validated: true, ledger_hash: hash, index: domainId, node: domain } } : base(req))
+}
+describe('Permissioned Domain writer identity', () => {
+ it('pins domain and credential to the same validated ledger and exposes public links', async () => {
+  const request = domainRpc(domainNode, { PreviousTxnID: 'B'.repeat(64) })
+  const value = await new WriterCredentials([], request, 1200, 300_000, domainId).check(subject)
+  expect(value).toMatchObject({ status: 'verified', issuerLabel: 'ResearchAgent operator', domainId, credentialTxHash: 'B'.repeat(64) })
+  expect(request.mock.calls.filter(([r]) => r.command === 'ledger_entry').every(([r]) => r.ledger_hash === hash)).toBe(true)
+ })
+ for (const malformed of [null, {}, { ...domainNode, LedgerEntryType: 'AccountRoot' }, { ...domainNode, AcceptedCredentials: [] },
+  { ...domainNode, AcceptedCredentials: [{ Credential: { Issuer: 'bad', CredentialType: 'AB' } }] },
+  { ...domainNode, AcceptedCredentials: [{ Credential: { Issuer: issuer, CredentialType: 'not-hex' } }] },
+  { ...domainNode, AcceptedCredentials: Array(5).fill(domainNode.AcceptedCredentials[0]) },
+  { ...domainNode, AcceptedCredentials: Array(2).fill(domainNode.AcceptedCredentials[0]) },
+ ]) it(`fails closed for malformed domain ${JSON.stringify(malformed)}`, async () => {
+  const request = domainRpc(malformed)
+  expect(await new WriterCredentials(trusted, request, 1200, 300_000, domainId).check(subject)).toEqual({ status: 'unverified' })
+  expect(request.mock.calls.some(([r]) => r.credential)).toBe(false)
+ })
+ for (const change of [{ Issuer: subject }, { Flags: 0 }, { Expiration: 1 }, { Flags: '65536' }]) it(`rejects domain credential ${JSON.stringify(change)}`, async () => {
+  expect(await new WriterCredentials([], domainRpc(domainNode, change), 1200, 300_000, domainId).check(subject)).toEqual({ status: 'unverified' })
+ })
+ it('rejects an unvalidated or differently pinned domain response', async () => {
+  for (const patch of [{validated:false}, {ledger_hash:'B'.repeat(64)}, {index:hash}]) {
+   const base = domainRpc()
+   const request = async (req:Record<string, unknown>) => { const r = await base(req); return req.index ? {result:{...r.result,...patch}} : r }
+   expect(await new WriterCredentials([], request, 1200, 300_000, domainId).check(subject)).toEqual({status:'unverified'})
+  }
+ })
+ it('shares the domain snapshot across wallets and refreshes after five minutes', async () => {
+  vi.useFakeTimers()
+  try {
+   const request = domainRpc(), verifier = new WriterCredentials([], request, 1200, 300_000, domainId)
+   expect((await verifier.check(subject)).status).toBe('verified')
+   await vi.advanceTimersByTimeAsync(299_000)
+   await verifier.check(issuer)
+   expect(request.mock.calls.filter(([r]) => r.index)).toHaveLength(1)
+   await vi.advanceTimersByTimeAsync(1001)
+   await verifier.check(issuer)
+   expect(request.mock.calls.filter(([r]) => r.index)).toHaveLength(2)
+  } finally { vi.useRealTimers() }
+ })
+ it('renders exact identity label, credential transaction and domain, and check unavailable', async () => {
+  const { renderToStaticMarkup } = await import('react-dom/server')
+  const { createElement } = await import('react')
+  const { WriterVerification } = await import('../src/components/WriterVerification.js')
+  const value = await new WriterCredentials([], domainRpc(domainNode, {PreviousTxnID:'B'.repeat(64)}), 1200, 300_000, domainId).check(subject)
+  const html = renderToStaticMarkup(createElement(WriterVerification, {value}))
+  expect(html).toContain('XRPL Credential · issued by ResearchAgent operator (Testnet, identity only, not KYC)')
+  expect(html).toContain('title="Identity, not quality"')
+  expect(html).toContain(`/transactions/${'B'.repeat(64)}`)
+  expect(html).toContain(`/ledger_entry/${domainId}`)
+  expect(renderToStaticMarkup(createElement(WriterVerification, {value:{status:'check_failed'}}))).toContain('check unavailable')
+ })
+})
+
+it.each(['issuers only', 'domain only', 'both', 'neither'])('PublisherClient checks identity with %s', async setting => {
+ const {createPublisherApp} = await import('../publisher/routes.js')
+ const {PublisherClient} = await import('../server/publisher-client.js')
+ const app = createPublisherApp({journal:':memory:', rail:'simulated', env:{}})
+ await app.locals.ready; await app.locals.writersReady
+ const server = app.listen(0, '127.0.0.1'); await once(server,'listening')
+ const transport = globalThis.fetch
+ vi.stubEnv('WRITER_CREDENTIAL_ISSUERS', setting === 'issuers only' || setting === 'both' ? JSON.stringify(trusted) : '')
+ vi.stubEnv('WRITER_CREDENTIAL_DOMAIN', setting === 'domain only' || setting === 'both' ? domainId : '')
+ let reads = 0
+ vi.spyOn(globalThis,'fetch').mockImplementation(async(url,init) => {
+  if(String(url).startsWith('http://127.0.0.1:')) return transport(url,init)
+  reads++
+  const req = JSON.parse(String(init?.body)), params = req.params[0]
+  if (params.index) return new Response(JSON.stringify({result:{validated:true,ledger_hash:hash,index:domainId,node:domainNode}}))
+  return new Response(JSON.stringify(await rpc(params.credential ? {Subject:params.credential.subject} : {})({command:req.method})))
+ })
+ try {
+  const client = new PublisherClient({baseUrl:`http://127.0.0.1:${(server.address() as {port:number}).port}`})
+  await client.registry()
+  const paid = await client.searchPublisher('team-builder-notes','x402',5)
+  expect(paid.some(h=>h.tier==='PAID')).toBe(true)
+  expect(paid.find(h=>h.tier==='PAID')!.verification?.status).toBe(setting === 'neither' ? 'unverified' : 'verified')
+  const free = (await client.searchPublisher('open-records','Kestrel',5)).find(h=>h.tier==='FREE')!
+  expect(free).toBeDefined()
+  await client.readFree(free,'Open Records')
+  expect(free.verification?.status).toBe(setting === 'neither' ? 'unverified' : 'verified')
+  expect(reads > 0).toBe(setting !== 'neither')
+ } finally {
+  vi.restoreAllMocks();vi.unstubAllEnvs();server.closeAllConnections()
+  await new Promise<void>(r=>server.close(()=>r()));app.locals.journal.close()
+ }
+})
+
+it('keeps the operator’s Open Records alongside the other team writers', async () => {
+ const { orderWriters } = await import('../src/components/WriterEarnings.js')
+ const roster = [
+  {name:'Open Records',publisherSlug:'open-records',authorship:'Fictional writer',sales:[]},
+  {name:'AlphaLeak',publisherSlug:'alphaleak',authorship:'Fictional writer',sales:[]},
+  {name:'Build notes',publisherSlug:'team-builder-notes',authorship:'Team-authored',sales:[]},
+ ]
+ const result=orderWriters(roster,true)
+ expect(result.shown.map(w=>w.publisherSlug)).toEqual(['open-records','team-builder-notes'])
+ expect(result.demo.map(w=>w.publisherSlug)).toEqual(['alphaleak'])
+})
