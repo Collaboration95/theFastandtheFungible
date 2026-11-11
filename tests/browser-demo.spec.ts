@@ -43,7 +43,9 @@ test('static Pages UC3: draft, verified upgrade, refund, receipt, citation and W
     await expect(page.getByRole('region', { name: 'Sources', exact: true })).toContainText('2 bought · 1 refunded')
     const spend = page.getByRole('region', { name: 'Spend', exact: true }).first()
     await expect(spend).toContainText('S$1.30 budget left · refunds don’t restore budget'.replace('’', "'"))
-    // Each key-reveal card lists its own create and finish transactions; the refund links separately.
+    // Successful proof lives in Spend; unresolved/refund proof remains open on its card.
+    await spend.locator('.ra-spending-proof > summary').click()
+    // Each key-reveal proof lists its own create and finish transactions; the refund links separately.
     await expect(page.getByRole('link', { name: 'tx', exact: true })).toHaveCount(4)
     await expect(page.getByRole('link', { name: /^Refund tx [A-F0-9]{6}…[A-F0-9]{5}$/ })).toHaveCount(1)
     await expect(page.locator('p:visible', { hasText: 'Refund signed by the writer. This demo writer agrees to refund; a real writer could refuse.' })).toHaveCount(1)
