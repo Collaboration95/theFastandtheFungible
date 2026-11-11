@@ -9,11 +9,11 @@ export const questionTerms = (text: string) => [...new Set(text.toLowerCase().ma
 /** Public metadata may identify a topic, but never supplies answer text. */
 export function onTopic(question: string, content: ContentEnvelope, candidates: PublicCandidate[]): boolean {
   const metadata = candidates.find(c => sameSource(c, content))
-  const own = new Set(questionTerms(`${metadata?.title ?? content.title} ${metadata?.facets.join(' ') ?? ''} ${content.spans.map(s => s.text).join(' ')}`))
+  const text = `${metadata?.title ?? content.title} ${metadata?.facets.join(' ') ?? ''} ${content.spans.map(s => s.text).join(' ')}`
+  const own = new Set(questionTerms(text))
   const need = questionTerms(question)
   const identifiers = (question.match(/\b(?:[A-Z]{2,}[A-Z0-9]*|[A-Z][a-z]+(?:[A-Z][a-z]+)+|[a-z]+\d+[a-z]*)\b/g) ?? []).map(t => t.toLowerCase()).filter(t => need.includes(t))
-  const subject = `${metadata?.title ?? content.title} ${metadata?.facets.join(' ') ?? ''}`
-  return topicMatches(question, `${subject} ${content.spans.map(s => s.text).join(' ')}`) && (!identifiers.length || identifiers.some(t => own.has(t) || t === 'xrp' && own.has('xrpl') || t === 'xrpl' && own.has('xrp'))) && (!need.length || need.filter(t => own.has(t)).length >= Math.min(2, need.length))
+  return topicMatches(question, text) && (!identifiers.length || identifiers.some(t => own.has(t) || t === 'xrp' && own.has('xrpl') || t === 'xrpl' && own.has('xrp'))) && (!need.length || need.filter(t => own.has(t)).length >= Math.min(2, need.length))
 }
 
 /** Commands and lowercase protocol names keep their case at a sentence start, as the web view keeps them. */
@@ -53,9 +53,9 @@ export function summarizeAnswer(question: string, answer: Answer, contents: Cont
     citations: [{ source: c.source, resourceId: c.resourceId, version: c.version, spanId: s.id }],
   })))
   const claims = answer.claims.filter(c => !/\b(?:I recommend|we recommend|integration recommendation)\b|^Test missing/i.test(c.text) && c.citations.every(ref => topical.some(t => sameSource(t, ref))))
-  const paid = extracts.filter(c => c.citations.some(ref => candidates.some(m => m.tier === 'PAID' && sameSource(m, ref))))
-  const lead = leadFinding(question, paid, topical, firstRequirement, candidates)
-  const chosen = lead.length ? lead : leadFinding(question, extracts.filter(c => c.citations.some(ref => candidates.some(m => m.tier === 'FREE' && sameSource(m, ref)))), topical, firstRequirement, candidates)
+  const findLead = (tier: PublicCandidate['tier']) => leadFinding(question, extracts.filter(c => c.citations.some(ref => candidates.some(m => m.tier === tier && sameSource(m, ref)))), topical, firstRequirement, candidates)
+  const lead = findLead('PAID')
+  const chosen = lead.length ? lead : findLead('FREE')
   // Retain a selected span in claims so receipts, coverage and citation numbering share its binding.
   for (const item of chosen) {
     const existing = claims.find(c => c.citations.some(ref => item.claim.citations.some(r => sameSource(ref, r) && ref.spanId === r.spanId)))
@@ -71,7 +71,7 @@ export function summarizeAnswer(question: string, answer: Answer, contents: Cont
     const own = sentences(c.text), before = extracts[extracts.indexOf(c) - 1], sameArticle = before && before.citations[0].resourceId === c.citations[0].resourceId
     return own.map((text, i) => ({ text, prev: i ? own[i - 1] : sameArticle ? sentences(before.text).at(-1) : undefined }))
   }).filter(({ text }) => !terms.length || terms.some(t => questionTerms(text).includes(t)))]
-  const kept: { text: string; prev?: string }[] = []
+  const opening: string[] = [], groups: string[][] = []
   for (const { text, prev } of entries) {
     if (text.length > 1800 || answerBoilerplate(text) || /^Test missing/i.test(text)) continue
     // The context paragraph obeys the same floor as the lead: an unrelated sentence stays out.
@@ -80,18 +80,18 @@ export function summarizeAnswer(question: string, answer: Answer, contents: Cont
     if (texts.some(t => t.includes(text) || text.includes(t))) continue
     const n = text.split(/\s+/).length
     if (count + n > 120) continue
-    texts.push(text); count += n; kept.push({ text, prev })
+    texts.push(text); count += n
+    if (leadTexts.has(text)) opening.push(text)
+    else {
+      const last = groups.at(-1)
+      if (last && ANAPHORIC.test(text) && prev !== undefined && last.some(t => t.includes(prev) || prev.includes(t))) last.push(text)
+      else groups.push([text])
+    }
   }
   // H9-13: after the lead, the sentences that answer come before the cautions ("A 402 challenge is an offer to pay; it does
   // not itself authorize spending.") and the notes on what the sources lack. A sentence that points back keeps its place
   // after the one it points to.
-  const groups: string[][] = []
-  for (const { text, prev } of kept.filter(entry => !leadTexts.has(entry.text))) {
-    const last = groups.at(-1)
-    if (last && ANAPHORIC.test(text) && prev !== undefined && last.some(t => t.includes(prev) || prev.includes(t))) last.push(text)
-    else groups.push([text])
-  }
-  const ordered = [...kept.filter(entry => leadTexts.has(entry.text)).map(entry => entry.text), ...groups.filter(group => !caution(group[0])).flat(), ...groups.filter(group => caution(group[0])).flat()]
+  const ordered = [...opening, ...groups.flatMap(group => caution(group[0]) ? [] : group), ...groups.flatMap(group => caution(group[0]) ? group : [])]
   const refusals = ['No listed writer covers this yet · nothing bought', 'Matched articles supplied no citable answer · nothing bought', 'No verifiable evidence is available.']
   const fallback = claims.length ? 'See the cited passages under Show work.' : refusals.includes(answer.conclusion) ? answer.conclusion : 'No verifiable evidence is available.'
   return { lead: chosen, conclusion: ordered.map(sentenceStart).join(' ') || fallback, claims, openGaps: answer.openGaps, version: answer.version, provider: answer.provider, model: answer.model }

@@ -1,12 +1,11 @@
 import { sameSource } from './source-identity.js'
-import { expandProtocolQuery, topicMatches } from './relevance.js'
+import { expandProtocolQuery, topicMatches, topicStem as stem } from './relevance.js'
 import { answerNames, askedKind, numericKind } from './answer-entity.js'
 import type { Claim, ContentEnvelope, PublicCandidate } from './contracts/index.js'
 
 const STOP = new Set('what when where which how did does are the its and with from that this latest last getting much was were for has have on in of a an to s be been being is am or as at by if so it do you your we our they them their there these those who why'.split(' '))
 const words = (text: string) => [...new Set(text.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase().replace(/lead[- ]times?/g, 'lead time').match(/[a-z0-9]+/g) ?? [])].filter(word => word.length > 1 && !STOP.has(word))
 /** Light inflection folding (claims/claim, signed/sign) for coverage counts, as relevance.ts does. */
-const stem = (word: string) => word.replace(/(?:ing|ed)$/, m => word.length > 5 ? '' : m).replace(/(?<!s)s$/, m => word.length > 3 ? '' : m)
 const stems = (text: string) => [...new Set(words(text).map(stem))]
 /** Use Unicode sentence segmentation rather than an uppercase-only boundary rule.
  * Keep source bytes (including identifier punctuation) intact for quotation. */
@@ -71,6 +70,7 @@ export function onTopicSentence(question: string, text: string, firstRequirement
  * Shared by the screen and export; callers enforce delivered-passage access first.
  */
 export function leadFinding(question: string, claims: Claim[], delivered?: ContentEnvelope[], firstRequirement?: string, candidates: PublicCandidate[] = []): { text: string; claim: Claim }[] {
+  const clauses = clausesOf(question)
   let ranked = rankLeadSentences(question, claims, delivered, firstRequirement, candidates)
   // An off-topic sentence never leads; a complement may still come from the rest.
   // QUAL: nor does a disclaimer about what the sources lack ("The EscrowCancel reference does not state who may submit
@@ -86,7 +86,7 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
     // cover the first clause's own words, and the answer view says which qualifier the sources never mention.
     const relaxed = rankLeadSentences(question, claims, delivered, firstRequirement, candidates, { relaxed: true })
     // "Covers the question" is judged on its first clause: a two-clause question ("…, and can my agent pay it with XRP on Testnet?") must not veto a sentence that answers the first.
-    const clause = new Set(stems(clausesOf(question)[0] ?? question))
+    const clause = new Set(stems(clauses[0] ?? question))
     first = relaxed.find(item => item.onTopic && !LACKS.test(item.text) && [...clause].filter(term => stems(item.text).includes(term)).length / Math.max(1, clause.size) >= 0.4)
     if (first) ranked = relaxed
   }
@@ -99,7 +99,7 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
     // names one. It is still never a disclaimer about what the sources lack, a fragment, a lowercase start or a cut
     // sentence; when nothing qualifies, the view keeps its one plain line.
     const partial = rankLeadSentences(question, claims, delivered, firstRequirement, candidates, { relaxed: true, partial: true })
-    first = partial.find(item => answersPart(item) && clausesOf(question).some(clause => answersClause(question, clause, item.text)))
+    first = partial.find(item => answersPart(item) && clauses.some(clause => answersClause(question, clause, item.text)))
     if (first) ranked = partial
   }
   if (!first && firstRequirement) {
@@ -121,7 +121,7 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
     const open = facetTerms(question).map(stem).filter(term => !touches(covered, term))
     // A rare question term the first sentence lacks, as before; or a term of a later clause the first sentence leaves open.
     const missing = terms.filter(term => !words(first.text).includes(term) && ranked.filter(item => words(item.text).includes(term)).length <= Math.max(1, ranked.length / 3))
-    const later = clausesOf(question).slice(1).filter(clause => !answersClause(question, clause, first.text))
+    const later = clauses.slice(1).filter(clause => !answersClause(question, clause, first.text))
     const pool = later.length ? rankLeadSentences(question, claims, delivered, firstRequirement, candidates, { relaxed: true, partial: true }) : []
     // Prefer a complete answer to a later clause from the same cited passage before general supporting detail.
     const complements = pool.filter(item => item.text !== first.text && !item.shared && !item.tail && answersPart(item) && item.text.length + first.text.length < 620
@@ -141,9 +141,8 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
   // and can my agent pay it with XRP?" leads with the contents, then the XRP sentence). An explicit frozen first fact
   // retains its priority when it differs from the first clause; a fact repeating that clause keeps clause ordering.
   const frozenFirst = firstRequirement && firstFactOf(question, firstRequirement) === firstRequirement
-    && stems(firstRequirement).join(' ') !== stems(clausesOf(question)[0] ?? question).join(' ')
+    && stems(firstRequirement).join(' ') !== stems(clauses[0] ?? question).join(' ')
   if (selected.length === 2 && !frozenFirst) {
-    const clauses = clausesOf(question)
     const [a, b] = selected.map(item => clauses.findIndex(clause => answersClause(question, clause, item.text)))
     if (a >= 0 && b >= 0 && b < a) selected.reverse()
   }
@@ -211,7 +210,6 @@ const pointsBack = (text: string, asked: ReadonlySet<string>) => {
   const terms = stems(subject)
   return !terms.length || terms.some(term => !asked.has(term))
 }
-const skip = (text: string, claim: Claim, ci: number, si: number): RankedSentence => ({ text, claim, score: 0, ci, si, named: false, cover: 0, weighted: 0, shared: false, tail: false, onTopic: false })
 
 /** Every eligible answer sentence of the validated claims, best first. Exported so
  * tests and the development replay can inspect the ranking. */
@@ -224,6 +222,7 @@ export function rankLeadSentences(question: string, claims: Claim[], delivered?:
   const terms = words(question)
   const expanded = words(expandProtocolQuery(question))
   const firstFact = firstFactOf(question, firstRequirement)
+  const leadTimes = /lead[- ]times?|shorter/i.test(question)
   const primary = words(firstFact)
   const eventTerms = /^when\b/i.test(firstFact) ? primary.filter(term => /(?:ed|held|born|began|begun|took)$/.test(term)) : []
   const causal = /^why\b/i.test(firstFact)
@@ -270,10 +269,11 @@ export function rankLeadSentences(question: string, claims: Claim[], delivered?:
     const metadata = candidates.find(c => claim.citations.some(ref => sameSource(c, ref)))
     const content = delivered?.find(c => claim.citations.some(ref => sameSource(c, ref)))
     const title = metadata?.title ?? content?.title ?? ''
-    const titleTerms = words(`${title} ${metadata?.facets.join(' ') ?? ''}`)
+    const heading = `${title} ${metadata?.facets.join(' ') ?? ''}`
+    const titleTerms = words(heading)
     // An entity can be established earlier in the verified article. Require
     // topical overlap in this cited passage, then rank its answer sentence.
-    const subject = `${title} ${metadata?.facets.join(' ') ?? ''} ${claim.text}`
+    const subject = `${heading} ${claim.text}`
     const entityContext = `${subject} ${content?.body ?? ''}`
     // A partial pass (R8-A3) needs one clause's topic and one of the names, not all of them.
     const onSubject = options.partial ? clausesOf(question).some(clause => topicMatches(clause, subject)) : topicMatches(topicFact, subject)
@@ -281,25 +281,24 @@ export function rankLeadSentences(question: string, claims: Claim[], delivered?:
     if (!onSubject || !namesIt) return []
     const context = words(claim.text)
     const contextOverlap = terms.filter(term => context.includes(term)).length
-    return answerExtracts(claim.text).map((text, si) => {
+    return answerExtracts(claim.text).flatMap((text, si): RankedSentence[] => {
     const lower = text.toLowerCase(), tokens = words(text)
-    if (answerBoilerplate(text)) return skip(text, claim, ci, si)
+    if (answerBoilerplate(text)) return []
     // A clause that continues an earlier sentence ("which reveals the secret", "and the writer…") is not an answer on its own.
-    if (FRAGMENT_START.test(text) || pointsToContext(text)) return skip(text, claim, ci, si)
+    if (FRAGMENT_START.test(text) || pointsToContext(text)) return []
     // A path match may start only where a word starts: the leftmost match is the same, and one long token
     // (an untrusted 47,000-character passage) is scanned once instead of once per character (3.9 s → ms).
-    if (/^(?:This (?:article|note|guide|source)\b|This is a team-authored|This team-authored|The implementation record|For a reader assessing|For an? .*integration|I recommend|Test missing|This is an integration recommendation|Reproduction requires|The four .*entries|Some .*examples use different headers|See\b|Code:|Sources?:)|(?<![\w-])(?:[\w-]+\/)+[\w.-]+\.(?:ts|md|tsx)\b/i.test(text)) return skip(text, claim, ci, si)
+    if (/^(?:This (?:article|note|guide|source)\b|This is a team-authored|This team-authored|The implementation record|For a reader assessing|For an? .*integration|Reproduction requires|The four .*entries|Some .*examples use different headers|See\b|Code:|Sources?:)|(?<![\w-])(?:[\w-]+\/)+[\w.-]+\.(?:ts|md|tsx)\b/i.test(text)) return []
     const overlap = terms.filter(term => tokens.includes(term)).length
     const semanticOverlap = expanded.filter(term => tokens.includes(term)).length
-    const identifier = /\b(?:[A-Z][a-z]+){2,}\b|\b[a-z]+[A-Z][A-Za-z]+\b|\b[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+\b/.test(text)
     const identifiers = text.match(/\b(?:[A-Z][a-z]+){2,}\b|\b[a-z]+[A-Z][A-Za-z]+\b|\b[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+\b/g) ?? []
+    const identifier = identifiers.length > 0
     const names = asked ? answerNames(asked, text, question) : []
     const novelIdentifier = identifiers.some(name => !question.includes(name) && (!fieldValue || !transactionName(name)))
     const numericComparison = /\bto\s+[\d.,]+%?\s+from\s+[\d.,]+/i.test(text)
     const changeAnswer = /\b(?:change\w*|meeting)\b/i.test(firstFact) && /\b(?:voted|rais(?:e|ed)|reduced|increased|cut)\b/i.test(text) && /\d/.test(text)
-    if (/\b(?:I recommend|we recommend|integration recommendation)\b/i.test(text)) return skip(text, claim, ci, si)
-    if (/^(?:make |npm |npx |node |python |curl |[A-Z_]+=)/.test(text) && !/\bcommand|CLI|install|invoke\b/i.test(question)) return skip(text, claim, ci, si)
-    if (!overlap && !semanticOverlap && !(contextOverlap && (identifier || numericComparison || changeAnswer)) && !(/lead[- ]times?|shorter/i.test(question) && /weeks?/.test(lower) && /\bfrom\b.*\bto\b/.test(lower))) return skip(text, claim, ci, si)
+    if (/^(?:make |npm |npx |node |python |curl |[A-Z_]+=)/.test(text) && !/\bcommand|CLI|install|invoke\b/i.test(question)) return []
+    if (!overlap && !semanticOverlap && !(contextOverlap && (identifier || numericComparison || changeAnswer)) && !(leadTimes && /weeks?/.test(lower) && /\bfrom\b.*\bto\b/.test(lower))) return []
     let score = overlap / Math.max(1, terms.length) * 20 + contextOverlap / Math.max(1, terms.length) * 4
     score += semanticOverlap / Math.max(1, expanded.length) * 8
     score += primary.filter(term => tokens.includes(term)).length / Math.max(1, primary.length) * 12
@@ -343,13 +342,13 @@ export function rankLeadSentences(question: string, claims: Claim[], delivered?:
     if (asked === 'field' && /\b(?!(?:The|This|Which|What|An?)\b)[A-Z][A-Za-z0-9_]*\s+(?:field|parameter|setting)\b/.test(text)) score += 20
     if (/\bwhich transactions?\b/i.test(question) && /^(?:The |An? )?[A-Z][a-z]+(?:[A-Z][a-z]+)+\b/.test(text)) score += 16
     if (/\bstatute|law|regulation\b/i.test(question) && /\bAct|statute|law|regulat/i.test(text)) score += 8
-    if (/lead[- ]times?|shorter/i.test(question)) score += /\bweeks?\b/.test(lower) ? 12 : 0
+    if (leadTimes) score += /\bweeks?\b/.test(lower) ? 12 : 0
     if (/analyst|outlook|margin/i.test(question)) score += /estimate|broker|analyst|consensus/.test(lower) ? 12 : 0
     if (/change|meeting/i.test(firstFact)) score += /policy rate|increase from|\brais(?:e|ed)\b|\bvoted\b/.test(lower) ? 28 : 0
     if (/renewable|electricity|grid/i.test(question)) score += /renewable|\bMW\b|commissioned/.test(text) ? 10 : 0
     if (/\d/.test(text)) score += 2
     if (numericComparison) score += /analyst|outlook|margin/i.test(firstFact) ? 24 : 10
-    if (/\bfrom\b.*\bto\b/.test(lower)) score += /lead[- ]times?|shorter/i.test(question) && /weeks?/.test(lower) ? /shorter|shorten|trend|change|improv/i.test(firstFact) ? 50 : 28 : 5
+    if (/\bfrom\b.*\bto\b/.test(lower)) score += leadTimes && /weeks?/.test(lower) ? /shorter|shorten|trend|change|improv/i.test(firstFact) ? 50 : 28 : 5
     // The sentence that covers the question's distinctive terms outranks one that
     // only repeats the frame words every article shares.
     const sentenceStems = new Set(stems(text))
@@ -362,7 +361,7 @@ export function rankLeadSentences(question: string, claims: Claim[], delivered?:
     if (/^(I |My |Here |Speaking |Let me|It |That |These |They |Then )/.test(text)) score -= 12
     if (text.length > 420 || text.length < 30) score -= 8
     const cover = stemmed.filter(term => sentenceStems.has(term)).length / Math.max(1, stemmed.length)
-    return { text, claim, score, ci, si, tail: answerBoilerplate(answerExtracts(claim.text)[0] ?? '') && si > 0, shared: (templateSources.get(text)?.size ?? 0) > 1, named: names.length > 0, cover, weighted, onTopic: mayLead(asked, names.length > 0, cover) }
+    return [{ text, claim, score, ci, si, tail: answerBoilerplate(answerExtracts(claim.text)[0] ?? '') && si > 0, shared: (templateSources.get(text)?.size ?? 0) > 1, named: names.length > 0, cover, weighted, onTopic: mayLead(asked, names.length > 0, cover) }]
   })}).filter(item => item.claim.citations.length && item.score > 0 && item.text.length <= 620 && item.text.split(/\s+/).length <= 40 ).sort((a, b) => b.score - a.score || a.ci - b.ci || a.si - b.si)
   return ranked
 }
