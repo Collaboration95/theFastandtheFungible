@@ -25,10 +25,17 @@ export const FPS = 30
 /** Page background of the app and the site; cards and fades use it so cuts stay calm. */
 export const PAPER = '#FAF8F3'
 
-/** The hosted questions. The first buys from the team-authored writers; the second is declined. */
+/**
+ * The hosted questions. The first buys from the team-authored writers (the x402 question: right article, one purchase, a
+ * lead that names PAYMENT-REQUIRED and PAYMENT-SIGNATURE; the RLUSD preset regressed on hosted, mock-judge round 9, H9-01).
+ * The second is declined.
+ */
 export const QUESTIONS = {
-  buy: 'Can an XRPL escrow hold RLUSD today, and what must the issuer enable before a buyer can lock it?',
-  decline: 'Which Singapore banks are piloting RLUSD settlement in 2026?',
+  buy: 'What does an x402 402 Payment Required response contain?',
+  // A news question (so it is planned, not chatted) that shares no vocabulary with any writer or free source: nothing is
+  // answerable from free sources, so the decline is a clean refusal that can be shared. (Macro words such as "outlook" and
+  // "prices" match the open central-bank records and get a free answer instead.)
+  decline: 'Which airlines ordered new narrowbody jets at the 2026 Farnborough Airshow?',
   // The local fixture stack only buys for the fictional-writer examples; the hosted demo's examples are the XRPL notes.
   localBuy: 'Are Kestrel Semiconductor\'s advanced-packaging lead times in Malaysia getting shorter?',
 }

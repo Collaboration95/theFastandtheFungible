@@ -7,7 +7,8 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { THEMES, lineHtml, paletteColor, parseLine, plain, redactLine } from '../scripts/video/lib/ansi.mjs'
 import { clockText, fillTokens, placeSentences, planShot, resolveRef, resolveSegments, speedLabel, speechText, splitSentences, splitSubtitles, srtTime, timeCues, toSrt } from '../scripts/video/lib/timeline.mjs'
-import { SCENES } from '../scripts/video/scenes.mjs'
+import { QUESTIONS } from '../scripts/video/config.mjs'
+import { CLAUDE_PROMPT, SCENES } from '../scripts/video/scenes.mjs'
 import { sessionEnv } from '../scripts/video/lib/terminal.mjs'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
@@ -173,6 +174,16 @@ describe('the video stays honest', () => {
     expect(total).toBeLessThan(175)
     const words = enabled.reduce((sum, s) => sum + s.vo.split(/\s+/).length, 0)
     expect(words).toBeLessThan(360)
+  })
+  it('keeps the proof-of-refusal shot on, with a decline that is clean and a script that names the recorded questions', () => {
+    expect(spec.shots.find(s => s.id === 's3b-refusal').enabled).toBe(true)
+    // "outlook" and "prices" match the open central-bank records, which answer from free sources and leave no refusal to prove.
+    expect(QUESTIONS.decline).not.toMatch(/\b(outlook|prices?|rates?|yields?|bonds?|bank|inflation|forecast)\b/i)
+    for (const question of [QUESTIONS.buy, QUESTIONS.decline]) expect(norm(script), question).toContain(norm(question.replace(/\s+/g, ' ')))
+  })
+  it('asks Claude Code the same question as the hosted ask, and the script shows that prompt', () => {
+    expect(CLAUDE_PROMPT).toContain(`'${QUESTIONS.buy}'`)
+    expect(norm(script)).toContain(norm(`ask_expert '${QUESTIONS.buy}' with budget_sgd=2`))
   })
   it('starts terminal sessions from an allowlist: no key, token or seed is inherited', () => {
     const before = { ...process.env }

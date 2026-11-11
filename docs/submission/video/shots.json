@@ -44,7 +44,7 @@
           "scene": "hosted-ask",
           "from": "typed",
           "to": "plan_ready",
-          "maxSeconds": 5,
+          "maxSeconds": 6,
           "clockOrigin": "asked"
         },
         {
@@ -81,7 +81,7 @@
       ],
       "voAt": [
         0.8,
-        13.9,
+        12.9,
         19.9,
         23.9
       ]
@@ -129,12 +129,11 @@
     {
       "id": "s3b-refusal",
       "title": "It can say no, and prove it",
-      "enabled": false,
-      "disabledReason": "11 Nov first pass: on the hosted demo 'Share proof of refusal' then 'Publish proof page' failed twice with 'The proof page could not be created'. Re-record (node scripts/video/record.mjs --scenes hosted-decline --target hosted) and set enabled to true once the hosted publish works.",
+      "enabled": true,
       "voStart": 0.5,
       "minSeconds": 13,
       "label": "{scenes.hosted-decline.labels.caption}",
-      "vo": "It can also say no. Here nothing in the paid library was worth buying, so it spent nothing, and the refusal is anchored on XRPL Testnet. Anyone can open the proof page and check it.",
+      "vo": "It can also say no. Here no source covered the question, so it bought nothing, and the refusal is anchored on XRPL Testnet. Anyone can open the proof page and check it.",
       "segments": [
         {
           "scene": "hosted-decline",
@@ -157,14 +156,31 @@
         },
         {
           "scene": "hosted-decline",
+          "from": "answer_ready+2",
+          "to": "share_available",
+          "maxSeconds": 2,
+          "clockOrigin": "asked"
+        },
+        {
+          "scene": "hosted-decline",
           "from": "share_confirm",
           "to": "share_confirm+2.8"
+        },
+        {
+          "scene": "hosted-decline",
+          "from": "proof_ready",
+          "to": "proof_ready+1.2"
         },
         {
           "scene": "hosted-decline",
           "from": "proof_page",
           "to": "proof_page+3.5"
         }
+      ],
+      "voAt": [
+        0.5,
+        5.0,
+        12.0
       ]
     },
     {
