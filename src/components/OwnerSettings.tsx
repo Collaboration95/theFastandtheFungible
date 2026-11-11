@@ -1,4 +1,4 @@
-import { ENV } from '../../shared/presentation'
+import { ENV, xrpAmount } from '../../shared/presentation'
 import { useEffect, useState, type ReactNode } from 'react'
 
 type Values = Record<string, string | number>
@@ -510,7 +510,7 @@ export default function OwnerSettings({
                       <td>
                         {w.balanceDrops == null
                           ? 'Unavailable'
-                          : (Number(w.balanceDrops) / 1000000).toLocaleString()}
+                          : xrpAmount(w.balanceDrops)}
                       </td>
                     </tr>
                   ))}

@@ -1,4 +1,5 @@
 import { XRPL_LABEL, type RunSnapshot } from '../../shared/contracts/index.js'
+import { whenSGT } from '../../shared/presentation'
 
 // Never dump event.data: it can contain a delivery token, headers, or paid body.
 function safeFields(data: Record<string, unknown>, prefix = '', depth = 0): [string, string][] {
@@ -50,7 +51,7 @@ export default function Wire({ run }: { run: RunSnapshot }) {
     <p>Settlement: {run.labels.settlement}</p>
     {exchanges.length === 0 ? <p>No HTTP exchange recorded yet.</p> : <ol>
       {exchanges.map(({ event, fields }) => <li key={`${event.runId}:${event.id}`}>
-        <strong>{event.type === 'GRANT' ? 'Verified delivery' : 'HTTP'}</strong> <time dateTime={event.at}>{event.at.slice(11, 19)}</time>
+        <strong>{event.type === 'GRANT' ? 'Verified delivery' : 'HTTP'}</strong> <time dateTime={event.at}>{whenSGT(event.at)}</time>
         <dl>{fields.map(([key, value]) => <div key={key}><dt>{key}</dt><dd><code>{value}</code></dd></div>)}</dl>
       </li>)}
     </ol>}

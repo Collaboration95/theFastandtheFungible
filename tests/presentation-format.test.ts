@@ -40,6 +40,14 @@ function violations(code: string) {
       for (const amount of text.matchAll(/S\$(\d+(?:\.\d+)?)/g)) if (!/^\d+\.\d{2}$/.test(amount[1])) found.push(`money: ${amount[0]}`)
     }
     if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression) && /^(slice|substring|substr)$/.test(node.expression.name.text) && /hash|invoice|fingerprint|\btx\b/i.test(node.expression.expression.getText(source))) found.push('fingerprints must use shortTx')
+    if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.PlusToken && ts.isStringLiteral(node.left) && node.left.text.endsWith('S$') && !/\.toFixed\(2\)$/.test(node.right.getText(source))) found.push('dynamic money must retain two decimals')
+    if (ts.isJsxElement(node) || ts.isJsxFragment(node)) {
+      node.children.forEach((child, index) => {
+        const next = node.children[index + 1]
+        if (ts.isJsxText(child) && /S\$$/.test(child.text) && next && ts.isJsxExpression(next) && next.expression && !/\.toFixed\(2\)$/.test(next.expression.getText(source))) found.push('dynamic money must retain two decimals')
+        if (ts.isJsxText(child) && /…|\.\.\./.test(child.text) && node.children.some(sibling => ts.isJsxExpression(sibling) && /\.(?:slice|substring|substr)\(/.test(sibling.getText(source)))) found.push('fingerprints must use shortTx')
+      })
+    }
     if (ts.isTemplateExpression(node)) {
       for (let i = 0; i < node.templateSpans.length; i++) {
         const prefix = i === 0 ? node.head.text : node.templateSpans[i - 1].literal.text
@@ -56,9 +64,12 @@ function violations(code: string) {
 it('rejects bad money and alternative hash rules, including deliberately broken renderers', () => {
   expect(violations('<p>S$0.5</p>')).toContain('money: S$0.5')
   expect(violations('const price = `S$${minor / 100}`')).toContain('dynamic money must retain two decimals')
+  expect(violations("const price = 'S$' + minor / 100")).toContain('dynamic money must retain two decimals')
+  expect(violations('<p>S${minor / 100}</p>')).toContain('dynamic money must retain two decimals')
   expect(violations('const hash = `${tx.slice(0, 6)}…${tx.slice(-5)}`')).toContain('fingerprints must use shortTx')
   expect(violations('const hash = `${tx.substring(0, 8)}…${tx.substring(56)}`')).toContain('fingerprints must use shortTx')
   expect(violations('<p>{txHash.slice(0, 6)}…{txHash.slice(-5)}</p>')).toContain('fingerprints must use shortTx')
+  expect(violations('<p>{h.slice(0, 6)}…{h.slice(-5)}</p>')).toContain('fingerprints must use shortTx')
   expect(violations('<p>{money(price)} {shortTx(hash)}</p>')).toEqual([])
 })
 it('guards every src/ and demo/ renderer against money and fingerprint drift', () => {
