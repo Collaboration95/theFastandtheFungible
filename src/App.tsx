@@ -102,13 +102,12 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
   const [tab, setTab] = useState<'run' | 'writers'>(browserDemo && new URLSearchParams(location.search).has('writers') ? 'writers' : 'run')
   const [reputation, setReputation] = useState<ReputationRecord[]>([])
   const [clarifyNever, setClarifyNever] = useState(() => !recording && (new URLSearchParams(window.location.search).get('clarify') === 'never' || prefs.get(clarifyKey) === '1'))
-  const [navOpen, setNavOpen] = useState(() => !recording && prefs.get(navKey) !== 'rail')
+  const [navOpen, setNavOpen] = useState(() => !recording && !(typeof matchMedia === 'function' && matchMedia('(max-width: 780px)').matches) && prefs.get(navKey) !== 'rail')
   useEffect(() => {
     const narrow = matchMedia('(max-width: 780px)')
     const close = () => { if (narrow.matches) setNavOpen(false) }
-    const timer = setTimeout(close, 0)
     narrow.addEventListener('change', close)
-    return () => { clearTimeout(timer); narrow.removeEventListener('change', close) }
+    return () => narrow.removeEventListener('change', close)
   }, [])
   // Settings → Universal budget per query: every question uses it, and Home shows a chip instead of the slider.
   const [universal, setUniversal] = useState(() => !recording && prefs.get(universalKey) === '1')

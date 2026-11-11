@@ -7,6 +7,7 @@ import { afterEach, expect, it, vi } from 'vitest'
 import { act, cleanup, render, screen } from '@testing-library/react'
 import { detectHosted, type HostedDemoStatus } from '../src/api'
 import Connecting from '../src/components/Connecting'
+import App from '../src/App'
 import { verificationError, verificationNetworkFailure } from '../src/verify-network'
 import { warmVerifier } from '../src/warm-verifier'
 import type { BrowserVerification } from '../src/verify/browser'
@@ -86,4 +87,11 @@ it('offers the published video when the build supplies its public HTTPS URL', ()
   vi.stubEnv('VITE_DEMO_VIDEO_URL', 'https://video.example/demo')
   render(<Connecting />)
   expect(screen.getByRole('link', { name: 'Watch the demo video' }).getAttribute('href')).toBe('https://video.example/demo')
+})
+
+it('starts the phone sidebar closed so an initial open cannot race a deferred boot close', () => {
+  vi.stubGlobal('matchMedia', () => ({ matches: true, addEventListener() {}, removeEventListener() {} }))
+  const html = renderToStaticMarkup(<App hosted={status} />)
+  expect(html).toContain('aria-label="Show sidebar"')
+  expect(html).not.toContain('aria-label="Hide sidebar"')
 })
