@@ -1,4 +1,4 @@
-# Unsigned ledger dry runs · 12 November 2026
+# Unsigned ledger dry runs · 11 November 2026
 
 Run `node scripts/ledger-dry-run.mjs` (or repro 01 with `--live`). Public RPC only; nothing signed or submitted, no fees paid. Mainnet is read-only. TEST-SGD is our no-value Testnet stand-in for RLUSD.
 
