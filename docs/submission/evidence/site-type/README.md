@@ -60,3 +60,8 @@ The phone browser contract checks all four footer links at least 44×44 px,
 no horizontal overflow, a visible home heading with Google font domains blocked,
 and exactly one local Geist download. The built replay contract checks one Geist
 download and no brand-font request. Both passed before these measurements.
+
+The summary includes SHA-256 hashes of the first-party home inputs. The
+current files match the measured after tree byte-for-byte; rebasing and the
+facts/talk fixes do not change these inputs. The gate runner checks the input
+bytes before reusing the reports.
