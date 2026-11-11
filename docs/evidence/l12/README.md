@@ -55,13 +55,13 @@ provenance and signed receipt fields are unchanged.
 Measured local Pages builds with Lighthouse 12.8.2 at 390 × 844, DPR 3,
 simulated slow 4G (150 ms RTT, 1,638.4 Kbps) and 4× CPU slowdown. Both use the
 same gzip-6 static server. The final build and gates use Node 22.23.4. Before is `e5541665` (L1/L2 already applied, eager
-recordings); after is `937e8233689340c6785da9bb803fcb0a7ce8b902`, on integrated main, including the merged JC, KEY, writer-credential and FIN work.
+recordings); after is `e165e4e952f5c3dec452599fc9ef83f8b8d3dcc5`, on integrated main, including the merged JC, KEY, writer-credential and FIN work.
 
 | Metric | Before | After | Target |
 | --- | ---: | ---: | ---: |
 | Initial transfer | 650.4 KiB | 271.6 KiB | <300 KiB |
 | Lighthouse performance | 76 | 99 | ≥90 |
-| LCP | 4.77 s | 1.56 s | ≤2.50 s |
+| LCP | 4.77 s | 1.80 s | ≤2.50 s |
 | Entry gzip | 368.6 KiB | 3.4 KiB | ≤80 KB |
 | Question visible, real CDP throttling | 3.69 s | 0.37 s | ≤2.00 s |
 | Lighthouse accessibility | 100 | 100 | — |
