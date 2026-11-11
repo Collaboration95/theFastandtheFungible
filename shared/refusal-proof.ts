@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { LedgerAnchorSchema } from './contracts/anchor.js'
 import { ReceiptBundleSchema } from './contracts/receipts.js'
 import { XRPL_LABEL } from './contracts/publisher.js'
+import { LlmProviderSchema } from './contracts/answer.js'
 import type { DecisionRow, RunSnapshot } from './contracts/index.js'
 import { anchorProgress } from './anchor-status.js'
 import { declineSummary } from './decline.js'
@@ -86,20 +87,23 @@ export const TEAM_WRITER_NAME = 'ResearchAgent builders (team-authored)'
 export const proofWriter = (publisher: string) => /^ResearchAgent builders\b/.test(publisher) ? TEAM_WRITER_NAME : clip(publisher.split(' · ')[0], 120)
 
 export const ProofItemSchema = z.object({ title: z.string().max(200), writer: z.string().max(120), priceMinor: z.number().int().nonnegative(), verdict: z.string().max(80) })
-export const ProofSnapshotSchema = z.object({
+// Only the server parses stored snapshots; browser imports use the wording helpers below.
+export const ProofSnapshotSchema = /* @__PURE__ */ (() => z.object({
   version: z.literal(PROOF_VERSION),
   id: z.string().regex(PROOF_ID),
   createdAt: z.string(),
   question: z.string().min(1).max(2000),
   askedAt: z.string(),
-  environment: z.object({ surface: z.enum(['hosted', 'local']), network: z.literal('XRPL Testnet'), models: z.enum(['live', 'fixture']), label: z.string().max(160) }),
+  environment: z.object({ surface: z.enum(['hosted', 'local']), network: z.literal('XRPL Testnet'), models: z.enum(['live', 'fixture']), label: z.string().max(160),
+    research: z.object({ provider: LlmProviderSchema, fallback: z.boolean() }).optional(),
+  }),
   outcome: z.object({ summary: z.string().max(240) }),
   found: z.object({ paid: z.number().int().nonnegative(), free: z.number().int().nonnegative(), writers: z.number().int().nonnegative(), items: z.array(ProofItemSchema).max(12), more: z.number().int().nonnegative() }),
   bought: z.object({ count: z.literal(0), spentMinor: z.literal(0), currency: z.literal('SGD') }),
   anchor: LedgerAnchorSchema,
   verification: z.object({ ok: z.literal(true), passed: z.number().int().nonnegative(), skipped: z.number().int().nonnegative(), total: z.number().int().positive(), at: z.string() }),
   bundle: ReceiptBundleSchema,
-})
+}))()
 export type ProofSnapshot = z.infer<typeof ProofSnapshotSchema>
 export type ProofItem = z.infer<typeof ProofItemSchema>
 

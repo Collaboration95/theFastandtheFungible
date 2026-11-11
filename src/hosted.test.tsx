@@ -44,16 +44,16 @@ describe('hosted home state', () => {
   })
 
   it('labels the environment from the server, never claiming Testnet or live models it does not have', () => {
-    expect(environment(status()).full).toBe('Shared XRPL Testnet demo · live models · no real value')
-    expect(environment(status({ labels: { models: 'fixture models', rail: 'Shared XRPL Testnet demo · no real value' } })).full).toBe('Shared XRPL Testnet demo · fixture models · no real value')
+    expect(environment(status()).full).toBe('Shared XRPL Testnet demo · model-judged buying · no real value')
+    expect(environment(status({ labels: { models: 'fixture models', rail: 'Shared XRPL Testnet demo · no real value' } })).full).toBe('Shared XRPL Testnet demo · rule-based buying · no real value')
     const simulated = environment(status({ labels: { models: 'fixture models', rail: 'SIMULATED · no real value' } }))
     expect(simulated.testnet).toBe(false)
-    expect(simulated.full).toBe('Shared demo · simulated payments · fixture models · no real value')
+    expect(simulated.full).toBe('Shared demo · simulated payments · rule-based buying · no real value')
     expect(environment(status({ state: 'paused' })).full).toBe('Shared XRPL Testnet demo · paused · no real value')
     expect(environment(status(), 'offline').tone).toBe('off')
     // H5: the live demo answered with DeepSeek while the fixture decision model chose every purchase, yet the chip said "live models".
     const ruled = environment(status({ labels: { models: 'live research · fixture purchase decisions · per-answer fallback labelled', rail: 'Shared XRPL Testnet demo · no real value' } }))
-    expect(ruled).toMatchObject({ fixture: false, ruleBuying: true, full: 'Shared XRPL Testnet demo · live answers, rule-based buying · no real value', short: 'Testnet demo · no real value' })
+    expect(ruled).toMatchObject({ fixture: false, ruleBuying: true, full: 'Shared XRPL Testnet demo · rule-based buying · no real value', short: 'Testnet demo · no real value' })
     expect(environment(status()).ruleBuying).toBe(false)
   })
 

@@ -10,6 +10,7 @@ something significant: a feature, a metric move, a finished deliverable. Don't
 add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
+- 12 Nov: M1 makes proof pages and downloaded cards label recorded buying and answer provenance; old snapshots make no answer-source claim, and receipts stay compatible with v1.1.1.
 - 12 Nov: DEPLOY-FIX defers receipt, Show work, passage, Writers and conversation code; Node 22 initial JS gzip falls 170,326 → 159,261 bytes. Production builds and deploy now share the unchanged <170,000-byte check; startup accepts only a 64-hex writer credential domain. [Evidence](evidence/deploy-fix/README.md).
 - 12 Nov: RUNBOOK adds the [owner's judge-week checklist](judge-week-runbook.md), incident commands and rollbacks, S$40 cap recovery, editable links, pitch fallbacks and owner-decided teardown; a regression test checks every Node script and Make target reference.
 - 12 Nov: DECLUTTER puts examples before one grouped judges/builders disclosure, keeps successful payment proof and run checks inside Spend, and restores the paired delivery/ledger promise with a simulated variant. Whole-page boxes (desktop/mobile): home 7/5 → 3/3, one-purchase 3/2 → 2/1, ledger-topic 4/3 → 2/1; proof retained, failure/refund details open. [Evidence](evidence/declutter/README.md).

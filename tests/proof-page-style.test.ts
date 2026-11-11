@@ -34,7 +34,9 @@ it('self-hosts both variable fonts, with immutable content-addressed assets and 
   expect(page).not.toMatch(/fonts\.(?:googleapis|gstatic)\.com|<link[^>]+https:[^>]+(?:font|stylesheet)/i)
   expect(proofCsp('STYLE')).toContain("font-src 'self'")
   expect(readFileSync('docker/hosted/nginx.conf', 'utf8')).toContain('location /assets/ { add_header Cache-Control "public, max-age=31536000, immutable"; }')
-  expect(Buffer.byteLength(page) + urls.reduce((n, url) => n + statSync(`public${url}`).size, 0)).toBeLessThanOrEqual(60 * 1024)
+  // Include the longest provenance label, not only the shorter legacy label.
+  const longest = renderProofPage({ ...snapshot, environment: { ...snapshot.environment, models: 'live', research: { provider: 'fixture', fallback: true } } }, { mode: 'page', nonce: 'STYLE' })
+  expect(Buffer.byteLength(longest) + urls.reduce((n, url) => n + statSync(`public${url}`).size, 0)).toBeLessThanOrEqual(60 * 1024)
 })
 
 it('sets the button font explicitly and keeps every caption in sentence case', () => {
@@ -45,8 +47,16 @@ it('sets the button font explicitly and keeps every caption in sentence case', (
   expect(page).toContain('11 Nov 2026, 15:06 SGT')
 })
 
-it('uses the canonical hosted label even for an older frozen snapshot', () => {
-  const label = 'Shared XRPL Testnet demo · live answers, rule-based buying · no real value'
+it('extends Verify and Download hit areas to 44 px without enlarging the visible buttons', () => {
+  for (const mode of ['page', 'card'] as const) {
+    const html = renderProofPage(snapshot, { mode })
+    expect(html).toMatch(/\.btn\{[^}]*position:relative;[^}]*min-height:36px/)
+    expect(html).toMatch(/\.btn::after\{[^}]*position:absolute;[^}]*height:100%;min-height:44px;transform:translateY\(-50%\)/)
+  }
+})
+
+it('keeps an older frozen snapshot free of answer-source claims', () => {
+  const label = 'Shared XRPL Testnet demo · rule-based buying · no real value'
   expect(proofEnvironmentLabel(snapshot.environment)).toBe(label)
   expect(page).toContain(label)
   expect(proofEnvironmentLabel({ surface: 'local', models: 'fixture' })).toBe('XRPL Testnet demo · rule-based buying · no real value')

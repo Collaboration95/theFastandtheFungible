@@ -62,7 +62,7 @@ test('first visit: orientation, the visitor’s own question first, one environm
   await expect(budget.getByRole('spinbutton', { name: 'Custom budget (S$)' })).toHaveAttribute('max', '2')
   await page.keyboard.press('Escape')
   // One environment indicator; details on demand, and nothing else says SIMULATED on Home.
-  const pill = page.getByRole('button', { name: 'Shared demo · simulated payments · fixture models · no real value' })
+  const pill = page.getByRole('button', { name: 'Shared demo · simulated payments · rule-based buying · no real value' })
   await expect(pill).toBeVisible()
   await expect(page.locator('main')).not.toContainText('SIMULATED')
   await pill.click()

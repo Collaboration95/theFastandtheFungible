@@ -17,6 +17,16 @@ vi.mock('../src/ledger-check', async original => ({ ...await original<typeof imp
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.doUnmock('../src/verify/browser'); vi.resetModules() })
 
+it('pins the recorded caption to the final answer and audited decision providers', () => {
+  const bundle = JSON.parse(readFileSync('public/judge/hosted-run-nov11.receipts.json', 'utf8'))
+  const answer = bundle.answers.at(-1)
+  expect(answer.provider).toBe('deepseek')
+  const decisions = bundle.audit.entries.filter((entry: { kind: string }) => entry.kind === 'decision')
+  expect(decisions.length).toBeGreaterThan(0)
+  expect(decisions.every((entry: { data: { provider: string } }) => entry.data.provider === 'fixture')).toBe(true)
+  expect(JUDGE_RUN.caption).toBe('Recorded on this sandbox, 11 Nov · XRPL Testnet · live answers, rule-based buying · team-authored writers · no real value')
+})
+
 const status = (patch: Partial<HostedDemoStatus> = {}): HostedDemoStatus => ({
   questionCapMinor: 200, state: 'ready', csrfToken: 't', queue: [],
   capabilities: { ask: true, scope: true, history: true, receipts: true, pdf: false, settings: false, faultControls: false },

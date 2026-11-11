@@ -65,7 +65,7 @@ describe('hosted environment chip', () => {
 
   it('names the rail and models, opens details on demand and closes back to the chip', () => {
     const trigger = chip({ status: status() })
-    expect(trigger.getAttribute('aria-label')).toBe('Shared XRPL Testnet demo · live answers, rule-based buying · no real value')
+    expect(trigger.getAttribute('aria-label')).toBe('Shared XRPL Testnet demo · rule-based buying · no real value')
     expect(screen.queryByRole('region', { name: 'About this demo' })).toBeNull()
     fireEvent.click(trigger)
     const details = screen.getByRole('region', { name: 'About this demo' })

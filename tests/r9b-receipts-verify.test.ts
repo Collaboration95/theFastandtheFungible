@@ -201,8 +201,8 @@ describe('H9-10: open gaps never contradict the lead', () => {
 })
 
 describe('H9-14: the proof chip names how buying was decided, never "fixture models"', () => {
-  it('reads the same on every proof, old or new', () => {
-    expect(proofEnvironmentLabel({ surface: 'hosted', models: 'fixture' })).toBe('Shared XRPL Testnet demo · live answers, rule-based buying · no real value')
+  it('makes no answer-source claim without recorded provenance', () => {
+    expect(proofEnvironmentLabel({ surface: 'hosted', models: 'fixture' })).toBe('Shared XRPL Testnet demo · rule-based buying · no real value')
     expect(proofEnvironmentLabel({ surface: 'local', models: 'live' })).toBe('XRPL Testnet demo · model-judged buying · no real value')
   })
 })
