@@ -128,6 +128,7 @@ describe('judge pack: one true story', () => {
     const home = read('site/index.html')
     expect(home).toContain('Shared XRPL Testnet demo · live answers, rule-based buying · no real value')
     expect(home).toContain('Replay · XRPL Testnet, recorded 11 Nov 2026 · fictional writers · no real value')
+    expect(home).toContain('The recorded replay uses fixture models and fictional writers.')
   })
 
   it('has a release-note title for the latest CHANGELOG release, so /progress/ builds the day it is published', () => {

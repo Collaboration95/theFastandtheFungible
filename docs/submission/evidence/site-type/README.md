@@ -20,7 +20,7 @@ The home, guide pages and generated footer use the exact canonical pill:
 label is "Shared XRPL Testnet demo · live answers, rule-based buying · no real
 value". Replay context uses "Replay · XRPL Testnet, recorded 11 Nov 2026 ·
 fictional writers · no real value". README uses "live demo"; its dated hero
-caption keeps the original evidence context. Deck labels use the same grammar.
+caption keeps the original evidence context. Deck labels use the same grammar. The replay's fixture-model context remains separate from its canonical environment label.
 
 Observed computed styles: home h1 Geist / 600; guide h1 and h2 weight 600,
 letter-spacing -0.02em; guide code/pre Geist Mono with the local font loaded.
