@@ -86,7 +86,7 @@ public video links remain in pinned issue #265. No upload is performed here.
 
 ## VID-3 recorded acceptance
 
-Browser clips refreshed from main base `039c497a` after the shipping rebase, with
+Browser clips refreshed from main base `29baaa66` after the shipping rebase, with
 published v1.1.1 CLI artifacts. Nine clean scene clips are in video-out/vid-3/clips.
 Corner: **45 passed · 2 not checked**, zero admission/run requests. Key:
 **sha256(key) = lock ✓**, public Testnet ledger 22224890. Writers: **3** live badges,
