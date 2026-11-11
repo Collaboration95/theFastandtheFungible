@@ -1,3 +1,4 @@
+export { sandboxStatsRouter } from './stats.js'
 import { Router } from 'express'
 import { z } from 'zod'
 import type { ApiContext } from '../api/context.js'

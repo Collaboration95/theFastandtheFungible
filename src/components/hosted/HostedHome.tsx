@@ -1,5 +1,6 @@
 import { lazy, Suspense, useState, type ReactNode } from 'react'
 import { allowanceText, builderLines, canAsk, explorerTx, hostedLinks, HOSTED_DAILY_QUESTIONS, HOSTED_ENDS, JUDGE_RUN, questionCap, minorText, proofLink, waitCopy, type HomeState, type Hosted } from '../../hosted'
+import SandboxNumbers from './SandboxNumbers'
 const VerifyInBrowser = lazy(() => import('./VerifyInBrowser'))
 import { SharedPayer } from '../LedgerCheckEntry'
 import './judges-corner.css'
@@ -49,6 +50,7 @@ export function HostedJudgesCorner({ hosted }: { hosted: Hosted }) {
       {proof && <li>{icons.refuse}<div><h2>See it refuse to spend</h2><p>A question it declined to pay for, S$0.00 spent, anchored on the ledger.</p><Out href={proof}>Open the proof of refusal</Out></div></li>}
     </ul>
     {opened && <SharedPayer />}
+    {opened && <SandboxNumbers />}
   </section>
     <HostedFooter hosted={hosted} />
   </details>

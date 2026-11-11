@@ -6,7 +6,7 @@ import openapi from '../docs/api/openapi.json' with { type: 'json' }
 import { validateHosted, hostedPayer, pausedShell } from './hosted/bootstrap.js'
 import { HostedLimits } from './hosted/limits.js'
 import { HostedQueue } from './hosted/queue.js'
-import { hostedRouter } from './hosted/routes.js'
+import { sandboxStatsRouter, hostedRouter } from './hosted/routes.js'
 import { HostedReadiness, PayerWatch } from './hosted/readiness.js'
 import { sessionGuard, accessGuard } from './hosted/session.js'
 import { hostedControl, HostedError } from './hosted/control.js'
@@ -116,6 +116,7 @@ async function createConfiguredApi(options: ApiOptions = {}) {
   const queue = hosted ? new HostedQueue(config) : undefined
   if (hosted) {
     store.spendingGuard = () => hostedControl(config).spendingPaused
+    app.use(sandboxStatsRouter(store))
     app.use(sessionGuard(hosted))
     app.use(express.json({ limit: '16kb' }))
     app.use(accessGuard(hosted))
