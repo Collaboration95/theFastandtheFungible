@@ -64,6 +64,7 @@ it('shows honest slow-network copy after five seconds with accessible fallback l
 it('separates offline, unreachable ledger, receipt failure and genuine failed checks', () => {
   expect(verificationError(new TypeError('fetch'), false)).toMatch(/^You're offline: the checker couldn't load/)
   expect(verificationError(new Error('Ledger timeout'), true)).toMatch(/^Couldn't reach a public XRPL node/)
+  expect(verificationError(new TypeError('Failed to fetch dynamically imported module'), true)).toContain('The checker couldn’t load')
   expect(verificationError(new Error('receipts'), true)).toContain('receipts could not be downloaded')
   const result = (detail: string): BrowserVerification => ({ ok: false, checks: [{ check: 'testnet', status: 'FAIL', detail }], groups: [], endpoint: '', testnet: true, at: '' })
   expect(verificationNetworkFailure(result('Read-only Testnet lookup unavailable'))).toBeInstanceOf(Error)
