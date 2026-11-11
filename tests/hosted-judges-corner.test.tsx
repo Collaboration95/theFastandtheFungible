@@ -93,11 +93,11 @@ describe('using it costs no question', () => {
     vi.stubGlobal('fetch', fetchSpy)
     return fetchSpy
   }
-  it('(a) reads only the committed file, then reports the checks under the one caption, with no admission call', async () => {
+  it.each(['ready', 'busy', 'paused', 'ended'] as const)('(a) in %s reads only the committed file, with no admission call', async state => {
     const fetchSpy = setup([...Array.from({ length: 26 }, () => check('PASS')), check('SKIP'), check('SKIP')])
-    const h = hosted({ state: 'paused', capabilities: { ...status().capabilities, ask: false } })
+    const h = hosted({ state, capabilities: { ...status().capabilities, ask: state === 'ready' || state === 'busy' } })
     const before = JSON.stringify(h.status.remaining)
-    render(home(h, 'paused'))
+    render(home(h, state))
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Run the checks' })) })
     expect((await screen.findByText(/passed/, { selector: '.ra-hv-head' })).textContent).toBe('26 passed · 2 not checked')
     expect(fetchSpy.mock.calls.map(call => String((call as unknown[])[0]))).toEqual(['/judge/hosted-run-nov11.receipts.json'])

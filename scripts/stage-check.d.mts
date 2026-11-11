@@ -25,6 +25,7 @@ export const DEFAULTS: { hosted: string; deck: string; receipts: string; evidenc
 export function timed<T>(ms: number, work: (signal: AbortSignal) => Promise<T> | T): Promise<T>
 export function cookieJar(file?: string): { header(): string; absorb(response: unknown): void; save(): void; readonly size: number }
 export function defaultDeps(): Deps
+export function githubFetch(url: string, init: { method: string; signal?: AbortSignal }, run?: (command: string, args: string[], options: { signal?: AbortSignal }) => Promise<{ stdout: string }>): Promise<{ status: number }>
 export function runChecks(options?: Options, deps?: Deps): Promise<CheckResult[]>
 export function decideTier(results: CheckResult[]): Decision
 export function renderReport(results: CheckResult[], decision: Decision, options?: { hosted?: string; when?: Date }): string

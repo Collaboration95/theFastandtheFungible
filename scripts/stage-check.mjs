@@ -8,7 +8,8 @@
 // It never asks a hosted question: its one hosted request is GET /api/demo/status, with ONE cookie jar kept between runs so
 // repeated checks reuse a session instead of minting new ones. It never binds 5100, 8788 or 8790. Nothing is signed or paid.
 import { createHash } from 'node:crypto'
-import { spawn } from 'node:child_process'
+import { execFile, spawn } from 'node:child_process'
+import { promisify } from 'node:util'
 import { chmodSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
@@ -242,8 +243,24 @@ export function runVerifyChild(file, signal) {
 // ---------------------------------------------------------------------------------------------------------------------
 // Running everything, deciding the tier, printing
 
+/** GitHub access uses the authenticated CLI, including HEAD of the actual release asset bytes. */
+export async function githubFetch(url, init, run = promisify(execFile)) {
+  const asset = /^https:\/\/github\.com\/([^/]+\/[^/]+)\/releases\/download\/([^/]+)\/([^/]+)$/.exec(url)
+  let endpoint = url
+  if (asset) {
+    const { stdout } = await run('gh', ['release', 'view', asset[2], '--repo', asset[1], '--json', 'assets'], { signal: init.signal })
+    const found = JSON.parse(stdout).assets.find(row => row.name === asset[3])
+    if (!found) return { status: 404 }
+    endpoint = found.apiUrl
+  }
+  const { stdout } = await run('gh', ['api', '--include', '--method', init.method, ...(asset ? ['-H', 'Accept: application/octet-stream'] : []), endpoint], { signal: init.signal })
+  const statuses = [...stdout.matchAll(/^HTTP\/\S+ (\d+)/gm)]
+  return { status: Number(statuses.at(-1)?.[1] ?? 0) }
+}
+
 export function defaultDeps() {
-  return { fetch: globalThis.fetch, WebSocket: globalThis.WebSocket, exists: existsSync, readFile: file => readFileSync(file), run: runVerifyChild }
+  const fetch = (url, init) => /^https:\/\/(?:github\.com|collaboration95\.github\.io)\//.test(url) ? githubFetch(url, init) : globalThis.fetch(url, init)
+  return { fetch, WebSocket: globalThis.WebSocket, exists: existsSync, readFile: file => readFileSync(file), run: runVerifyChild }
 }
 
 /** All checks in parallel. `options`: hosted, deck, video, ms, jarFile. */

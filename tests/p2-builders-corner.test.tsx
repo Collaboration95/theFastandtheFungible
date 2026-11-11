@@ -6,6 +6,7 @@ import { execFileSync } from 'node:child_process'
 import { builderLines, type Hosted } from '../src/hosted'
 import { HostedFooter } from '../src/components/hosted/HostedHome'
 import { isPublishedRelease, PUBLISHED_RELEASES, RELEASE_TAG, releaseBase } from '../shared/links'
+import pkg from '../package.json'
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 const hosted = (proof = ''): Hosted => ({ status: {
@@ -19,6 +20,7 @@ const snippet = (...flags: string[]) => execFileSync(process.execPath, ['scripts
 describe('the pinned release', () => {
   it('is one that has been published (bump `release` and `publishedReleases` together, after the release exists)', () => {
     expect(RELEASE_TAG).toMatch(/^v\d+\.\d+\.\d+$/)
+    expect(RELEASE_TAG).toBe(`v${pkg.version}`)
     expect(PUBLISHED_RELEASES, `${RELEASE_TAG} is not in shared/links.json publishedReleases; pin the latest PUBLISHED tag, never an unpublished one`).toContain(RELEASE_TAG)
     expect(PUBLISHED_RELEASES.every(tag => /^v\d+\.\d+\.\d+$/.test(tag))).toBe(true)
   })
@@ -30,8 +32,10 @@ describe('the pinned release', () => {
   it.runIf(process.env.CHECK_RELEASE_URLS === '1')('exists on GitHub: every pinned asset answers', async () => {
     const v = RELEASE_TAG.slice(1)
     for (const asset of [`researchagent-mcp-${v}.tgz`, `researchagent-${v}-py3-none-any.whl`]) {
-      const response = await fetch(`${releaseBase()}/${asset}`, { method: 'HEAD', redirect: 'follow' })
-      expect(response.status, asset).toBe(200)
+      const assets = JSON.parse(execFileSync('gh', ['release', 'view', RELEASE_TAG, '--repo', 'Collaboration95/theFastandtheFungible', '--json', 'assets'], { encoding: 'utf8' })).assets as { name: string; apiUrl: string }[]
+      const url = assets.find(row => row.name === asset)?.apiUrl
+      expect(url, asset).toBeTruthy()
+      execFileSync('gh', ['api', '--method', 'HEAD', '-H', 'Accept: application/octet-stream', url!])
     }
   }, 30_000)
 })

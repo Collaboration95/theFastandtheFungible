@@ -6,11 +6,25 @@ import { request as httpRequest } from 'node:http'
 import { join } from 'node:path'
 import { resources } from './helpers/resource-scope.js'
 import {
-  CHECK_MS, DEFAULTS, FORBIDDEN_PORTS, KEY_TX, NODES, REPLAY_BASE, REPLAY_CSP, ROOT, TIERS, cookieJar, decideTier, main, parseArgs, renderReport, runChecks, serveReplay, timed,
+  CHECK_MS, DEFAULTS, FORBIDDEN_PORTS, KEY_TX, NODES, REPLAY_BASE, REPLAY_CSP, ROOT, TIERS, cookieJar, decideTier, githubFetch, main, parseArgs, renderReport, runChecks, serveReplay, timed,
   type CheckResult, type Deps,
 } from '../scripts/stage-check.mjs'
 
 const scratch = () => resources().tempDir('stage-check-test-')
+
+it('uses authenticated gh for GitHub release metadata and HEAD of the asset bytes', async () => {
+  const calls: string[][] = []
+  const run = async (command: string, args: string[]) => {
+    expect(command).toBe('gh'); calls.push(args)
+    return { stdout: args[0] === 'release' ? JSON.stringify({ assets: [{ name: 'researchagent-mcp-1.1.1.tgz', apiUrl: 'https://api.github.com/assets/123' }] }) : 'HTTP/2.0 302 Found\n\nHTTP/2.0 200 OK\n' }
+  }
+  expect(await githubFetch('https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz', { method: 'HEAD' }, run)).toEqual({ status: 200 })
+  expect(calls).toEqual([
+    ['release', 'view', 'v1.1.1', '--repo', 'Collaboration95/theFastandtheFungible', '--json', 'assets'],
+    ['api', '--include', '--method', 'HEAD', '-H', 'Accept: application/octet-stream', 'https://api.github.com/assets/123'],
+  ])
+  expect(await githubFetch('https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/missing.tgz', { method: 'HEAD' }, run)).toEqual({ status: 404 })
+})
 
 // ---- mocks -------------------------------------------------------------------------------------------------------------
 
@@ -145,10 +159,10 @@ describe('tier decisions (story §2.3)', () => {
     expect(decision.fallbacks).toEqual([])
   })
   it('a missing release is advisory: it is shown as NO-GO and named, but does not change the tier', async () => {
-    const { decision, by } = await run({ release: { 'v1.1.1': 404 } })
+    const { decision, by, results } = await run({ release: { 'v1.1.1': 404 } })
     expect(by('release-v1.1.1')).toMatchObject({ status: 'NO-GO', advisory: true })
     expect(by('release-v1.1.1').detail).toContain('researchagent-mcp-1.1.1.tgz: HTTP 404')
-    expect(by('release-v1.1.0').status).toBe('GO')
+    expect(results.filter(row => row.id.startsWith('release-'))).toHaveLength(1)
     expect(decision.tier).toBe(1)
     expect(decision.notes.join(' ')).toMatch(/Release v1\.1\.1/)
   })

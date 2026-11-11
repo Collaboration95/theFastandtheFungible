@@ -38,7 +38,7 @@ for (const [name, width, height] of [['desktop', 1280, 800], ['phone', 390, 844]
     if (width > 780) expect(Math.abs(rects[0].y - rects[1].y)).toBeLessThan(2); else expect(rects[1].y).toBeGreaterThan(rects[0].y)
     expect(await noOverflow(page)).toBe(true)
     expect(await serious(page)).toEqual([])
-    await page.screenshot({ path: evidencePath(`judges-corner/home-${width}.png`) })
+    await page.screenshot({ path: evidencePath(`judges-corner/home-${width}.png`), fullPage: true })
 
     // The builders' row is collapsed under the examples; open, it still fits.
     const row = page.locator('details.ra-hbuild')
@@ -54,9 +54,9 @@ for (const [name, width, height] of [['desktop', 1280, 800], ['phone', 390, 844]
   })
 }
 
-test('it works with the sandbox paused or ended: the recorded run is served, byte for byte, and the strip stays', async ({ browser }) => {
-  for (const state of ['paused', 'ended'] as const) {
-    const context = await browser.newContext({ ignoreHTTPSErrors: true, viewport: { width: 1280, height: 800 } })
+test('it works with the sandbox busy, paused or ended: the recorded run is served, byte for byte, and the strip stays', async ({ browser }) => {
+  for (const state of ['busy', 'paused', 'ended'] as const) {
+    const context = await browser.newContext({ ignoreHTTPSErrors: true, viewport: { width: 390, height: 844 } })
     const page = await context.newPage()
     await statusAs(page, status => ({ ...status, state, capabilities: { ...(status.capabilities as object), ask: false } }))
     await page.goto('/')
@@ -67,6 +67,7 @@ test('it works with the sandbox paused or ended: the recorded run is served, byt
     expect(createHash('sha256').update(await served.body()).digest('hex')).toBe('1f2fe4de4de58fedb68c8e04c9f2106fa0b66004c1839ae93f29bb0662ee13ee')
     expect(Buffer.compare(await served.body(), readFileSync('docs/evidence/hosted-export-nov11/receipts.json'))).toBe(0)
     expect(await serious(page)).toEqual([])
+    expect(await noOverflow(page)).toBe(true)
     await context.close()
   }
 })

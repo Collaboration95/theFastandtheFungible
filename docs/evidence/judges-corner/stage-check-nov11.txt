@@ -1,0 +1,21 @@
+ResearchAgent stage check · 11 Nov 2026, 17:33 SGT · https://ra-front-651013803640.asia-southeast1.run.app
+
+Check                                                                  Result       Detail
+Sandbox status (GET /api/demo/status only)                             GO           ready · 5 of 5 questions left, S$10.00
+Explorer loads 4CCB4E56…                                               GO           testnet.xrpl.org answers 200
+Public Testnet node answers (ledger_current)                           GO           s.altnet.rippletest.net · ledger 22238847
+Key transaction is on the ledger (EscrowFinish)                        GO           validated, ledger 22228567, Fulfillment present
+Replay and ledger pages (/demo/, /ledger/)                             GO           both answer 200
+Release v1.1.1 (what README and the install pages pin): tgz and wheel  GO           both answer 200
+Deck PDF is on this Mac                                                GO           docs/submission/ResearchAgent-SFF-deck.pdf (1274 KiB)
+Demo video MP4 is on this Mac                                          NOT CHECKED  pass --video <file.mp4>; tier 4 depends on it
+Committed recorded run (receipts.json)                                 GO           sha256 1f2fe4de…ee13ee, served copy matches the evidence copy
+Replay can be served from this Mac                                     GO           not built yet; --serve-replay builds it in a few seconds
+Offline verify of the recorded run (no --ledger)                       GO           RESULT PASS
+
+* advisory: it does not change the tier
+
+USE TIER 1 · Live
+Say:  "a run from ten minutes ago on our live Testnet sandbox"
+Show: Tabs A to D as prepared: the x402 run, the validators refusal, its proof page, the EscrowFinish on the explorer. The live clicks are the explorer link and "Run the checks"; both read the public ledger.
+Below it: tier 2 ready · tier 3 ready · tier 4 NOT READY (video MP4 (pass --video))
