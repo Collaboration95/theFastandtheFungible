@@ -75,6 +75,9 @@ window.fetch = async (input, init) => {
 // HTML preloads the app alongside the trace. Keep the labelled loading shell
 // until the selected recording validates, then execute the shared app.
 await activeReady
+// Let the public question reach a paint before replacing the loading shell.
+// Even a cached recording must not erase the loading feedback in the same frame.
+await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
 await import('../src/main')
 
 const banner = document.querySelector('.demo-banner')!
