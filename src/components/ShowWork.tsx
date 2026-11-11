@@ -12,8 +12,8 @@ import './key-check.css'
 
 type Tab = 'Trace' | 'Wire' | 'Policy' | 'Receipts' | 'Models' | 'Ledger'
 
-/** Press W: the raw persisted events, HTTP exchange, full policy table and receipts.
-    Nothing here is needed to follow the answer; it is where the engine's own words live. */
+/** Press W: the recorded events, HTTP exchange, full policy table and receipts.
+    Nothing here is needed to follow the answer; it is where recorded details are explained. */
 export default function ShowWork({ run, configured, onClose, confirmed }: { run: RunSnapshot; configured?: ModeLabels; onClose: () => void; /** The plan the visitor confirmed; by default the one this browser recorded just before the run began. */ confirmed?: Pick<ConfirmedPlan, 'subqueries'> }) {
   const dialog = useRef<HTMLDialogElement>(null)
   const [tab, setTab] = useState<Tab>('Trace')
@@ -41,7 +41,7 @@ export default function ShowWork({ run, configured, onClose, confirmed }: { run:
         <b>{candidateOf(run, receipt)?.publisher ?? receipt.resourceId}</b> · {money(receipt.amountMinor)} · {receipt.label}{run.intents.find(i => i.intentId === receipt.intentId)?.purchaseKind && ` · ${run.intents.find(i => i.intentId === receipt.intentId)!.purchaseKind}`}<br />
         <span className="mono">receipt {receipt.receiptId} · intent {shortHash(receipt.intentId)} · settled {receipt.settledAt}</span>
       </li>)}</ol>)}
-      {tab === 'Models' && <div className="ra-models"><ModelLabels labels={run.labels} configured={configured} /></div>}
+      {tab === 'Models' && <div className="ra-models"><ModelLabels labels={run.labels} configured={configured} events={run.events} /></div>}
       {tab === 'Ledger' && <Ledger run={run} />}
     </div>
   </dialog>
