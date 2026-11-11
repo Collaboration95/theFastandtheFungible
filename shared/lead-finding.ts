@@ -186,7 +186,7 @@ export type RankedSentence = { text: string; claim: Claim; score: number; ci: nu
 const FRAGMENT_START = /^(?:and|but|or|so|nor|yet|which|while|whereas|although|though|because|then|that|who|whose|where|when|if|unless|since|as)\b/
 /** A sentence that only makes sense after the one before it ("They are not a determination…") cannot open an answer.
  * P1: nor can "Each option names scheme, network, amount…" or "Either/Neither …", whose subject was introduced earlier. */
-const POINTS_BACK = /^(?:They|These|Those|Such|Both|He|She|Their|It|This|Its|Each|Either|Neither)\b/
+const POINTS_BACK = /^(?:They|These|Those|Such|Both|He|She|Their|It|This|Its|Each|Either|Neither)\b/i
 const skip = (text: string, claim: Claim, ci: number, si: number): RankedSentence => ({ text, claim, score: 0, ci, si, named: false, cover: 0, weighted: 0, shared: false, tail: false, onTopic: false })
 
 /** Every eligible answer sentence of the validated claims, best first. Exported so

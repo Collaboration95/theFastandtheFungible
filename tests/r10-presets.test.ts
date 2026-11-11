@@ -67,6 +67,10 @@ it.each(['Each option', 'Either option', 'Neither option', 'This', 'It', 'These'
   const { content, claim } = doc(`${subject} contains payment requirements in PAYMENT-REQUIRED. An HTTP 402 response contains payment requirements in PAYMENT-REQUIRED.`)
   expect(leadFinding('What does an x402 402 response contain?', [claim], [content])[0]?.text).toMatch(/^An HTTP/)
 })
+it.each(['each option', 'either option', 'neither option', 'its response'])('stripping an attribution never exposes unbound %s as the lead', subject => {
+  const { content, claim } = doc(`According to the reference, ${subject} in an x402 402 response contains payment requirements in PAYMENT-REQUIRED.`)
+  expect(leadFinding('What does an x402 402 response contain?', [claim], [content])).toEqual([])
+})
 it.each([
   "What's the difference between EscrowFinish and EscrowCancel, and who can submit each one?",
   'How do EscrowFinish and EscrowCancel differ, and who may submit them?',
