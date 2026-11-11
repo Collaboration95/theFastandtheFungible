@@ -50,7 +50,7 @@ export function HostedJudgesCorner({ hosted }: { hosted: Hosted }) {
       {proof && <li>{icons.refuse}<div><h2>See it refuse to spend</h2><p>A question it declined to pay for, S$0.00 spent, anchored on the ledger.</p><Out href={proof}>Open the proof of refusal</Out></div></li>}
     </ul>
     {opened && <SharedPayer />}
-    <SandboxNumbers />
+    {opened && <SandboxNumbers />}
   </section>
     <HostedFooter hosted={hosted} />
   </details>
