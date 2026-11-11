@@ -278,8 +278,16 @@ test('hosted budgets render a smaller server-authoritative question cap', async 
 })
 
 // A11Y sprint: local HOSTED=1 only. No live hosted questions.
+// Give each new case a separate TEST-NET client at the local trusted proxy. They must not
+// consume the existing proof spec's six-starts-per-minute allowance; production limits stay intact.
+let a11yClient = 10
+const a11yVisitor = async (browser: Browser, width = 1440, height = 900) => {
+  const result = await visitor(browser, width, height)
+  await result.context.setExtraHTTPHeaders({ 'X-Forwarded-For': `192.0.2.${++a11yClient}` })
+  return result
+}
 for (const delay of [6000, 12000]) test(`A11Y status delayed ${delay} ms keeps the connecting shell and the first request`, async ({ browser }) => {
-  const { context, page } = await visitor(browser, 390, 844)
+  const { context, page } = await a11yVisitor(browser, 390, 844)
   let calls = 0, failed = 0, landed = 0
   page.on('requestfailed', request => { if (request.url().endsWith('/api/demo/status')) failed++ })
   await page.route('**/api/demo/status', async route => {
@@ -307,7 +315,7 @@ for (const delay of [6000, 12000]) test(`A11Y status delayed ${delay} ms keeps t
 })
 
 test('A11Y keyboard Ask → plan → result → verify, idle prefetch, offline recovery and phone targets', async ({ browser }) => {
-  const { context, page } = await visitor(browser, 390, 844)
+  const { context, page } = await a11yVisitor(browser, 390, 844)
   await page.emulateMedia({ reducedMotion: 'reduce' })
   const verifierLoads: string[] = [], verifierTitles: string[] = []
   page.on('request', request => { if (/\/assets\/browser-[^/]+\.js$/.test(request.url())) { verifierLoads.push(request.url()); void page.title().then(title => verifierTitles.push(title)) } })
@@ -380,7 +388,7 @@ test('A11Y keyboard Ask → plan → result → verify, idle prefetch, offline r
 })
 
 test('A11Y a cancelled start restores the question; coming online clears a stale offline notice', async ({ browser }) => {
-  const { context, page } = await visitor(browser)
+  const { context, page } = await a11yVisitor(browser)
   await page.emulateMedia({ reducedMotion: 'reduce' }); await page.goto('/')
   await page.getByRole('group', { name: 'Demo questions' }).getByRole('button', { name: /^Kestrel–TSMC/ }).click()
   await page.getByRole('button', { name: /^Ask/ }).click()
@@ -402,7 +410,7 @@ test('A11Y a cancelled start restores the question; coming online clears a stale
 })
 
 test('A11Y an unreachable XRPL node reports infrastructure failure without a check mark', async ({ browser }) => {
-  const { context, page } = await visitor(browser)
+  const { context, page } = await a11yVisitor(browser)
   // Synthetic ledger failure at the chunk boundary, independent of public Testnet availability.
   await page.route('**/assets/browser-*.js', route => route.fulfill({ contentType: 'text/javascript', body: 'export async function verifyInBrowser(){return {ok:false,checks:[{check:"testnet",status:"FAIL",detail:"Read-only Testnet lookup unavailable"}],groups:[],endpoint:"",testnet:true}}' }))
   await page.goto('/')
@@ -420,7 +428,7 @@ test('A11Y an unreachable XRPL node reports infrastructure failure without a che
 
 
 test('A11Y a failed speculative checker download can recover without asking another question', async ({ browser }) => {
-  const { context, page } = await visitor(browser)
+  const { context, page } = await a11yVisitor(browser)
   let loads = 0, admissions = 0
   page.on('request', request => { if (request.method() === 'POST' && /\/(?:api\/scope|runs)$/.test(new URL(request.url()).pathname)) admissions++ })
   await page.route('**/assets/browser-*.js', route => { loads++; return route.fulfill({ status: 503, contentType: 'text/javascript', headers: { 'Cache-Control': 'no-store' }, body: 'unavailable' }) })
@@ -449,7 +457,7 @@ test('A11Y a failed speculative checker download can recover without asking anot
 
 
 test('A11Y a plan with no clarification auto-starts and leaves keyboard focus on the run', async ({ browser }) => {
-  const { context, page } = await visitor(browser)
+  const { context, page } = await a11yVisitor(browser)
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   await page.goto('/')
   await question(page).fill('What is the XRPL base fee?')
