@@ -1,0 +1,1268 @@
+{
+ "note": "Round-9 judges' recorded live plans (tests/fixtures/r9-live-plans.json) replayed with tests/fixtures/r9-live-shaped.ts: fixture decisions and research, SIMULATED payments, keyword search. main = e90bda32; branch = this PR. Regression data on questions already seen, never held out.",
+ "replay": {
+  "modal": [
+   {
+    "id": "A1",
+    "question": "Can an XRPL escrow hold RLUSD today, and what must the issuer enable before a buyer can lock it?",
+    "main": {
+     "bought": [
+      "team-rlusd"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "The team documented official RLUSD as blocked until its issuer enables AllowTrustLineLocking."
+     ],
+     "openGaps": [
+      "Whether XRPL escrow can hold RLUSD today, with the enabling amendment or feature",
+      "What the RLUSD issuer must enable before a buyer can escrow RLUSD",
+      "Any issuer-side settings or flags required for token escrow on XRPL"
+     ]
+    },
+    "branch": {
+     "bought": [
+      "team-rlusd"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "The team documented official RLUSD as blocked until its issuer enables AllowTrustLineLocking."
+     ],
+     "openGaps": [
+      "Whether XRPL escrow can hold RLUSD today, with the enabling amendment or feature",
+      "What the RLUSD issuer must enable before a buyer can escrow RLUSD",
+      "Any issuer-side settings or flags required for token escrow on XRPL"
+     ]
+    },
+    "changed": false
+   },
+   {
+    "id": "A2",
+    "question": "What does an x402 402 response contain, and can my agent pay it with XRP on Testnet?",
+    "main": {
+     "bought": [
+      "product-x402-response"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details."
+     ],
+     "openGaps": [
+      "Whether x402 supports paying with XRP",
+      "Whether x402 XRP payments can run on XRPL Testnet"
+     ]
+    },
+    "branch": {
+     "bought": [
+      "product-x402-response"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details."
+     ],
+     "openGaps": [
+      "Whether x402 supports paying with XRP",
+      "Whether x402 XRP payments can run on XRPL Testnet"
+     ]
+    },
+    "changed": false
+   },
+   {
+    "id": "A3",
+    "question": "How much does one key-reveal purchase cost in XRPL network fees?",
+    "main": {
+     "bought": [
+      "team-fees",
+      "team-delivery"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "EscrowFinish with a fulfillment cost 423 drops in our observed XRPL Testnet conditional finish, more than a plain XRP Payment."
+     ],
+     "openGaps": [
+      "How many XRPL transactions a key-reveal purchase involves and their fees"
+     ]
+    },
+    "branch": {
+     "bought": [
+      "team-fees",
+      "team-delivery"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "EscrowFinish with a fulfillment cost 423 drops in our observed XRPL Testnet conditional finish, more than a plain XRP Payment."
+     ],
+     "openGaps": [
+      "How many XRPL transactions a key-reveal purchase involves and their fees"
+     ]
+    },
+    "changed": false
+   },
+   {
+    "id": "A4",
+    "question": "Which XRPL amendment and issuer flag does token escrow need?",
+    "main": {
+     "bought": [
+      "c5-xrpl-token-escrow-xls85"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "the proposed TokenEscrow amendment enhances the existing XRPL Escrow functionality by enabling support for both trust line tokens, called IOUs, and Multi-Purpose Tokens, called MPTs."
+     ],
+     "openGaps": []
+    },
+    "branch": {
+     "bought": [
+      "c5-xrpl-token-escrow-xls85"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "the proposed TokenEscrow amendment enhances the existing XRPL Escrow functionality by enabling support for both trust line tokens, called IOUs, and Multi-Purpose Tokens, called MPTs."
+     ],
+     "openGaps": []
+    },
+    "changed": false
+   },
+   {
+    "id": "A5",
+    "question": "What's the difference between EscrowFinish and EscrowCancel, and who can submit each one?",
+    "main": {
+     "bought": [
+      "xrpl-escrow",
+      "product-escrow-no-show"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds."
+     ],
+     "openGaps": []
+    },
+    "branch": {
+     "bought": [
+      "xrpl-escrow",
+      "product-escrow-no-show"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds."
+     ],
+     "openGaps": []
+    },
+    "changed": false
+   },
+   {
+    "id": "B1",
+    "question": "How can I stop a prompt-injected AI agent from draining its wallet?",
+    "main": {
+     "bought": [
+      "product-prompt-injection"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments."
+     ],
+     "openGaps": [
+      "Best practices for securing agent wallets against prompt injection"
+     ]
+    },
+    "branch": {
+     "bought": [
+      "product-prompt-injection"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments."
+     ],
+     "openGaps": [
+      "Best practices for securing agent wallets against prompt injection"
+     ]
+    },
+    "changed": false
+   },
+   {
+    "id": "B2",
+    "question": "Can the language model in ResearchAgent spend money on its own?",
+    "main": {
+     "bought": [],
+     "spentMinor": 0,
+     "lead": [],
+     "openGaps": [
+      "Can the language model in ResearchAgent spend money on its own"
+     ]
+    },
+    "branch": {
+     "bought": [],
+     "spentMinor": 0,
+     "lead": [],
+     "openGaps": [
+      "Can the language model in ResearchAgent spend money on its own"
+     ]
+    },
+    "changed": false
+   },
+   {
+    "id": "B5",
+    "question": "How does ResearchAgent decide which article is worth buying?",
+    "main": {
+     "bought": [],
+     "spentMinor": 0,
+     "lead": [],
+     "openGaps": [
+      "How ResearchAgent scores how useful each article would be",
+      "What role the decision model plays versus fixed policy code in buying decisions"
+     ]
+    },
+    "branch": {
+     "bought": [
+      "product-how-it-decides"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "ResearchAgent decides which article is worth buying in two steps: a decision model scores how useful each paid article would be, and policy code buys only what clears a threshold within the budget; no language model can spend."
+     ],
+     "openGaps": []
+    },
+    "changed": true
+   },
+   {
+    "id": "C1",
+    "question": "How does the writer get paid, and what stops the agent from reading the article and then refusing to pay?",
+    "main": {
+     "bought": [
+      "product-escrow-no-show",
+      "xrpl-tx-escrowcancel",
+      "xrpl-tx-escrowcreate"
+     ],
+     "spentMinor": 120,
+     "lead": [],
+     "openGaps": [
+      "How the writer is paid, including the role of XRPL escrow and key reveal",
+      "What prevents the agent from reading the article and then refusing to pay",
+      "How the key reveal mechanism ties payment to unlocking the article"
+     ]
+    },
+    "branch": {
+     "bought": [
+      "product-writer-paid"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "the writer gets paid by publishing the article's key on the XRP Ledger: the payment waits in an escrow that only that key can open, so an agent cannot read the article unless the writer is paid."
+     ],
+     "openGaps": [
+      "How the writer is paid, including the role of XRPL escrow and key reveal",
+      "How the key reveal mechanism ties payment to unlocking the article"
+     ]
+    },
+    "changed": true
+   },
+   {
+    "id": "C4",
+    "question": "How much does a writer earn per sale, and what does ResearchAgent take as a fee?",
+    "main": {
+     "bought": [],
+     "spentMinor": 0,
+     "lead": [],
+     "openGaps": [
+      "The amount a writer earns per sale",
+      "The fee ResearchAgent takes per sale"
+     ]
+    },
+    "branch": {
+     "bought": [
+      "product-writer-earnings"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "a writer earns the full price they set per sale, S$0.40 or 40,000 drops of Testnet XRP for these explainers, because the escrow releases all of it to the writer; ResearchAgent takes no fee per article sale."
+     ],
+     "openGaps": []
+    },
+    "changed": true
+   },
+   {
+    "id": "C5",
+    "question": "How much XRP reserve does an agent wallet need, and how much does each open escrow or trust line add?",
+    "main": {
+     "bought": [
+      "xrpl-reserves",
+      "team-asset-provisioning"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "An XRPL wallet needs a base reserve plus applicable owner reserves, separately from the money it intends to send."
+     ],
+     "openGaps": [
+      "Current XRPL owner reserve added per open trust line",
+      "Current XRPL owner reserve added per open escrow object"
+     ]
+    },
+    "branch": {
+     "bought": [
+      "xrpl-reserves",
+      "team-asset-provisioning"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "An XRPL wallet needs a base reserve plus applicable owner reserves, separately from the money it intends to send."
+     ],
+     "openGaps": [
+      "Current XRPL owner reserve added per open trust line",
+      "Current XRPL owner reserve added per open escrow object"
+     ]
+    },
+    "changed": false
+   },
+   {
+    "id": "D1",
+    "question": "What travel-rule information must a VASP send with a crypto transfer in Singapore?",
+    "main": {
+     "bought": [
+      "c5-fatf-recommendation-16-travel-rule",
+      "xrpl-compliance-fatf-travel-rule"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "Recommendation 16, the travel rule, applies to virtual-asset transfers: the originating provider must obtain required and accurate originator information and required beneficiary information and send it to the beneficiary institution immediately and securely."
+     ],
+     "openGaps": [
+      "The Singapore rules or thresholds governing travel-rule data on crypto transfers"
+     ]
+    },
+    "branch": {
+     "bought": [
+      "c5-fatf-recommendation-16-travel-rule",
+      "xrpl-compliance-fatf-travel-rule"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "Recommendation 16, the travel rule, applies to virtual-asset transfers: the originating provider must obtain required and accurate originator information and required beneficiary information and send it to the beneficiary institution immediately and securely."
+     ],
+     "openGaps": [
+      "The Singapore rules or thresholds governing travel-rule data on crypto transfers"
+     ]
+    },
+    "changed": false
+   },
+   {
+    "id": "D2",
+    "question": "Is RLUSD a regulated stablecoin, and who supervises its issuer?",
+    "main": {
+     "bought": [
+      "xrpl-rlusd"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "RLUSD is issued by Standard Custody & Trust Company under a New York limited-purpose trust charter, according to Ripple's issuer materials; that oversight does not automatically authorize every downstream service worldwide."
+     ],
+     "openGaps": [
+      "Whether RLUSD is a regulated stablecoin and under what framework"
+     ]
+    },
+    "branch": {
+     "bought": [
+      "xrpl-rlusd"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "RLUSD is issued by Standard Custody & Trust Company under a New York limited-purpose trust charter, according to Ripple's issuer materials; that oversight does not automatically authorize every downstream service worldwide."
+     ],
+     "openGaps": [
+      "Whether RLUSD is a regulated stablecoin and under what framework"
+     ]
+    },
+    "changed": false
+   },
+   {
+    "id": "D3",
+    "question": "Does a Singapore company need a MAS licence to pay suppliers in RLUSD?",
+    "main": {
+     "bought": [
+      "c5-mas-licence-paying-suppliers-rlusd"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "merely accepting digital payment tokens does not by itself trigger a Payment Services Act licence."
+     ],
+     "openGaps": [
+      "Whether paying suppliers in RLUSD triggers a MAS licence under the Payment Services Act",
+      "Any exemptions or thresholds for a Singapore company paying suppliers in RLUSD"
+     ]
+    },
+    "branch": {
+     "bought": [
+      "c5-mas-licence-paying-suppliers-rlusd"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "merely accepting digital payment tokens does not by itself trigger a Payment Services Act licence."
+     ],
+     "openGaps": [
+      "Whether paying suppliers in RLUSD triggers a MAS licence under the Payment Services Act",
+      "Any exemptions or thresholds for a Singapore company paying suppliers in RLUSD"
+     ]
+    },
+    "changed": false
+   },
+   {
+    "id": "D4",
+    "question": "If my agent pays for an article and the writer never reveals the key, what happens to my money?",
+    "main": {
+     "bought": [
+      "product-escrow-no-show"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "a buyer can recover an unfinished key-reveal escrow with EscrowCancel after CancelAfter; expiry permits cancellation but does not automatically return funds."
+     ],
+     "openGaps": [
+      "How the key-reveal escrow holds the payment until the writer publishes the key",
+      "Any timeout or expiry after which the escrowed payment returns to the payer"
+     ]
+    },
+    "branch": {
+     "bought": [
+      "product-escrow-no-show"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "a buyer can recover an unfinished key-reveal escrow with EscrowCancel after CancelAfter; expiry permits cancellation but does not automatically return funds."
+     ],
+     "openGaps": [
+      "How the key-reveal escrow holds the payment until the writer publishes the key",
+      "Any timeout or expiry after which the escrowed payment returns to the payer"
+     ]
+    },
+    "changed": false
+   },
+   {
+    "id": "E1",
+    "question": "Can an XRPL escrow hold RLUSD today, and what must the issuer enable before a buyer can lock it?",
+    "main": {
+     "bought": [
+      "team-rlusd"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "The team documented official RLUSD as blocked until its issuer enables AllowTrustLineLocking."
+     ],
+     "openGaps": [
+      "Whether XRPL escrow can hold RLUSD today, with the enabling amendment or feature",
+      "Any issuer-side settings or flags required for token escrow on XRPL"
+     ]
+    },
+    "branch": {
+     "bought": [
+      "team-rlusd"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "The team documented official RLUSD as blocked until its issuer enables AllowTrustLineLocking."
+     ],
+     "openGaps": [
+      "Whether XRPL escrow can hold RLUSD today, with the enabling amendment or feature",
+      "Any issuer-side settings or flags required for token escrow on XRPL"
+     ]
+    },
+    "changed": false
+   },
+   {
+    "id": "E2",
+    "question": "What does an XRPL Credential prove, and which transactions create and accept one?",
+    "main": {
+     "bought": [
+      "xrpl-tx-credentialaccept"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "CredentialAccept records the subject account's acceptance of a credential issued to it."
+     ],
+     "openGaps": []
+    },
+    "branch": {
+     "bought": [
+      "xrpl-tx-credentialaccept"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "CredentialAccept records the subject account's acceptance of a credential issued to it."
+     ],
+     "openGaps": []
+    },
+    "changed": false
+   },
+   {
+    "id": "E3",
+    "question": "How do XRPL AMM pools set their trading fee, and who can vote to change it?",
+    "main": {
+     "bought": [
+      "c5-xrpl-amm-create-deposit",
+      "xrpl-tx-ammvote"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "AMMVote lets liquidity providers express a preference for an AMM's trading fee."
+     ],
+     "openGaps": [
+      "How XRPL AMM pools set their trading fee, including the auction mechanism",
+      "Who can vote to change an XRPL AMM pool's trading fee and the voting thresholds"
+     ]
+    },
+    "branch": {
+     "bought": [
+      "c5-xrpl-amm-create-deposit",
+      "xrpl-tx-ammvote"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "AMMVote lets liquidity providers express a preference for an AMM's trading fee."
+     ],
+     "openGaps": [
+      "How XRPL AMM pools set their trading fee, including the auction mechanism",
+      "Who can vote to change an XRPL AMM pool's trading fee and the voting thresholds"
+     ]
+    },
+    "changed": false
+   },
+   {
+    "id": "E4",
+    "question": "How long does an XRPL payment take to become final, and when should an agent treat it as settled?",
+    "main": {
+     "bought": [
+      "product-payment-finality"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "an agent should treat a successful payment as final only when its tesSUCCESS result appears in a validated ledger; an initial submit response is provisional."
+     ],
+     "openGaps": [
+      "Typical XRPL ledger close time and how many validations make a payment final"
+     ]
+    },
+    "branch": {
+     "bought": [
+      "product-payment-finality"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "an agent should treat a successful payment as final only when its tesSUCCESS result appears in a validated ledger; an initial submit response is provisional."
+     ],
+     "openGaps": [
+      "Typical XRPL ledger close time and how many validations make a payment final"
+     ]
+    },
+    "changed": false
+   },
+   {
+    "id": "E5",
+    "question": "Which XRPL validators are run by Singapore banks?",
+    "main": {
+     "bought": [],
+     "spentMinor": 0,
+     "lead": [],
+     "openGaps": [
+      "Which Singapore banks run XRPL validators, if any",
+      "The validator public keys or identities of any Singapore bank XRPL validators",
+      "Whether Singapore banks appear on XRPL default or UNL validator lists"
+     ]
+    },
+    "branch": {
+     "bought": [],
+     "spentMinor": 0,
+     "lead": [],
+     "openGaps": [
+      "Which Singapore banks run XRPL validators, if any",
+      "The validator public keys or identities of any Singapore bank XRPL validators",
+      "Whether Singapore banks appear on XRPL default or UNL validator lists"
+     ]
+    },
+    "changed": false
+   },
+   {
+    "id": "F1",
+    "question": "How much does a writer earn per sale, and what does ResearchAgent take as a fee?",
+    "main": {
+     "bought": [],
+     "spentMinor": 0,
+     "lead": [],
+     "openGaps": [
+      "The amount a writer earns per sale.",
+      "The fee ResearchAgent takes per sale."
+     ]
+    },
+    "branch": {
+     "bought": [
+      "product-writer-earnings"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "a writer earns the full price they set per sale, S$0.40 or 40,000 drops of Testnet XRP for these explainers, because the escrow releases all of it to the writer; ResearchAgent takes no fee per article sale."
+     ],
+     "openGaps": []
+    },
+    "changed": true
+   },
+   {
+    "id": "F2",
+    "question": "What does an x402 402 response contain, and can my agent pay it with XRP on Testnet?",
+    "main": {
+     "bought": [
+      "product-x402-response"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details."
+     ],
+     "openGaps": [
+      "Whether x402 supports paying with XRP",
+      "Whether x402 payments can run on XRPL Testnet"
+     ]
+    },
+    "branch": {
+     "bought": [
+      "product-x402-response"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details."
+     ],
+     "openGaps": [
+      "Whether x402 supports paying with XRP",
+      "Whether x402 payments can run on XRPL Testnet"
+     ]
+    },
+    "changed": false
+   }
+  ],
+  "run": [
+   {
+    "id": "A1",
+    "question": "Can an XRPL escrow hold RLUSD today, and what must the issuer enable before a buyer can lock it?",
+    "main": {
+     "bought": [
+      "team-rlusd"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "The team documented official RLUSD as blocked until its issuer enables AllowTrustLineLocking."
+     ],
+     "openGaps": [
+      "Whether an XRPL escrow can hold RLUSD today"
+     ]
+    },
+    "branch": {
+     "bought": [
+      "team-rlusd"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "The team documented official RLUSD as blocked until its issuer enables AllowTrustLineLocking."
+     ],
+     "openGaps": [
+      "Whether an XRPL escrow can hold RLUSD today"
+     ]
+    },
+    "changed": false
+   },
+   {
+    "id": "A2",
+    "question": "What does an x402 402 response contain, and can my agent pay it with XRP on Testnet?",
+    "main": {
+     "bought": [
+      "product-x402-response"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE."
+     ],
+     "openGaps": [
+      "List the fields and data an x402 402 response contains",
+      "State whether x402 supports paying with XRP on Testnet",
+      "Identify any conditions or limitations for an agent paying an x402 402 response with XRP on Testnet"
+     ]
+    },
+    "branch": {
+     "bought": [
+      "product-x402-response"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE."
+     ],
+     "openGaps": [
+      "List the fields and data an x402 402 response contains",
+      "State whether x402 supports paying with XRP on Testnet",
+      "Identify any conditions or limitations for an agent paying an x402 402 response with XRP on Testnet"
+     ]
+    },
+    "changed": false
+   },
+   {
+    "id": "A3",
+    "question": "How much does one key-reveal purchase cost in XRPL network fees?",
+    "main": {
+     "bought": [
+      "team-fees"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "EscrowFinish with a fulfillment cost 423 drops in our observed XRPL Testnet conditional finish, more than a plain XRP Payment."
+     ],
+     "openGaps": []
+    },
+    "branch": {
+     "bought": [
+      "team-fees"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "EscrowFinish with a fulfillment cost 423 drops in our observed XRPL Testnet conditional finish, more than a plain XRP Payment."
+     ],
+     "openGaps": []
+    },
+    "changed": false
+   },
+   {
+    "id": "A4",
+    "question": "Which XRPL amendment and issuer flag does token escrow need?",
+    "main": {
+     "bought": [
+      "c5-xrpl-token-escrow-xls85"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "the proposed TokenEscrow amendment enhances the existing XRPL Escrow functionality by enabling support for both trust line tokens, called IOUs, and Multi-Purpose Tokens, called MPTs."
+     ],
+     "openGaps": [
+      "Identify the XRPL amendment required to enable token escrow."
+     ]
+    },
+    "branch": {
+     "bought": [
+      "c5-xrpl-token-escrow-xls85"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "the proposed TokenEscrow amendment enhances the existing XRPL Escrow functionality by enabling support for both trust line tokens, called IOUs, and Multi-Purpose Tokens, called MPTs."
+     ],
+     "openGaps": [
+      "Identify the XRPL amendment required to enable token escrow."
+     ]
+    },
+    "changed": false
+   },
+   {
+    "id": "A5",
+    "question": "What's the difference between EscrowFinish and EscrowCancel, and who can submit each one?",
+    "main": {
+     "bought": [
+      "xrpl-escrow"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds."
+     ],
+     "openGaps": [
+      "Explain the difference between EscrowFinish and EscrowCancel"
+     ]
+    },
+    "branch": {
+     "bought": [
+      "xrpl-escrow"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds."
+     ],
+     "openGaps": [
+      "Explain the difference between EscrowFinish and EscrowCancel"
+     ]
+    },
+    "changed": false
+   },
+   {
+    "id": "B1",
+    "question": "How can I stop a prompt-injected AI agent from draining its wallet?",
+    "main": {
+     "bought": [
+      "product-prompt-injection"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments."
+     ],
+     "openGaps": []
+    },
+    "branch": {
+     "bought": [
+      "product-prompt-injection"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments."
+     ],
+     "openGaps": []
+    },
+    "changed": false
+   },
+   {
+    "id": "B2",
+    "question": "Can the language model in ResearchAgent spend money on its own?",
+    "main": {
+     "bought": [
+      "product-prompt-injection"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments."
+     ],
+     "openGaps": [
+      "What spending controls or payment finality safeguards constrain the ResearchAgent language model"
+     ]
+    },
+    "branch": {
+     "bought": [
+      "product-prompt-injection"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments."
+     ],
+     "openGaps": [
+      "What spending controls or payment finality safeguards constrain the ResearchAgent language model"
+     ]
+    },
+    "changed": false
+   },
+   {
+    "id": "B5",
+    "question": "How does ResearchAgent decide which article is worth buying?",
+    "main": {
+     "bought": [],
+     "spentMinor": 0,
+     "lead": [],
+     "openGaps": [
+      "Explain the criteria ResearchAgent uses to decide which article is worth buying"
+     ]
+    },
+    "branch": {
+     "bought": [
+      "product-how-it-decides"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "ResearchAgent decides which article is worth buying in two steps: a decision model scores how useful each paid article would be, and policy code buys only what clears a threshold within the budget; no language model can spend."
+     ],
+     "openGaps": []
+    },
+    "changed": true
+   },
+   {
+    "id": "C1",
+    "question": "How does the writer get paid, and what stops the agent from reading the article and then refusing to pay?",
+    "main": {
+     "bought": [
+      "product-key-reveal-trust",
+      "team-credentials"
+     ],
+     "spentMinor": 80,
+     "lead": [],
+     "openGaps": [
+      "How the writer gets paid for the article",
+      "What mechanism or control stops the agent from reading the article and then refusing to pay",
+      "Whether payment is enforced before or after the agent reads the article"
+     ]
+    },
+    "branch": {
+     "bought": [
+      "product-writer-paid"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "the writer gets paid by publishing the article's key on the XRP Ledger: the payment waits in an escrow that only that key can open, so an agent cannot read the article unless the writer is paid."
+     ],
+     "openGaps": [
+      "What mechanism or control stops the agent from reading the article and then refusing to pay"
+     ]
+    },
+    "changed": true
+   },
+   {
+    "id": "C4",
+    "question": "How much does a writer earn per sale, and what does ResearchAgent take as a fee?",
+    "main": {
+     "bought": [],
+     "spentMinor": 0,
+     "lead": [],
+     "openGaps": [
+      "The amount a writer earns per sale",
+      "The fee ResearchAgent takes per sale"
+     ]
+    },
+    "branch": {
+     "bought": [
+      "product-writer-earnings"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "a writer earns the full price they set per sale, S$0.40 or 40,000 drops of Testnet XRP for these explainers, because the escrow releases all of it to the writer; ResearchAgent takes no fee per article sale."
+     ],
+     "openGaps": []
+    },
+    "changed": true
+   },
+   {
+    "id": "C5",
+    "question": "How much XRP reserve does an agent wallet need, and how much does each open escrow or trust line add?",
+    "main": {
+     "bought": [
+      "xrpl-reserves",
+      "team-asset-provisioning"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "An XRPL wallet needs a base reserve plus applicable owner reserves, separately from the money it intends to send."
+     ],
+     "openGaps": [
+      "The base XRP reserve amount an agent wallet must hold",
+      "The additional XRP reserve added by each open escrow",
+      "The additional XRP reserve added by each open trust line"
+     ]
+    },
+    "branch": {
+     "bought": [
+      "xrpl-reserves",
+      "team-asset-provisioning"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "An XRPL wallet needs a base reserve plus applicable owner reserves, separately from the money it intends to send."
+     ],
+     "openGaps": [
+      "The base XRP reserve amount an agent wallet must hold",
+      "The additional XRP reserve added by each open escrow",
+      "The additional XRP reserve added by each open trust line"
+     ]
+    },
+    "changed": false
+   },
+   {
+    "id": "D1",
+    "question": "What travel-rule information must a VASP send with a crypto transfer in Singapore?",
+    "main": {
+     "bought": [
+      "c5-fatf-recommendation-16-travel-rule",
+      "xrpl-compliance-fatf-travel-rule"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "Recommendation 16, the travel rule, applies to virtual-asset transfers: the originating provider must obtain required and accurate originator information and required beneficiary information and send it to the beneficiary institution immediately and securely."
+     ],
+     "openGaps": [
+      "State which Singapore authority's travel-rule requirements apply to VASP crypto transfers"
+     ]
+    },
+    "branch": {
+     "bought": [
+      "c5-fatf-recommendation-16-travel-rule",
+      "xrpl-compliance-fatf-travel-rule"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "Recommendation 16, the travel rule, applies to virtual-asset transfers: the originating provider must obtain required and accurate originator information and required beneficiary information and send it to the beneficiary institution immediately and securely."
+     ],
+     "openGaps": [
+      "State which Singapore authority's travel-rule requirements apply to VASP crypto transfers"
+     ]
+    },
+    "changed": false
+   },
+   {
+    "id": "D2",
+    "question": "Is RLUSD a regulated stablecoin, and who supervises its issuer?",
+    "main": {
+     "bought": [
+      "xrpl-rlusd"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "RLUSD is issued by Standard Custody & Trust Company under a New York limited-purpose trust charter, according to Ripple's issuer materials; that oversight does not automatically authorize every downstream service worldwide."
+     ],
+     "openGaps": [
+      "Whether RLUSD is a regulated stablecoin and under what regulatory framework"
+     ]
+    },
+    "branch": {
+     "bought": [
+      "xrpl-rlusd"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "RLUSD is issued by Standard Custody & Trust Company under a New York limited-purpose trust charter, according to Ripple's issuer materials; that oversight does not automatically authorize every downstream service worldwide."
+     ],
+     "openGaps": [
+      "Whether RLUSD is a regulated stablecoin and under what regulatory framework"
+     ]
+    },
+    "changed": false
+   },
+   {
+    "id": "D3",
+    "question": "Does a Singapore company need a MAS licence to pay suppliers in RLUSD?",
+    "main": {
+     "bought": [
+      "c5-mas-licence-paying-suppliers-rlusd"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "Licensing becomes a likelier question if the company moves tokens for other parties, runs an exchange or holds tokens for others."
+     ],
+     "openGaps": [
+      "Which MAS licence category, if any, covers paying suppliers in RLUSD",
+      "Whether RLUSD counts as a digital payment token or e-money under MAS rules",
+      "Any MAS guidance on stablecoin payments to suppliers by Singapore companies"
+     ]
+    },
+    "branch": {
+     "bought": [
+      "c5-mas-licence-paying-suppliers-rlusd"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "Licensing becomes a likelier question if the company moves tokens for other parties, runs an exchange or holds tokens for others."
+     ],
+     "openGaps": [
+      "Which MAS licence category, if any, covers paying suppliers in RLUSD",
+      "Whether RLUSD counts as a digital payment token or e-money under MAS rules",
+      "Any MAS guidance on stablecoin payments to suppliers by Singapore companies"
+     ]
+    },
+    "changed": false
+   },
+   {
+    "id": "D4",
+    "question": "If my agent pays for an article and the writer never reveals the key, what happens to my money?",
+    "main": {
+     "bought": [
+      "product-escrow-no-show"
+     ],
+     "spentMinor": 40,
+     "lead": [],
+     "openGaps": [
+      "Whether a payment made by an agent for an article is final or reversible when the writer never reveals the key",
+      "What recourse or refund the payer has if the writer fails to deliver the key after payment",
+      "How payment finality and spending controls apply when an agent pays for an article and the key is withheld"
+     ]
+    },
+    "branch": {
+     "bought": [
+      "product-escrow-no-show"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "If the writer never completes delivery, policy waits for the validated deadline and submits cancellation of the original object."
+     ],
+     "openGaps": [
+      "Whether a payment made by an agent for an article is final or reversible when the writer never reveals the key",
+      "What recourse or refund the payer has if the writer fails to deliver the key after payment",
+      "How payment finality and spending controls apply when an agent pays for an article and the key is withheld"
+     ]
+    },
+    "changed": true
+   },
+   {
+    "id": "E1",
+    "question": "Can an XRPL escrow hold RLUSD today, and what must the issuer enable before a buyer can lock it?",
+    "main": {
+     "bought": [
+      "team-rlusd"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "The team documented official RLUSD as blocked until its issuer enables AllowTrustLineLocking."
+     ],
+     "openGaps": [
+      "Whether an XRPL escrow can hold RLUSD today",
+      "Whether RLUSD escrow capability depends on issuer-side enablement on the XRPL"
+     ]
+    },
+    "branch": {
+     "bought": [
+      "team-rlusd"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "The team documented official RLUSD as blocked until its issuer enables AllowTrustLineLocking."
+     ],
+     "openGaps": [
+      "Whether an XRPL escrow can hold RLUSD today",
+      "Whether RLUSD escrow capability depends on issuer-side enablement on the XRPL"
+     ]
+    },
+    "changed": false
+   },
+   {
+    "id": "E2",
+    "question": "What does an XRPL Credential prove, and which transactions create and accept one?",
+    "main": {
+     "bought": [
+      "xrpl-tx-credentialaccept"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "CredentialAccept records the subject account's acceptance of a credential issued to it."
+     ],
+     "openGaps": []
+    },
+    "branch": {
+     "bought": [
+      "xrpl-tx-credentialaccept"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "CredentialAccept records the subject account's acceptance of a credential issued to it."
+     ],
+     "openGaps": []
+    },
+    "changed": false
+   },
+   {
+    "id": "E3",
+    "question": "How do XRPL AMM pools set their trading fee, and who can vote to change it?",
+    "main": {
+     "bought": [
+      "c5-xrpl-amm-create-deposit",
+      "xrpl-tx-ammvote"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "AMMCreate creates a new Automated Market Maker instance for a pair of assets, and its TradingFee is at most 1000, a 1% trading fee."
+     ],
+     "openGaps": []
+    },
+    "branch": {
+     "bought": [
+      "c5-xrpl-amm-create-deposit",
+      "xrpl-tx-ammvote"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "AMMCreate creates a new Automated Market Maker instance for a pair of assets, and its TradingFee is at most 1000, a 1% trading fee."
+     ],
+     "openGaps": []
+    },
+    "changed": false
+   },
+   {
+    "id": "E4",
+    "question": "How long does an XRPL payment take to become final, and when should an agent treat it as settled?",
+    "main": {
+     "bought": [
+      "product-payment-finality"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "an agent should treat a successful payment as final only when its tesSUCCESS result appears in a validated ledger; an initial submit response is provisional."
+     ],
+     "openGaps": [
+      "How long an XRPL payment takes to become final, including typical ledger close and validation timing",
+      "What finality means on the XRPL and which conditions confirm a payment is final"
+     ]
+    },
+    "branch": {
+     "bought": [
+      "product-payment-finality"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "an agent should treat a successful payment as final only when its tesSUCCESS result appears in a validated ledger; an initial submit response is provisional."
+     ],
+     "openGaps": [
+      "How long an XRPL payment takes to become final, including typical ledger close and validation timing",
+      "What finality means on the XRPL and which conditions confirm a payment is final"
+     ]
+    },
+    "changed": false
+   },
+   {
+    "id": "E5",
+    "question": "Which XRPL validators are run by Singapore banks?",
+    "main": {
+     "bought": [],
+     "spentMinor": 0,
+     "lead": [],
+     "openGaps": [
+      "Identify which Singapore banks operate XRPL validators",
+      "List the specific XRPL validator nodes run by Singapore banks",
+      "Establish the validator public keys or identities associated with Singapore banks on the XRP Ledger"
+     ]
+    },
+    "branch": {
+     "bought": [],
+     "spentMinor": 0,
+     "lead": [],
+     "openGaps": [
+      "Identify which Singapore banks operate XRPL validators",
+      "List the specific XRPL validator nodes run by Singapore banks",
+      "Establish the validator public keys or identities associated with Singapore banks on the XRP Ledger"
+     ]
+    },
+    "changed": false
+   },
+   {
+    "id": "F1",
+    "question": "How much does a writer earn per sale, and what does ResearchAgent take as a fee?",
+    "main": {
+     "bought": [],
+     "spentMinor": 0,
+     "lead": [],
+     "openGaps": [
+      "The amount a writer earns per sale, as stated for ResearchAgent.",
+      "The fee ResearchAgent takes per sale, and how it is calculated."
+     ]
+    },
+    "branch": {
+     "bought": [
+      "product-writer-earnings"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "a writer earns the full price they set per sale, S$0.40 or 40,000 drops of Testnet XRP for these explainers, because the escrow releases all of it to the writer; ResearchAgent takes no fee per article sale."
+     ],
+     "openGaps": []
+    },
+    "changed": true
+   },
+   {
+    "id": "F2",
+    "question": "What does an x402 402 response contain, and can my agent pay it with XRP on Testnet?",
+    "main": {
+     "bought": [
+      "product-x402-response"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE."
+     ],
+     "openGaps": [
+      "List the fields an x402 402 response contains, including payment requirements and any payment-signature or scheme details.",
+      "Explain how an agent would satisfy an x402 402 response using XRP on Testnet, including payment finality considerations."
+     ]
+    },
+    "branch": {
+     "bought": [
+      "product-x402-response"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE."
+     ],
+     "openGaps": [
+      "List the fields an x402 402 response contains, including payment requirements and any payment-signature or scheme details.",
+      "Explain how an agent would satisfy an x402 402 response using XRP on Testnet, including payment finality considerations."
+     ]
+    },
+    "changed": false
+   }
+  ]
+ }
+}

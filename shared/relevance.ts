@@ -37,7 +37,9 @@ export const PROTOCOL_GLOSSARY = [
   ['deposit authorization', 'DepositAuth', 'DepositPreauth', 'preauthorized deposits'],
   ['testnet', 'altnet', 'test network'],
 ] as const
-const STOP = new Set('a an the of at in on to for and or with its it is are was were be did does do what how why when which who can will should from about this that their have has had by as into before after today must need needs lets let get does every just than more much many each actually use used using i my me an agent please tell work know server no independent accessible evidence missing dated figures still unanswered happen happens'.split(' '))
+// R9-C: "whether" is a question word like "what" or "which" (live planners open requested facts with it), and "then" only
+// orders clauses ("reading the article and then refusing to pay"); neither names a subject.
+const STOP = new Set('a an the of at in on to for and or with its it is are was were be did does do what how why when which whether who can will should from about this that their have has had by as into before after then today must need needs lets let get does every just than more much many each actually use used using i my me an agent please tell work know server no independent accessible evidence missing dated figures still unanswered happen happens'.split(' '))
 export const topicWords = (text: string): string[] => [...new Set((text.normalize('NFKC').replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase().match(/[a-z0-9]+/g) ?? []).filter(w => w.length > 1 && !STOP.has(w)).map(w => w.replace(/(?:ing|ed)$/, m => w.length > 5 ? '' : m).replace(/(?<!s)s$/, m => w.length > 3 ? '' : m)))]
 // Normalize the fixed vocabulary once rather than for each query word and hit.
 const groupWords = new Map(PROTOCOL_GLOSSARY.map(group => [group, new Set(group.flatMap(topicWords))]))
@@ -121,17 +123,40 @@ export function familyMemberWords(family: string): Set<string> {
   const own = new Set(groups.flatMap(group => group.filter(p => !isCamelCaseName(p)).flatMap(topicWords)))
   return new Set(groups.flatMap(group => group.filter(isCamelCaseName).flatMap(identifierWords)).filter(word => !own.has(word)))
 }
-/** Match each original term directly or through a glossary group it belongs to. */
-export function topicOverlap(query: string, document: string, prepared?: TopicDocument): number {
-  const need = queryWords(query), own = prepared?.words ?? documentWords(document)
+/**
+ * Forms of one word that the light stemmer cannot fold, for the subject floors below (R9-C): "How does the writer get
+ * paid?" is about writer payment, and "worth buying" about what was bought. Folding is local to those floors, so search,
+ * title matching and the protocol families keep their exact words.
+ */
+const SAME_WORD = new Map<string, readonly string[]>([['pay', ['pay', 'paid', 'payment']], ['buy', ['buy', 'bought']]])
+const BASE_OF = new Map([...SAME_WORD].flatMap(([base, forms]) => forms.map(form => [form, base] as const)))
+/**
+ * The share of a query's topic words a document names, directly or through a glossary group both name, and how many.
+ * `fold` treats the forms of one word as one (paid, payment → pay); `skip` leaves words out of the count.
+ */
+function wordOverlap(query: string, document: string, prepared?: TopicDocument, options: { fold?: boolean; skip?: ReadonlySet<string> } = {}): { share: number; matched: number } {
+  const words = options.skip ? queryWords(query).filter(w => !options.skip!.has(w)) : queryWords(query)
+  const need = options.fold ? [...new Set(words.map(w => BASE_OF.get(w) ?? w))] : words
+  const own = prepared?.words ?? documentWords(document)
   const normalized = prepared?.phrases ?? documentPhrases(document)
   const aliases = matchingGroups(query).filter(group => group.some(p => phraseIn(normalized, p)))
-  return need.length ? need.filter(w => own.has(w) || aliases.some(g => groupWords.get(g)!.has(w))).length / need.length : 0
+  const forms = (w: string) => options.fold ? SAME_WORD.get(w) ?? [w] : [w]
+  const matched = need.filter(w => forms(w).some(form => own.has(form) || aliases.some(g => groupWords.get(g)!.has(form)))).length
+  return { share: need.length ? matched / need.length : 0, matched }
+}
+/** Match each original term directly or through a glossary group it belongs to. */
+export function topicOverlap(query: string, document: string, prepared?: TopicDocument): number {
+  return wordOverlap(query, document, prepared).share
 }
 /** Network qualifiers ("on XRPL", "on Testnet") say where a question applies, not what it asks about. */
 const QUALIFIERS = new Set(['xrpl', 'testnet'])
 /** Broad families that many protocol articles mention in passing; a specific family the question names ranks first. */
 const BROAD = new Set(['x402', 'finality', 'transaction cost', 'digital payment token'])
+/**
+ * The broad families that usually name what a question asks about its subject (is it final, what does it cost, is it
+ * regulated) rather than the subject itself (R9-C). x402 is broad too, but a question naming x402 is about x402.
+ */
+const PREDICATES = new Set(['finality', 'transaction cost', 'digital payment token'])
 /** The subject families a query names, never the network qualifiers (H8-01). */
 export const subjectFamilies = memoByText((query: string) => Object.freeze(matchingGroups(query).filter(g => g[0] !== 'xrpl' && !QUALIFIERS.has(g[0]))))
 /**
@@ -174,14 +199,32 @@ export function metadataTopicMatches(query: string, document: string, prepared?:
     // metadata, so wallet/budget tags cannot satisfy a finality question.
     if (families.length) {
       const documentText = prepared?.phrases ?? documentPhrases(document)
-      return families.some(group => group.some(p => phraseIn(documentText, p)))
+      if (families.some(group => group.some(p => phraseIn(documentText, p)))) return true
+      return families.every(group => PREDICATES.has(group[0])) && namesPredicateSubject(query, families, document, prepared)
     }
-    const generic = new Set(['xrpl','xrp','ledger','payment','transaction','account','token','asset'])
-    const need = words.filter(w => !generic.has(w))
+    const need = words.filter(w => !GENERIC.has(w))
     const own = prepared?.words ?? documentWords(document)
     return need.length ? need.some(w => own.has(w)) : true
   }
-  return topicOverlap(query.replace(/\b\d+\b/g, ' '), document, prepared) >= 0.5
+  return wordOverlap(query.replace(/\b\d+\b/g, ' '), document, prepared, { fold: true }).share >= 0.5
+}
+/** Words that name no particular protocol subject. */
+const GENERIC = new Set(['xrpl','xrp','ledger','payment','transaction','account','token','asset'])
+/** The network qualifiers' own words (xrpl, ledger, testnet, …): where a question applies, never what it asks. */
+const QUALIFIER_WORDS = new Set(PROTOCOL_GLOSSARY.filter(group => QUALIFIERS.has(group[0])).flatMap(group => [...groupWords.get(group)!]))
+/**
+ * R9-C: a query whose only families are predicates (finality, fees, regulation) often names one as what it asks about its
+ * subject, not as the subject: "Whether a payment made by an agent for an article is final or reversible when the writer
+ * never reveals the key" asks about an article whose writer never reveals the key, and "final" is the question. Requiring
+ * finality vocabulary rejected the writer no-show explainer that answers it, so the answer lost its lead (R9-A's D4
+ * repro). A document naming none of those families still matches when it names at least half, and at least two, of the
+ * query's other subject words: not generic words, network qualifiers or the families' own words. A query naming a
+ * specific family ("escrow", "trust line") or x402 keeps that family as its gate.
+ */
+function namesPredicateSubject(query: string, families: readonly (typeof PROTOCOL_GLOSSARY)[number][], document: string, prepared?: TopicDocument): boolean {
+  const skip = new Set([...GENERIC, ...QUALIFIER_WORDS, ...families.flatMap(group => [...groupWords.get(group)!])])
+  const { share, matched } = wordOverlap(query.replace(/\b\d+\b/g, ' '), document, prepared, { fold: true, skip })
+  return matched >= 2 && share >= 0.5
 }
 export function topicMatches(query: string, document: string, prepared?: TopicDocument): boolean {
   return metadataTopicMatches(query, document, prepared)

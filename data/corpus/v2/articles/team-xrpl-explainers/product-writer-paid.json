@@ -1,0 +1,73 @@
+{
+  "articleId": "product-writer-paid",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "How does the writer get paid, and what stops an agent reading the article without paying?",
+  "publishedAt": "2026-11-11",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced guide to key-reveal escrow on ResearchAgent: how a writer claims payment by publishing the article key, why the buyer cannot read first, and when locked money goes back.",
+  "tags": [
+    "writer payment",
+    "get paid",
+    "key reveal",
+    "EscrowFinish",
+    "XRPL escrow",
+    "paywalled article",
+    "ResearchAgent"
+  ],
+  "family": "product-writer-paid",
+  "sources": [
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/e90bda32ce55a44bc7dca2b10cc1200f37160e5d/docs/key-reveal-escrow.md",
+      "accessedAt": "2026-11-11"
+    },
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/e90bda32ce55a44bc7dca2b10cc1200f37160e5d/README.md",
+      "accessedAt": "2026-11-11"
+    },
+    {
+      "url": "https://xrpl.org/docs/concepts/payment-types/escrow",
+      "accessedAt": "2026-11-11"
+    }
+  ],
+  "body": "According to ResearchAgent documentation, the writer gets paid by publishing the article's key on the XRP Ledger: the payment waits in an escrow that only that key can open, so an agent cannot read the article unless the writer is paid. [1] [2]\n\nBefore any money moves, the writer encrypts the article with a fresh key for that buyer and signs the price, a hash of the key and hashes of the content. The buyer's policy code then locks the price in an XRPL escrow with a PREIMAGE-SHA-256 condition and a CancelAfter deadline. Until the key is revealed, the buyer holds only ciphertext it cannot open. [1] [3]\n\nTo claim the money, the writer submits EscrowFinish with the fulfillment, which is the key. That one validated transaction releases the payment to the writer and makes the key public, so payment and delivery are a single event. The buyer then decrypts the article and checks every signed promise before the agent may read it. [1] [3]\n\nAuthor interpretation: if the writer never publishes the key, the writer is never paid. After CancelAfter, policy code submits EscrowCancel and the locked funds return to the buyer. The ledger checks the key, not the article's quality: if a revealed article breaks a signed promise, the refund is a payment the writer must sign, and that writer's trust score drops. Sources accessed 11 November 2026. [1] [3]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to ResearchAgent documentation, the writer gets paid by publishing the article's key on the XRP Ledger: the payment waits in an escrow that only that key can open, so an agent cannot read the article unless the writer is paid. [1] [2]"
+    },
+    {
+      "id": "p2",
+      "text": "Before any money moves, the writer encrypts the article with a fresh key for that buyer and signs the price, a hash of the key and hashes of the content. The buyer's policy code then locks the price in an XRPL escrow with a PREIMAGE-SHA-256 condition and a CancelAfter deadline. Until the key is revealed, the buyer holds only ciphertext it cannot open. [1] [3]"
+    },
+    {
+      "id": "p3",
+      "text": "To claim the money, the writer submits EscrowFinish with the fulfillment, which is the key. That one validated transaction releases the payment to the writer and makes the key public, so payment and delivery are a single event. The buyer then decrypts the article and checks every signed promise before the agent may read it. [1] [3]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: if the writer never publishes the key, the writer is never paid. After CancelAfter, policy code submits EscrowCancel and the locked funds return to the buyer. The ledger checks the key, not the article's quality: if a revealed article breaks a signed promise, the refund is a payment the writer must sign, and that writer's trust score drops. Sources accessed 11 November 2026. [1] [3]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "XRP",
+      "measure": "payment"
+    },
+    "p2": {
+      "entity": "XRPL",
+      "measure": "price"
+    },
+    "p3": {
+      "entity": "EscrowFinish",
+      "measure": "fulfillment"
+    },
+    "p4": {
+      "entity": "writer",
+      "measure": "return",
+      "period": "twenty twenty six"
+    }
+  }
+}

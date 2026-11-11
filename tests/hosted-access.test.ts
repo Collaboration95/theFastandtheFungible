@@ -146,6 +146,11 @@ it('earnings expose only confirmed sales and trust from the caller, without raw 
   expect(mine.text).toContain(hash);expect(foreign.text).not.toContain(hash)
   expect(mine.text).not.toContain('private-intent');expect(mine.text).not.toContain(article.body);expect(mine.text).not.toContain('Private question')
   expect(foreign.text).not.toContain(article.body)
+  // R9-C (H9-15): every visitor sees the demo-wide count of confirmed sales, as a number only; another visitor's sale
+  // stays out of their own purchases and its hash, intent and question never leak.
+  const card=(text:string)=>(JSON.parse(text) as {writers:{publisherSlug:string;demoSales?:number;sales:unknown[]}[]}).writers.find(w=>w.publisherSlug===article.publisherSlug)!
+  expect(card(foreign.text)).toMatchObject({demoSales:1,sales:[]});expect(card(mine.text)).toMatchObject({demoSales:1})
+  expect(foreign.text).not.toContain('private-intent');expect(foreign.text).not.toContain('Private question')
 })
 it('serves public writer HTML and metadata without premium bytes through the real hosted gateway',async()=>{
   const {serve}=await import('./site-serve.js')

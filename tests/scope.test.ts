@@ -5,7 +5,7 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { DEMO_QUESTIONS } from '../shared/contracts/examples.js'
 import { ScopeSchema } from '../shared/contracts/index.js'
-import { ABOUT, ANGLE_QUESTION, SCOPE_FEW_SHOT, SCOPE_PROMPT, fixtureScope, scope } from '../server/agents/scope.js'
+import { ABOUT, ANGLE_QUESTION, REDIRECT, REDIRECT_LABEL, SCOPE_FEW_SHOT, SCOPE_PROMPT, fixtureScope, scope } from '../server/agents/scope.js'
 import { createApiApp } from '../server/routes.js'
 
 const bible = JSON.parse(readFileSync('data/corpus/v2/story-bible.json', 'utf8')) as { useCases: { id: string; clarify: null | { question: string; options: string[]; fewShot: { user: string; assistant: { questions: { text: string; options: string[] }[] } }[] } }[] }
@@ -71,8 +71,11 @@ describe('scope step (#136)', () => {
     for (const q of [...DEMO_QUESTIONS.map(d => d.text), 'Who are the analysts bullish on TSMC?', 'What happened to the bond market?', 'hi, what did the BoJ change?']) expect(fixtureScope(q).chat).toBeUndefined()
   })
   it('model chat route: {route:"chat"} returns the reply with no questions; an empty reply falls back to the fixture', async () => {
+    llm({ route: 'chat', reply: "You're welcome. Ask me about XRPL, x402 or agent payments whenever you're ready." })
+    expect(await scope('thanks!')).toMatchObject({ questions: [], chat: { reply: expect.stringContaining("You're welcome") }, label: 'DeepSeek · deepseek-flash' })
+    // H9-11: general knowledge is outside what ResearchAgent researches, so the model's full answer becomes the fixed one-line redirect.
     llm({ route: 'chat', reply: "The Sun is about 1.39 million km across, roughly 109 times Earth's diameter." })
-    expect(await scope('What is the size of our star?')).toMatchObject({ questions: [], chat: { reply: expect.stringContaining('1.39 million km') }, label: 'DeepSeek · deepseek-flash' })
+    expect(await scope('What is the size of our star?')).toMatchObject({ questions: [], chat: { reply: REDIRECT }, label: REDIRECT_LABEL })
     // clarify=never keeps the chat reply: it is not a clarify question.
     expect((await scope('What is the size of our star?', { clarify: 'never' })).chat).toBeDefined()
     llm({ route: 'chat', reply: '   ' })

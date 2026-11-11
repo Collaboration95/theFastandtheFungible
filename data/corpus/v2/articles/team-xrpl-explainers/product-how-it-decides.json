@@ -1,0 +1,73 @@
+{
+  "articleId": "product-how-it-decides",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "How does ResearchAgent decide which article is worth buying?",
+  "publishedAt": "2026-11-11",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced guide to how ResearchAgent chooses a paid article: what the decision model scores, how a writer trust score weighs in, and the fixed policy checks behind each purchase.",
+  "tags": [
+    "ResearchAgent",
+    "decision model",
+    "buying decision",
+    "article value",
+    "writer trust score",
+    "value threshold",
+    "worth buying"
+  ],
+  "family": "product-how-it-decides",
+  "sources": [
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/e90bda32ce55a44bc7dca2b10cc1200f37160e5d/README.md",
+      "accessedAt": "2026-11-11"
+    },
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/e90bda32ce55a44bc7dca2b10cc1200f37160e5d/docs/contracts/PRODUCT.md",
+      "accessedAt": "2026-11-11"
+    },
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/e90bda32ce55a44bc7dca2b10cc1200f37160e5d/docs/contracts/SECURITY.md",
+      "accessedAt": "2026-11-11"
+    }
+  ],
+  "body": "According to ResearchAgent documentation, ResearchAgent decides which article is worth buying in two steps: a decision model scores how useful each paid article would be, and policy code buys only what clears a threshold within the budget; no language model can spend. [1] [2]\n\nFor each missing fact, the model rates every candidate from its public title, abstract, topics and signed promises, never the paid text: how likely it is to fill the gap, whether it is original, and how credible its writer is. That value is multiplied by the writer's trust score, a number from 0 to 1, so trust can lower a score but never raise it. [1] [2]\n\nPolicy code, not the model, makes each purchase. It buys an article only when the value clears a fixed threshold for that model, the topics cover the question, the writer is in good standing, and the price fits both the per-article cap and the remaining budget. A new writer may get one labelled probe purchase of up to S$0.30 below that threshold. It buys at most one article per round, for up to three rounds, and stops once the requested facts are answered. [1] [3]\n\nAuthor interpretation: the budget a person confirms in the plan step is the only spending authority. The language model plans searches and writes the answer, but it cannot sign a payment, raise the budget or tell policy which article to buy. After delivery, the passages are checked against the writer's signed promises, and a broken promise lowers that writer's trust in later decisions. Sources accessed 11 November 2026. [1] [3]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "According to ResearchAgent documentation, ResearchAgent decides which article is worth buying in two steps: a decision model scores how useful each paid article would be, and policy code buys only what clears a threshold within the budget; no language model can spend. [1] [2]"
+    },
+    {
+      "id": "p2",
+      "text": "For each missing fact, the model rates every candidate from its public title, abstract, topics and signed promises, never the paid text: how likely it is to fill the gap, whether it is original, and how credible its writer is. That value is multiplied by the writer's trust score, a number from 0 to 1, so trust can lower a score but never raise it. [1] [2]"
+    },
+    {
+      "id": "p3",
+      "text": "Policy code, not the model, makes each purchase. It buys an article only when the value clears a fixed threshold for that model, the topics cover the question, the writer is in good standing, and the price fits both the per-article cap and the remaining budget. A new writer may get one labelled probe purchase of up to S$0.30 below that threshold. It buys at most one article per round, for up to three rounds, and stops once the requested facts are answered. [1] [3]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: the budget a person confirms in the plan step is the only spending authority. The language model plans searches and writes the answer, but it cannot sign a payment, raise the budget or tell policy which article to buy. After delivery, the passages are checked against the writer's signed promises, and a broken promise lowers that writer's trust in later decisions. Sources accessed 11 November 2026. [1] [3]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "policy",
+      "measure": "budget"
+    },
+    "p2": {
+      "entity": "writer",
+      "measure": "rates"
+    },
+    "p3": {
+      "entity": "writer",
+      "measure": "price"
+    },
+    "p4": {
+      "entity": "writer",
+      "measure": "plan",
+      "period": "twenty twenty six"
+    }
+  }
+}

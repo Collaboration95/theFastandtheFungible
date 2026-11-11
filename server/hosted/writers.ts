@@ -1,4 +1,17 @@
 import { Router } from 'express'
+import type { PurchaseIntent } from '../../shared/contracts/index.js'
+/** A sale confirmed on the ledger: the writer's EscrowFinish revealed the key in a validated ledger (key reveal only). */
+export const confirmedSale = (intent: PurchaseIntent) => Boolean(intent.escrow?.finishHash && intent.escrow.revealLedger && /^[A-F0-9]{64}$/i.test(intent.escrow.finishHash))
+/**
+ * H9-15: confirmed sales per article across every visitor of the hosted demo, so a new visitor's Writers tab shows that
+ * writers do get paid instead of a row of zeros. Counts only, keyed by public article id: never who bought, which run,
+ * a transaction hash or an amount.
+ */
+export function demoSalesByArticle(intents: PurchaseIntent[]): Map<string, number> {
+  const counts = new Map<string, number>()
+  for (const intent of intents) if (confirmedSale(intent)) counts.set(`${intent.profileId}/${intent.resourceId}`, (counts.get(`${intent.profileId}/${intent.resourceId}`) ?? 0) + 1)
+  return counts
+}
 /** Exact read-only site allowlist. Agent purchase/search/facilitator routes never pass this boundary. */
 export const publicWriterPath = (path: string) => /^\/w\/?$/.test(path) || path === '/w/site.css' || /^\/w\/[a-z0-9]+(?:-[a-z0-9]+)*(?:\/(?:about|contact|\.well-known\/agent-publisher\.json|blog\/[A-Za-z0-9._-]+))?\/?$/.test(path)
 export function hostedWriterPages(publisherUrl: string) {
