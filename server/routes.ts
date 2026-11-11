@@ -1,3 +1,4 @@
+import { writeSse, endSse, sseBufferedBytes } from './api/sse.js'
 import { writersRouter } from './api/writers.js'
 import { hostedWriterPages } from './hosted/writers.js'
 import { requestBodyStatus } from './body-limit.js'
@@ -73,35 +74,41 @@ async function createConfiguredApi(options: ApiOptions = {}) {
   const streams = new Map<string, Set<Response>>()
   const snapshotTimers = new Map<string, ReturnType<typeof setTimeout>>()
   const lastSnapshot = new Map<string, number>()
+  const terminalSnapshots = new Set<string>()
   const send = (runId: string, frame: string) => {
     const bytes = Buffer.byteLength(frame)
     for (const res of streams.get(runId) ?? []) {
       // Oversize snapshots close the stream; clients resync via the durable GET endpoint.
-      if (res.writableEnded || res.destroyed || bytes > 256 * 1024 || res.writableLength + bytes > 256 * 1024) {
-        streams.get(runId)?.delete(res); if (!streams.get(runId)?.size) { streams.delete(runId); clearTimeout(snapshotTimers.get(runId)); snapshotTimers.delete(runId); lastSnapshot.delete(runId) }
-        if (!res.writableEnded && !res.destroyed) res.end()
+      if (res.writableEnded || res.destroyed || bytes > 256 * 1024 || sseBufferedBytes(res) + bytes > 256 * 1024) {
+        streams.get(runId)?.delete(res); if (!streams.get(runId)?.size) { streams.delete(runId); clearTimeout(snapshotTimers.get(runId)); snapshotTimers.delete(runId); lastSnapshot.delete(runId); terminalSnapshots.delete(runId) }
+        if (!res.writableEnded && !res.destroyed) endSse(res)
         continue
       }
-      res.write(frame)
+      writeSse(res, frame)
     }
   }
   const snapshot = (runId: string) => {
     snapshotTimers.delete(runId)
-    if (!streams.get(runId)?.size) { lastSnapshot.delete(runId); return }
+    if (!streams.get(runId)?.size) { lastSnapshot.delete(runId); terminalSnapshots.delete(runId); return }
     lastSnapshot.set(runId, Date.now())
-    send(runId, `event: snapshot\ndata: ${JSON.stringify(store.getRun(runId))}\n\n`)
+    const run = store.getRun(runId)
+    if (['DONE','FAILED','STOPPED'].includes(run.phase)) terminalSnapshots.add(runId)
+    send(runId, `event: snapshot\ndata: ${JSON.stringify(run)}\n\n`)
   }
   let anchors: AnswerAnchors | undefined
+  const snapshotFloorMs = config.HOSTED === '1' ? 1000 : 250
   const publish = (event: TraceEvent) => {
     if (!streams.get(event.runId)?.size) return
     send(event.runId, `event: trace\ndata: ${JSON.stringify(event)}\n\n`)
-    const terminal = ['DONE','STOPPED','FAILED','SNAPSHOT'].includes(event.type)
-    if (terminal || Date.now() - (lastSnapshot.get(event.runId) ?? 0) >= 250) {
+    // A phase-only failure or a late final anchor also needs an immediate snapshot; ordinary SNAPSHOT progress coalesces.
+    const changed = event.type === 'SNAPSHOT' ? store.getRun(event.runId) : undefined
+    const terminal = ['DONE','STOPPED','FAILED'].includes(event.type) || (changed !== undefined && (config.HOSTED !== '1' || (!terminalSnapshots.has(event.runId) && ['DONE','FAILED','STOPPED'].includes(changed.phase)) || runSettled(changed)))
+    if (terminal || Date.now() - (lastSnapshot.get(event.runId) ?? 0) >= snapshotFloorMs) {
       clearTimeout(snapshotTimers.get(event.runId)); snapshot(event.runId)
       // Hosted: once the last snapshot of a settled run is out, close its streams rather than hold them for a tab that
       // may already be gone behind the proxies. An open page's EventSource reconnects, gets 204 and stops (H5).
-      if (terminal && config.HOSTED === '1' && runSettled(store.getRun(event.runId))) for (const res of streams.get(event.runId) ?? []) res.end()
-    } else if (!snapshotTimers.has(event.runId)) snapshotTimers.set(event.runId, setTimeout(() => snapshot(event.runId), 250 - (Date.now() - lastSnapshot.get(event.runId)!)))
+      if (terminal && config.HOSTED === '1' && runSettled(store.getRun(event.runId))) for (const res of streams.get(event.runId) ?? []) endSse(res)
+    } else if (!snapshotTimers.has(event.runId)) snapshotTimers.set(event.runId, setTimeout(() => snapshot(event.runId), snapshotFloorMs - (Date.now() - lastSnapshot.get(event.runId)!)))
   }
   // Every durable event is also mirrored into the active Langfuse trace (a no-op when tracing is off).
   const store = new Store(options.dbPath ?? config.APP_DB ?? 'data/app.db', event => { try { traceEvent(event); logMoneyEvent(event, store) } catch { /* telemetry never blocks the run */ } publish(event) })
@@ -176,7 +183,7 @@ async function createConfiguredApi(options: ApiOptions = {}) {
     return task
   }
   const faultsAvailable = config.PUBLISHER_FAULTS === '1' && ['localhost', '127.0.0.1', '[::1]'].includes(new URL(publisherUrl).hostname)
-  const context: ApiContext = { work, store, client, payer, purchases, loop, reputation, labels, mcpPolicy, publisherUrl, launch, streams, onStreamEmpty: runId => { clearTimeout(snapshotTimers.get(runId)); snapshotTimers.delete(runId); lastSnapshot.delete(runId) }, reportDir, reportJobs, progress }
+  const context: ApiContext = { work, store, client, payer, purchases, loop, reputation, labels, mcpPolicy, publisherUrl, launch, streams, sseGzip: config.HOSTED === '1' && config.HOSTED_SSE_GZIP !== '0', onStreamOpen: runId => { if (config.HOSTED === '1') { lastSnapshot.set(runId, Date.now()); if (['DONE','FAILED','STOPPED'].includes(store.getRun(runId).phase)) terminalSnapshots.add(runId) } }, onStreamEmpty: runId => { clearTimeout(snapshotTimers.get(runId)); snapshotTimers.delete(runId); lastSnapshot.delete(runId); terminalSnapshots.delete(runId) }, reportDir, reportJobs, progress }
   let readiness: HostedReadiness | undefined
   if (hosted && queue) {
     const payerWatch = new PayerWatch()
@@ -208,10 +215,10 @@ async function createConfiguredApi(options: ApiOptions = {}) {
       const principal = res.locals.hostedSession.principal
       if (runSettled(store.getRun(String(req.params.id)))) return res.status(204).end()
       const own = [...streams].filter(([id])=>store.runPrincipal(id)?.principal===principal).flatMap(([id,set])=>[...set].map(stream=>({id,stream})))
-      for (const { id, stream } of own.slice(0, Math.max(0, own.length - 1))) { streams.get(id)?.delete(stream); if (!streams.get(id)?.size) streams.delete(id); stream.end() }
+      for (const { id, stream } of own.slice(0, Math.max(0, own.length - 1))) { streams.get(id)?.delete(stream); if (!streams.get(id)?.size) streams.delete(id); endSse(stream) }
       const total = [...streams.values()].reduce((n,set)=>n+set.size,0)
       if(total>=16) return res.status(429).json({error:'stream_limit'})
-      const expires = setTimeout(() => res.end(), Math.min(HOSTED_STREAM_MS, Math.max(1,res.locals.hostedSession.expires-Date.now())))
+      const expires = setTimeout(() => endSse(res), Math.min(HOSTED_STREAM_MS, Math.max(1,res.locals.hostedSession.expires-Date.now())))
       res.on('close',()=>clearTimeout(expires))
       next()
     })
@@ -335,8 +342,8 @@ async function createConfiguredApi(options: ApiOptions = {}) {
     await drain()
     timers.forEach(clearInterval)
     snapshotTimers.forEach(clearTimeout)
-    snapshotTimers.clear(); lastSnapshot.clear()
-    for (const set of streams.values()) for (const res of set) res.end()
+    snapshotTimers.clear(); lastSnapshot.clear(); terminalSnapshots.clear()
+    for (const set of streams.values()) for (const res of set) endSse(res)
     hire.close()
     store.close()
     await (payer?.ledger as { close?: () => Promise<void> } | undefined)?.close?.()

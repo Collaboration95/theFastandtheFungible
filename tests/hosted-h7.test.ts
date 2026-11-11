@@ -20,6 +20,8 @@ import { createApiApp } from '../server/routes.js'
 import { PublisherClient } from '../server/publisher-client.js'
 import { XrplPayer } from '../server/xrpl.js'
 import * as scopePlanner from '../server/agents/scope.js'
+import { cleanLinks as apiLinks } from '../server/hosted/links.js'
+import { cleanLinks as operatorLinks } from '../docker/hosted/links.mjs'
 
 // H7, through the real hosted middleware: the session flood cap, readiness off the request path, and /readyz on a full queue.
 beforeEach(() => { vi.spyOn(Date, 'now').mockReturnValue(Date.parse('2026-11-11T12:00:00Z')) })
@@ -273,4 +275,43 @@ it.each([30_000_000, 29_999_999])('wires the production readiness balance into t
   const funds = await wire(url + '/readyz/funds')
   expect([funds.status, funds.json()]).toEqual(drops < 30_000_000 ? [503, { funds: 'low' }] : [200, { funds: 'ok' }])
   expect((await wire(url + '/readyz')).status).toBe(200)
+})
+
+it('keeps API and operator links validation identical across their separate build boundaries', () => {
+  for (const video of ['https://youtu.be/abc123', 'https://example.org/video?a=1&b=2', 'https://example.org:443/a#b', 'http://example.org/x', 'https://user:pw@example.org/', 'https://localhost/x', 'javascript:alert(1)', 'https://example.org/a\\b', 'https://example.org/"x', 'https://example.org/<x>', `https://example.org/${'a'.repeat(300)}`, null, 42]) {
+    const doc = { video, proof: video, extra: 'https://example.org/ignored' }
+    expect(apiLinks(doc)).toEqual(operatorLinks(doc))
+  }
+  for (const doc of [null, [], 'https://example.org/', { proof: 'https://example.org/proof' }]) expect(apiLinks(doc)).toEqual(operatorLinks(doc))
+})
+
+it('refuses Start while the same question is still planning without binding a run or changing its submit identity', async () => {
+  const { url, store } = await stack()
+  let finish!: () => void
+  vi.spyOn(scopePlanner, 'scope').mockImplementation(() => new Promise(resolve => {
+    finish = () => resolve({ label: 'fixture · test', questions: [], plan: { restatement: 'XRPL', subqueries: ['XRPL'] } })
+  }))
+  const person = await visitor(url, '198.51.100.61'), headers = { ...person, 'Idempotency-Key': 'same-question' }
+  const planning = post(url, '/api/scope', headers, { question: 'How does XRPL escrow work?' })
+  await vi.waitFor(() => expect(finish).toBeTypeOf('function'))
+  const start = await post(url, '/runs', headers, { question: 'How does XRPL escrow work?', budgetMinor: 200 })
+  finish()
+  expect([start.status, start.json().error]).toEqual([409, 'scope_in_progress'])
+  expect((await planning).status).toBe(200)
+  expect(store.hostedState(db => db.prepare('SELECT state,run_id,submit_digest FROM hosted_holds').get())).toEqual({ state: 'draft', run_id: null, submit_digest: null })
+  expect(store.hostedState(db => Number(db.prepare('SELECT count(*) AS n FROM runs').get()!.n))).toBe(0)
+})
+
+it('allows 15 completed plans without using a question and returns plan_limit for the 16th', async () => {
+  const { url } = await stack(), person = await visitor(url, '198.51.100.65')
+  const question = 'How does XRP Ledger escrow work?'
+  for (let i = 0; i < 15; i++) {
+    vi.mocked(Date.now).mockReturnValue(Date.parse('2026-11-11T12:00:00Z') + i * 61_000)
+    const plan = await post(url, '/api/scope', { ...person, 'Idempotency-Key': `cancelled-${i}` }, { question, clarify: 'never' })
+    expect(plan.status).toBe(200)
+    expect((await wire(url + '/api/demo/status', person)).json<{ remaining: { questions: number } }>().remaining.questions).toBe(5)
+  }
+  vi.mocked(Date.now).mockReturnValue(Date.parse('2026-11-11T12:20:00Z'))
+  const sixteenth = await post(url, '/api/scope', { ...person, 'Idempotency-Key': 'plan-16' }, { question, clarify: 'never' })
+  expect([sixteenth.status, sixteenth.json().error]).toEqual([429, 'plan_limit'])
 })

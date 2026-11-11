@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { Mark } from '../format'
 import Icon from './Icon'
-import { HOSTED_DAILY_QUESTIONS, useHosted } from '../hosted'
+import { useHosted } from '../hosted'
 
 /** One exchange: the user's message, then the reply once it arrives (none while waiting, or while a plan card is open). */
 export interface ChatMessage { id: number; question: string; reply?: string; label?: string; error?: string }
@@ -63,7 +63,7 @@ export default function ChatThread({ messages, onSend, busy = false, above }: Ch
           <Icon name="send" />
         </button>
       </form>
-      <p className="ra-chat-note">{hosted ? `Research questions go to Home, where they get a budget. A chat reply counts as one of your ${HOSTED_DAILY_QUESTIONS} questions a day.` : 'Questions about companies or markets go to Home, where they get a budget.'}</p>
+      <p className="ra-chat-note">{hosted ? 'Research questions go to Home, where they get a budget. Plans and chat replies share a limit of 15 a day. Only starting research uses one of your 5 questions.' : 'Questions about companies or markets go to Home, where they get a budget.'}</p>
     </div>
   </main>
 }

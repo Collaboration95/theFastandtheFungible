@@ -5,7 +5,7 @@ import type { Store } from '../store.js'
 import type { Config } from '../config.js'
 import { HostedError, requireAdmissions, requireSpending } from './control.js'
 // USD stored as integer microdollars. Gross authority is never replenished by refunds.
-export const LIMITS = { questionMinor: 200, sessionQuestions: 5, sessionMinor: 1000, ipQuestions: 60, ipMinor: 12000, ipStartsPerMinute: 6, dailyQuestions: 300, dailyMinor: 60000, lifetimeQuestions: 2100, lifetimeMinor: 420000, questionModel: 50000, dailyModel: 15000000, lifetimeModel: 105000000, bodyBytes: 16384, questionChars: 2000, waiting: 2, queueMs: 90000,
+export const LIMITS = { questionMinor: 200, sessionQuestions: 5, sessionPlans: 15, sessionMinor: 1000, ipQuestions: 60, ipMinor: 12000, ipStartsPerMinute: 6, dailyQuestions: 300, dailyMinor: 60000, lifetimeQuestions: 2100, lifetimeMinor: 420000, questionModel: 50000, dailyModel: 15000000, lifetimeModel: 105000000, bodyBytes: 16384, questionChars: 2000, waiting: 2, queueMs: 90000,
   // Session table (H7). New sessions per address per hour: a judge reloading or using tabs keeps one cookie and mints none;
   // 120 leaves room for a whole venue behind one NAT address, and it caps one scripted machine at 120 an hour.
   // A session that never asked a question is dropped after 2 h (it holds no money and no run), and a full table drops
@@ -31,14 +31,21 @@ export const digest = (x: unknown) => hash(JSON.stringify(canonical(x)))
 export type Hold = { id: string; principal: string; run_id: string | null; scope_digest: string | null; submit_digest: string | null; scope_result: string | null; minor: number; model_used: number; model_envelope: number; created: number; state: string }
 export class HostedLimits {
   constructor(readonly store: Store, readonly config: Config, readonly now: () => number = Date.now) {
-    store.hostedState(db => db.exec(`CREATE TABLE IF NOT EXISTS hosted_sessions (principal TEXT PRIMARY KEY, csrf TEXT NOT NULL, expires INTEGER NOT NULL);
+    store.hostedState(db => {
+      db.exec(`CREATE TABLE IF NOT EXISTS hosted_sessions (principal TEXT PRIMARY KEY, csrf TEXT NOT NULL, expires INTEGER NOT NULL);
       CREATE TABLE IF NOT EXISTS hosted_holds (id TEXT PRIMARY KEY, principal TEXT NOT NULL, request_key TEXT NOT NULL, question TEXT NOT NULL, ip TEXT NOT NULL, day TEXT NOT NULL, created INTEGER NOT NULL, minor INTEGER NOT NULL, gross_open INTEGER NOT NULL DEFAULT 1, model_used INTEGER NOT NULL DEFAULT 0, model_envelope INTEGER NOT NULL DEFAULT 50000, run_id TEXT, scope_digest TEXT, submit_digest TEXT, scope_result TEXT, state TEXT NOT NULL DEFAULT 'draft', UNIQUE(principal,request_key));
       CREATE TABLE IF NOT EXISTS hosted_attempts (id INTEGER PRIMARY KEY, hold_id TEXT NOT NULL, provider TEXT NOT NULL, model TEXT NOT NULL, reserved INTEGER NOT NULL, input_tokens INTEGER NOT NULL, output_tokens INTEGER NOT NULL, created INTEGER NOT NULL);
       CREATE TABLE IF NOT EXISTS hosted_reputation (principal TEXT NOT NULL, wallet TEXT NOT NULL, json TEXT NOT NULL, PRIMARY KEY(principal,wallet));
       CREATE TABLE IF NOT EXISTS hosted_session_mints (ip TEXT NOT NULL, at INTEGER NOT NULL);
       CREATE INDEX IF NOT EXISTS hosted_session_mints_ip ON hosted_session_mints(ip,at);
       CREATE INDEX IF NOT EXISTS hosted_holds_principal ON hosted_holds(principal,day);
-      CREATE INDEX IF NOT EXISTS hosted_holds_ip ON hosted_holds(ip,day);`))
+      CREATE INDEX IF NOT EXISTS hosted_holds_ip ON hosted_holds(ip,day);`)
+      // Existing runs keep their historical admission day; drafts acquire no started-question charge.
+      if (!db.prepare('PRAGMA table_info(hosted_holds)').all().some(column => column.name === 'started_day')) {
+        db.exec('ALTER TABLE hosted_holds ADD COLUMN started_day TEXT')
+        db.exec('UPDATE hosted_holds SET started_day=day WHERE run_id IS NOT NULL')
+      }
+    })
   }
   get questionMinor() { return Number(this.config.HOSTED_QUESTION_CAP_MINOR ?? LIMITS.questionMinor) }
   /**
@@ -97,6 +104,10 @@ export class HostedLimits {
     return this.store.hostedState(db => {
       const old = this.row(db, principal, key), field = stage === 'scope' ? 'scope_digest' : 'submit_digest', d = digest(request)
       if (old) {
+        if (stage === 'scope' ? !old.scope_digest : !old.run_id) this.sessionCount(db, principal, stage)
+        // H7: planning runs separately from research. Start must not bind a run while its scope is still writing this
+        // hold; otherwise scope's completion could overwrite a queued/active run's state and lose the confirmed plan.
+        if (stage === 'submit' && !old.run_id && old.state === 'active') throw new HostedError(409, 'scope_in_progress')
         const original = db.prepare('SELECT question FROM hosted_holds WHERE id=?').get(old.id)!
         if (original.question !== hash(question) || (old[field] && old[field] !== d) || (stage === 'submit' && !old.submit_digest && minor > old.minor)) throw new HostedError(409, 'idempotency_conflict')
         if (!old[field]) { requireAdmissions(this.config, this.now()); db.prepare(`UPDATE hosted_holds SET ${field}=? WHERE id=?`).run(d, old.id) }
@@ -106,11 +117,12 @@ export class HostedLimits {
       if (!Number.isSafeInteger(minor) || minor < 0 || minor > this.questionMinor) throw new HostedError(400, 'invalid_budget')
       const now = this.now(), day = new Date(now).toISOString().slice(0, 10), ipKey = this.ipKey(ip)
       // A new question replaces this visitor's own finished-but-unstarted plan or chat reply: they cancelled it or moved
-      // on, and waiting 90 seconds for it to expire only blocked them. Its question still counts; it holds no money now.
+      // on, and waiting 90 seconds for it to expire only blocked them. Its plan counts toward 15; it holds no money now.
       db.prepare("UPDATE hosted_holds SET state='expired',minor=0,gross_open=0,model_envelope=model_used WHERE principal=? AND run_id IS NULL AND state='draft' AND scope_result IS NOT NULL AND submit_digest IS NULL").run(principal)
       const tally =(where: string, ...params: (string | number)[]) => db.prepare(`SELECT count(*) AS n, coalesce(sum(minor),0) AS minor FROM hosted_holds WHERE ${where}`).get(...params)!
       const check = (v: ReturnType<typeof tally>, questions: number, cap: number) => { if (Number(v.n) >= questions || Number(v.minor) + minor > cap) throw new HostedError(429, 'allowance_exhausted') }
-      check(tally('principal=? AND day=?', principal, day), LIMITS.sessionQuestions, LIMITS.sessionMinor)
+      this.sessionCount(db, principal, stage)
+      check(tally('principal=? AND day=?', principal, day), Number.POSITIVE_INFINITY, LIMITS.sessionMinor)
       check(tally("ip IN (?,?) AND (day=? OR gross_open=1)", ipKey, this.ipKey(ip,now-86400000), day), LIMITS.ipQuestions, LIMITS.ipMinor)
       check(tally("day=? OR gross_open=1", day), LIMITS.dailyQuestions, LIMITS.dailyMinor)
       check(tally('1=1'), LIMITS.lifetimeQuestions, LIMITS.lifetimeMinor)
@@ -130,6 +142,13 @@ export class HostedLimits {
       db.prepare('UPDATE hosted_holds SET scope_result=NULL WHERE created<?').run(now - 86400000)
       return this.row(db, principal, key)!
     })
+  }
+  private sessionCount(db: DatabaseSync, principal: string, stage: 'scope' | 'submit') {
+    const day = new Date(this.now()).toISOString().slice(0, 10)
+    const field = stage === 'scope' ? 'scope_digest' : 'run_id'
+    const dayField = stage === 'scope' ? 'day' : 'started_day'
+    const n = Number(db.prepare(`SELECT count(*) AS n FROM hosted_holds WHERE principal=? AND ${dayField}=? AND ${field} IS NOT NULL`).get(principal, day)!.n)
+    if (n >= (stage === 'scope' ? LIMITS.sessionPlans : LIMITS.sessionQuestions)) throw new HostedError(429, stage === 'scope' ? 'plan_limit' : 'allowance_exhausted')
   }
   attempt(id: string, provider: string, model: string, input: number, output: number, micro: number) {
     requireSpending(this.config)
@@ -193,7 +212,18 @@ export class HostedLimits {
       return Number(today.n) < LIMITS.dailyQuestions && Number(today.minor)+this.questionMinor <= LIMITS.dailyMinor && Number(all.n) < LIMITS.lifetimeQuestions && Number(all.minor)+this.questionMinor <= LIMITS.lifetimeMinor && used+pending+LIMITS.questionModel <= LIMITS.dailyModel && total+pending+LIMITS.questionModel <= LIMITS.lifetimeModel
     })
   }
-  update(id: string, change: { state?: string; run_id?: string; scope_result?: string }) { this.store.hostedState(db => { for (const [key,value] of Object.entries(change)) db.prepare(`UPDATE hosted_holds SET ${key}=? WHERE id=?`).run(value!,id) }) }
+  update(id: string, change: { state?: string; run_id?: string; scope_result?: string }) {
+    this.store.hostedState(db => {
+      // A run binds once, on its acceptance day; retries must not move yesterday's charge into today.
+      if (change.run_id) db.prepare('UPDATE hosted_holds SET started_day=coalesce(started_day,?) WHERE id=?').run(new Date(this.now()).toISOString().slice(0,10),id)
+      for (const [key,value] of Object.entries(change)) db.prepare(`UPDATE hosted_holds SET ${key}=? WHERE id=?`).run(value!,id)
+    })
+  }
   forRun(runId: string) { return this.store.hostedState(db => db.prepare('SELECT * FROM hosted_holds WHERE run_id=?').get(runId) as Hold | undefined) }
-  remaining(principal: string) { return this.store.hostedState(db => { const v = db.prepare('SELECT count(*) AS n,coalesce(sum(minor),0) AS minor FROM hosted_holds WHERE principal=? AND day=?').get(principal,new Date(this.now()).toISOString().slice(0,10))!; return { questions: Math.max(0,LIMITS.sessionQuestions-Number(v.n)), minor: Math.max(0,LIMITS.sessionMinor-Number(v.minor)) } }) }
+  remaining(principal: string) { return this.store.hostedState(db => {
+    const day = new Date(this.now()).toISOString().slice(0,10)
+    const n = db.prepare('SELECT count(*) AS n FROM hosted_holds WHERE principal=? AND started_day=? AND run_id IS NOT NULL').get(principal,day)!.n
+    const minor = db.prepare('SELECT coalesce(sum(minor),0) AS minor FROM hosted_holds WHERE principal=? AND day=?').get(principal,day)!.minor
+    return { questions: Math.max(0,LIMITS.sessionQuestions-Number(n)), minor: Math.max(0,LIMITS.sessionMinor-Number(minor)) }
+  }) }
 }

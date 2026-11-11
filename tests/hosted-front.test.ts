@@ -10,9 +10,9 @@ import { resources } from './helpers/resource-scope.js'
 const has = (bin: string) => spawnSync('which', [bin]).status === 0
 const ready = has('nginx') && has('envsubst')
 const freePort = () => new Promise<number>(resolve => { const s = createServer().listen(0, '127.0.0.1', () => { const { port } = s.address() as { port: number }; s.close(() => resolve(port)) }) })
-const get = (port: number, path: string) => new Promise<{ status: number; type: string; body: string }>((resolve, reject) => {
-  const req = http({ hostname: '127.0.0.1', port, path, headers: { host: 'demo.example' } }, res => {
-    let body = ''; res.setEncoding('utf8'); res.on('data', c => { body += c }); res.on('end', () => resolve({ status: res.statusCode!, type: String(res.headers['content-type']), body }))
+const get = (port: number, path: string, encoding = '') => new Promise<{ status: number; type: string; body: string; headers: import('node:http').IncomingHttpHeaders; rawHeaders: string[] }>((resolve, reject) => {
+  const req = http({ hostname: '127.0.0.1', port, path, headers: { host: 'demo.example', 'Accept-Encoding': encoding } }, res => {
+    let body = ''; res.setEncoding('utf8'); res.on('data', c => { body += c }); res.on('end', () => resolve({ status: res.statusCode!, type: String(res.headers['content-type']), body, headers: res.headers, rawHeaders: res.rawHeaders }))
   })
   req.on('error', reject); req.end()
 })
@@ -22,7 +22,7 @@ async function front(env: Record<string, string>, upstream: 'closed' | 'echo') {
   let server: Server | undefined
   const seen: string[] = []
   if (upstream === 'echo') {
-    server = createServer((req, res) => { seen.push(req.url ?? ''); res.end('{"ok":true}') })
+    server = createServer((req, res) => { seen.push(req.url ?? ''); res.setHeader('Cache-Control', req.url?.startsWith('/assets/') ? 'public, max-age=31536000, immutable' : 'no-store'); res.setHeader('Content-Type', 'application/javascript'); res.end('/* fixture */' + 'const x = 1;'.repeat(200)) })
     await new Promise<void>(resolve => server!.listen(upstreamPort, '127.0.0.1', resolve))
     scope.defer(() => new Promise<void>(resolve => { server!.closeAllConnections(); server!.close(() => resolve()) }))
   }
@@ -81,4 +81,20 @@ it('the paused page is the product’s light theme, self-contained, and the fron
   const dockerfile = readFileSync('docker/hosted/front/Dockerfile', 'utf8')
   expect(dockerfile).toMatch(/^ENV HOSTED_VIDEO_URL=$/m)
   expect(dockerfile).toMatch(/^ENV NGINX_ENVSUBST_FILTER="VM_UPSTREAM\|HOSTED_VIDEO_URL"$/m)
+})
+
+it.skipIf(!ready)('gives hashed assets exactly one immutable policy, keeps documents/API no-store, and gzips static JS', async () => {
+  const { port } = await front({}, 'echo')
+  const asset = await get(port, '/assets/app-contenthash.js', 'gzip')
+  expect(asset.headers['cache-control']).toBe('public, max-age=31536000, immutable')
+  expect(asset.rawHeaders.filter(h => h.toLowerCase() === 'cache-control')).toHaveLength(1)
+  expect(asset.headers['content-encoding']).toBe('gzip')
+  for (const path of ['/', '/api/demo/status', '/proof/fixture', '/verify/fixture']) expect((await get(port, path)).headers['cache-control']).toMatch(/no-store/)
+})
+
+it('both proxy whitelists forward Accept-Encoding and only the API compresses SSE', () => {
+  for (const path of ['docker/hosted/proxy-headers.conf', 'docker/hosted/front/default.conf.template']) expect(readFileSync(path, 'utf8')).toContain('proxy_set_header Accept-Encoding $http_accept_encoding;')
+  const front = readFileSync('docker/hosted/front/default.conf.template', 'utf8')
+  expect(front).toContain('gzip_comp_level 5;')
+  expect(front.match(/gzip_types ([^;]+);/)![1]).not.toContain('text/event-stream')
 })

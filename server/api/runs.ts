@@ -1,5 +1,6 @@
 import { Router, type RequestHandler } from 'express'
 import type { ApiContext } from './context.js'
+import { openSse, writeSse, endSse, sseBufferedBytes } from './sse.js'
 import { admit } from '../spend-policy.js'
 import { BUDGET } from '../../shared/contracts/run.js'
 import { randomUUID } from 'node:crypto'
@@ -40,14 +41,14 @@ export function runsRouter(context: ApiContext) {
   router.get('/runs/:id/events', (req, res) => {
     const runId = String(req.params.id)
     const snapshot = store.getRun(runId)
-    res.set({ 'Content-Type': 'text/event-stream', Connection: 'keep-alive' })
-    res.flushHeaders()
+    openSse(req, res, context.sseGzip === true)
     streams.set(runId, streams.get(runId) ?? new Set())
     streams.get(runId)!.add(res)
     const frame = `event: snapshot\ndata: ${JSON.stringify(snapshot)}\n\n`
-    if (Buffer.byteLength(frame) > 256 * 1024) { streams.get(runId)!.delete(res); if (!streams.get(runId)!.size) streams.delete(runId); res.end(); return }
-    res.write(frame)
-    const heartbeat = setInterval(() => { if (res.writableEnded || res.destroyed || res.writableLength > 256 * 1024 - 16) { detach(); res.end() } else res.write(': heartbeat\n\n') }, 15000)
+    if (Buffer.byteLength(frame) > 256 * 1024) { streams.get(runId)!.delete(res); if (!streams.get(runId)!.size) streams.delete(runId); endSse(res); return }
+    writeSse(res, frame)
+    context.onStreamOpen?.(runId)
+    const heartbeat = setInterval(() => { if (res.writableEnded || res.destroyed || sseBufferedBytes(res) > 256 * 1024 - 16) { detach(); endSse(res) } else writeSse(res, ': heartbeat\n\n') }, 15000)
     const detach = () => { clearInterval(heartbeat); streams.get(runId)?.delete(res); if (!streams.get(runId)?.size) { streams.delete(runId); context.onStreamEmpty?.(runId) } }
     // A stream the server ends (hosted lifetime, newest-wins, settled run) detaches too, not only a client disconnect.
     req.on('close', detach)

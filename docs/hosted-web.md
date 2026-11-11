@@ -51,7 +51,7 @@ are stripped. A supplied owner bearer cannot grant public authority.
 
 HU must preserve an `Idempotency-Key` (1–128 ASCII letters, digits, underscore or
 hyphen) across scope, submit, network retries and reload recovery. Scope reserves
-a draft and its full question/model envelope; submit uses the same key. The full
+a draft and its full money/model envelope; submit uses the same key. A plan or chat reply counts toward 15 daily planning attempts, not the five started research questions. Only a durable run bound by Start uses a question; cancelled or abandoned plans do not. Money and model caps are unchanged. The full
 canonical request digest is bound independently at scope and submit; a changed
 digest returns 409. Cached scope and submit identities do not repeat work. A
 settled-delivery retry requires its own persistent key. It reuses the same run and
@@ -85,8 +85,8 @@ fault scenario must be bound to a run; there is no public fault endpoint here.
 | Scope | Maximum |
 | --- | --- |
 | Question | 200 minor gross; 2,000 characters; JSON bodies 16 KiB |
-| Session / UTC day | 5 questions, 1,000 minor gross, one outstanding question (a new question replaces the visitor's own unstarted plan or chat reply, which still counts) |
-| IP / UTC day | 60 questions, 12,000 minor gross; 3 starts/minute |
+| Session / UTC day | 5 started research questions and 15 plans/chat replies, 1,000 minor gross, one outstanding question. Cancelled/abandoned plans use no question; Start counts once on its acceptance day (UTC). A new plan releases the previous unstarted plan's unused hold |
+| IP / UTC day | 60 admissions, 12,000 minor gross; 6 starts/minute |
 | Whole demo / UTC day | 300 admissions, 60,000 minor gross |
 | Whole demo / lifetime | 2,100 admissions, 420,000 minor gross |
 | Model USD | $0.05/question, $15/day, $105/lifetime |
@@ -233,7 +233,13 @@ preserves session/CSRF/idempotency/SSE headers, discards Authorization and all
 unapproved internal headers, and selects the last Cloud Run supplied visitor
 address as exactly one X-Forwarded-For hop. VM nginx replaces rather than appends
 that hop; HG must trust **one** proxy hop. Access logs are off. Upstream retries
-are disabled to avoid replaying a state-changing request. SSE is unbuffered.
+are disabled to avoid replaying a state-changing request. SSE is unbuffered. Both proxies forward `Accept-Encoding`.
+The API gzips hosted live-run SSE when accepted, with a sync flush per frame; `HOSTED_SSE_GZIP=0` restores plain SSE.
+Hosted full snapshots are coalesced to one per second (plus the initial and immediate terminal snapshots); trace deltas
+still arrive immediately. The 256 KiB frame/queued-input bounds apply before compression. Local/desktop streams stay plain
+with their existing cadence. The front uses gzip level 5 for static text/JSON (HTML is included by nginx automatically),
+never nginx SSE compression. Its hashed `/assets/*` responses carry exactly one `public, max-age=31536000, immutable`
+header; HTML, API, proof and verify pages retain `no-store`.
 An unreachable VM returns a static paused page with HTTP 503 (`docker/hosted/paused.html`). It is the product's
 light theme and type, self-contained (the app's own files live on the VM), carries the "XRPL Testnet · no real value"
 label, and links the recorded walkthrough, the slide deck and the source. A demo video link appears when the front has

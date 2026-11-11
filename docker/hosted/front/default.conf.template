@@ -11,10 +11,12 @@ server {
   error_log /dev/stderr crit;
   client_max_body_size 16k;
   add_header Cache-Control no-store always;
-  # Static bundles and JSON only; text/event-stream is never compressed (it would buffer SSE).
+  # Static text/JSON only here; the API compresses SSE with a flush per frame.
   gzip on;
+  gzip_vary on;
   gzip_proxied any;
-  gzip_types application/javascript text/css application/json image/svg+xml;
+  gzip_comp_level 5;
+  gzip_types application/javascript text/css application/json image/svg+xml application/manifest+json;
   # Proxy settings are shared by every proxied location below.
   proxy_http_version 1.1;
   proxy_pass_request_headers off;
@@ -22,6 +24,7 @@ server {
   proxy_set_header Cookie $http_cookie;
   proxy_set_header Content-Type $http_content_type;
   proxy_set_header Accept $http_accept;
+  proxy_set_header Accept-Encoding $http_accept_encoding;
   proxy_set_header Origin $http_origin;
   proxy_set_header X-CSRF-Token $http_x_csrf_token;
   proxy_set_header Idempotency-Key $http_idempotency_key;
@@ -57,6 +60,12 @@ server {
   # The shared payer's balance against 30 XRP, for the owner's alert (H7). Public alias of the VM's /readyz/funds.
   location = /ready/funds {
     rewrite ^ /readyz/funds break;
+    proxy_pass http://${VM_UPSTREAM};
+  }
+  # Vite content hashes make these immutable. Hide the upstream cache header so there is exactly one policy.
+  location /assets/ {
+    proxy_hide_header Cache-Control;
+    add_header Cache-Control "public, max-age=31536000, immutable" always;
     proxy_pass http://${VM_UPSTREAM};
   }
   location / {

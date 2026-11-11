@@ -46,7 +46,7 @@ it('isolates every run, intent, SSE, export and mutation route for independent c
 })
 it('lists all own runs beyond the local four-run history default',async()=>{
   const {url,a,seed,limits}=await setup()
-  for(let i=0;i<7;i++) { const id=seed(a,`history-${i}`); limits.store.hostedState(db=>db.prepare("UPDATE hosted_holds SET day='2026-11-01',ip='' WHERE run_id=?").run(id)) }
+  for(let i=0;i<7;i++) { const id=seed(a,`history-${i}`); limits.store.hostedState(db=>db.prepare("UPDATE hosted_holds SET day='2026-11-01',started_day='2026-11-01',ip='' WHERE run_id=?").run(id)) }
   expect((await wire(url+'/api/runs','GET',a)).json()).toHaveLength(7)
 })
 it('rejects CSRF, forged origins/hosts/proxy chains, oversized bodies and owner routes',async()=>{
@@ -186,4 +186,20 @@ it('H5: a settled run answers 204, a visitor’s newest stream replaces the olde
   const status=(await wire(url+'/api/demo/status','GET',{Cookie:a.Cookie})).json<{labels:{models:string};links:Record<string,string>}>()
   expect(status.labels.models).toBe('fixture models')
   expect(status.links).toMatchObject({deck:expect.stringMatching(/^https:\/\/github\.com\/.+deck\.pdf$/),progress:expect.stringMatching(/\/progress\/$/),replay:expect.stringMatching(/\/demo\/$/)})
+})
+
+it('keeps all five questions after planning or cancelling, and uses exactly one when Start creates a run', async () => {
+  const { url, a } = await setup(), headers = { ...a, 'Idempotency-Key': 'cancel-then-start' }
+  const question = 'How does XRP Ledger escrow work?'
+  expect((await wire(url + '/api/scope', 'POST', headers, { question, clarify: 'never' })).status).toBe(200)
+  // Closing the 5 s modal makes no Start call. Reopening a cached plan is also free.
+  expect((await wire(url + '/api/demo/status', 'GET', a)).json<{ remaining: { questions: number } }>().remaining.questions).toBe(5)
+  expect((await wire(url + '/api/scope', 'POST', headers, { question, clarify: 'never' })).status).toBe(200)
+  const body = { question, budgetMinor: 0 }
+  const first = await wire(url + '/runs', 'POST', headers, body)
+  expect(first.status).toBe(201)
+  expect((await wire(url + '/api/demo/status', 'GET', a)).json<{ remaining: { questions: number } }>().remaining.questions).toBe(4)
+  const retry = await wire(url + '/runs', 'POST', headers, body)
+  expect(retry.json().runId).toBe(first.json().runId)
+  expect((await wire(url + '/api/demo/status', 'GET', a)).json<{ remaining: { questions: number } }>().remaining.questions).toBe(4)
 })

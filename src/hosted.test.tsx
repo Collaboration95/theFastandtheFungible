@@ -180,3 +180,7 @@ describe('in-browser verifier shims', () => {
     ])
   })
 })
+
+it('explains the separate 15-plan limit without saying that research questions were spent', () => {
+  expect(refusal(new ApiError(429, 'plan_limit'))).toEqual({ kind: 'message', text: 'You’ve made 15 plans today. Try again after 08:00 SGT; your remaining questions are unchanged.' })
+})

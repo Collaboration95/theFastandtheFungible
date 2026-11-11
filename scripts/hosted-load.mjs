@@ -180,7 +180,7 @@ async function uptime() {
 }
 
 const summary = { kind: 'local-hosted-load', at: new Date().toISOString(), source: flag('source', ''), readinessMode: INLINE_READINESS ? 'inline (pre-H7)' : 'background (H7)', guard: guardRef ? `docker/hosted/start.mjs at ${guardRef}` : 'docker/hosted/start.mjs (this checkout)', visitors: VISITORS, seconds: SECONDS, uptimeEveryMs: UPTIME_MS, readinessRefreshMs: READINESS, mode: 'HOSTED=1 · fixture models · simulated rail · ephemeral ports', cloud: false }
-summary.sourceFiles = Object.fromEntries(['scripts/hosted-load.mjs', 'server/routes.ts', 'server/hosted/routes.ts', 'server/hosted/limits.ts', 'server/hosted/queue.ts', 'server/hosted/readiness.ts'].map(file => [file, existsSync(join(root, file)) ? createHash('sha256').update(readFileSync(join(root, file))).digest('hex') : null]))
+summary.sourceFiles = Object.fromEntries(['scripts/hosted-load.mjs', 'server/routes.ts', 'server/api/runs.ts', 'server/api/sse.ts', 'server/hosted/routes.ts', 'server/hosted/limits.ts', 'server/hosted/queue.ts', 'server/hosted/readiness.ts', 'server/hosted/links.ts', 'docker/hosted/links.mjs'].map(file => [file, existsSync(join(root, file)) ? createHash('sha256').update(readFileSync(join(root, file))).digest('hex') : null]))
 try {
   start(['--import', 'tsx', 'publisher/server.ts'])
   for (let i = 0; i < 150; i++) { try { if ((await fetch(`http://127.0.0.1:${pub}/health`)).ok) break } catch { /* starting */ } await wait(200) }

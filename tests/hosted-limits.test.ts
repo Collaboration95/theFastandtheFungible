@@ -54,8 +54,8 @@ it('enforces one outstanding ask, session questions/gross and six IP starts per 
   const {limits,advance}=setup();advance(-600000)
   const first=limits.reserve('a','1','q','1.1.1.1',200,'submit',{})
   expect(()=>limits.reserve('a','2','q','2.2.2.2',200,'submit',{})).toThrow('session_busy')
-  limits.update(first.id,{state:'done'})
-  for(let i=2;i<=5;i++){advance(61000);const h=limits.reserve('a',String(i),'q','1.1.1.1',200,'submit',{});limits.update(h.id,{state:'done'})}
+  limits.update(first.id,{state:'done',run_id:'run-1'})
+  for(let i=2;i<=5;i++){advance(61000);const h=limits.reserve('a',String(i),'q','1.1.1.1',200,'submit',{});limits.update(h.id,{state:'done',run_id:`run-${i}`})}
   expect(()=>limits.reserve('a','6','q','1.1.1.1',1,'submit',{})).toThrow('allowance_exhausted')
   for(let i=0;i<6;i++) limits.reserve('burst'+i,'k','q','9.9.9.9',0,'submit',{})
   expect(()=>limits.reserve('burst7','k','q','9.9.9.9',0,'submit',{})).toThrow('start_rate')
@@ -133,8 +133,8 @@ it('a new question replaces the visitor’s own unstarted plan or chat reply ins
   expect(next.state).toBe('draft')
   const old=a.hostedState(db=>db.prepare('SELECT state,minor,gross_open FROM hosted_holds WHERE id=?').get(chat.id))
   expect(old).toEqual({state:'expired',minor:0,gross_open:0})
-  // The replaced question still counts; its money does not.
-  expect(limits.remaining('a')).toEqual({questions:3,minor:800})
+  // Owner decision: unstarted plans do not use a daily question; replaced money is still released.
+  expect(limits.remaining('a')).toEqual({questions:5,minor:800})
   // A scope still in progress (no result yet) keeps the one-question-at-a-time rule.
   expect(()=>limits.reserve('a','third','q3','1.1.1.1',200,'scope',{question:'q3'})).toThrow('session_busy')
 })
@@ -188,7 +188,7 @@ it('keeps the money caps and the per-session question allowance when an idle ses
   expect(second.principal).not.toBe(first.principal)
   // It asked nothing, so nothing was forgotten; the per-address daily cap is unchanged by a new session.
   expect(limits.remaining(second.principal)).toEqual({ questions: LIMITS.sessionQuestions, minor: LIMITS.sessionMinor })
-  for (let i = 0; i < LIMITS.sessionQuestions; i++) limits.update(limits.reserve(second.principal, `q${i}`, `question ${i}`, '198.51.100.3', 0, 'submit', { i }).id, { state: 'done' })
+  for (let i = 0; i < LIMITS.sessionQuestions; i++) limits.update(limits.reserve(second.principal, `q${i}`, `question ${i}`, '198.51.100.3', 0, 'submit', { i }).id, { state: 'done', run_id: `run-${i}` })
   expect(() => limits.reserve(second.principal, 'one-more', 'one more', '198.51.100.3', 0, 'submit', {})).toThrow('allowance_exhausted')
 })
 it('when the table is full, drops the oldest idle sessions at least 10 min old before refusing anyone, and never one that asked', () => {
@@ -264,4 +264,54 @@ it('plans in a small lane of its own: two at once, a short wait for the next, th
     gates.splice(0).forEach(open => open()); await Promise.all([x, y])
     expect(lane.depth).toBe(0)
   } finally { vi.useRealTimers() }
+})
+
+it('counts cancelled or abandoned plans separately from started questions, with 15 plans per session per UTC day', () => {
+  const { limits, advance } = setup(); advance(-3_600_000)
+  for (let i = 0; i < 15; i++) {
+    const h = limits.reserve('judge', `plan-${i}`, 'XRPL', '203.0.113.90', 200, 'scope', { question: 'XRPL' })
+    limits.update(h.id, { scope_result: '{}', state: 'draft' })
+    expect(limits.remaining('judge').questions).toBe(5)
+    advance(61_000)
+  }
+  expect(() => limits.reserve('judge', 'plan-16', 'XRPL', '203.0.113.90', 200, 'scope', {})).toThrow('plan_limit')
+  const h = limits.reserve('judge', 'plan-14', 'XRPL', '203.0.113.90', 200, 'submit', {})
+  expect(limits.remaining('judge').questions).toBe(5) // reservation alone creates no run
+  limits.update(h.id, { state: 'done', run_id: 'accepted-run' })
+  expect(limits.reserve('judge', 'plan-14', 'XRPL', '203.0.113.90', 200, 'submit', {}).id).toBe(h.id)
+  expect(limits.remaining('judge').questions).toBe(4)
+})
+it('checks the five-question cap when promoting an existing plan to Start', () => {
+  const { limits, advance } = setup(); advance(-3_600_000)
+  const pending = limits.reserve('judge', 'pending', 'XRPL', '203.0.113.90', 0, 'scope', {})
+  limits.update(pending.id, { scope_result: '{}', state: 'draft' })
+  for (let i = 0; i < 5; i++) { advance(61_000); const h = limits.reserve('judge', `start-${i}`, 'XRPL', '203.0.113.90', 0, 'submit', {}); limits.update(h.id, { state: 'done', run_id: `accepted-${i}` }) }
+  expect(() => limits.reserve('judge', 'pending', 'XRPL', '203.0.113.90', 0, 'submit', {})).toThrow('allowance_exhausted')
+})
+
+it('charges a plan started across midnight to the day Start is accepted, once', () => {
+  const { limits, advance } = setup()
+  const h = limits.reserve('judge', 'plan', 'XRPL', '203.0.113.90', 0, 'scope', {})
+  limits.update(h.id, { scope_result: '{}', state: 'draft' })
+  advance(120_000)
+  limits.reserve('judge', 'plan', 'XRPL', '203.0.113.90', 0, 'submit', {})
+  limits.update(h.id, { run_id: 'midnight-run', state: 'done' })
+  expect(limits.remaining('judge').questions).toBe(4)
+  advance(86_400_000)
+  expect(limits.remaining('judge').questions).toBe(5)
+  limits.update(h.id, { run_id: 'midnight-run' })
+  expect(limits.remaining('judge').questions).toBe(5)
+})
+
+it('migrates already-started holds without resetting the question count, and leaves old drafts free', () => {
+  const { limits, a, c } = setup()
+  const started = limits.reserve('judge', 'started', 'XRPL', '203.0.113.90', 0, 'submit', {})
+  limits.update(started.id, { run_id: 'existing-run', state: 'done' })
+  const draft = limits.reserve('judge', 'draft', 'XRPL', '203.0.113.90', 0, 'scope', {})
+  limits.update(draft.id, { scope_result: '{}', state: 'draft' })
+  a.hostedState(db => db.exec('ALTER TABLE hosted_holds DROP COLUMN started_day'))
+  const upgraded = new HostedLimits(a, c, limits.now)
+  expect(upgraded.remaining('judge').questions).toBe(4)
+  expect(upgraded.reserve('judge', 'draft', 'XRPL', '203.0.113.90', 0, 'scope', {}).id).toBe(draft.id)
+  expect(upgraded.remaining('judge').questions).toBe(4)
 })
