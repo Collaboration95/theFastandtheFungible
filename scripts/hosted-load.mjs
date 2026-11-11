@@ -59,7 +59,7 @@ const env = { ...process.env }
 for (const key of Object.keys(env)) if (/(?:API_KEY|TOKEN|SEED|SECRET)$/.test(key)) delete env[key]
 Object.assign(env, {
   HOSTED: '1', HOSTED_ORIGIN: ORIGIN, HOSTED_TRUSTED_PROXY: '127.0.0.1', HOSTED_IP_HMAC_KEY: 'hosted-load-test-only-'.padEnd(40, 'x'), HOSTED_CONTROL_PATH: join(dir, 'control.json'),
-  SETTLEMENT_RAIL: 'simulated', LLM_PROVIDER: 'fixture', DECISION_PROVIDER: 'fixture', SEARCH_EMBEDDINGS: 'off', LANGFUSE_ENABLED: '0', DOTENV_CONFIG_PATH: join(dir, 'no-env'),
+  SETTLEMENT_RAIL: 'simulated', ANCHOR_RAIL: 'off', LLM_PROVIDER: 'fixture', DECISION_PROVIDER: 'fixture', SEARCH_EMBEDDINGS: 'off', WRITER_CREDENTIAL_ISSUERS: '', WRITER_CREDENTIAL_DOMAIN: '', DECISION_CALIBRATION: 'off', LANGFUSE_ENABLED: '0', DOTENV_CONFIG_PATH: join(dir, 'no-env'),
   PUBLISHER_URL: `http://127.0.0.1:${pub}`, PUBLISHER_PORT: String(pub), PUBLISHER_DB: join(dir, 'publisher.db'), APP_DB: join(dir, 'app.db'), REPORT_DIR: join(dir, 'reports'),
   K_SERVICE: '', HOSTED_PUBLISHER_UPSTREAM: '',
 })
