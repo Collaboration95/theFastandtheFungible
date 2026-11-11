@@ -45,7 +45,7 @@ export function compare(report) {
  * Progress during asks goes to an append-only sidecar (`<output>.progress.ndjson`): one short JSON line per ask row
  * and per sample, written through one open file. RSS covers the harness too, and re-serialising the whole report
  * inside the measured process is harness noise: per ask it grew native memory by 115 MiB (docs/evidence/soak-nov11);
- * every 5 s (#470) it still allocated a growing 3–7 MiB string about every 30 asks, which in isolation grew RSS
+ * every 5 s (#470) it still allocated a growing 1–3 MiB string about every 30 asks, which in isolation grew RSS
  * 44 → 180 MiB over 3,900 asks against 42 → 62 MiB without it (docs/evidence/soak-nov11b). Stage boundaries, burst,
  * restarts and the final summary still write the full report.
  */
