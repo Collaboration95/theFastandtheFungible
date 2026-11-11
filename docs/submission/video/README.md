@@ -39,7 +39,7 @@ names where its footage came from.
 | `hosted-decline` | 3b | the hosted demo, a declined question and its proof of refusal |
 | `claude-mcp` | 4 | the real `claude` CLI with the real MCP server, Testnet faucet wallets |
 | `python-verify`, `ledger` | 5 | the released Python wheel; the public `/ledger/` page |
-| `try-testnet` | 6 | `npx … try --testnet` from the v1.1.0 release |
+| `try-testnet` | 6 | `npx … try --testnet` from the v1.1.0 release (re-recordable on v1.1.1 the same way) |
 | `builder-feedback` | 7 | `docs/BUILDER-FEEDBACK.md` on GitHub |
 
 Terminal scenes are real sessions captured screen by screen and drawn at 1080p. Output is not
@@ -94,8 +94,9 @@ with shot 3b** and about 2:35 without it.
   fictional-writer record is read. Words like "outlook" or "prices" match the open central-bank
   records, get a free answer, and leave nothing to refuse. Its voice-over now says "no source
   covered the question" (the proof page shows 0 paid articles found).
-- **x402 instead of RLUSD.** On hosted the RLUSD preset buys three articles and leads with
-  EscrowCreate (mock-judge round 9, H9-01); the x402 question buys one in about 20 s.
+- **x402 instead of RLUSD.** On v1.1.0 the hosted RLUSD preset bought three articles and led
+  with EscrowCreate (fixed in v1.1.1, #473); the x402 question buys one in about 20 s, and from
+  v1.1.1 it is also the first preset.
 - Recorder fixes this pass: the verify wait accepts "N passed · K not checked" (the app says
   that when some checks were skipped), `hosted-ask` waits for the anchor line, and the terminal
   scenes switch off npm's upgrade notice.
@@ -107,10 +108,11 @@ with shot 3b** and about 2:35 without it.
 
 1. Record the voice-over, or approve the synthetic one; upload **unlisted**; set the links.
 2. Claude Code's prose calls the source "one team-authored explainer from an unverified writer,
-   not an independent one", but the closing Labels line it prints still says "Fixture models
-   and fictional writers". That line is the v1.1.0 MCP tool's own label, so it only changes in a
-   new release; the caption on the shot says team-authored. The voice-over's "labelled as ours"
-   matches Claude's prose, not that last line.
+   not an independent one", but the closing Labels line it prints says "Fixture models and
+   fictional writers". That line is the v1.1.0 MCP tool's own label; v1.1.1 names team-authored
+   sources instead, so a `claude-mcp` re-record on v1.1.1 (`make video-record ARGS="--scenes
+   claude-mcp"`) puts the new label on camera. The caption on the shot says team-authored, and the
+   voice-over's "labelled as ours" matches Claude's prose.
 3. The hosted card says "26 passed · 2 not checked", not "All N checks passed". The Python
    verifier skips two checks on the same kind of export (writer credentials, which need an
    online lookup, and historical origin, which this receipt format doesn't need), so the two
@@ -119,7 +121,7 @@ with shot 3b** and about 2:35 without it.
 4. The proof page's own chip says "fixture models", while the app chip says "live answers,
    rule-based buying". Both are true (answers are live, buying is rule-based); the caption uses
    the app's wording.
-5. Avoid asking "writer never reveals the key" with Verify on camera until H9-02 is fixed (an
-   export that reads fictional free sources fails verification). None of the recorded questions
-   reads one.
+5. The "writer never reveals the key" question exported a receipt that failed Verify on v1.1.0
+   (it read free sources with no writer signature); v1.1.1 drops such sources from exports
+   (#472). None of the recorded questions reads one.
 6. The voice is macOS `say` (Samantha): a placeholder for timing, not for upload.

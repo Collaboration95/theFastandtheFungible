@@ -35,13 +35,16 @@ The form link is in the organisers' email and in the local, untracked
 - [ ] **Wed 11 Nov:** confirm our registered team name (decision A5 on
       [#265](https://github.com/Collaboration95/theFastandtheFungible/issues/265)),
       and who presents.
-- [ ] **Wed 11 – Thu 12 Nov:** record the video ([script](demo-video-script.md))
-      once the live sandbox answers; check "Before you press record" first.
+- [ ] **Thu 12 Nov:** record the voice-over for the video ([script](demo-video-script.md)).
+      The footage is already recorded on v1.1.0 ([video kit](video/README.md#state-second-pass-11-nov));
+      check "Before you press record" first. Optional: re-record the `claude-mcp` scene on
+      v1.1.1 so the MCP result names team-authored sources.
 - [ ] **Thu 12 Nov:** upload the video unlisted; set `VIDEO_URL` in
       [`scripts/facts.mjs`](../../scripts/facts.mjs), run
       `node scripts/facts.mjs && node docs/submission/deck/export.mjs` (slide 14
       then links it), and add it to the README links line and the form.
-- [ ] **Thu 12 Nov, before the freeze:** refresh the numbers:
+- [ ] **Thu 12 Nov, before the freeze:** if a release or a new measurement landed since
+      the facts were taken (see "counts as of" above), refresh the numbers:
       `npm run site:progress -- --at origin/main && node scripts/facts.mjs`,
       commit, re-export the deck, `npm run site:publish`.
 - [ ] **Thu 12 Nov:** submit the form with the fields below. Open the GitHub
@@ -122,7 +125,8 @@ upstream count is `feedback_line`.
       the registered team name (A5 on #265).
 - [x] Slide 10 and the README hero come from one live hosted XRPL key-reveal run
       (`--refresh-shots`, 11 Nov); its receipts are committed in
-      [hosted-export-nov11](../evidence/hosted-export-nov11/README.md).
+      [hosted-export-nov11](../evidence/hosted-export-nov11/README.md). Re-run
+      `--refresh-shots` after a hosted redeploy that changes the answer view.
 
 ## Rebuild the deck
 
@@ -162,13 +166,18 @@ Tinkerers talk, not this deck; it links here instead of mirroring it.
 
 - Use only merged facts, each with its date and label: **XRPL Testnet**
   (validated transaction, no real value), **simulated** (offline rail),
-  **fixture** (substituted model or research), **fictional** (research writers
-  and corpus), **team-authored** (our own real notes, not an independent
-  writer), **TEST-SGD** (our Testnet IOU, stand-in for RLUSD).
+  **fixture** (substituted model or research), **fictional** (the demo's research
+  writers and corpus), **team-authored** (our own real notes and sourced
+  explainers, two writers, not independent), **TEST-SGD** (our Testnet IOU,
+  stand-in for RLUSD).
 - The hosted app is a **shared XRPL Testnet sandbox, open 13–19 Nov**, with no
   real value and per-visitor caps. Call it that; never "live service" or
   "production". The `/demo/` page is a replay of a recorded Testnet run;
   `/ledger/` is a static page that re-checks hashes read-only.
+- The held-out numbers always carry their scope: the blind v5 bank ran once on XRPL
+  Testnet with **fixture research and decision models and answers written offline**.
+  The hosted sandbox writes its answers live (DeepSeek) and decides purchases with the
+  rule-based model; that is not the held-out measurement. Never mix the two.
 - Counts are query-defined and dated (PRs merged into `main` since 21 Sep, at a
   named commit). Never type a count that [facts.json](facts.json) has.
 - At SingHacks (event build `e16435a3`, 19–20 Sep) a language model proposed each

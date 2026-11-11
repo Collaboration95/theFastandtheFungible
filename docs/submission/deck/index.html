@@ -174,14 +174,14 @@ td.was { color: var(--muted); }
     <div class="agent" role="img" aria-label="The ResearchAgent pixel agent carrying a verified page" style="background-position:-256px -1152px;margin:-24px -12px 0 0"></div>
   </div>
   <h1 class="hero">Research with a wallet.</h1>
-  <p class="lead" style="font-size:36px;max-width:1560px">ResearchAgent answers from free sources first, then pays writers for the articles it is still missing, <b>over x402 on the XRP Ledger</b>, inside a budget you set. A model recommends; only policy code can pay.</p>
+  <p class="lead" style="font-size:36px;max-width:1560px">ResearchAgent answers from free sources first, then pays writers for the articles it is still missing, <b>over x402 on the XRP Ledger</b>, inside a budget you set. The writer is paid only by publishing the article’s key on the ledger.</p>
   <div class="grow"></div>
   <div class="ways">
     <div class="row"><div class="k">Try it live</div><div class="v"><a href="https://ra-front-651013803640.asia-southeast1.run.app">https://ra-front-651013803640.asia-southeast1.run.app</a> · <!--f:hosted-->Shared XRPL Testnet sandbox · no real value · open 13–19 Nov<!--/f--></div></div>
     <div class="row"><div class="k">Watch a run</div><div class="v"><a href="https://collaboration95.github.io/theFastandtheFungible/demo/">collaboration95.github.io/theFastandtheFungible/demo/</a> · a recorded Testnet run, any time</div></div>
   </div>
   <div class="cmdline" style="margin-top:24px"><span class="p">$</span> <!--f:try_line-->npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz try --testnet<!--/f--></div>
-  <div style="margin-top:24px"><span class="env">Testnet · test funds · fictional writers, plus our own labelled build notes · TEST-SGD stands in for RLUSD</span></div>
+  <div style="margin-top:24px"><span class="env">Testnet · test funds · fictional demo writers, plus our own labelled team-authored notes · TEST-SGD stands in for RLUSD</span></div>
   <div class="src"><span>SingHacks finals · Ripple track · Swiss Pavilion, SFF · 18 Nov 2026 · facts as of <!--f:as_of-->11 Nov 2026<!--/f--> at <!--f:sha-->329b64f7<!--/f--></span><span class="n mono">github.com/Collaboration95/theFastandtheFungible</span></div>
   <aside class="notes">
     <p><b>Criteria:</b> Reachability (25%) first: three ways in on the first page, none needing an install. Sets the honesty frame for every other criterion.</p>
@@ -206,7 +206,7 @@ td.was { color: var(--muted); }
     <div class="stat"><b><!--f:prs-->248<!--/f--></b><span>pull requests merged since <!--f:since-->21 Sep<!--/f--></span></div>
     <div class="stat"><b><!--f:releases-->13<!--/f--></b><span>releases, v0.1.0 to <!--f:release-->v1.0.2<!--/f--></span></div>
     <div class="stat"><b><!--f:transactions-->61<!--/f--></b><span>Testnet transactions you can re-check live on our ledger page</span></div>
-    <div class="stat"><b><!--f:vectors-->224<!--/f--></b><span>receipt test vectors; two independent verifiers agree on all</span></div>
+    <div class="stat"><b><!--f:vectors-->224<!--/f--></b><span>receipt test vectors; two verifiers, written separately, agree on all</span></div>
   </div>
   <div class="src"><span>Counted at <!--f:sha-->329b64f7<!--/f--> on <!--f:as_of-->11 Nov 2026<!--/f--> (git and gh queries in site/progress/data.json) · “At SingHacks” is the 19–20 Sep event build (e16435a3)</span><span class="n"></span></div>
   <aside class="notes">
@@ -265,7 +265,7 @@ td.was { color: var(--muted); }
     <div><i>1</i><b>Ask</b><span>A question and a budget you set.</span></div>
     <div><i>2</i><b>Confirm the plan</b><span>A short sheet confirms the plan, not a purchase.</span></div>
     <div><i>3</i><b>Search writers</b><span>Writers return abstracts and signed promises, never premium text.</span></div>
-    <div><i>4</i><b>Decide</b><span>A decision model scores what is worth buying, weighted by trust.</span></div>
+    <div><i>4</i><b>Decide</b><span>A decision model (fixed rules in the live sandbox) scores what is worth buying, weighted by trust.</span></div>
     <div><i>5</i><b>Pay</b><span>Policy code locks payment in a key-reveal escrow on XRPL.</span></div>
     <div><i>6</i><b>Verify and answer</b><span>Decrypt, check every promise, refund a broken one, cite, anchor.</span></div>
   </div>
@@ -365,7 +365,7 @@ td.was { color: var(--muted); }
       <p class="cap" style="font-size:23px;margin-top:22px">Any receipt the app or the live sandbox exports can be checked the same way, by anyone, offline or against the ledger, with release v1.1.0 or later.</p>
     </div>
     <ul class="points" style="margin-top:4px">
-      <li><b>Two independent verifiers</b>, TypeScript and Python, agree on all <!--f:vectors-->224<!--/f--> shared vectors: <!--f:vectors_golden-->19<!--/f--> must pass and <!--f:vectors_tampered-->205<!--/f--> tampered ones must fail.</li>
+      <li><b>Two verifiers, written separately</b>: TypeScript, and Python’s standard library. They agree on all <!--f:vectors-->224<!--/f--> shared vectors: <!--f:vectors_golden-->19<!--/f--> must pass and <!--f:vectors_tampered-->205<!--/f--> tampered ones must fail.</li>
       <li><b><!--f:transactions-->61<!--/f--> Testnet transactions</b> are re-checked live, read-only, every time our public ledger page loads.</li>
       <li><b>Every finished answer is anchored:</b> an AccountSet whose memo is the audit-chain head, even when nothing was bought.</li>
       <li><b>Persist before submit.</b> A restart reconciles the same signed transaction and never signs twice; a missing one is <i>pending</i>, not failed.</li>
@@ -376,7 +376,7 @@ td.was { color: var(--muted); }
   <div class="src"><span>Output: docs/evidence/hosted-export-nov11/ (a hosted-demo export, 11 Nov) · tests/fixtures/receipt-conformance/ · the /ledger/ page</span><span class="n"></span></div>
   <aside class="notes">
     <p><b>Criteria:</b> Technical depth (20%): testing, security and safeguards. Reachability: the verifier is a separate install in another language.</p>
-    <p><b>Say:</b> Don’t trust us, verify it. Two independent verifiers, one in Python with no Node, re-check every receipt against the ledger. Our ledger page re-checks every historical Testnet transaction live.</p>
+    <p><b>Say:</b> Don’t trust us, verify it. Two verifiers, written separately, one in Python with no Node, re-check every receipt against the ledger. Our ledger page re-checks every historical Testnet transaction live.</p>
   </aside>
 </section>
 
@@ -390,13 +390,13 @@ td.was { color: var(--muted); }
     <div class="card"><h3>Local app, no clone</h3><p><code>app --testnet</code> serves the real app on 127.0.0.1 with faucet wallets.</p><div class="num">Ready in <!--f:app_ready_s-->27.0<!--/f--> s from an empty cache</div></div>
     <div class="card"><h3>TypeScript and Python SDKs</h3><p>Ask, stream, verify. No purchase method: only backend policy can buy.</p><div class="num">The Python verifier needs no Node</div></div>
     <div class="card"><h3>Writers in one command</h3><p><code>publish ./notes --testnet</code>: faucet wallet, XRPL Credential, key-reveal escrow.</p><div class="num"><!--f:writer_s-->33.9<!--/f--> s from <code>init</code> to a validated Credential</div></div>
-    <div class="card"><h3>Hire the agent over x402</h3><p>Another agent pays ResearchAgent; it buys, pays every cited writer a royalty and returns the change.</p><div class="num">Recorded on Testnet, 3 Nov</div></div>
+    <div class="card"><h3>Hire the agent over x402</h3><p>Another agent pays ResearchAgent; it buys, pays every cited writer a royalty and returns the change. Run on Testnet.</p><div class="num">One line: <code>try --testnet --hire</code></div></div>
   </div>
   <p class="honest" style="margin-top:30px"><b>Does it buy the right thing?</b> <!--f:heldout_line-->v5 blind held-out: 16/20 bought and cited, 0/10 off-topic purchases (run once, 11 Nov, on XRPL Testnet: fixture research and decision models with answers written offline, team-authored writers)<!--/f-->. The key fact leads <!--f:answers_it-->7/20<!--/f--> answers. Packages: <!--f:registry-->GitHub Releases; not yet on npm, PyPI or the MCP Registry<!--/f-->.</p>
   <div class="src"><span>docs/install.md · docs/evidence/round4-j2/ (timings) · round4-j3/slim-onboarding.json · hire-274.md · v5-heldout/README.md</span><span class="n"></span></div>
   <aside class="notes">
     <p><b>Criteria:</b> Reachability (25%): interoperability (MCP, x402 hire), developer access (SDKs, one-command writers), scale of audience (people and agents).</p>
-    <p><b>Say:</b> The same package is an MCP server for Claude Code and a local app. Ask about XRPL and it can buy from our labelled team build notes. On the blind held-out bank, seven of twenty were bought and cited, and on ten off-topic questions it bought nothing.</p>
+    <p><b>Say:</b> The same package is an MCP server for Claude Code and a local app. Ask about XRPL and it can buy from our labelled team build notes. On the blind held-out bank, <!--f:heldout_n-->sixteen<!--/f--> of <!--f:heldout_N-->twenty<!--/f--> were bought and cited, and on <!--f:offtopic_N-->ten<!--/f--> off-topic questions it bought nothing. The key fact leads only <!--f:answers_it-->7/20<!--/f--> answers, so say that before a researcher asks.</p>
   </aside>
 </section>
 
@@ -526,7 +526,7 @@ td.was { color: var(--muted); }
 <!-- 14 · Team and check it yourself -->
 <section class="slide" data-title="Team">
   <div class="crit">Team · check every claim</div>
-  <h1>A small team, a fleet of coding agents, and a receipt for every claim</h1>
+  <h1>A small team, a fleet of coding agents, and a receipt for every payment</h1>
   <div class="cols" style="grid-template-columns:1fr 1.15fr;gap:72px;margin-top:40px">
     <div>
       <div class="person"><b>Guruprasath</b><span>Product and engineering since SingHacks: plans the work, directs the coding agents and owns the merge gate.</span></div>
@@ -548,7 +548,7 @@ td.was { color: var(--muted); }
   <div class="src"><span>People and roles from the git history (git shortlog) · AGENTS.md (how work is run) · Testnet XRP and TEST-SGD have no value; receipts keep ledger indexes if Testnet resets</span><span class="n"></span></div>
   <aside class="notes">
     <p><b>Criteria:</b> Feasibility (20%): who can run this. Reachability: every link a judge needs, in one place. Owner: names and roles come from git authors (Guruprasath, miul, Andrew Nguyen); the 10 Oct AI Tinkerers slide lists the team as Guru, Jiamin, Andrew and Thanh Minh. Confirm who is who, add anyone missing, the registered team name and who presents (A5 on #265); edit freely.</p>
-    <p><b>Say:</b> Every claim has a Testnet hash or a command. ResearchAgent: agents pay the people who know, and the ledger keeps them honest.</p>
+    <p><b>Say:</b> Every payment has a Testnet hash. ResearchAgent: paid on delivery, proven on the ledger.</p>
   </aside>
 </section>
 

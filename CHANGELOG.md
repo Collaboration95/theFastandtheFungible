@@ -52,7 +52,7 @@ Patch release on v1.1.0 with the fixes from the round-9 mock judges (#472, #473,
 
 - The live decision model (OpenAI) was not measured on these questions; the sandbox decides with the rule-based model.
 - The account-reserves preset can still buy up to 3 articles (within budget) on some fresh live plans.
-- H8-18's corpus sentence is unchanged (see v1.1.0).
+- The corpus sentence "lost a fifth of its consensus gross margin" is unchanged (see v1.1.0).
 
 ## v1.1.0 — 11 Nov 2026
 
@@ -90,7 +90,7 @@ Finals release: everything since v1.0.2 (8 Nov), judge-facing changes first. XRP
 
 ### Known limits
 
-- H8-18's corpus sentence ("lost a fifth of its consensus gross margin", 58.5% → 55.2%) is unchanged: it is the first sentence of a signed, embedded article, and re-embedding is not available.
+- The corpus sentence ("lost a fifth of its consensus gross margin", 58.5% → 55.2%) is unchanged: it is the first sentence of a signed, embedded article, and re-embedding is not available.
 
 ## v1.0.2 — 8 Nov 2026
 

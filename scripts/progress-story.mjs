@@ -84,6 +84,7 @@ export const releases = {
   'v1.0.1': { title: 'Answers lead with the fact you paid for', image: { path: 'docs/evidence/u1-ux/after/1440x900/06-answer.jpg', alt: 'An answer whose first sentence is the purchased fact, with its citation', caption: 'Answer-first layout (captured 7 Nov)' } },
   'v1.0.2': { title: 'Honest states for anchors and no-purchase runs', image: { path: 'docs/evidence/r5-k/decline-state.png', alt: 'A no-purchase run listing each article considered and why none cleared the value bar', caption: 'A no-purchase run explains each decision (captured 7 Nov, before the v1.0.2 anchor label)' } },
   'v1.1.0': { title: 'A hosted demo for judges, and receipts that verify from it', image: { path: 'docs/media/readme-answer.png', alt: 'A hosted-demo answer on XRPL Testnet next to its payment card: each article paid by key reveal, every step linked to its transaction', caption: 'Hosted demo, XRPL Testnet, 11 Nov' } },
+  'v1.1.1': { title: 'The first click is right, and every receipt verifies' },
 }
 
 // Then → now. `prs` resolve to the merge date and the first release tag containing them.
@@ -104,7 +105,7 @@ export const capabilities = [
 // Failures kept on purpose. Each `measure` reads committed evidence; see the builder.
 export const misses = [
   { id: 'try-cold', kind: 'Missed', title: 'Two of four cold first-try runs overran 90 seconds', did: 'Kept the timeouts beside the passes; the 90 s limit stayed unchanged.', source: 'docs/evidence/round4-j2/README.md' },
-  { id: 'heldout', kind: 'Measured', title: 'Most blind held-out questions did not end in a purchase', did: 'Reported the blind number instead of the dev bank, and froze a new blind bank (v5).', source: 'docs/evidence/v4-heldout/README.md' },
+  { id: 'heldout', kind: 'Measured', title: 'Most v4 blind held-out questions did not end in a purchase', did: 'Reported the blind number instead of the dev bank, then froze and ran a new blind bank (v5, 11 Nov).', source: 'docs/evidence/v4-heldout/README.md' },
   { id: 'v2-superseded', kind: 'Superseded', title: 'We replaced our own better-looking number', did: 'The v2 held-out score was written after the team notes; a blind v4 bank replaced it everywhere.', source: 'docs/evidence/j5-coverage/README.md' },
   { id: 'soak', kind: 'Missed', title: 'The loaded-host soak failed its loop-delay gate', did: 'Kept the failure; a quiet-host rerun passed all five gates. No threshold changed.', source: 'docs/evidence/soak-nov4-ab/README.md' },
   { id: 'iou-cold', kind: 'Missed', title: 'First stablecoin-escrow start was slow', did: 'Show provisioning progress in the app; the target stays.', source: 'docs/evidence/r5-a/README.md' },
@@ -113,7 +114,7 @@ export const misses = [
 ]
 
 export const next = [
-  { status: 'Next', title: 'Hosted sandbox for judges, 13–19 Nov', body: 'A public web version on Testnet, so nothing needs installing.' },
+  { status: 'Done', title: 'Hosted sandbox for judges, 13–19 Nov', body: 'A public web version on Testnet, live since 11 Nov, so nothing needs installing.' },
   { status: 'Next', id: 'v5', title: 'Blind held-out v5', body: null },
   { status: 'Next', title: 'Publish to npm, PyPI and the MCP Registry', body: 'Packages are built and tested from a clean install on GitHub Releases; registry publishing comes next.' },
   { status: 'Not claimed', title: 'Mainnet', body: 'Everything here runs on the XRPL Testnet with no real value. The gaps are listed in the builder feedback.' },

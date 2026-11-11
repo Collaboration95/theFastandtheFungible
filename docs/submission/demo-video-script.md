@@ -91,10 +91,10 @@ Times are the target; the assembled draft in
 - **Open:** <https://ra-front-651013803640.asia-southeast1.run.app>. Pause 1 s on the home
   screen so the environment indicator is readable.
 - **Ask:** type *"What does an x402 402 Payment Required response contain?"*, with budget
-  S$2.00. It is not one of the three presets: on 11 Nov the RLUSD preset bought three
-  articles and led with EscrowCreate (mock-judge round 9, H9-01), while this question buys
-  one article in about 20 s and leads with `PAYMENT-REQUIRED` and `PAYMENT-SIGNATURE`. The
-  hosted writers are the team-authored XRPL notes, not the fictional Kestrel writers.
+  S$2.00. From v1.1.1 it is also the first preset. The footage was recorded on v1.1.0,
+  when the RLUSD preset still bought three articles; this question buys one article in
+  about 20 s and leads with `PAYMENT-REQUIRED` and `PAYMENT-SIGNATURE`. The hosted sources
+  are the team-authored XRPL notes, not the fictional Kestrel writers.
 - **On screen:** the 5-second plan (free sources first; at most one article per round, up
   to three rounds), then the payment card filling in place under "Payment unlocked by the
   writer's key": Payment locked in escrow, Writer released the key, Key matches the escrow
@@ -105,10 +105,11 @@ Times are the target; the assembled draft in
 - **Caption:** "Live sandbox · XRPL Testnet · no real value · team-authored writers", with the
   model wording from the app's own environment chip (today "live answers, rule-based
   buying").
-- **VO (60 words):** "Open the link, ask a question, set a budget. A five-second plan
-  shows what it will do: free sources first, then at most one article per round. A model
-  recommends what to buy, but only policy code can pay. Each payment sits in a native
-  XRPL escrow, and the writer is paid by publishing the article's key on the ledger."
+- **VO (66 words):** "Open the link, ask a question, set a budget. A five-second plan
+  shows what it will do: free sources first, then at most one article per round. It decides
+  by fixed rules here whether an article fills a gap, and only policy code can pay. Each
+  payment sits in a native XRPL escrow, and the writer is paid by publishing the article's
+  key on the ledger."
 
 ### Shot 3 · Refund and key reveal, on the ledger (0:42–1:02)
 
@@ -216,8 +217,8 @@ Times are the target; the assembled draft in
 - **On screen:** the README hero, then the repo URL.
 - **Caption:** "github.com/Collaboration95/theFastandtheFungible · XRPL Testnet only · no
   real value"
-- **VO (21 words):** "ResearchAgent. An open market where agents pay the people who
-  know, and the ledger keeps everyone honest. Thank you."
+- **VO (18 words):** "ResearchAgent. Writers are paid the moment they deliver, and anyone
+  can check it on the ledger. Thank you."
 
 Cut list if long: shot 3b, then shot 7 to captions only, then shot 6.
 
@@ -233,4 +234,4 @@ Cut list if long: shot 3b, then shot 7 to captions only, then shot 6.
    `node scripts/facts.mjs && node docs/submission/deck/export.mjs`; it lands on slide 14),
    the README links line (the video slot comment marks the spot), and `HOSTED_VIDEO_URL`
    for the sandbox footer.
-4. Attach the MP4 to the release (`gh release upload v1.1.0 video.mp4`), not to git.
+4. Attach the MP4 to the release (`gh release upload v1.1.1 video.mp4`), not to git.

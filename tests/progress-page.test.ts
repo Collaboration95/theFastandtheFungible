@@ -86,6 +86,15 @@ describe('progress builder helpers', () => {
     expect(cleanBullet('Signed fact menus regressed waste; the follow-up is #276. [#304](u)').text).toContain('follow-up is #276')
     expect(cleanBullet('Opt-in token escrow on the zero-clone MCP and the app (#384). More words here.').text).toBe('Opt-in token escrow on the zero-clone MCP and the app.')
   })
+  it('never cuts a bullet inside a quote or a bracket', () => {
+    // v1.1.1's real bullets read "...the key." and "(and "buy"." before the cut learned to keep quotes and brackets closed.
+    expect(cleanBullet('**Every exported receipt verifies** (#472). The export of "If my agent pays for an article and the writer never reveals the key, what happens to my money?" showed "6 of 34 checks failed" in Verify on XRPL: it carried free articles that had no writer-signed delivery proof.').text).toBe('Every exported receipt verifies.')
+    expect(cleanBullet('The topic check treats "pay", "paid" and "payment" (and "buy", "bought") as one word (#475). More words follow here.').text).toBe('The topic check treats "pay", "paid" and "payment" (and "buy", "bought") as one word.')
+    const long = cleanBullet('Release acceptance: fresh offline exports (a purchase, and a decline carrying a labelled stand-in anchor so "anchor binding" runs) plus the committed real hosted export, verified by the packed wheel and the packed TS CLI.').text
+    expect(long.length).toBeLessThanOrEqual(170)
+    expect((long.match(/"/g) ?? []).length % 2).toBe(0)
+    expect((long.match(/\(/g) ?? []).length).toBe((long.match(/\)/g) ?? []).length)
+  })
   it('reads both CHANGELOG heading styles', () => {
     const s = parseChangelog('## v1.0.2 — 8 Nov 2026\n\n### Fixed\n\n- Anchor pending is no longer a failure (#418).\n\n## [0.1.0] - 2026-11-02 · MCP\n\n- MCP server and tools for any agent. [#266](u)\n')
     expect(Object.keys(s)).toEqual(['v1.0.2', 'v0.1.0'])

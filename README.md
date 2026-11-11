@@ -9,7 +9,8 @@
 
 <p align="center">
   ResearchAgent answers from free sources first, then pays writers for the articles it is still missing,
-  over x402 on the XRP Ledger, inside a budget you set. A model recommends; only policy code can pay.
+  over x402 on the XRP Ledger, inside a budget you set. The writer is paid only by publishing the
+  article's key on the ledger.
 </p>
 
 <p align="center">
@@ -45,8 +46,9 @@ npx -y $REL/researchagent-mcp-1.1.1.tgz try --testnet
 - **Ask with a budget.** From the browser, Claude Code or Codex over MCP, TypeScript or Python,
   or the Mac app. Every question carries its own spending limit.
 - **Free sources first, then buy only what fills the gap.** Writers search their own articles and
-  sign promises about what each one contains. A decision model, weighted by each writer's trust
-  score, judges which paid article is worth it: at most one per round, up to three rounds.
+  sign promises about what each one contains. A decision model (or fixed rules, as in the live
+  sandbox), weighted by each writer's trust score, judges which paid article is worth it: at most
+  one per round, up to three rounds. Only policy code can pay, within your budget.
 - **The writer is paid by revealing the key.** Policy code locks payment in a native XRPL escrow
   that only the article's key can open. Publishing the key on the ledger is what pays the writer,
   so delivery and payment are one event.
@@ -153,14 +155,16 @@ checked as the delivered amount; a signed IOU quote overflowed the 1 KiB Memo li
 
 - **XRPL Testnet only, no real value.** Mainnet is disabled in code; readiness is a
   [checklist](docs/BUILDER-FEEDBACK.md#mainnet-readiness-checklist), not a claim.
-- **Writers.** The research writers are fictional. One team-authored writer (our own XRPL build
-  notes) is labelled as ours and is not independent. No independent writers yet: consenting writers
-  will be listed as **real person · Testnet · no real value** ([list](docs/evidence/real-writers.json)).
+- **Writers.** The demo's research writers are fictional. Two team-authored writers (our own XRPL
+  build notes and sourced explainers) are labelled as ours and are not independent. No independent
+  writers yet: consenting writers will be listed as **real person · Testnet · no real value**
+  ([list](docs/evidence/real-writers.json)).
 - **New writers get one labelled probe.** A new writer's best matching article may get one probe
   purchase of up to S$0.30 inside your budget, shown as *probe purchase · new writer*.
 - **TEST-SGD stands in for RLUSD** in token escrow; official RLUSD payments work on Testnet.
-- **Live sandbox.** One shared Testnet payer, per-visitor caps, owner controls off; each answer
-  says whether its models ran live or as a labelled fixture fallback. Open 13–19 Nov 2026.
+- **Live sandbox.** One shared Testnet payer, per-visitor caps, owner controls off. Answers are
+  written live by DeepSeek; purchases are decided by the rule-based model, as the header chip says,
+  and an answer says so if it falls back to a labelled fixture. Open 13–19 Nov 2026.
 - **Packages** are on GitHub Releases, not yet on npm, PyPI or the MCP Registry. The Mac app is an
   unsigned DMG.
 - `theFastandtheFungible` is the team and repository name; the product is **ResearchAgent**.

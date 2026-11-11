@@ -54,16 +54,17 @@ Node ≥ 22.13.
 
 ### 2. Are the writers real?
 
-**Say:** "Three kinds, and we label each one. The research writers in the demo,
-like Kestrel and AlphaLeak, are fictional. A team-authored writer is our own
-real build notes about XRPL and x402, labelled as ours and not independent.
-Independent writers: none yet. That list is empty until a real person consents.
-What we can show is that a Markdown folder becomes a Testnet writer with an XRPL
+**Say:** "Three kinds, and we label each one. The demo's research writers, like
+Kestrel and AlphaLeak, are fictional. Our two team-authored writers are our own
+real notes and sourced explainers about XRPL and x402, labelled as ours and not
+independent. Independent writers: none yet. That list is empty until a real
+person consents. What we can show is that a Markdown folder becomes a Testnet writer with an XRPL
 Credential in about <!--f:writer_s-->33.9<!--/f--> seconds."
 
 **Behind it:** `docs/evidence/real-writers.json` is empty by design. The
 team-authored label is "team-authored · real content · not an independent writer
-· Testnet" (J1, #390). Writer onboarding: [round3-c](../evidence/round3-c/README.md);
+· Testnet" (J1, #390); the two writers are "ResearchAgent builders" (build notes)
+and "ResearchAgent builders · XRPL explainers" ([x-explainers](../evidence/x-explainers/README.md)). Writer onboarding: [round3-c](../evidence/round3-c/README.md);
 first-try `init` + `publish` is <!--f:writer_s-->33.9<!--/f--> s (J3, #389).
 
 ### 3. I asked my own question. What happens?
@@ -77,7 +78,7 @@ the decline now lists each policy reason in 'Why'. Discovery does not guarantee
 a purchase. Development sets, which we tuned on, are separate: v1
 <!--f:dev_v1-->16/20<!--/f--> and v3 <!--f:dev_v3-->7/20<!--/f-->."
 
-**Behind it:** [v4 evidence](../evidence/v4-heldout/README.md): <!--f:heldout_line-->v5 blind held-out: 16/20 bought and cited, 0/10 off-topic purchases (run once, 11 Nov, on XRPL Testnet: fixture research and decision models with answers written offline, team-authored writers)<!--/f-->; answers-it <!--f:answers_it-->7/20<!--/f-->, <!--f:heldout_violations-->0<!--/f--> gate violations. Run once on `main` `bdc30f97`, fixture decision model at threshold 0.20, team-authored writers, Testnet. v4 is now used; a new held-out claim needs a new blind bank (v5). Dev, not held-out: v1 16/20, v3 7/20 (answers-it 4/20 after #410); v2 is observed dev data. DONE Testnet abstentions are anchored (#403), so every DONE run verifies. Policy misses remain: 13 of 20 held-out questions did not end in a cited purchase. This is fixture-model mechanism evidence, not live-model answer quality.
+**Behind it:** [v5 evidence](../evidence/v5-heldout/README.md): <!--f:heldout_line-->v5 blind held-out: 16/20 bought and cited, 0/10 off-topic purchases (run once, 11 Nov, on XRPL Testnet: fixture research and decision models with answers written offline, team-authored writers)<!--/f-->; answers-it <!--f:answers_it-->7/20<!--/f-->, <!--f:heldout_violations-->0<!--/f--> gate violations. Run once on `main` `a9584014`, fixture research and decision models (answers written offline) at threshold 0.20, team-authored writers, Testnet. Some v5 questions resemble v4 ones; leaving out the two closest pairs gives 15/18 (the evidence README lists them). v4 and v5 are now used, so a new held-out claim needs a new blind bank. Dev, not held-out: v1 16/20, v3 7/20 (answers-it 4/20 after #410); v2 is observed dev data. DONE Testnet abstentions are anchored (#403), so every DONE run verifies. Policy misses remain: the other held-out questions did not end in a cited purchase. This is fixture-model mechanism evidence, not live-model answer quality: the hosted sandbox writes answers live and decides purchases with the rule-based model.
 
 ### 4. Who pays for this, and who is writer number one?
 
@@ -96,8 +97,8 @@ next are people who consent."
 **Say:** "Most show that an agent *can* pay. We focus on whether it *should*,
 and on what happens when the seller lies. The model never holds spending
 authority. The writer is paid only by publishing the key on the ledger. Every
-receipt can be re-checked by a verifier that isn't ours, in a language that
-isn't ours."
+receipt can be re-checked by two verifiers, written separately in two languages,
+and they agree on every test vector."
 
 ---
 
@@ -142,9 +143,12 @@ TEST-SGD evidence: [#381](https://github.com/Collaboration95/theFastandtheFungib
 Testnet transaction you can click. That covers escrows, refunds, anchors,
 TEST-SGD, writer credentials and the hire chain. Simulated: the offline app and
 Mac app use a labelled simulated rail, and our quality evaluation simulated its
-payments. Fixture: the decision and research models in the Testnet demos.
-Fictional: the research writers. Substituted: TEST-SGD for RLUSD. The app shows
-one environment indicator, and every receipt carries its label."
+payments. Fixture: the research and decision models in the held-out runs and the
+zero-clone demos; the hosted sandbox writes answers live and decides purchases
+with the rule-based model, as its header says.
+Fictional: the demo's research writers. Team-authored: our two labelled writers.
+Substituted: TEST-SGD for RLUSD. The app shows one environment indicator, and
+every receipt carries its label."
 
 **Behind it:** hard gate 5; `scripts/gate-audit.ts` rule `missing_rail_label`.
 

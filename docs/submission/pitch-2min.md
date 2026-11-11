@@ -38,7 +38,7 @@ of that key. Delivery and payment become one ledger event. No smart contract.
 It works in a stablecoin-style token too, through XLS-85 token escrow. Official
 RLUSD is one issuer flag away, and that's our top piece of builder feedback.
 
-**[0:48 · slide 3]**
+**[0:48 · slides 2–3]**
 At SingHacks we had a prototype: a language model proposed each purchase, a
 person approved every quote, and payment was simulated by default. Since then we merged <!--f:prs-->248<!--/f-->
 pull requests. Today a judge opens one link, or runs one line with no clone and
@@ -46,27 +46,27 @@ no account. It buys, catches a broken promise, gets refunded, re-buys, anchors
 the answer and prints "result: pass" with six Testnet links.
 
 **[1:08 · slide 7]**
-Don't trust us, verify it. Two independent verifiers, one in Python with no
+Don't trust us, verify it. Two verifiers, written separately, one in Python with no
 Node, re-check every receipt against the ledger. Our ledger page lists
 <!--f:transactions-->61<!--/f--> historical Testnet transactions with live
 read-only checks.
 
 **[1:22 · slide 8]**
-The same package is an MCP server for Claude Code and a local app. Ask about
-XRPL and it can buy from our labelled team build notes. With fixture models
-on Testnet, <!--f:heldout_n-->sixteen<!--/f--> of <!--f:heldout_N-->twenty<!--/f-->
-blind held-out questions were bought and cited, and on
-<!--f:offtopic_N-->ten<!--/f--> off-topic questions it bought nothing.
-Development sets are reported separately. [Evidence](../evidence/v4-heldout/README.md).
+The same package is an MCP server for Claude Code and a local app. And it knows
+when not to buy: ask it something its sources can't answer and it spends nothing,
+and the refusal is anchored on the ledger, so anyone can open the proof. On
+<!--f:offtopic_N-->ten<!--/f--> off-topic questions from a blind bank it bought
+nothing. The slide shows that bank with both numbers.
+[Evidence](../evidence/v5-heldout/README.md).
 
 **[1:36 · slide 9]**
 Our measured key-reveal purchase used <!--f:fee_drops-->435<!--/f--> drops in
-network fees. The model only recommends; policy code spends, and our gate audit
-found zero violations.
+network fees. Only policy code spends, and the blind banks ran on Testnet with
+<!--f:heldout_violations-->0<!--/f--> gate violations.
 
 **[1:48 · slide 14]**
-Every claim has a Testnet hash. ResearchAgent: agents pay the people who know,
-and the ledger keeps them honest.
+Every payment has a Testnet hash. ResearchAgent: paid on delivery, proven on
+the ledger.
 
 **[2:00]**
 
@@ -82,8 +82,9 @@ trust score drops. We label that on every refund."
 
 **After slide 8 (+0:20) · Writers:** "Writers join with one command. A Markdown
 folder becomes a Testnet writer with an XRPL credential in <!--f:writer_s-->33.9<!--/f-->
-seconds (J3, #389). Our research writers are fictional, and we have no
-independent writers yet. That list stays empty until a real person consents."
+seconds (J3, #389). Our demo writers are fictional or labelled team-authored,
+and we have no independent writers yet. That list stays empty until a real
+person consents."
 
 **On slide 12 (+0:15) · Honest limits:** "What's not done: payer keys in a
 KMS, RLUSD escrow until the issuer allows it, and KYB and sanctions screening.
@@ -96,7 +97,7 @@ We wrote a mainnet checklist instead of claiming readiness."
 | 0:00 | 1 | What it is, Testnet | 46 |
 | 0:18 | 5 | Key reveal | 42 |
 | 0:36 | 6 | Stablecoin escrow, RLUSD flag | 26 |
-| 0:48 | 3 | Since SingHacks, one link or one line | 46 |
+| 0:48 | 2–3 | Since SingHacks, one link or one line | 46 |
 | 1:08 | 7 | Verify | 29 |
 | 1:22 | 8 | Reachability, judge bank | 34 |
 | 1:36 | 9 | Fees, gates | 23 |
@@ -130,8 +131,11 @@ Never cut the "Testnet" line on slide 1.
 - **"<!--f:fee_drops-->435<!--/f--> drops"**: 12 for EscrowCreate plus 423 for the conditional
   EscrowFinish, measured on Testnet. At an assumed S$2 per XRP that is S$0.00087,
   a projection.
-- **"Zero violations"**: the read-only gate audit, 10 runs and 568 observations
-  on the fresh-question evaluation, 3 Nov, with simulated payments.
+- **"0 gate violations"**: the read-only gate audit on the v5 held-out and
+  off-topic banks, run on XRPL Testnet on 11 Nov
+  ([evidence](../evidence/v5-heldout/README.md)). The earlier 10-run, 568-observation
+  audit (fresh-question evaluation, 3 Nov) used simulated payments: do not quote it as
+  a Testnet result.
 - **The 93% number is not in the 2-minute script.** If asked, say it exactly:
   "On 48 fresh synthetic questions, 93.15% of gross article spend bought a
   requested fact retained in the final cited answer (95% CI 81.25–100.00%)."
@@ -142,8 +146,9 @@ Never cut the "Testnet" line on slide 1.
 ## If a live demo is allowed
 
 Use the live sandbox (https://ra-front-651013803640.asia-southeast1.run.app):
-ask the Kestrel lead-times example with a S$2 budget before you start speaking,
-so the payments settle under the first beats. Backup: run
+ask "What does an x402 402 Payment Required response contain?" (the first
+preset) with a S$2 budget before you start speaking, so the payment settles
+under the first beats; it buys one article in about 20 seconds. Backup: run
 `npx -y <release tgz> try --testnet` in a terminal (about 84 s cold; a rerun on
 the same wallets reuses the run and prints the same six links; say it is a
 rerun). Fallback with no network: the
