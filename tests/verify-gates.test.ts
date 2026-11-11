@@ -77,6 +77,9 @@ it('does not treat absent, redacted, malformed or another run’s evidence as he
   bundle.audit.entries = bundle.audit.entries.map(e => ({ seq: e.seq, hash: e.hash, prevHash: e.prevHash, commitment: true }))
   expect(summarizeGates(bundle).map(r => r.status)).toEqual(Array(5).fill('Not checked'))
   expect(summarizeGates({ ...bundle, runId: 'another-run' }).every(r => r.status === 'Not checked')).toBe(true)
+  const partial = load(fixtures.hosted)
+  for (const entry of partial.audit.entries) if (!('commitment' in entry) && entry.kind === 'reserve') delete entry.data.committedMinor
+  expect(summarizeGates(partial)[1].status).toBe('Not checked')
 })
 
 it('detects missing policy, duplicate/orphan receipts and label mismatch independently', async () => {

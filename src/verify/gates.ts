@@ -63,8 +63,9 @@ export function summarizeGates(input: unknown, checks: readonly VerificationChec
     return intent.intentId !== expected || decision.data.selectedResourceId !== intent.resourceId || !!intent.source && decision.data.selectedSourceKey !== sourceKey(intent) || typeof reserve.data.policyVersion !== 'string'
   })
   const covered = intents.every(i => reserves.some(e => intentOf(e) === i.intentId))
-  const policy = row(2, over || withoutPolicy ? 'Broken' : money(budget) && covered ? 'Held' : 'Not checked', [...admissions, ...decisions, ...reserves, ...settlements],
-    over ? 'Gross spend or committed funds exceed the admitted budget; refunds do not restore it.' : withoutPolicy ? 'A purchase reservation has no matching preceding policy decision in its round.' : money(budget) && covered ? 'Reservations follow policy decisions; gross spend stays within the admitted budget.' : 'Admission budget or policy reservation evidence is missing.')
+  const budgetEvidence = money(budget) && reserves.every(e => money(e.data.amountMinor) && money(e.data.committedMinor))
+  const policy = row(2, over || withoutPolicy ? 'Broken' : budgetEvidence && covered ? 'Held' : 'Not checked', [...admissions, ...decisions, ...reserves, ...settlements],
+    over ? 'Gross spend or committed funds exceed the admitted budget; refunds do not restore it.' : withoutPolicy ? 'A purchase reservation has no matching preceding policy decision in its round.' : budgetEvidence && covered ? 'Reservations follow policy decisions; gross spend stays within the admitted budget.' : 'Admission budget or policy reservation evidence is missing.')
 
   const seen = new Set<string>()
   let duplicateIntent = false
