@@ -94,3 +94,10 @@ so marks no longer drift (78.742 s transcript → 78.733 s MP4, within one frame
 The authenticated gh download is launched with `npx --package <local-tgz>
 researchagent-mcp`, since a local archive passed as the executable returns
 Permission denied. No product or gate threshold changed.
+
+## State: second pass, 11 Nov
+
+This anchor preserves links to VID-2's historical acceptance. Its v1.1.0,
+2:55 hosted draft is superseded by the VID-3 local footage described above.
+The old cue times do not apply to this cut. Record hosted-URL scenes after
+redeploy and use the owner's voice.
