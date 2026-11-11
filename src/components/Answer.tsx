@@ -1,5 +1,5 @@
 import { findingText } from '../../shared/finding-text.js'
-import { summarizeAnswer } from '../../shared/answer-summary.js'
+import { leadLine, summarizeAnswer } from '../../shared/answer-summary.js'
 import { declineSummary, paidNoAnswerSummary } from '../../shared/decline.js'
 import { openGapsAfterLead } from '../../shared/open-gaps.js'
 import { keywordCoverage, searchWords } from '../../publisher/search-text.js'
@@ -77,7 +77,9 @@ export default function Answer({ run, onCitation, view, compare, onCompare, repo
   const summary = answer.lead ? answer : summarizeAnswer(run.question, answer, delivered.filter(c => answer.claims.some(claim => claim.citations.some(ref => sameSource(c, ref)))), run.candidates)
   const lead = summary.lead ?? []
   const leadText = lead.map(item => item.text).join(' ')
-  const context = summary.conclusion.startsWith(leadText) ? summary.conclusion.slice(leadText.length).trim() : summary.conclusion
+  // The conclusion opens with the lead, capitalised as a sentence since QUAL (H9-13); answers stored earlier open with it verbatim.
+  const opening = [leadLine(lead.map(item => item.text)), leadText].find(text => summary.conclusion.startsWith(text))
+  const context = opening !== undefined ? summary.conclusion.slice(opening.length).trim() : summary.conclusion
   // H9-10: "Still unanswered" never lists what the lead above answers (the same rule the server applies).
   const openGaps = openGapsAfterLead(run.question, { lead, openGaps: answer.openGaps })
   // The sources answered the question in general and never name a place or period it qualified ("… in Singapore"): say so.

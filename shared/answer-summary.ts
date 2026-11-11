@@ -1,4 +1,4 @@
-import { topicMatches } from './relevance.js'
+import { identifiersIn, topicMatches } from './relevance.js'
 import { answerBoilerplate, LACKS, leadFinding, onTopicSentence, sentences } from './lead-finding.js'
 import { sameSource } from './source-identity.js'
 import type { Answer, Claim, ContentEnvelope, PublicCandidate } from './contracts/index.js'
@@ -16,8 +16,22 @@ export function onTopic(question: string, content: ContentEnvelope, candidates: 
   return topicMatches(question, `${subject} ${content.spans.map(s => s.text).join(' ')}`) && (!identifiers.length || identifiers.some(t => own.has(t) || t === 'xrp' && own.has('xrpl') || t === 'xrpl' && own.has('xrp'))) && (!need.length || need.filter(t => own.has(t)).length >= Math.min(2, need.length))
 }
 
+/** Commands and lowercase protocol names keep their case at a sentence start, as the web view keeps them. */
+const KEEP_LOWER = new Set(['rippled', 'xrpl', 'npm', 'npx', 'pnpm', 'pip', 'curl', 'wget', 'git'])
+/**
+ * H9-13: every sentence of the conclusion starts with a capital, as the web view shows it. An extract can start
+ * mid-sentence ("an HTTP 402 response offers…" after "According to the X402 v2 specification,"), and MCP and the SDK
+ * return the conclusion as it is. Only a plain lowercase word is capitalised, never x402, tesSUCCESS or a command such as
+ * npm. Lead texts stay exact quotes; only the conclusion's prose changes.
+ */
+export const sentenceStart = (text: string) => text.replace(/^[a-z]+(?:-[a-z]+)*(?=[\s,;:])/, word => KEEP_LOWER.has(word.split('-')[0]) ? word : word[0].toUpperCase() + word.slice(1))
+/** The lead sentences as the conclusion opens with them. */
+export const leadLine = (texts: string[]) => texts.map(sentenceStart).join(' ')
+/** A caution: what the sources lack, or a sentence that only says what something does not do, naming no identifier or figure. */
+const NEGATION = /\b(?:does|do|did|is|are|was|were|can|will|should|must)\s+not\b|\bcannot\b|\bnot itself\b|n't\b/i
+const caution = (text: string) => LACKS.test(text) || NEGATION.test(text) && !/\d/.test(text) && !identifiersIn(text).length
 /** "They", "These", "It", "This": a sentence that only makes sense after the one it points back to. */
-const ANAPHORIC = /^(?:They|These|Those|It|This|Such|Both|He|She|Its|Their)\b/
+const ANAPHORIC = /^(?:They|These|Those|It|This|Such|Both|He|She|Its|Their|Each|Either|Neither)\b/
 /** Whether a sentence of the context paragraph reads on its own here (H8-21):
  * - a sentence that points back ("They are not a determination …") needs the sentence it points back to to be in the paragraph, and a disclaimer never rides on one;
  * - a statement about what the sources lack must be about the question, not a different one that shares a word ("… no verified list of Singapore banks piloting RLUSD …"). */
@@ -57,6 +71,7 @@ export function summarizeAnswer(question: string, answer: Answer, contents: Cont
     const own = sentences(c.text), before = extracts[extracts.indexOf(c) - 1], sameArticle = before && before.citations[0].resourceId === c.citations[0].resourceId
     return own.map((text, i) => ({ text, prev: i ? own[i - 1] : sameArticle ? sentences(before.text).at(-1) : undefined }))
   }).filter(({ text }) => !terms.length || terms.some(t => questionTerms(text).includes(t)))]
+  const kept: { text: string; prev?: string }[] = []
   for (const { text, prev } of entries) {
     if (text.length > 1800 || answerBoilerplate(text) || /^Test missing/i.test(text)) continue
     // The context paragraph obeys the same floor as the lead: an unrelated sentence stays out.
@@ -65,9 +80,19 @@ export function summarizeAnswer(question: string, answer: Answer, contents: Cont
     if (texts.some(t => t.includes(text) || text.includes(t))) continue
     const n = text.split(/\s+/).length
     if (count + n > 120) continue
-    texts.push(text); count += n
+    texts.push(text); count += n; kept.push({ text, prev })
   }
+  // H9-13: after the lead, the sentences that answer come before the cautions ("A 402 challenge is an offer to pay; it does
+  // not itself authorize spending.") and the notes on what the sources lack. A sentence that points back keeps its place
+  // after the one it points to.
+  const groups: string[][] = []
+  for (const { text, prev } of kept.filter(entry => !leadTexts.has(entry.text))) {
+    const last = groups.at(-1)
+    if (last && ANAPHORIC.test(text) && prev !== undefined && last.some(t => t.includes(prev) || prev.includes(t))) last.push(text)
+    else groups.push([text])
+  }
+  const ordered = [...kept.filter(entry => leadTexts.has(entry.text)).map(entry => entry.text), ...groups.filter(group => !caution(group[0])).flat(), ...groups.filter(group => caution(group[0])).flat()]
   const refusals = ['No listed writer covers this yet · nothing bought', 'Matched articles supplied no citable answer · nothing bought', 'No verifiable evidence is available.']
   const fallback = claims.length ? 'See the cited passages under Show work.' : refusals.includes(answer.conclusion) ? answer.conclusion : 'No verifiable evidence is available.'
-  return { lead: chosen, conclusion: texts.join(' ') || fallback, claims, openGaps: answer.openGaps, version: answer.version, provider: answer.provider, model: answer.model }
+  return { lead: chosen, conclusion: ordered.map(sentenceStart).join(' ') || fallback, claims, openGaps: answer.openGaps, version: answer.version, provider: answer.provider, model: answer.model }
 }

@@ -380,7 +380,8 @@ async function composeAnswer(input: WriteAnswerInput): Promise<{ answer: Answer;
   // After a purchase, an answer with no cited claim says what was bought (the summary keeps only its known refusals).
   if (!answer.claims.length) answer = { ...answer, conclusion: empty }
   // H9-10: a gap the lead answers is not open.
-  answer = { ...answer, openGaps: openGapsAfterLead(input.question, answer) }
+  // Without requested facts the first open gap is what a legacy run buys for: keep the strict rules there (QUAL).
+  answer = { ...answer, openGaps: openGapsAfterLead(input.question, answer, { strict: !input.requirements?.length }) }
   return { answer: AnswerSchema.parse(answer), ...(input.previous ? { impact: compareAnswers(input.previous, answer, contents, priorContents(contents, input.candidates, input.previous)) } : {}), ...(answer.provider === 'fixture' && fallback ? { fallback } : {}) }
 }
 

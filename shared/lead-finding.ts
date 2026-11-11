@@ -65,7 +65,12 @@ export function onTopicSentence(question: string, text: string, firstRequirement
 export function leadFinding(question: string, claims: Claim[], delivered?: ContentEnvelope[], firstRequirement?: string, candidates: PublicCandidate[] = []): { text: string; claim: Claim }[] {
   let ranked = rankLeadSentences(question, claims, delivered, firstRequirement, candidates)
   // An off-topic sentence never leads; a complement may still come from the rest.
-  let first = ranked.find(item => item.onTopic)
+  // QUAL: nor does a disclaimer about what the sources lack ("The EscrowCancel reference does not state who may submit
+  // EscrowFinish."), while any pass below finds a cited sentence that answers part of the question. It names every side of
+  // the question, so the strict pass ranked it first; it leads only when nothing else qualifies.
+  const strict = ranked
+  const disclaimer = ranked.find(item => item.onTopic && LACKS.test(item.text))
+  let first = ranked.find(item => item.onTopic && !LACKS.test(item.text))
   if (!first) {
     // Nothing passed the strict rules. Retry with two things relaxed, so an on-topic answer is not replaced by an apology (R8 C2):
     // a place or period the question only qualifies ("… in Singapore", "… on Testnet") that no delivered text names, and the
@@ -74,7 +79,7 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
     const relaxed = rankLeadSentences(question, claims, delivered, firstRequirement, candidates, { relaxed: true })
     // "Covers the question" is judged on its first clause: a two-clause question ("…, and can my agent pay it with XRP on Testnet?") must not veto a sentence that answers the first.
     const clause = new Set(stems(clausesOf(question)[0] ?? question))
-    first = relaxed.find(item => item.onTopic && [...clause].filter(term => stems(item.text).includes(term)).length / Math.max(1, clause.size) >= 0.4)
+    first = relaxed.find(item => item.onTopic && !LACKS.test(item.text) && [...clause].filter(term => stems(item.text).includes(term)).length / Math.max(1, clause.size) >= 0.4)
     if (first) ranked = relaxed
   }
   if (!first) {
@@ -86,14 +91,10 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
     // names one. It is still never a disclaimer about what the sources lack, a fragment, a lowercase start or a cut
     // sentence; when nothing qualifies, the view keeps its one plain line.
     const partial = rankLeadSentences(question, claims, delivered, firstRequirement, candidates, { relaxed: true, partial: true })
-    const answersClause = (clause: string, text: string) => {
-      const own = stems(clause), asked = askedKind(clause)
-      return own.filter(term => stems(text).includes(term)).length / Math.max(1, own.length) >= 0.4 && (!asked || answerNames(asked, text, question).length > 0)
-    }
-    first = partial.find(item => item.onTopic && /^[A-Z0-9]/.test(item.text) && /[.!?]["”’)]?$/.test(item.text) && !LACKS.test(item.text)
-      && clausesOf(question).some(clause => answersClause(clause, item.text)))
+    first = partial.find(item => answersPart(question, item) && clausesOf(question).some(clause => answersClause(question, clause, item.text)))
     if (first) ranked = partial
   }
+  if (!first && disclaimer) { first = disclaimer; ranked = strict }
   if (!first) return []
   const terms = words(question)
   const selected = [first]
@@ -106,7 +107,7 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
     // A rare question term the first sentence lacks, as before; or a term of a later clause the first sentence leaves open.
     const missing = terms.filter(term => !words(first.text).includes(term) && ranked.filter(item => words(item.text).includes(term)).length <= Math.max(1, ranked.length / 3))
     const second = ranked.find(item => {
-      if (item.text === first.text || !item.onTopic || item.shared || item.tail || item.text.length + first.text.length >= 620) return false
+      if (item.text === first.text || !item.onTopic || item.shared || item.tail || LACKS.test(item.text) || item.text.length + first.text.length >= 620) return false
       // It must cover a real share of the question, not one word the whole question shares with every article ("xrpl"), and say
       // something new rather than the first sentence again.
       const own = new Set(stems(item.text))
@@ -114,7 +115,19 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
       return missing.some(term => words(item.text).includes(term)) || open.some(term => touches(own, term)) || (/\b(?:field|flag|setting|type|header|transaction)s?\b/i.test(question) && /[a-z][A-Z]/.test(item.text))
     })
     if (second) selected.push(second)
+    // QUAL: a later clause the first sentence leaves open ("…, and who can submit each one?") may be answered by a cited
+    // sentence that names only one side, which the strict ranking never holds: take the best such sentence that answers
+    // that clause, under the same rules as the partial pass (capitalised, complete, never a disclaimer).
+    else if (clausesOf(question).length > 1) {
+      const later = clausesOf(question).slice(1).filter(clause => !answersClause(question, clause, first.text))
+      const pool = later.length ? rankLeadSentences(question, claims, delivered, firstRequirement, candidates, { relaxed: true, partial: true }) : []
+      const extra = pool.find(item => item.text !== first.text && !item.shared && !item.tail && answersPart(question, item) && item.text.length + first.text.length < 620
+        && jaccard(new Set(stems(item.text)), covered) < 0.5 && later.some(clause => answersClause(question, clause, item.text)))
+      if (extra) selected.push(extra)
+    }
   }
+  // P1: two sentences of one cited passage read in the order the writer wrote them.
+  if (selected.length === 2 && selected[0].claim.citations.every(ref => selected[1].claim.citations.some(other => other.resourceId === ref.resourceId && other.spanId === ref.spanId && other.version === ref.version)) && selected[1].si < selected[0].si) selected.reverse()
   let remaining = 40
   return selected.flatMap(({ text, claim }) => {
     const count = text.split(/\s+/).length
@@ -124,6 +137,15 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
   })
 }
 
+/** Words that say how a clause is asked ("who can submit each one?"), not what it asks about. */
+const CLAUSE_FILLER = new Set('can could should would may might will shall must each one ones either both'.split(' '))
+/** A cited sentence answers one clause: it covers 40% of the clause's words and, when the clause asks for a kind of thing, names one. */
+function answersClause(question: string, clause: string, text: string): boolean {
+  const own = stems(clause).filter(term => !CLAUSE_FILLER.has(term)), asked = askedKind(clause)
+  return own.filter(term => stems(text).includes(term)).length / Math.max(1, own.length) >= 0.4 && (!asked || answerNames(asked, text, question).length > 0)
+}
+/** A sentence that may stand for part of the answer: on topic, a capitalised and complete sentence, never a disclaimer. */
+const answersPart = (question: string, item: RankedSentence) => item.onTopic && /^[A-Z0-9]/.test(item.text) && /[.!?]["”’)]?$/.test(item.text) && !LACKS.test(item.text)
 /** A term is in a set of stems, allowing one to be the start of the other ("settl" in "settlement"): the light stemmer does not fold them. */
 const touches = (set: Set<string>, term: string) => set.has(term) || (term.length >= 5 && [...set].some(own => own.length >= 5 && (own.startsWith(term) || term.startsWith(own))))
 const jaccard = (a: Set<string>, b: Set<string>) => { const shared = [...a].filter(term => b.has(term)).length; return shared / Math.max(1, a.size + b.size - shared) }
@@ -156,8 +178,9 @@ export function missingQualifiers(question: string, texts: string[]): string[] {
 export type RankedSentence = { text: string; claim: Claim; score: number; ci: number; si: number; named: boolean; cover: number; weighted: number; shared: boolean; tail: boolean; onTopic: boolean }
 /** A lowercase conjunction, relative or subordinator opening an extract: the extract is the tail of a longer sentence. */
 const FRAGMENT_START = /^(?:and|but|or|so|nor|yet|which|while|whereas|although|though|because|then|that|who|whose|where|when|if|unless|since|as)\b/
-/** A sentence that only makes sense after the one before it ("They are not a determination…") cannot open an answer. */
-const POINTS_BACK = /^(?:They|These|Those|Such|Both|He|She|Their|It|This|Its)\b/
+/** A sentence that only makes sense after the one before it ("They are not a determination…") cannot open an answer.
+ * P1: nor can "Each option names scheme, network, amount…" or "Either/Neither …", whose subject was introduced earlier. */
+const POINTS_BACK = /^(?:They|These|Those|Such|Both|He|She|Their|It|This|Its|Each|Either|Neither)\b/
 const skip = (text: string, claim: Claim, ci: number, si: number): RankedSentence => ({ text, claim, score: 0, ci, si, named: false, cover: 0, weighted: 0, shared: false, tail: false, onTopic: false })
 
 /** Every eligible answer sentence of the validated claims, best first. Exported so
@@ -174,8 +197,12 @@ export function rankLeadSentences(question: string, claims: Claim[], delivered?:
   const primary = words(firstFact)
   const eventTerms = /^when\b/i.test(firstFact) ? primary.filter(term => /(?:ed|held|born|began|begun|took)$/.test(term)) : []
   const causal = /^why\b/i.test(firstFact)
-  const quantity = /^(?:how (?:many|much)|what.*(?:amount|cost|fee|reserve|maximum|minimum))\b/i.test(firstFact)
-  const capability = /^(?:is|are|can|does|do|will|has|have)\b/i.test(firstFact)
+  // QUAL: live planners word the facts of a "how much" question as "The base XRP reserve amount an agent wallet must hold" or
+  // "Current XRPL base account reserve, with figures", and of a yes/no question as "Whether an XRPL escrow can hold RLUSD
+  // today": the same asks as "How much…?" and "Can…?".
+  const quantity = /^(?:how (?:many|much)|what.*(?:amount|cost|fee|reserve|maximum|minimum))\b/i.test(firstFact) || /\b(?:amounts?|figures?)\b/i.test(firstFact)
+    || /^how (?:many|much)\b/i.test(question) && /\b(?:reserves?|fees?|costs?|prices?|drops)\b/i.test(firstFact)
+  const capability = /^(?:is|are|can|does|do|will|has|have|whether)\b/i.test(firstFact)
   const contents = /^(?:which|what)\b.*\b(?:contain|include|carr(?:y|ies))s?\b/i.test(firstFact)
   const naming = /^(?:which|what)\b/i.test(firstFact)
   const fieldValue = naming && /\b(?:field|flag|header|setting|permission)s?\b/i.test(firstFact)

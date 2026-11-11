@@ -1,17 +1,25 @@
 // The requested-facts checklist (#208, #209), shared by the answer card and the report so both say the same thing.
 import { RunCheckpointSchema, STOP_LABELS, type CoverageStatus, type RunSnapshot, type StopReason } from './contracts/index.js'
+import { openGapsAfterLead } from './open-gaps.js'
 
 /** Reader-facing status words: no code vocabulary. */
 export const FACT_STATUS: Record<CoverageStatus, string> = { supported: 'Answered', partial: 'Partly answered', missing: 'Not found', conflicting: 'Sources disagree', unknown: "Couldn't check" }
 export type FactsSummary = { answered: number; total: number; facts: { id: string; text: string; status: CoverageStatus }[]; foundFree: boolean; stopReason?: StopReason; line: string; judge?: string; error?: string }
 
 /** The checklist for one answer version (the latest by default); undefined for runs without requested facts. */
-export function factsSummary(run: Pick<RunSnapshot, 'checkpoint' | 'answers' | 'spentMinor' | 'decisions'>, version = run.answers.reduce((max, a) => Math.max(max, a.version), 0)): FactsSummary | undefined {
+export function factsSummary(run: Pick<RunSnapshot, 'checkpoint' | 'answers' | 'spentMinor' | 'decisions'> & { question?: string }, version = run.answers.reduce((max, a) => Math.max(max, a.version), 0)): FactsSummary | undefined {
   const checkpoint = RunCheckpointSchema.safeParse(run.checkpoint)
   if (!checkpoint.success || !checkpoint.data.requirements?.length) return undefined
   const coverage = checkpoint.data.coverage?.find(c => c.answerVersion === version)
   if (!coverage) return undefined
-  const facts = checkpoint.data.requirements.map(r => ({ id: r.id, text: r.text, status: coverage.entries.find(e => e.requirementId === r.id)?.status ?? 'unknown' as CoverageStatus }))
+  // P1: a fact the lead's cited sentences answer counts as answered, by the rule that keeps it out of "Still unanswered", so
+  // the counter never says "0 of 3 answered" beside a lead that answers. The coverage judge's own record is unchanged.
+  const lead = run.answers.find(a => a.version === version)?.lead ?? []
+  const leadAnswers = (text: string) => Boolean(run.question && lead.length && !openGapsAfterLead(run.question, { lead, openGaps: [{ text: text.replace(/\s*&\s*/g, ' and ') }] }).length)
+  const facts = checkpoint.data.requirements.map(r => {
+    const status = coverage.entries.find(e => e.requirementId === r.id)?.status ?? 'unknown' as CoverageStatus
+    return { id: r.id, text: r.text, status: status !== 'supported' && status !== 'conflicting' && leadAnswers(r.text) ? 'supported' as CoverageStatus : status }
+  })
   const answered = facts.filter(f => f.status === 'supported').length
   const followUp = checkpoint.data.followUp
   // The focused search found a fact free when its re-answer (always v2) was kept.

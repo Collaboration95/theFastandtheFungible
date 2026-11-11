@@ -1,4 +1,4 @@
-import { familyMemberWords, identifierFamily, identifiersIn, identifierWords, isProtocolQuery, subjectFamilies, subjectRank, titleMatches, topicMatches, topicOverlap, topicWords } from '../../shared/relevance.js'
+import { actionGroups, actionMembers, familyMemberWords, identifierFamily, identifiersIn, identifierWords, isProtocolQuery, memberOf, memberRank, subjectFamilies, subjectRank, titleMatches, topicMatches, topicOverlap, topicWords } from '../../shared/relevance.js'
 import { alreadyCovered, entityPrecision, probeMetadata } from './precision.js'
 import { searchText } from '../../publisher/search-text.js'
 import { setImmediate as yieldToLoop } from 'node:timers/promises'
@@ -14,6 +14,7 @@ import { CandidateJudgmentSchema, DecisionRoundSchema, PublicCandidateSchema } f
 import type { CandidateJudgment, ContentEnvelope, CoverageStatus, DecisionProviderName, DecisionRound, PublicCandidate, PublicSourceRef, Requirement, ReputationSummary } from '../../shared/contracts/index.js'
 import { FIXTURE_GAP_RULES, fixtureCoverage, splitClauses, type CoverageEvidence } from './requirements.js'
 import { NEWCOMER } from '../reputation.js'
+import { askedKind } from '../../shared/answer-entity.js'
 import { compareTieBreak } from './tie-break.js'
 import { activeCalibrator, calibrate, roundCalibration } from './calibration.js'
 
@@ -142,6 +143,8 @@ export function titlesNameQuestion(question: string, titles: string[]): boolean 
   }).filter(words => words.length >= 2)
   return clauses.length > 0 && clauses.every(words => words.filter(word => own.has(word)).length / words.length >= 0.5)
 }
+/** Some clause of the question asks for a transaction ("…, and which transactions create and accept one?"). */
+const clausesAskTransaction = (question: string) => splitClauses(question).some(clause => askedKind(clause) === 'transaction')
 const metadataWords = (candidate: Pick<PublicCandidate, 'title' | 'facets'>) => new Set(topicWords(`${candidate.title} ${candidate.facets.join(' ')}`))
 const MEASURES = /\b(?:fees?|costs?|reserves?|pric(?:e|es|ing)|drops)\b/gi
 const UNIT = /\b(?:drops|XRP|SGD|USD|percent)\b|S\$|%/
@@ -179,15 +182,26 @@ export const REPEATS_PURCHASES = 'Its title and topics name no part of the reque
  */
 function repeatsPurchases(provider: DecisionProvider, input: Pick<DecideInput, 'question' | 'gap' | 'requirement' | 'verifiedPurchases'>, candidate: Pick<PublicCandidate, 'title' | 'facets'>): boolean {
   if (provider.name !== 'fixture' || !input.requirement || !input.verifiedPurchases?.length || !isProtocolQuery(input.question) || FIXTURE_GAP_RULES.some(rule => rule.cue.test(input.gap))) return false
+  // QUAL: once the bought titles and topics name a member for every verb the fact asks for (EscrowFinish and EscrowCancel
+  // for "release or return"), any further article only repeats them.
+  const groups = askedKind(input.gap) === 'transaction' ? actionGroups(input.gap) : []
+  const boughtMembers = new Set(input.verifiedPurchases.flatMap(bought => identifiersIn(`${bought.title} ${bought.facets.join(' ')}`).map(memberOf)))
+  if (groups.length && groups.every(group => group.some(m => boughtMembers.has(m)))) return true
   const named = new Set(input.verifiedPurchases.flatMap(bought => [...metadataWords(bought)]))
   const own = metadataWords(candidate)
-  if (topicWords(input.gap).some(word => !/^\d+$/.test(word) && !GENERIC.has(word) && own.has(word) && !named.has(word))) return false
+  // QUAL: a fact's verbs name the members it wants ("release or return" → finish, cancel), as its own words do.
+  const asked = askedKind(input.gap) === 'transaction' ? actionMembers(input.gap) : new Set<string>()
+  if ([...topicWords(input.gap), ...asked].some(word => !/^\d+$/.test(word) && !GENERIC.has(word) && own.has(word) && !named.has(word))) return false
   const namedIds = new Set(input.verifiedPurchases.flatMap(bought => identifiersIn(`${bought.title} ${bought.facets.join(' ')}`)).map(id => id.toLowerCase()))
   const namedFamilies = new Set<string | undefined>([...namedIds].map(identifierFamily))
   const factFamilies = new Set(subjectFamilies(input.gap).map(group => group[0] as string))
-  const factWords = new Set(topicWords(input.gap).filter(word => !GENERIC.has(word)))
+  const factWords = new Set([...topicWords(input.gap).filter(word => !GENERIC.has(word)), ...asked])
   return !identifiersIn(candidate.title).some(id => {
     if (namedIds.has(id.toLowerCase())) return false
+    // QUAL: another member than the one the fact's verbs ask for adds nothing (PermissionedDomainDelete for "creates or
+    // modifies", EscrowCreate for "release or return").
+    const member = memberOf(id)
+    if (asked.size && member && !asked.has(member)) return false
     const family = identifierFamily(id)
     // Related to the fact through its glossary family (TrustSet for an issued token) or a shared word (PermissionedDomainSet).
     // R8-A3: a shared word that is the name of a family a purchase already covers adds nothing. "Which XRPL transactions
@@ -297,6 +311,8 @@ export type DecideInput = {
   requirement?: boolean
   /** Public metadata of the articles this run has bought and verified; the run's own record, never paid text. */
   verifiedPurchases?: Pick<PublicCandidate, 'title' | 'facets'>[]
+  /** The run's other requested facts still open (QUAL): an article on their topic too ranks first among equals. */
+  otherFacts?: string[]
 }
 /** Raw-score buy thresholds per model. gpt-6-luna runs raw at 0.20 with no calibrator (#214): never the benchmark's calibrated 0.05. */
 export function buyThreshold(model: string, configured: unknown = loadConfig().BUY_THRESHOLD): number {
@@ -450,7 +466,24 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
   // for a micropayment question that mentions settling. Protocol questions only, like the title rule.
   const subjectOf = subjectFamilies(input.gap).length ? input.gap : input.question
   const subject = (row: DecisionRound['rows'][number]) => isProtocolQuery(input.question) ? subjectRank(subjectOf, `${row.candidate.title} ${row.candidate.facets.join(' ')}`) : 0
-  const selected = rows.filter(row => row.verdict === 'BUY').sort((a, b) => titled(b) - titled(a) || measure(b) - measure(a) || subject(b) - subject(a) || entityPrecision(input.question, b.candidate, candidates) - entityPrecision(input.question, a.candidate, candidates) || b.valuePerDollar - a.valuePerDollar || compareTieBreak(input.question, { id: a.candidate.source ? sourceKey(a.candidate) : a.candidate.resourceId, version: a.candidate.version }, { id: b.candidate.source ? sourceKey(b.candidate) : b.candidate.resourceId, version: b.candidate.version }))[0]
+  // QUAL: for a question asking for a named transaction, the member its verbs ask for ranks first and another member last
+  // (PermissionedDomainSet before PermissionedDomainDelete for "creates or modifies"; EscrowFinish and EscrowCancel before
+  // EscrowCreate for "release or return").
+  // A question asking for a field, flag or type ("Which EscrowCreate field…") is not ranked by its verbs.
+  const asksTransaction = isProtocolQuery(input.question) && clausesAskTransaction(input.question)
+  const member = (row: DecisionRound['rows'][number]) => asksTransaction ? memberRank(input.question, row.candidate.title) : 0
+  // QUAL: then the article that is also on the topic of more of the run's other open facts, so one purchase can answer
+  // several: "What spending controls … constrain the ResearchAgent language model" is the prompt-injection explainer's
+  // topic too, so it is bought for "Whether the language model … can initiate spending" before the decision explainer, and
+  // the second fact needs no second purchase. Public titles and topics only; never a story-bible question.
+  const facts = new Map<DecisionRound['rows'][number], number>()
+  const story = FIXTURE_GAP_RULES.some(rule => rule.cue.test(input.question))
+  const otherFacts = (row: DecisionRound['rows'][number]) => {
+    if (story || !input.otherFacts?.length) return 0
+    if (!facts.has(row)) facts.set(row, input.otherFacts.filter(fact => purchaseTopicMatches({ question: input.question, gap: fact, requirement: true }, row.candidate)).length)
+    return facts.get(row)!
+  }
+  const selected = rows.filter(row => row.verdict === 'BUY').sort((a, b) => titled(b) - titled(a) || measure(b) - measure(a) || subject(b) - subject(a) || member(b) - member(a) || entityPrecision(input.question, b.candidate, candidates) - entityPrecision(input.question, a.candidate, candidates) || otherFacts(b) - otherFacts(a) || b.valuePerDollar - a.valuePerDollar || compareTieBreak(input.question, { id: a.candidate.source ? sourceKey(a.candidate) : a.candidate.resourceId, version: a.candidate.version }, { id: b.candidate.source ? sourceKey(b.candidate) : b.candidate.resourceId, version: b.candidate.version }))[0]
   if (selected && !selected.probe && titled(selected)) selected.reason += ' Prefers the article whose title matches the question.'
   else if (selected && !selected.probe && measure(selected)) selected.reason += ' Prefers the title naming the amount asked for.'
   else if (selected && !selected.probe && entityPrecision(input.question, selected.candidate, candidates) > 0) selected.reason += ' Prefers the title or topics naming the requested entity; then value per dollar.'
