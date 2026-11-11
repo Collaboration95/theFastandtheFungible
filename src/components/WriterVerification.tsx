@@ -6,7 +6,7 @@ const creates: Record<string, string> = {
 }
 /** Advisory online identity observation; never a content-quality or payment badge. */
 export function WriterVerification({ value }: { value?: Verification }) {
-  if (value?.status !== 'verified') return <small>unverified writer{value?.status === 'check_failed' ? ' · check unavailable' : ''}</small>
+  if (value?.status !== 'verified') return <small>unverified writer{value?.status === 'check_pending' ? ' · check pending' : value?.status === 'check_failed' ? ' · check unavailable' : ''}</small>
   const tx = value.credentialTxHash ?? creates[value.credentialId]
   const domain = credentialDomainUrl(value)
   return <small title="Identity, not quality"><a className="ra-link" title="Identity, not quality" href={tx ? `https://testnet.xrpl.org/transactions/${tx}` : credentialUrl(value)} target="_blank" rel="noreferrer">XRPL Credential · issued by {value.issuerLabel} (Testnet, identity only, not KYC)</a>{domain && <> · <a className="ra-link" title="Identity, not quality" href={domain} target="_blank" rel="noreferrer">domain ↗</a></>}</small>

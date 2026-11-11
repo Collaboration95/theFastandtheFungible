@@ -34,7 +34,7 @@ HTTP redirects are refused. Queue saturation, errors, malformed responses and
 wrong network become `check_failed`, displayed as unverified with check unavailable.
 Missing, unaccepted and expired credentials are `unverified`. Only an accepted,
 trusted and bound credential is `verified`. A credential expiring within the cache
-window is conservatively unverified. Revocation can take up to the TTL to appear.
+window is conservatively unverified. See the refresh and staleness bound below.
 
 Verified metadata includes issuerLabel, issuer, credentialType, credentialId,
 validated ledgerIndex, optional expiresAt and checkedAt. UI links identify the
@@ -83,8 +83,8 @@ The server checks `network_id=1`, reads a validated ledger header and pins both
 `ledger_entry {index: domainId}` and every credential lookup to that same ledger
 hash. It shares that snapshot and wallet observations for **five minutes**. A
 wallet first checked late in the window expires with the snapshot, preventing
-stacked TTLs. Revocation or domain changes can take up to five minutes to appear.
-Expired or unaccepted credentials remain unverified. RPC failures read
+stacked TTLs. Refresh starts one minute before expiry.
+Expired or unaccepted credentials observed on the ledger remain unverified. RPC failures read
 “unverified writer · check unavailable”. Credentials identify the operator’s
 attestation only: the UI title is “Identity, not quality”.
 
@@ -132,3 +132,57 @@ continue to omit writer observations; no signed proof format changes.
 They also pass the existing hosted v3 export annotated only with matching advisory
 identities: 11/11 Testnet checks and the validated audit anchor pass in both CLIs.
 The evidence distinguishes this compatibility annotation from a new hosted run.
+
+## Refresh and bounded waiting
+
+The API starts domain and registry-wallet prewarming in the background at boot;
+startup and readiness never await it. Wallet warming is paced so it does not fill the bounded RPC queue.
+Registry wallets only seed the cache: presentation still requires the signed manifest/delivery binding described above.
+New wallets also warm lazily at their first signed search or free read.
+
+With no completed observation, callers wait **at most 300 ms**, then receive
+`check_pending` ("unverified writer · check pending", styled like check unavailable).
+The read continues within the existing per-RPC/queue deadlines. A later search
+uses its result; slow reads alone never become a negative credential observation.
+Genuine cold RPC failures return `check_failed`; malformed domains and missing,
+unaccepted or expired credentials retain their existing unverified behavior.
+
+Completed observations return immediately, including across TTL expiry. Each
+wallet has at most one refresh in flight. Unreferenced timers start refresh
+**60 seconds before the five-minute expiry**; wallets share the pinned domain
+refresh. Refresh failures retry once per minute without discarding the last
+observation. Cache eviction or operator configuration changes discard observations.
+
+On refresh failures, an observation may be **up to ten minutes stale beyond its
+five-minute TTL** (at most fifteen minutes from the snapshot read's start).
+At that bound the display becomes "check unavailable", even during another
+refresh. A credential's explicit expiry is an earlier hard cutoff. Successful
+revocation/domain reads replace the old value immediately; during an outage,
+revocation can take up to this fifteen-minute maximum to stop showing verified.
+`checkedAt` remains the original observation time while serving stale data.
+No credential state, including pending, is included in decision-model input or
+spending policy; this is unsigned advisory identity display only.
+
+## X2b local latency evidence (12 November 2026)
+
+`npx vitest run tests/writer-credentials-hosted.test.ts` exercises the signed
+publisher-search fan-out for both team writers over local HTTP with `HOSTED=1`.
+Writer signatures and ledger responses are synthetic; each mocked RPC takes
+750 ms, giving a three-second domain/credential read. The production five-minute
+TTL is forced past expiry by advancing the observation clock; transport deadlines
+still use real time. Each preset has five search samples, including one forced
+expiry; p95 uses nearest rank (therefore also the maximum at this sample size).
+This measures search, not model planning, purchases or end-to-end answers. No
+live demo, cloud resource, live model or Testnet transaction was used.
+
+| Preset | Original #482 p95 / max | Background refresh p95 / max |
+| --- | ---: | ---: |
+| x402 payment (XRPL2) | 3022.01 ms | 8.78 ms |
+| RLUSD escrow (XRPL1) | 3014.97 ms | 11.14 ms |
+| Account reserves (XRPL3) | 3009.92 ms | 9.96 ms |
+
+The original implementation fails the new <300 ms forced-expiry assertion;
+the fixed implementation passes all presets. Fake-timer tests separately pin
+the cold wait to exactly 300 ms and verify the later verified result. Real
+Testnet latency is the orchestrator's reported 2.87-second observation, not a
+new live-network measurement from this lane.

@@ -7,6 +7,7 @@ import { SIMULATED_LABEL, XRPL_LABEL } from '../shared/contracts/index.js'
 if (process.env.HOSTED !== '1') applyOwnerConfig(process.env)
 const stopTelemetry = process.env.HOSTED === '1' ? async () => {} : await startTelemetry()
 const { createApiApp } = await import('./routes.js')
+void import('./writer-credentials.js').then(({ prewarmWriterVerification }) => prewarmWriterVerification()).catch(() => {})
 const api = await createApiApp()
 const config = process.env.HOSTED === '1' ? process.env : loadConfig()
 const port = Number(config.PORT ?? 8788)
