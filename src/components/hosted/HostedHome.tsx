@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { allowanceText, builderLines, canAsk, explorerTx, hostedLinks, HOSTED_DAILY_QUESTIONS, HOSTED_ENDS, JUDGE_RUN, questionCap, minorText, proofLink, waitCopy, type HomeState, type Hosted } from '../../hosted'
 import VerifyInBrowser from './VerifyInBrowser'
+import { SharedPayer } from '../LedgerCheckEntry'
 import './judges-corner.css'
 
 const Out = ({ href, children }: { href: string; children: ReactNode }) => <a href={href} target="_blank" rel="noopener noreferrer">{children}<span className="ra-sr"> (opens in a new tab)</span></a>
@@ -42,6 +43,7 @@ export function HostedJudgesCorner({ hosted }: { hosted: Hosted }) {
       <li>{icons.key}<div><h2>See the key on the ledger</h2><p>The Fulfillment field is the article key.</p><Out href={explorerTx(JUDGE_RUN.keyTx)}>Open the EscrowFinish</Out></div></li>
       {proof && <li>{icons.refuse}<div><h2>See it refuse to spend</h2><p>A question it declined to pay for, S$0.00 spent, anchored on the ledger.</p><Out href={proof}>Open the proof of refusal</Out></div></li>}
     </ul>
+    <SharedPayer />
   </section>
 }
 

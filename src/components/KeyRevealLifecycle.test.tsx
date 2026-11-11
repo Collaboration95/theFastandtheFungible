@@ -6,6 +6,8 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import KeyRevealLifecycle, { KeyCheckResult } from './KeyRevealLifecycle'
 import type { EscrowStatus } from '../../shared/contracts/escrow'
 import type { KeyCheck } from '../verify/key-on-ledger'
+// This suite isolates the key checker; the independent purchase read is fixture-tested in ledger-ui.
+vi.mock('./LedgerReceipt', () => ({ default: () => null }))
 afterEach(cleanup)
 const base: EscrowStatus = { scheme:'escrow-v1',policy:'escrow-policy-v1',mode:'key-reveal',state:'LOCKED',owner:'fixture',cancelAfter:2000000000,createHash:'A'.repeat(64) }
 const render1 = (patch: Partial<EscrowStatus>) => renderToStaticMarkup(createElement(KeyRevealLifecycle,{escrow:{...base,...patch}}))
