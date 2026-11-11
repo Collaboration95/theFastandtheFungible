@@ -5,6 +5,7 @@ import { evidencePath } from './evidence-path'
 import { spawn } from 'node:child_process'
 import { once } from 'node:events'
 import { mkdir, cp, readdir, stat } from 'node:fs/promises'
+import recordingIndex from '../demo/recording-index.json' with { type: 'json' }
 // Python chooses an ephemeral port. Serve the actual Pages subpath, without a backend.
 test('static Pages UC3: draft, verified upgrade, refund, receipt, citation and Writers', async ({ page }, info) => {
   const assets = await readdir('site/demo/assets')
@@ -219,12 +220,12 @@ test('replay downloads only the requested recording, then loads another scenario
   await expect(page.locator('link[rel="stylesheet"][href*="/assets/main-"]')).toHaveCount(1)
   expect(requests.filter(p=>/\/(?:UC1|UC2|UC3|UC3-testnet|UC-key-reveal)-[A-Za-z0-9_-]{8}\.js$/.test(p))).toEqual([])
   expect(requests.filter(p=>/\/UC3-key-reveal-[\w-]+\.js$/.test(p))).toHaveLength(1)
+  await expect(page.locator('.demo-transactions p')).toHaveCount(6)
   await page.getByRole('combobox',{name:'Recorded scenario'}).selectOption('UC2')
   await expect(page.getByRole('heading',{level:1})).toContainText("What's the analyst outlook",{timeout:10_000})
   expect(requests.filter(p=>/\/UC2-[\w-]+\.js$/.test(p))).toHaveLength(1)
   // A cold direct link must preload its own trace, including run-ID links.
-  const index = (await import('../demo/recording-index.json')).default
-  for (const entry of index) for (const query of [`scenario=${entry.scenario}`, `run=${entry.runId}`]) {
+  for (const entry of recordingIndex) for (const query of [`scenario=${entry.scenario}`, `run=${entry.runId}`]) {
     const context = await browser.newContext(), direct = await context.newPage(), traces: string[] = []
     try {
       await direct.routeWebSocket(/wss:\/\/.*/, ws => ws.close())
