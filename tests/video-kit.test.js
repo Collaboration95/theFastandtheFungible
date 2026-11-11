@@ -193,7 +193,10 @@ describe('the video stays honest', () => {
       const env = sessionEnv({ REL: 'https://example.org' })
       expect(Object.keys(env).filter(k => /KEY|TOKEN|SEED|SECRET|PASSWORD/i.test(k))).toEqual([])
       expect(env.REL).toBe('https://example.org')
-    } finally { for (const k of Object.keys(process.env)) if (!(k in before)) delete process.env[k] }
+    } finally {
+      for (const k of Object.keys(process.env)) if (!(k in before)) delete process.env[k]
+      Object.assign(process.env, before)
+    }
   })
 })
 
