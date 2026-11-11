@@ -140,12 +140,14 @@ No mainnet support is claimed.
   validation. Ledger outages/history gaps retain reservations pending reconciliation.
 - A dishonest buyer can create extra escrow objects outside policy. This product
   guarantees one charge per policy intent, not control of arbitrary wallet activity.
-- Conditional finish costs more than a Payment. The [XRPL fee formula](https://xrpl.org/docs/concepts/transactions/transaction-cost)
-  scales as `base_fee × (33 + fulfillment_bytes / 16)` before multisign/load effects.
-  Here K is 32 bytes and its encoded fulfillment is 36 bytes. At the observed
-  12-drop signing base, `ceil(12 × (33 + 36/16)) = 423` drops. A 2,000-drop cap
-  rejects excessive fees. Live create/cancel each cost 12 drops. A cancelled
-  60,000-drop principal is fully returned; its buyer still pays 24 drops in fees.
+- Conditional finish costs more than a Payment. For our 36-byte encoded
+  fulfillment, rippled's minimum is 350 drops (`10 × (33 + floor(36/16))`),
+  measured by [unsigned simulate](evidence/dry-run-nov12/README.md).
+  We pay 423: the xrpl.js formula uses fractional `33 + 36/16` and its 1.2×
+  cushion gives `ceil(12 × (33 + 36/16)) = 423`. The buyer pays 12 drops to
+  lock; the writer pays 423 to reveal. Signing fees stay unchanged, with a
+  2,000-drop cap. Create/cancel each cost 12 drops. A cancelled 60,000-drop
+  principal is fully returned; its buyer still pays 24 drops in fees.
 - Synthetic corpus and extractive fixture answers in the proof are labelled;
   Testnet value transfer is real Testnet execution, with no real value.
 
