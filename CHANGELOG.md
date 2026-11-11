@@ -13,6 +13,40 @@ the MCP Registry; that is an owner step tracked in #265.
 
 ## Unreleased
 
+## v1.1.0 — 11 Nov 2026
+
+Finals release: everything since v1.0.2 (8 Nov), judge-facing changes first. XRPL Testnet with faucet funds or the hosted demo's test-funds sponsor; nothing here uses real money. Packages are GitHub release assets only (not on npm, PyPI or the MCP Registry), and the Mac DMGs are unsigned.
+
+### What a judge will notice
+
+- **A live sandbox with nothing to install** (#432, #438, #441, #454, #458, #461): https://ra-front-651013803640.asia-southeast1.run.app, open 13–19 Nov 2026. Each visitor gets 5 questions a day and up to S$2.00 of test funds per question; one environment chip says what is live (DeepSeek answers) and what is rule-based (purchase decisions). It restarts itself after an unplanned VM reboot of an already-checked release.
+- **Receipts from the sandbox verify with the published tools.** The v1.0.2 verifier said `FAIL anchor binding` on hosted exports because it cannot recompute the newer answer commitment. Every verify instruction (README, install guide, Export menu, deck, site) now pins v1.1.0, and a release can no longer ship unless its packed Python wheel and packed TypeScript CLI both verify fresh hosted-mode exports and a committed real hosted export ([evidence](docs/evidence/hosted-export-nov11/README.md)).
+- **It buys the right article** (#460): a question's trailing "on Testnet" or "on XRPL" no longer outranks its subject, so "What does an x402 402 response contain…?" buys the article titled with that question; payment words such as "pay" or "buy" no longer discard a working plan; product questions get cited research instead of a chat reply.
+- **The answer leads with the fact you asked for** (#429, #442, #450): a cited extract comes first, it names the thing asked for, and an unrelated sentence never leads.
+- **Proof of refusal** (#445, #451): a declined, anchored run can be shared as a public page with a one-click check on XRPL.
+- **Measured once on a blind bank** (#444, #448): v5 held-out 16/20 bought and cited, the key fact leads 7/20, 0/10 off-topic purchases (11 Nov, XRPL Testnet, fixture research and decision models with answers written offline, team-authored writers). With a zero budget the same questions answer 0/20.
+- **One-command agent hire ships in the release** (#436): `npx -y <release>/researchagent-mcp-1.1.0.tgz try --testnet --hire`.
+- **Plain-English product** (#446, #452, #455): one design system, one money vocabulary ("Paid for 2 articles, 1 refunded"), accessible controls, and a replay re-recorded on Testnet from current code.
+- **Judge pack** (#440, #443, #459, this release): the README is a product page whose hero is a live hosted XRPL key-reveal run; every judge-facing number comes from one generated facts file; the 14-slide deck and a demo-video kit are rebuilt from it.
+- **More sourced writing to buy** (#425, #437, #453): 32 sourced explainers on XRPL, x402, agent payments and regulation, labelled team-authored.
+
+### Added
+
+- `researchagent-mcp verify <receipts.json> [--ledger]`: the TypeScript verifier in the release tgz, for checking receipts without Python.
+- Release acceptance: fresh offline `HOSTED=1` exports (a purchase, and a decline carrying a labelled stand-in anchor so "anchor binding" runs) plus the committed real hosted export, verified by the packed wheel and the packed TS CLI; admission refuses a release without them (`validateHostedExports`).
+- A standalone x402 key-reveal escrow example for the XRPL Starter Kit (#435); a one-page compliance map (#424); ranked builder feedback with paste-ready upstream drafts (#423).
+
+### Changed
+
+- Verifier output says "Skipped" in plain words instead of `SKIP`, and the skipped checks explain themselves ("the writer's identity is self-declared; checking it needs an online lookup"). JSON output keeps the `SKIP` status.
+- MCP and SDK answers no longer carry raw `[1] [2]` markers in claim text; citations stay in their bindings.
+- The README hero and deck slide 10 show a live hosted XRPL run instead of the fictional first-person Kestrel recording; slide 7 shows v1.1.0 verifying a hosted export.
+- Dev loop: shipping and release admission run locally on exact artifacts (#433); developer entry paths repaired (#426); the repo front page has 42 entries instead of 52 (#449).
+
+### Known limits
+
+- H8-18's corpus sentence ("lost a fifth of its consensus gross margin", 58.5% → 55.2%) is unchanged: it is the first sentence of a signed, embedded article, and re-embedding is not available.
+
 ## v1.0.2 — 8 Nov 2026
 
 Patch release after v1.0.1 (#417, #418): the anchor-pending regression is fixed, the app shows anchored abstentions, and the plan text states the real buy rule. Buying policy is unchanged. Fixture decision model, team-authored writers, XRPL Testnet with faucet funds; nothing here uses real money, and nothing is published to npm, PyPI or the MCP Registry.
