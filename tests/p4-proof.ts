@@ -26,7 +26,7 @@ try {
       const url=`http://127.0.0.1:${(server.address() as {port:number}).port}/api/demo/stats`
       const latencies:number[]=[], failures:number[]=[], start=performance.now()
       const first=await fetch(url), stats=await first.json() as SandboxStats, coldMs=performance.now()-start
-      assert.equal(stats.questions,5000); assert.equal(first.headers.get('set-cookie'),null)
+      assert.equal(first.status,200); assert.equal(stats.questions,5000); assert.equal(first.headers.get('set-cookie'),null)
       const requests=1000,concurrency=8
       let next=0
       await Promise.all(Array.from({length:concurrency},async()=>{
@@ -38,10 +38,11 @@ try {
         }
       }))
       latencies.sort((a,b)=>a-b)
+      const includingCold=[coldMs,...latencies].sort((a,b)=>a-b)
       const tables=api.store!.hostedState(db=>Object.fromEntries(['hosted_sessions','hosted_session_mints','admissions'].map(table=>[table,Number(db.prepare(`SELECT count(*) AS n FROM ${table}`).get()!.n)])))
-      const result={scope:'Local HOSTED=1 loopback; 5,000 synthetic metadata runs, no ledger or model calls. One cold refresh reported separately; timed requests use the real 60 s cache.',requests,concurrency,coldMs,p50Ms:latencies[499],p95Ms:latencies[949],p99Ms:latencies[989],maxMs:latencies[999],failures,tables,stats}
+      const result={scope:'Local HOSTED=1 loopback; 5,000 synthetic metadata runs, no ledger or model calls. One cold refresh reported separately; timed requests use the real 60 s cache. The target is also asserted across all requests including the cold refresh.',requests,totalRequests:requests+1,concurrency,coldMs,p50Ms:latencies[499],p95Ms:latencies[949],p95IncludingColdMs:includingCold[Math.ceil(includingCold.length*.95)-1],p99Ms:latencies[989],maxMs:latencies[999],failures,tables,stats}
       writeFileSync(join(output,'load.json'),JSON.stringify(result,null,2)+'\n'); console.log(JSON.stringify(result))
-      assert.equal(failures.length,0); assert(result.p95Ms<50); assert(Object.values(tables).every(n=>n===0))
+      assert.equal(failures.length,0); assert(result.p95Ms<50); assert(result.p95IncludingColdMs<50); assert(Object.values(tables).every(n=>n===0))
     } finally { server.closeAllConnections(); await new Promise<void>(resolve=>server.close(()=>resolve())); await api.close() }
   } else if(process.argv[2] === 'visual') {
     const { allocateDemoPorts }=await import('../scripts/demo-ports.mjs')
