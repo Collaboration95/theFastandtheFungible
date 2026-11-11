@@ -72,13 +72,54 @@ with a clock, so footage is never silently accelerated. To drop or reorder a sho
 4. Check the cut against the label rules in the script, upload **unlisted**, then follow
    "After recording" in the script.
 
-## State of the first pass (11 Nov)
+## State (second pass, 11 Nov)
 
-- The hosted footage was recorded after the 11 Nov redeploy and shows the app as it was:
-  "Planned with offline rules: the planner was unavailable." and, on the declined question,
-  "Written from offline extracts: the model was unavailable." Re-record `hosted-ask` once the
-  hosted demo answers with live models.
-- Shot 3b (proof of refusal) is **off**: on the hosted demo "Publish proof page" failed twice
-  with "The proof page could not be created". Re-record `hosted-decline`, then set
-  `"enabled": true` in shots.json.
-- The voice is macOS `say` (Samantha): a placeholder for timing, not for upload.
+The first pass (morning) predated v1.1.0 and showed the planner and model fallback notices, so
+every scene was re-recorded on **11 Nov, about 11:30–12:00 SGT**, from current `main` at v1.1.0
+(`3157fe41`). The hosted demo ran v1.1.0 with live DeepSeek planning and answers and a labelled
+fixture purchase decision (its chip reads "live answers, rule-based buying"). The cut is **2:55
+with shot 3b** and about 2:35 without it.
+
+| Scene | Source of this footage |
+|---|---|
+| `hosted-ask` | the hosted demo: "What does an x402 402 Payment Required response contain?", one S$0.40 Testnet purchase, "Anchoring…" becomes "Anchored on XRPL", "Run the checks" ends on "26 passed · 2 not checked" |
+| `hosted-decline` | the hosted demo: "Which airlines ordered new narrowbody jets at the 2026 Farnborough Airshow?", "No source covers this question yet. Nothing was bought.", Publish proof page, the live proof page ("Refused to spend.") |
+| `claude-mcp` | real `claude` CLI (Claude Code 2.1.322) and the v1.1.0 MCP tgz on the same x402 question: one S$0.40 purchase, three explorer links |
+| `python-verify`, `try-testnet` | the v1.1.0 wheel (`PASS testnet 12/12`, `RESULT PASS`) and the v1.1.0 tgz (`try --testnet`, `RESULT PASS` in 63 s this run) |
+| `replay-key-reveal`, `ledger`, `builder-feedback` | the public replay and EscrowFinish on the explorer, `/ledger/` (61/61 validated), `BUILDER-FEEDBACK.md` on GitHub |
+| `title-card`, `close-card` | cards drawn from the README lockup |
+
+- **Shot 3b is on.** "Publish proof page" works on the hosted demo again (#462). The question is
+  deliberately off the library: it shares no words with any writer or free source, so no
+  fictional-writer record is read. Words like "outlook" or "prices" match the open central-bank
+  records, get a free answer, and leave nothing to refuse. Its voice-over now says "no source
+  covered the question" (the proof page shows 0 paid articles found).
+- **x402 instead of RLUSD.** On hosted the RLUSD preset buys three articles and leads with
+  EscrowCreate (mock-judge round 9, H9-01); the x402 question buys one in about 20 s.
+- Recorder fixes this pass: the verify wait accepts "N passed · K not checked" (the app says
+  that when some checks were skipped), `hosted-ask` waits for the anchor line, and the terminal
+  scenes switch off npm's upgrade notice.
+- No personal data on screen: home paths show as `~`, no email, no key or seed, and Claude
+  Code's usage figures are blanked. The demo flipped to `paused` once mid-recording and one take
+  was retried; the pass asked the hosted demo 9 questions in total (several passes).
+
+**Left for you** (the voice and the upload, tracked as A4 on #265), and what to know first:
+
+1. Record the voice-over, or approve the synthetic one; upload **unlisted**; set the links.
+2. Claude Code's prose calls the source "one team-authored explainer from an unverified writer,
+   not an independent one", but the closing Labels line it prints still says "Fixture models
+   and fictional writers". That line is the v1.1.0 MCP tool's own label, so it only changes in a
+   new release; the caption on the shot says team-authored. The voice-over's "labelled as ours"
+   matches Claude's prose, not that last line.
+3. The hosted card says "26 passed · 2 not checked", not "All N checks passed". The Python
+   verifier skips two checks on the same kind of export (writer credentials, which need an
+   online lookup, and historical origin, which this receipt format doesn't need), so the two
+   are most likely those; I did not open the browser card's groups to confirm. The voice-over
+   doesn't claim "all".
+4. The proof page's own chip says "fixture models", while the app chip says "live answers,
+   rule-based buying". Both are true (answers are live, buying is rule-based); the caption uses
+   the app's wording.
+5. Avoid asking "writer never reveals the key" with Verify on camera until H9-02 is fixed (an
+   export that reads fictional free sources fails verification). None of the recorded questions
+   reads one.
+6. The voice is macOS `say` (Samantha): a placeholder for timing, not for upload.

@@ -69,7 +69,7 @@ Every shot carries a caption bar in Geist, bottom-left, that says what is real:
 | 1 | 0:00–0:07 | 7 s | Title |
 | 2 | 0:07–0:42 | 35 s | The live sandbox: ask, plan, pay |
 | 3 | 0:42–1:02 | 20 s | Refund and key reveal, on the ledger (recorded replay) |
-| 3b | optional, +14 s | 14 s | It can say no, and prove it (hosted decline and proof of refusal) |
+| 3b | optional, +17 s | 17 s | It can say no, and prove it (hosted decline and proof of refusal) |
 | 4 | 1:02–1:30 | 28 s | The same product inside Claude Code (MCP) |
 | 5 | 1:30–1:48 | 18 s | Verify it: Python verifier and `/ledger/` |
 | 6 | 1:48–2:04 | 16 s | One line, no clone: `try --testnet` |
@@ -77,7 +77,7 @@ Every shot carries a caption bar in Geist, bottom-left, that says what is real:
 | 8 | 2:20–2:30 | 10 s | Close |
 
 Times are the target; the assembled draft in
-[video/timing.csv](video/timing.csv) has the real ones (about 2:40 without 3b, about 2:55 with it).
+[video/timing.csv](video/timing.csv) has the real ones (about 2:35 without 3b, about 2:55 with it).
 
 ### Shot 1 · Title (0:00–0:07)
 
@@ -90,10 +90,11 @@ Times are the target; the assembled draft in
 
 - **Open:** <https://ra-front-651013803640.asia-southeast1.run.app>. Pause 1 s on the home
   screen so the environment indicator is readable.
-- **Ask:** type the first example, "RLUSD escrow" (*"Can an XRPL escrow hold RLUSD today,
-  and what must the issuer enable before a buyer can lock it?"*), with budget S$2.00. The
-  hosted examples are the XRPL builder notes, so the writers here are the team-authored
-  ones, not the fictional Kestrel writers.
+- **Ask:** type *"What does an x402 402 Payment Required response contain?"*, with budget
+  S$2.00. It is not one of the three presets: on 11 Nov the RLUSD preset bought three
+  articles and led with EscrowCreate (mock-judge round 9, H9-01), while this question buys
+  one article in about 20 s and leads with `PAYMENT-REQUIRED` and `PAYMENT-SIGNATURE`. The
+  hosted writers are the team-authored XRPL notes, not the fictional Kestrel writers.
 - **On screen:** the 5-second plan (free sources first; at most one article per round, up
   to three rounds), then the payment card filling in place under "Payment unlocked by the
   writer's key": Payment locked in escrow, Writer released the key, Key matches the escrow
@@ -125,19 +126,18 @@ Times are the target; the assembled draft in
   and its trust score dropped. A real writer could refuse; then the buyer keeps a fraud
   proof anyone can check."
 
-### Shot 3b · It can say no, and prove it (optional, about 14 s)
+### Shot 3b · It can say no, and prove it (optional, about 17 s)
 
-> **Off in the current cut.** On 11 Nov the hosted demo's "Publish proof page" failed twice
-> with "The proof page could not be created", so the shot is disabled in
-> [video/shots.json](video/shots.json) until that works. Re-record it, then flip `enabled`.
-
-- **On screen:** on the live sandbox, ask *"Which Singapore banks are piloting RLUSD
-  settlement in 2026?"*. The agent buys nothing: "Nothing was bought". Press **Share proof of
-  refusal**, read the confirmation ("Publish this proof?"), publish, and open the proof page
-  ("Refused to spend.", S$0.00 spent, an XRPL Testnet transaction).
+- **On screen:** on the live sandbox, ask a question the library does not cover: *"Which
+  airlines ordered new narrowbody jets at the 2026 Farnborough Airshow?"*. It shares no
+  words with any writer or free source, so no fictional-writer record is read and nothing
+  is bought: "No source covers this question yet. Nothing was bought." Press **Share proof
+  of refusal**, read the confirmation ("Publish this proof?"), publish, and open the proof
+  page ("Refused to spend.", S$0.00 spent, an XRPL Testnet transaction). Avoid
+  finance-sounding words ("outlook", "prices"): the open central-bank records answer those
+  from free sources, and then there is no refusal to prove.
 - **Caption:** "Live sandbox · XRPL Testnet · no real value" plus the app's model wording.
-- **VO (36 words):** "It can also say no. Here nothing in the paid library was worth
-  buying, so it spent nothing, and the refusal is anchored on XRPL Testnet. Anyone can open
+- **VO (32 words):** "It can also say no. Here no source covered the question, so it bought nothing, and the refusal is anchored on XRPL Testnet. Anyone can open
   the proof page and check it."
 - **Cut this shot first** if the video runs long: nothing else refers to it.
 
@@ -148,9 +148,9 @@ Times are the target; the assembled draft in
   claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y $TGZ --testnet
   claude
   ```
-  Prompt: *"Use researchagent: ask_expert 'Can an XRPL escrow hold RLUSD today, and what
-  must the issuer enable before a buyer can lock it?' with budget_sgd=2. Reply briefly: the
-  answer in two sentences, the explorer links, and the labels on one line."* (A short reply
+  Prompt: *"Use researchagent: ask_expert 'What does an x402 402 Payment Required response
+  contain?' with budget_sgd=2. Reply briefly: the answer in two sentences, the explorer
+  links, and the labels on one line."* (A short reply
   keeps the final screen readable; Claude prints the citations and every label itself.)
 - **On screen:** Claude Code's answer with citations to the team builder notes, the
   explorer links for create, finish and anchor, and the labels it returns

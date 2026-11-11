@@ -116,6 +116,10 @@ export const SCENES = [
       rec.labels.models = (await pill.innerText().catch(() => '')).trim()
       rec.labels.caption = caption(target, rec.labels.models, target.kind === 'local' ? 'fictional writers' : 'team-authored writers')
       await rec.hold(2400)
+      // The anchor line reads "Anchoring…" for up to a minute after the answer; the cut shows it turn into "Anchored on XRPL".
+      const anchored = page.getByRole('link', { name: /^Anchored on XRPL/ })
+      const landed = await anchored.first().waitFor({ timeout: 100_000 }).then(() => true, () => false)
+      if (landed) { rec.mark('anchored'); await rec.hold(1800) } else rec.note('the anchor line still said "Anchoring…" after 100 s')
       // The answer, then the receipt checks in the browser.
       await rec.glide(1100, 600, 800)
       const answer = page.getByRole('region', { name: 'Research answer' })
@@ -126,7 +130,8 @@ export const SCENES = [
       await rec.hold(900)
       await rec.click(page.getByRole('button', { name: 'Run the checks' }))
       rec.mark('verify_started')
-      await page.getByRole('status').filter({ hasText: /checks passed/ }).first().waitFor({ timeout: 90_000 })
+      // "All N checks passed", or "N passed · K not checked" when a group (writer identity) is skipped. Never "checks failed".
+      await page.getByRole('status').filter({ hasText: /^(?:All \d+ checks passed|\d+ passed · \d+ not checked)/ }).first().waitFor({ timeout: 90_000 })
       rec.mark('verify_done')
       await rec.hold(3500)
     },
@@ -336,11 +341,11 @@ export const SCENES = [
 ]
 
 // The typed prompt asks for a short report so the final screen fits; everything it prints is Claude's own output.
-export const CLAUDE_PROMPT = 'Use researchagent: ask_expert \'Can an XRPL escrow hold RLUSD today, and what must the issuer enable before a buyer can lock it?\' with budget_sgd=2. Reply briefly: the answer in two sentences, the explorer links, and the labels on one line.'
+export const CLAUDE_PROMPT = 'Use researchagent: ask_expert \'What does an x402 402 Payment Required response contain?\' with budget_sgd=2. Reply briefly: the answer in two sentences, the explorer links, and the labels on one line.'
 
 /** What each terminal scene needs in its shell (variables only; nothing secret). */
 export function terminalEnv(fresh) {
-  return { REL: RELEASE, TGZ, WHEEL, RECEIPTS, npm_config_cache: join(fresh, 'npm-cache'), XDG_STATE_HOME: join(fresh, 'state'), PIP_DISABLE_PIP_VERSION_CHECK: '1' }
+  return { REL: RELEASE, TGZ, WHEEL, RECEIPTS, npm_config_cache: join(fresh, 'npm-cache'), XDG_STATE_HOME: join(fresh, 'state'), PIP_DISABLE_PIP_VERSION_CHECK: '1', npm_config_update_notifier: 'false' }
 }
 export const cleanEnv = () => ({ PATH: process.env.PATH, HOME: process.env.HOME, TERM: 'xterm-256color' })
 
