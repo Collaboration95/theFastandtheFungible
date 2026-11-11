@@ -72,7 +72,7 @@ try {
     const posted = await wire('/runs', 'POST', { ...visitor, 'Idempotency-Key': key }, { question, budgetMinor: 200 })
     if (posted.status !== 201) throw Error(`hosted POST /runs → ${posted.status} ${posted.text.slice(0, 200)}`)
     const runId = (JSON.parse(posted.text) as { runId: string }).runId
-    let phase = ''
+    let phase: string
     for (const deadline = Date.now() + 120_000; ;) {
       phase = (JSON.parse((await wire(`/runs/${runId}`, 'GET', visitor)).text) as { phase: string }).phase
       if (['DONE', 'FAILED', 'STOPPED'].includes(phase)) break
