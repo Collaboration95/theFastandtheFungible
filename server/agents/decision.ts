@@ -12,7 +12,7 @@ import { startActiveObservation } from '@langfuse/tracing'
 import { z } from 'zod'
 import { CandidateJudgmentSchema, DecisionRoundSchema, PublicCandidateSchema } from '../../shared/contracts/index.js'
 import type { CandidateJudgment, ContentEnvelope, CoverageStatus, DecisionProviderName, DecisionRound, PublicCandidate, PublicSourceRef, Requirement, ReputationSummary } from '../../shared/contracts/index.js'
-import { FIXTURE_GAP_RULES, fixtureCoverage, type CoverageEvidence } from './requirements.js'
+import { FIXTURE_GAP_RULES, fixtureCoverage, splitClauses, type CoverageEvidence } from './requirements.js'
 import { NEWCOMER } from '../reputation.js'
 import { compareTieBreak } from './tie-break.js'
 import { activeCalibrator, calibrate, roundCalibration } from './calibration.js'
@@ -119,6 +119,29 @@ export const entityOverlap = (question: string, candidate: PublicCandidate) => {
 const titledWithQuestion = (question: string, candidate: Pick<PublicCandidate, 'title'>) => isProtocolQuery(question) && titleMatches(question, candidate.title)
 /** Words that name no particular subject: a fact naming only these says nothing a title could add. */
 const GENERIC = new Set(['xrpl', 'xrp', 'ledger', 'payment', 'transaction', 'account', 'token', 'asset', 'field', 'type', 'testnet'])
+/**
+ * R9-A (H9-01): the public titles of the articles a run bought name every clause of its question. Each clause with two
+ * or more subject words ("Can an XRPL escrow hold RLUSD today" → escrow, hold, rlusd; "what must the issuer enable before
+ * a buyer can lock it" → issuer, enable, buyer, lock) has at least half of them in the titles together. A clause with one
+ * word ("what happens to my money") asks about no subject a title could name and is skipped; at least one must count.
+ * "How do XRPL AMM pools set their trading fee, and who can vote to change it?" is not named by the AMMCreate title
+ * alone (no "vote"), so the AMMVote reference can still follow. A question that asks for a named thing ("Which
+ * transaction type creates or modifies a permissioned domain?") is left to R8-A2's per-purchase rule: a title naming
+ * its subject (PermissionedDomainDelete, the DID explainer) is not yet the member it asks for. Public titles only.
+ */
+const ASKS_FOR_NAME = /\bwhich\b|\b(?:transaction|field|flag|type|amendment|setting|header|scheme)s?\b/i
+export function titlesNameQuestion(question: string, titles: string[]): boolean {
+  if (!titles.length || ASKS_FOR_NAME.test(question)) return false
+  // A leading acronym is split as identifierWords does (AMMVote → amm, vote); topicWords alone keeps "ammvote".
+  const own = new Set(titles.flatMap(title => topicWords(title.replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2'))))
+  // A clause's subject words, or all its words when it names fewer than two beyond the network ("can my agent pay it with XRP
+  // on Testnet" → pay, xrp, testnet): the XRP-on-Testnet explainer still follows the 402 response explainer.
+  const clauses = splitClauses(question).map(clause => {
+    const words = topicWords(clause).filter(word => !/^\d+$/.test(word)), subject = words.filter(word => !GENERIC.has(word))
+    return subject.length >= 2 ? subject : words
+  }).filter(words => words.length >= 2)
+  return clauses.length > 0 && clauses.every(words => words.filter(word => own.has(word)).length / words.length >= 0.5)
+}
 const metadataWords = (candidate: Pick<PublicCandidate, 'title' | 'facets'>) => new Set(topicWords(`${candidate.title} ${candidate.facets.join(' ')}`))
 const MEASURES = /\b(?:fees?|costs?|reserves?|pric(?:e|es|ing)|drops)\b/gi
 const UNIT = /\b(?:drops|XRP|SGD|USD|percent)\b|S\$|%/
@@ -190,10 +213,20 @@ function namesEntityAndSubject(question: string, candidate: Pick<PublicCandidate
   const subjects = topicWords(question).filter(word => !GENERIC.has(word) && !/^\d+$/.test(word) && !entities.has(word))
   return [...entities].some(word => own.has(word)) && (!subjects.length || subjects.some(word => own.has(word)))
 }
+/**
+ * R9-A: an article whose title alone names every clause of the question (titlesNameQuestion) is the question's own
+ * article, like one titled with it, whatever wording the planner gave the requested fact. "If my agent pays for an
+ * article and the writer never reveals the key, what happens to my money?" names no protocol family, and a live plan
+ * whose first fact was "How key-reveal payment works…" refused "How do I recover funds when a writer never reveals the
+ * escrow key?" for want of the words "key reveal", then bought the key-reveal delivery note instead. Requested facts of
+ * a protocol question or fact only; never a story-bible question.
+ */
+const namesWholeQuestion = (input: Pick<DecideInput, 'question' | 'gap' | 'requirement'>, candidate: Pick<PublicCandidate, 'title'>) =>
+  Boolean(input.requirement) && isProtocolQuery(`${input.question} ${input.gap}`) && !FIXTURE_GAP_RULES.some(rule => rule.cue.test(input.question)) && titlesNameQuestion(input.question, [candidate.title])
 function purchaseTopicMatches(input: Pick<DecideInput, 'question' | 'gap' | 'requirement'>, candidate: PublicCandidate): boolean {
   // H8-05: for a protocol question, an article titled with the question is on topic whatever wording the planner
   // gave the requested fact, so the same question admits the same article on every run.
-  if (titledWithQuestion(input.question, candidate)) return true
+  if (titledWithQuestion(input.question, candidate) || namesWholeQuestion(input, candidate)) return true
   if (input.requirement && isProtocolQuery(`${input.question} ${input.gap}`)) {
     if (isProtocolQuery(input.question) && !namesEntityAndSubject(input.question, candidate)) return false
     const own = `${candidate.title} ${candidate.facets.join(' ')}`
@@ -405,7 +438,7 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
   // repeated runs agree), then subject specificity, then entity precision, then value per dollar; equal value per dollar takes a neutral hash
   // order (#204), never alphabetical and never the claimed relevance. Only BUY rows are ordered: nothing here can
   // make an ineligible article eligible.
-  const titled = (row: DecisionRound['rows'][number]) => titledWithQuestion(input.question, row.candidate) ? 1 : 0
+  const titled = (row: DecisionRound['rows'][number]) => titledWithQuestion(input.question, row.candidate) || namesWholeQuestion(input, row.candidate) ? 1 : 0
   // H9-06: a "how much" question first prefers a title naming what it measures (fee, cost, reserve, price), more so with
   // the answer's unit (XRP drops, SGD): "EscrowFinish fulfillment fees: XRP drops and SGD prices" before the key-reveal
   // delivery note for "How much does one key-reveal purchase cost in XRPL network fees?".
