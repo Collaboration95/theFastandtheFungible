@@ -6,10 +6,11 @@ import { request as httpRequest } from 'node:http'
 import { join } from 'node:path'
 import { resources } from './helpers/resource-scope.js'
 import {
-  CHECK_MS, DEFAULTS, FORBIDDEN_PORTS, KEY_TX, NODES, REPLAY_BASE, REPLAY_CSP, ROOT, TIERS, cookieJar, decideTier, githubFetch, main, parseArgs, renderReport, runChecks, serveReplay, timed,
+  CHECK_MS, DEFAULTS, FORBIDDEN_PORTS, KEY_TX, NODES, REPLAY_BASE, REPLAY_CSP, ROOT, TIERS, checkFiles, cookieJar, decideTier, githubFetch, main, parseArgs, renderReport, runChecks, serveReplay, timed,
   type CheckResult, type Deps,
 } from '../scripts/stage-check.mjs'
 
+const mp4Header = Buffer.from('000000186674797069736F6D0000020069736F6D6D703432', 'hex')
 const scratch = () => resources().tempDir('stage-check-test-')
 
 it('uses authenticated gh for GitHub release metadata and HEAD of the asset bytes', async () => {
@@ -89,7 +90,7 @@ function mocks(world: World = {}): Deps {
 const withReal = (deps: Deps): Deps => deps
 const run = async (world: World = {}, options: Parameters<typeof runChecks>[0] = {}) => {
   const dir = scratch(), video = join(dir, 'demo.mp4')
-  writeFileSync(video, 'x'.repeat(2048))
+  writeFileSync(video, mp4Header)
   const results = await runChecks({ video, jarFile: join(dir, 'jar.json'), ms: 500, ...options }, withReal(mocks(world)))
   return { results, decision: decideTier(results), by: (id: string) => results.find(row => row.id === id) as CheckResult }
 }
@@ -166,11 +167,27 @@ describe('tier decisions (story §2.3)', () => {
     expect(decision.tier).toBe(1)
     expect(decision.notes.join(' ')).toMatch(/Release v1\.1\.1/)
   })
-  it('a key transaction the node cannot find, or that is not an EscrowFinish, is advisory', async () => {
+  it('a failed prepared key lookup selects the replay tier even when the node answers', async () => {
     for (const tx of ['not-found', 'wrong'] as const) {
       const { decision, by } = await run({ tx })
-      expect(by('key-tx')).toMatchObject({ status: 'NO-GO', advisory: true }); expect(decision.tier).toBe(1)
+      expect(by('key-tx').status).toBe('NO-GO'); expect(by('key-tx').advisory).not.toBe(true)
+      expect(decision.tier).toBe(3); expect(decision.show).not.toContain('EscrowFinish')
+      expect(decision.fallbacks.some(f => f.tier === 2)).toBe(false)
     }
+  })
+  it('rejects the exact H10-08 supplied advisory key failure, and a missing key result', () => {
+    const results: CheckResult[] = ['hosted', 'explorer', 'node', 'pages', 'receipts', 'replay', 'verify', 'deck', 'video'].map(id => ({ id, name: id, status: 'GO', detail: '' }))
+    expect(decideTier([...results, { id: 'key-tx', status: 'NO-GO', advisory: true, name: 'key-tx', detail: '' }]).tier).toBe(3)
+    expect(decideTier(results).tier).toBe(3)
+    expect(decideTier([...results, { id: 'key-tx', status: 'GO', name: 'key-tx', detail: '' }]).tier).toBe(1)
+  })
+  it('does not offer tier 2 when paused and the prepared key is missing', async () => {
+    expect((await run({ hosted: { state: 'paused' }, tx: 'not-found' })).decision.tier).toBe(3)
+  })
+  it('drops below the replay tier when its required verifier fails', async () => {
+    const { decision } = await run({ tx: 'not-found', verify: { code: 1, output: 'RESULT FAIL' } })
+    expect(decision.tier).toBe(4)
+    expect(decision.notes.join(' ')).toContain('Tier 4 is NOT READY: missing offline verify')
   })
   it('a failing offline verify makes tiers 3 and 4 not ready, and says why', async () => {
     const { decision, by } = await run({ verify: { code: 1, output: 'FAIL receipt\nRESULT FAIL' } })
@@ -201,6 +218,46 @@ describe('tier decisions (story §2.3)', () => {
     let aborted = false
     await expect(timed(20, signal => new Promise(() => { signal.addEventListener('abort', () => { aborted = true }) }))).rejects.toThrow(/no answer in 0.02 s/)
     expect(aborted).toBe(true)
+  })
+})
+
+describe('local media readiness', () => {
+  it.each(['deck', 'video'] as const)('rejects empty, tiny, wrong-magic, missing and directory %s paths', id => {
+    const dir = scratch(), file = join(dir, id === 'deck' ? 'deck.pdf' : 'video.mp4')
+    const check = () => checkFiles({ deck: DEFAULTS.deck, video: undefined, [id]: file, receipts: DEFAULTS.receipts, evidence: DEFAULTS.evidence, exists: mocks().exists, readFile: readFileSync }).find(r => r.id === id)!
+    expect(check().status).toBe('NO-GO')
+    for (const bytes of [Buffer.alloc(0), Buffer.from('x'), Buffer.alloc(2048)]) {
+      writeFileSync(file, bytes)
+      expect(check().status).toBe('NO-GO')
+    }
+    const directory = checkFiles({ deck: dir, video: dir, receipts: DEFAULTS.receipts, evidence: DEFAULTS.evidence, exists: mocks().exists, readFile: readFileSync })
+    expect(directory.find(r => r.id === id)).toMatchObject({ status: 'NO-GO', detail: expect.stringContaining('not a regular file') })
+  })
+  it('rejects unreadable media even if stat succeeds', () => {
+    const results = checkFiles({ deck: DEFAULTS.deck, video: DEFAULTS.deck, receipts: DEFAULTS.receipts, evidence: DEFAULTS.evidence, exists: mocks().exists, readFile: readFileSync, header: () => { throw new Error('EACCES') } })
+    for (const id of ['deck', 'video']) expect(results.find(r => r.id === id)).toMatchObject({ status: 'NO-GO', detail: expect.stringContaining('EACCES') })
+  })
+  it('rejects truncated or impossible ftyp boxes and crossed media signatures', async () => {
+    const dir = scratch(), file = join(dir, 'video.mp4')
+    for (const hex of ['000000086674797069736f6d00000000', '000000FF6674797069736f6d00000000']) {
+      writeFileSync(file, Buffer.from(hex, 'hex'))
+      expect((await run({}, { video: file })).by('video').status).toBe('NO-GO')
+    }
+    writeFileSync(file, '%PDF-1.7' + ' '.repeat(24))
+    expect((await run({}, { video: file })).by('video').status).toBe('NO-GO')
+    writeFileSync(file, mp4Header)
+    expect((await run({}, { deck: file })).by('deck').status).toBe('NO-GO')
+  })
+  it('accepts the real committed PDF and a signature-valid MP4 fixture', async () => {
+    const { by, decision } = await run()
+    expect(by('deck').status).toBe('GO'); expect(by('video').status).toBe('GO')
+    expect(decision.fallbacks.find(f => f.tier === 4)!.ready).toBe(true)
+  })
+  it.each(['deck', 'video'] as const)('keeps tier 4 unready for a zero-byte %s', async id => {
+    const file = join(scratch(), id); writeFileSync(file, '')
+    const { decision, by } = await run({}, { [id]: file })
+    expect(by(id).status).toBe('NO-GO')
+    expect(decision.fallbacks.find(f => f.tier === 4)!.ready).toBe(false)
   })
 })
 
@@ -275,7 +332,7 @@ describe('the printed table', () => {
   })
   it('main() prints the table and exits 0 only for tier 1; --json prints the same decision', async () => {
     const out: string[] = []
-    const dir = scratch(), video = join(dir, 'v.mp4'); writeFileSync(video, 'x')
+    const dir = scratch(), video = join(dir, 'v.mp4'); writeFileSync(video, mp4Header)
     const code = await main(['--video', video, '--jar', join(dir, 'jar.json'), '--timeout', '500'], withReal(mocks()), { out: t => out.push(t), err: t => out.push(t) })
     expect(code).toBe(0); expect(out.join('\n')).toContain('USE TIER 1 · Live')
     out.length = 0

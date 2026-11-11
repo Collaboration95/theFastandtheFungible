@@ -10,7 +10,7 @@
 import { createHash } from 'node:crypto'
 import { execFile, spawn } from 'node:child_process'
 import { promisify } from 'node:util'
-import { chmodSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { chmodSync, closeSync, existsSync, mkdirSync, openSync, readFileSync, readSync, statSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
 import { dirname, extname, join, resolve, sep } from 'node:path'
@@ -199,8 +199,8 @@ export async function checkKeyTx({ session, ms }) {
     const tx = body?.result?.tx_json ?? body?.result ?? {}
     if (body?.error === 'txnNotFound' || body?.result?.error === 'txnNotFound') throw new Error('not found on this node')
     const ok = body?.result?.validated === true && tx.TransactionType === 'EscrowFinish' && typeof tx.Fulfillment === 'string' && tx.Fulfillment.length > 8
-    return ok ? go('key-tx', name, `validated, ledger ${body.result.ledger_index ?? '?'}, Fulfillment present`, { advisory: true }) : nogo('key-tx', name, 'answered, but not a validated EscrowFinish with a Fulfillment', { advisory: true })
-  } catch (error) { return nogo('key-tx', name, reason(error), { advisory: true }) }
+    return ok ? go('key-tx', name, `validated, ledger ${body.result.ledger_index ?? '?'}, Fulfillment present`) : nogo('key-tx', name, 'answered, but not a validated EscrowFinish with a Fulfillment')
+  } catch (error) { return nogo('key-tx', name, reason(error)) }
 }
 
 /** 6. The explainer site's replay and ledger pages load (Tab E). */
@@ -214,13 +214,33 @@ export async function checkPages({ fetch, ms }) {
   return bad.length ? nogo('pages', name, bad.map(row => `/${row.page}/: ${row.status ? `HTTP ${row.status}` : row.error}`).join('; '), { advisory: true }) : go('pages', name, 'both answer 200', { advisory: true })
 }
 
-/** 7. Local files: the deck, the video (given as an argument), and the committed recorded run. */
-export function checkFiles({ deck, video, receipts, evidence, exists, readFile, replay = [] }) {
-  const size = file => { try { return statSync(file).size } catch { return 0 } }
-  const out = []
-  out.push(exists(deck) ? go('deck', 'Deck PDF is on this Mac', `${deck.replace(ROOT + sep, '')} (${Math.round(size(deck) / 1024)} KiB)`) : nogo('deck', 'Deck PDF is on this Mac', `missing: ${deck}`))
+/** Read only the signature bytes, even for a large final video. */
+export function readHeader(file) {
+  const fd = openSync(file, 'r')
+  try {
+    const bytes = Buffer.alloc(16)
+    return bytes.subarray(0, readSync(fd, bytes, 0, bytes.length, 0))
+  } finally { closeSync(fd) }
+}
+
+/** 7. Local media must be readable regular files with a plausible header; this is not playback validation. */
+export function checkFiles({ deck, video, receipts, evidence, exists, readFile, stat = statSync, header = readHeader, replay = [] }) {
+  const media = (id, name, file) => {
+    try {
+      if (!exists(file)) throw new Error(`missing: ${file}`)
+      const info = stat(file), min = id === 'deck' ? 8 : 16
+      if (!info.isFile()) throw new Error('not a regular file')
+      if (info.size < min) throw new Error(`too small: ${info.size} bytes (minimum ${min})`)
+      const bytes = Buffer.from(header(file))
+      const valid = id === 'deck' ? /^%PDF-\d\.\d/.test(bytes.toString('ascii', 0, 8))
+        : bytes.length >= 16 && bytes.toString('ascii', 4, 8) === 'ftyp' && bytes.readUInt32BE(0) >= 16 && bytes.readUInt32BE(0) <= info.size
+      if (!valid) throw new Error(id === 'deck' ? 'not a PDF header' : 'not an MP4 ftyp box')
+      return go(id, name, `${file.replace(ROOT + sep, '')} (${info.size} bytes; signature checked, not playback)`)
+    } catch (error) { return nogo(id, name, `${file}: ${reason(error)}`) }
+  }
+  const out = [media('deck', 'Deck PDF is on this Mac', deck)]
   if (!video) out.push(result('video', 'Demo video MP4 is on this Mac', 'NOT CHECKED', 'pass --video <file.mp4>; tier 4 depends on it'))
-  else out.push(exists(video) ? go('video', 'Demo video MP4 is on this Mac', `${video} (${(size(video) / 1048576).toFixed(1)} MiB)`) : nogo('video', 'Demo video MP4 is on this Mac', `missing: ${video}`))
+  else out.push(media('video', 'Demo video MP4 is on this Mac', video))
   try {
     const served = readFile(receipts), recorded = readFile(evidence)
     const same = sha256(served) === sha256(recorded), pinned = sha256(served) === RECEIPTS_SHA256
@@ -272,7 +292,7 @@ export async function githubFetch(url, init, run = promisify(execFile)) {
 
 export function defaultDeps() {
   const fetch = (url, init) => /^https:\/\/(?:github\.com|collaboration95\.github\.io)\//.test(url) ? githubFetch(url, init) : globalThis.fetch(url, init)
-  return { fetch, WebSocket: globalThis.WebSocket, exists: existsSync, readFile: file => readFileSync(file), run: runVerifyChild }
+  return { fetch, WebSocket: globalThis.WebSocket, exists: existsSync, readFile: file => readFileSync(file), stat: statSync, header: readHeader, run: runVerifyChild }
 }
 
 /** All checks in parallel. `options`: hosted, deck, video, ms, jarFile. */
@@ -282,7 +302,7 @@ export async function runChecks(options = {}, deps = defaultDeps()) {
   const session = ledgerSession({ WebSocket: deps.WebSocket, ms })
   const tags = [[`v${pkg.version}`, 'what README and the install pages pin']]
   if (links.release !== tags[0][0]) tags.push([links.release, 'what the sandbox home tells builders'])
-  const files = checkFiles({ deck, video, receipts: DEFAULTS.receipts, evidence: DEFAULTS.evidence, exists: deps.exists, readFile: deps.readFile, replay: [join(tmpdir(), 'researchagent-stage-replay'), join(ROOT, 'site/demo')] })
+  const files = checkFiles({ deck, video, receipts: DEFAULTS.receipts, evidence: DEFAULTS.evidence, exists: deps.exists, readFile: deps.readFile, stat: deps.stat, header: deps.header, replay: [join(tmpdir(), 'researchagent-stage-replay'), join(ROOT, 'site/demo')] })
   try {
     const remote = await Promise.all([
       checkHosted({ hosted, fetch: deps.fetch, jar, ms }),
@@ -299,23 +319,25 @@ export async function runChecks(options = {}, deps = defaultDeps()) {
 
 const NETWORK = ['hosted', 'explorer', 'node', 'pages']
 const needs = {
-  1: results => ['hosted', 'explorer', 'node'].filter(id => !ok(results, id)),
-  2: results => ['explorer', 'node', 'receipts'].filter(id => !ok(results, id)),
+  1: results => ['hosted', 'explorer', 'node', 'key-tx', 'receipts'].filter(id => !ok(results, id)),
+  2: results => ['explorer', 'node', 'key-tx', 'receipts'].filter(id => !ok(results, id)),
   3: results => ['replay', 'verify'].filter(id => !ok(results, id)),
   4: results => ['deck', 'video', 'verify'].filter(id => !ok(results, id)),
 }
 const ok = (results, id) => results.find(row => row.id === id)?.status === 'GO'
-const tell = { hosted: 'sandbox ready', explorer: 'explorer', node: 'public node', receipts: 'committed run', replay: 'replay build', verify: 'offline verify', deck: 'deck PDF', video: 'video MP4 (pass --video)' }
+const tell = { hosted: 'sandbox ready', explorer: 'explorer', node: 'public node', 'key-tx': 'prepared key transaction', receipts: 'committed run', replay: 'replay build', verify: 'offline verify', deck: 'deck PDF', video: 'video MP4 (pass --video)' }
 
-/** Which tier to use (story §2.3), the lowest that is true: no network 4, explorer or node down 3, sandbox not ready 2, else 1. */
+/** Which tier to use (story §2.3), the lowest that is true: no network 4, required ledger check unavailable 3, sandbox not ready 2, else 1. */
 export function decideTier(results) {
   const network = results.filter(row => NETWORK.includes(row.id))
   const noNetwork = network.every(row => row.status === 'NO-GO')
-  const tier = noNetwork ? 4 : !ok(results, 'explorer') || !ok(results, 'node') ? 3 : ok(results, 'hosted') ? 1 : 2
+  const onlineTier = ok(results, 'hosted') ? 1 : 2
+  const tier = noNetwork ? 4 : needs[onlineTier](results).length === 0 ? onlineTier : needs[3](results).length === 0 ? 3 : 4
   const hosted = results.find(row => row.id === 'hosted')?.data?.state
   const notes = []
   if (tier === 2 && (hosted === 'unreachable' || !hosted)) notes.push('The sandbox page is not answering at all, so the Judges’ corner on it will not load either: only tabs that are already open will work. If they are not open, use tier 3.')
   if (tier === 1 && hosted === 'busy') notes.push('The sandbox is busy with another visitor. Do not ask a new question; the prepared tabs are unaffected.')
+  if (tier === 4 && needs[4](results).length) notes.push(`Tier 4 is NOT READY: missing ${needs[4](results).map(id => tell[id]).join(', ')}. Prepare these before presenting.`)
   const advisory = results.filter(row => row.advisory && row.status === 'NO-GO')
   if (advisory.length) notes.push(`Not part of the tier, but fix or avoid: ${advisory.map(row => row.name).join('; ')}.`)
   const fallbacks = [2, 3, 4].filter(n => n > tier).map(n => ({ tier: n, ready: needs[n](results).length === 0, missing: needs[n](results).map(id => tell[id]) }))

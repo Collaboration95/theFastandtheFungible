@@ -21,7 +21,7 @@ export function decisionFor(run: Pick<RunSnapshot, 'decisions'>, intent: Purchas
   return undefined
 }
 
-/** A requested fact or a legacy gap sentence, as the thing the article covers: "No accessible evidence on X." → "evidence on X". */
+/** A requested fact or a legacy gap sentence, as the purchase target: "No accessible evidence on X." → "evidence on X". */
 export function coveredThing(gap: string): string {
   return gap.trim().replace(/^no (?:accessible|material|dated)\s+/i, '').replace(/[\s.?!]+$/, '').replace(/\s+/g, ' ')
 }
@@ -31,6 +31,17 @@ function clip(text: string, max: number): string {
   // Cut at a word, and never leave a dangling "in", "of", "and"… before the ellipsis.
   const words = (space > max / 2 ? cut.slice(0, space) : cut).replace(/[\s,;:·-]+$/, '')
   return `${words.replace(/(?:\s+(?:in|of|for|on|at|to|by|as|a|an|the|and|or|with|from|than|that|is|are))+$/i, '')}…`
+}
+
+/** Read recorded coverage, never infer it from the BUY score or a successful integrity check. */
+function verifiedGap(run: RunSnapshot, intent: PurchaseIntent, gap: string): boolean {
+  if (intent.status !== 'VERIFIED' || !run.grants.some(grant => grant.intentId === intent.intentId && sameSource(grant, intent))) return false
+  const answer = run.answers.reduce<RunSnapshot['answers'][number] | undefined>((latest, next) => !latest || next.version > latest.version ? next : latest, undefined)
+  const coverage = run.checkpoint.coverage?.find(record => record.answerVersion === answer?.version)
+  const requirement = run.checkpoint.requirements?.find(fact => coveredThing(fact.gap ?? fact.text) === gap)
+  if (!answer || !coverage || coverage.error || !requirement) return false
+  const entry = coverage.entries.find(record => record.requirementId === requirement.id)
+  return entry?.status === 'supported' && !!entry.claimIds?.some(id => answer.claims.some(claim => claim.id === id && claim.citations.some(citation => sameSource(citation, intent))))
 }
 
 /**
@@ -49,6 +60,6 @@ export function whyBought(run: RunSnapshot, intent: PurchaseIntent): string | un
   if (found.row.probe || intent.purchaseKind) return line('A small test purchase from a new writer')
   const gap = coveredThing(found.round.gap)
   if (!gap) return line('Bought because the free sources left a gap')
-  const [open, close] = ['Bought because it covers “', '”']
+  const [open, close] = [verifiedGap(run, intent, gap) ? 'Covers “' : 'Bought to fill: “', '”']
   return line(`${open}${clip(gap, WHY_MAX - open.length - close.length - tail.length)}${close}`)
 }
