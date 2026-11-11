@@ -61,6 +61,14 @@ describe('QUAL: recorded live preset plans', () => {
     expect(r.bought[0]).toBe('product-channel-vs-escrow')
     expect(r.lead[0]).toMatch(/^Yes,|trade-off/)
   })
+  it('the used ticket-limit regression keeps its cited maximum through the engine', async () => {
+    const question = 'What is the maximum number of tickets one XRPL account can hold at the same time?'
+    const plan = { restatement: question, subqueries: [question], requirements: [] }
+    const [r] = await runLiveShaped([{ id: 'ticket-limit', question, budgetMinor: 200, modal: plan, run: plan, observed: { bought: [], spentMinor: 0, lead: [] } }])
+    expect(r.phase).toBe('DONE'); expect(r.spentMinor).toBe(40)
+    expect(r.bought).toEqual(['c5-xrpl-ticket-limit'])
+    expect(r.lead.join(' ')).toContain('250 Tickets')
+  })
 })
 
 it.each(['Each option', 'Either option', 'Neither option', 'This', 'It', 'These', 'They', 'Such options'])('an unbound %s never leads', subject => {
