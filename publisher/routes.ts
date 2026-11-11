@@ -201,13 +201,16 @@ export function createPublisherApp(config: PublisherConfig = {}) {
   app.get('/registry', (_req, res) => {
     res.json({ publishers: [...registry.values()].map(({ publisher }) => ({
       slug: publisher.slug, name: publisher.name, kind: publisher.kind, domain: publisher.domain, wallet: publisher.wallet,
-      synthetic: publisher.synthetic, verification: publisher.verification, endpoints: endpointsFor(publisher.slug),
+      synthetic: publisher.synthetic, authorship: publisher.authorship, verification: publisher.verification, endpoints: endpointsFor(publisher.slug),
     })) })
   })
   app.get('/w/:slug/.well-known/agent-publisher.json', (req, res) => {
-    const { publisher, writers, keys } = entryFor(req.params.slug)
+    const entry = entryFor(req.params.slug)
+    const { publisher, writers, keys } = entry
     res.json({
       ...publisher, label: publisher.synthetic ? 'SYNTHETIC' : 'AUTHOR SUPPLIED · unverified writer', keyLabel: keys?.simulated ? SIMULATED_KEY_LABEL : undefined,
+      // Public signed hashes only: proves wallet possession without reading any article body.
+      identityManifest: entry.articles[0] ? manifests.manifestFor(entry, entry.articles[0], 1, true) : undefined,
       writers: writers.map(w => ({ slug: w.slug, name: w.name, bio: w.bio })), endpoints: endpointsFor(publisher.slug),
     })
   })

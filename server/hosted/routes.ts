@@ -97,7 +97,7 @@ export function hostedRouter(context: ApiContext, config: Config, limits: Hosted
   })
   let writerCache: { at: number; value: Promise<unknown> } | undefined
   router.get('/api/writers/status',async (_req,res) => {
-    if (!writerCache || Date.now()-writerCache.at>5000) writerCache={at:Date.now(),value:context.client.registry().then(writers => ({publishers:writers.slice(0,50).map(p=>({name:p.name,address:p.wallet,credential:p.verification,followed:false}))}))}
+    if (!writerCache || Date.now()-writerCache.at>5000) writerCache={at:Date.now(),value:context.client.writerCatalogue().then(writers => ({publishers:writers.slice(0,50).map(p=>({name:p.name,address:p.wallet,credential:p.verification,followed:false}))}))}
     try {res.json(await writerCache.value)} catch {writerCache=undefined;res.status(503).json({error:'Writer status unavailable.'})}
   })
   router.get('/api/runs', (_req,res) => res.json(ownHistory(res.locals.hostedSession.principal)))

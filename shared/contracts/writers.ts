@@ -12,6 +12,8 @@ const xrplAddress = z.string().regex(/^r[1-9A-HJ-NP-Za-km-z]{24,34}$/)
 export const PublisherSchema = z.object({
   slug, name: z.string().min(1), kind: z.enum(['masthead', 'independent', 'records']),
   domain: z.string().min(1), wallet: xrplAddress.optional(), pubKey: z.string().regex(/^[0-9A-F]{66}$/i).optional(),
+  // Operator authorship is separate from whether the article's contents are synthetic.
+  authorship: z.literal('team-authored').optional(),
   prices: z.record(z.string(), z.number().int().nonnegative()), licence: z.string().min(1),
   accent: z.string().min(1), heroQuote: z.string().min(1), bio: z.string().min(1), synthetic: z.boolean(), realWordLimitsRelaxed: z.boolean().optional(), verification: WriterVerificationSchema.optional(),
 }).refine(p => p.synthetic || p.verification?.status === 'unverified', { message: 'Author-supplied writers must be labelled unverified writer' })

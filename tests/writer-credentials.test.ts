@@ -203,7 +203,7 @@ it.each(['issuers only', 'domain only', 'both', 'neither'])('PublisherClient che
 it('keeps the operator’s Open Records alongside the other team writers', async () => {
  const { orderWriters } = await import('../src/components/WriterEarnings.js')
  const roster = [
-  {name:'Open Records',publisherSlug:'open-records',authorship:'Fictional writer',sales:[]},
+  {name:'Open Records',publisherSlug:'open-records',authorship:'Team-authored',sales:[]},
   {name:'AlphaLeak',publisherSlug:'alphaleak',authorship:'Fictional writer',sales:[]},
   {name:'Build notes',publisherSlug:'team-builder-notes',authorship:'Team-authored',sales:[]},
  ]

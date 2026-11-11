@@ -6,7 +6,8 @@ import { WriterVerification } from './WriterVerification'
 import type { WriterVerification as Verification } from '../../shared/writer-verification'
 import './writer-earnings.css'
 /* eslint-disable react-refresh/only-export-components -- priceRange, writerTitle and orderWriters are pure helpers shared with their tests. */
-type Writer = { slug: string; publisherSlug: string; name: string; publisher?: string; authorship: string; verification?: Verification; articleCount: number; priceRange?: number[]; articles: { id: string; title: string; priceMinor: number; tier: string }[]; sales: { finishHash: string; refunded: boolean; refundHash?: string }[]; trust: { at: string; value: number }[]; demoSales?: number }
+type Writer = { slug: string; publisherSlug: string; name: string; publisher?: string; authorship: string; synthetic?: boolean; verification?: Verification; articleCount: number; priceRange?: number[]; articles: { id: string; title: string; priceMinor: number; tier: string }[]; sales: { finishHash: string; refunded: boolean; refundHash?: string }[]; trust: { at: string; value: number }[]; demoSales?: number }
+const price = (minor: number) => `S$${(minor / 100).toFixed(2)}`
 /** One price when the range is a point, "Free" when that price is zero. */
 export const priceRange = (prices: number[]) => {
   if (!prices.length) return 'No articles'
@@ -19,8 +20,8 @@ const kind = (authorship: string) => authorship.replace(/ · unverified$/, '')
  * ("… · XRPL explainers (team-authored)") is carried by the badge and a short line instead of a second name (R8 H8-10). */
 export const writerTitle = (name: string) => name.replace(/^(ResearchAgent builders)(?: · [^(]*)?(?: \(team-authored\))?$/, '$1')
 const teamLine = (name: string, slug: string) => /^ResearchAgent builders/.test(name) ? /· ([^(]+?)(?: \(team-authored\))?$/.exec(name)?.[1] ?? (slug === 'team-builder-notes' ? 'Build notes' : undefined) : undefined
-const isFictional = (w: { authorship: string; publisherSlug?: string }) => /^fictional/i.test(w.authorship) && w.publisherSlug !== 'open-records'
-const isTeam = (w: { authorship: string; publisherSlug?: string }) => /^team/i.test(w.authorship) || w.publisherSlug === 'open-records'
+const isFictional = (w: { authorship: string; publisherSlug?: string }) => /^fictional/i.test(w.authorship)
+const isTeam = (w: { authorship: string; publisherSlug?: string }) => /^team/i.test(w.authorship)
 /** Writers who have sold something first, then the team's, then the rest; and, on the hosted demo, the fictional writers with no
  * sales folded away (nine of them used to open the page, R8 H8-10). */
 export function orderWriters<T extends { authorship: string; sales: unknown[]; publisher?: string; name: string }>(writers: T[], hosted: boolean): { shown: T[]; demo: T[] } {
@@ -35,7 +36,17 @@ export const salesCount = (n: number) => n ? `${n} ${n === 1 ? 'sale' : 'sales'}
 export default function WriterEarnings() {
   const [data, setData] = useState<{ scope: string; writers: Writer[] }>()
   const [failed, setFailed] = useState(false)
-  useEffect(() => { const controller = new AbortController(); void fetch('/api/writers/earnings', { signal: controller.signal }).then(r => { if (!r.ok) throw new Error(); return r.json() }).then(setData).catch(() => { if (!controller.signal.aborted) setFailed(true) }); return () => controller.abort() }, [])
+  useEffect(() => {
+    const controller = new AbortController()
+    let timer: ReturnType<typeof setTimeout>
+    const load = () => void fetch('/api/writers/earnings', { signal: controller.signal }).then(r => { if (!r.ok) throw new Error(); return r.json() }).then((next: { scope: string; writers: Writer[] }) => {
+      if (controller.signal.aborted) return
+      setData(next)
+      if (next.writers.some(w => w.verification?.status === 'check_pending')) timer = setTimeout(load, 5000)
+    }).catch(() => { if (!controller.signal.aborted) setFailed(true) })
+    load()
+    return () => { controller.abort(); clearTimeout(timer) }
+  }, [])
   const hosted = !!useHosted()
   const { shown, demo } = orderWriters(data?.writers ?? [], hosted)
   const card = (w: Writer) => {
@@ -45,7 +56,9 @@ export default function WriterEarnings() {
     return <article className="ra-writer-card" key={w.slug}>
       <h2><a href={`/w/${w.publisherSlug}`} target="_blank" rel="noreferrer">{title} <Icon name="external" size={16} /></a></h2>
       {team ? <p className="ra-note ra-writer-by">{team}</p> : w.publisher && w.publisher !== w.name && <p className="ra-note ra-writer-by">{`by ${w.name}`}</p>}
-      {w.verification?.status === 'verified' || w.verification?.status === 'check_failed' ? <WriterVerification value={w.verification} /> : <small className="ra-badge" title={`${kind(w.authorship)}. Identity not checked.`}>{kind(w.authorship).replace(/ writer$/, '')} · unverified</small>}
+      {isFictional(w) || !w.verification || w.verification.status === 'unverified' ? <small className="ra-badge">{kind(w.authorship).replace(/ writer$/, '')} · unverified</small> : <><small className="ra-badge">{kind(w.authorship)}</small> <WriterVerification value={w.verification} /></>}
+      {isTeam(w) && w.synthetic && <p className="ra-note">Synthetic demo content</p>}
+      {isTeam(w) && !(w.demoSales ?? w.sales.length) && <p className="ra-note">No sales yet</p>}
       <dl><div><dt>Articles</dt><dd>{w.articleCount}</dd></div><div><dt>Price range</dt><dd>{priceRange(prices)}</dd></div>
       {w.demoSales !== undefined && <div><dt>Sales on this demo</dt><dd>{salesCount(w.demoSales)}</dd></div>}
       <div><dt>Your purchases</dt><dd>{salesCount(w.sales.length)}</dd></div>

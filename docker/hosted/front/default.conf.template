@@ -68,6 +68,8 @@ server {
     add_header Cache-Control "public, max-age=31536000, immutable" always;
     proxy_pass http://${VM_UPSTREAM};
   }
+  location = /demo { return 302 https://collaboration95.github.io/theFastandtheFungible/demo/; }
+  location = /demo/ { return 302 https://collaboration95.github.io/theFastandtheFungible/demo/; }
   location / {
     proxy_pass http://${VM_UPSTREAM};
   }

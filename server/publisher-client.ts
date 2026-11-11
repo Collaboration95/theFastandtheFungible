@@ -122,6 +122,19 @@ export class PublisherClient {
     // Registry metadata alone is not proof of possession of the seller key.
     return publishers.map(p => ({ ...p, verification: { status: 'unverified' as const } }))
   }
+  /** Catalogue identity is independent of purchases. Never promote a bare registry wallet or a historical run. */
+  async writerCatalogue(): Promise<RegistryPublisher[]> {
+    return Promise.all((await this.registry()).map(async publisher => {
+      if (publisher.authorship !== 'team-authored') return publisher
+      try {
+        const card = z.object({ pubKey: z.string(), identityManifest: ManifestSchema }).parse(
+          await this.getJson(`/w/${encodeURIComponent(publisher.slug)}/.well-known/agent-publisher.json`))
+        const m = card.identityManifest
+        if (!publisher.wallet || m.publisherSlug !== publisher.slug || m.wallet !== publisher.wallet || m.pubKey !== card.pubKey || !verifyManifestSignature(m)) throw Error('Unbound writer identity')
+        return { ...publisher, verification: await writerVerification(publisher.wallet) }
+      } catch { return { ...publisher, verification: { status: 'check_failed' as const } } }
+    }))
+  }
   private sellerKey(slug: string): Promise<string> {
     if (!this.sellerKeys.has(slug)) this.sellerKeys.set(slug, this.getJson(`/w/${encodeURIComponent(slug)}/.well-known/agent-publisher.json`).then(raw => {
       const card = z.object({pubKey:z.string().regex(/^[0-9A-F]{66}$/i)}).parse(raw)
@@ -167,7 +180,7 @@ export class PublisherClient {
     return ContentEnvelopeSchema.parse({ source: hit.source, profileId: hit.publisherSlug, resourceId: hit.articleId, version: hit.version, title: article.title, publisher: publisherName, body: article.body, verification: article.verification, spans: article.passages.map(p => ({ id: p.id, text: p.text, ...(p.heading ? { label: p.heading } : {}) })) })
   }
 }
-const RegistryPublisherSchema = z.object({ slug: z.string().min(1), name: z.string().min(1), kind: z.enum(['masthead', 'independent', 'records']), domain: z.string().optional(), wallet: z.string().optional(), synthetic: z.boolean().optional(), verification: WriterVerificationSchema.optional() })
+const RegistryPublisherSchema = z.object({ slug: z.string().min(1), name: z.string().min(1), kind: z.enum(['masthead', 'independent', 'records']), domain: z.string().optional(), wallet: z.string().optional(), synthetic: z.boolean().optional(), authorship: z.literal('team-authored').optional(), verification: WriterVerificationSchema.optional() })
 const RegistrySchema = z.object({ publishers: z.array(RegistryPublisherSchema) })
 const FreeArticleSchema = z.object({ publisherSlug: z.string(), articleId: z.string(), version: z.string(), title: z.string().min(1), tier: z.literal('FREE'), verification: z.object({ manifest: ManifestSchema, salts: z.array(z.string()) }).optional(), body: z.string().min(1), passages: z.array(PassageSchema).min(1) })
 export type RegistryPublisher = z.infer<typeof RegistryPublisherSchema>
