@@ -16,7 +16,7 @@ export function packRecording(value: Json): string {
     if (!node || typeof node !== 'object') return
     if (!Array.isArray(node) && reference in node) throw Error('Reserved recording key')
     const key = JSON.stringify(node)
-    if (key.length >= 256) counts.set(key, (counts.get(key) ?? 0) + 1)
+    if (key.length >= 1024) counts.set(key, (counts.get(key) ?? 0) + 1)
     Object.values(node).forEach(visit)
   }
   visit(value)
