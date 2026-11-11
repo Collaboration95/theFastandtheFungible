@@ -193,7 +193,11 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
   useEffect(() => { if (done && !browserDemo) return warmVerifier() }, [done])
   const returningToQuestion = useRef(false)
   useEffect(() => {
-    if (pending || sending) { returningToQuestion.current = true; return }
+    if (pending || sending) {
+      returningToQuestion.current = true
+      if (sending && !pending) document.getElementById('main')?.focus()
+      return
+    }
     if (returningToQuestion.current && screen === 'home') document.querySelector<HTMLTextAreaElement>('.ra-qbox')?.focus()
     returningToQuestion.current = false
   }, [pending, sending, screen])
