@@ -116,7 +116,9 @@ export function sandboxStatsRouter(store: Store, now: () => number = Date.now) {
   router.get('/api/demo/stats', (req,res) => {
     if (Object.keys(req.query).length) { res.status(404).json({ error: 'Not found.' }); return }
     const at = now()
-    if (!cache || at >= cache.expires) cache = { expires: at+60000, body: aggregateSandbox(store,at) }
+    try {
+      if (!cache || at >= cache.expires) cache = { expires: at+60000, body: aggregateSandbox(store,at) }
+    } catch { res.status(503).json({ error: 'Sandbox numbers are unavailable.' }); return }
     res.set({ 'Cache-Control': 'public, max-age=0, must-revalidate', 'X-Content-Type-Options': 'nosniff' }).json(cache.body)
   })
   return router

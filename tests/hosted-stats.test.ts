@@ -130,3 +130,12 @@ it('rejects a later-round policy pick as authority for an earlier BUY', () => {
   store.hostedState(db => db.prepare(`UPDATE decisions SET json=json_set(json,'$.round',2) WHERE run_id='synthetic-0'`).run())
   expect(aggregateSandbox(store).audit.buyWithoutPolicy).toBe(1)
 })
+
+it('returns a fixed unavailable response if the store cannot be audited, without exposing exception text', async () => {
+  const store=seeded()
+  vi.spyOn(store,'hostedState').mockImplementation(()=>{throw new Error('PRIVATE_QUESTION_SENTINEL')})
+  const app=express();app.use(sandboxStatsRouter(store))
+  const server=app.listen(0,'127.0.0.1');await once(server,'listening');closers.push(()=>new Promise<void>(r=>server.close(()=>r())))
+  const reply=await get(`http://127.0.0.1:${(server.address() as {port:number}).port}/api/demo/stats`)
+  expect(reply.status).toBe(503);expect(reply.body).not.toContain('PRIVATE_QUESTION_SENTINEL');expect(JSON.parse(reply.body)).toEqual({error:'Sandbox numbers are unavailable.'})
+})
