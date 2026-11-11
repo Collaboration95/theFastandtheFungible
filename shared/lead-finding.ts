@@ -352,16 +352,18 @@ export function rankLeadSentences(question: string, claims: Claim[], delivered?:
     // The sentence that covers the question's distinctive terms outranks one that
     // only repeats the frame words every article shares.
     const sentenceStems = new Set(stems(text))
-    const weighted = stemmed.filter(term => sentenceStems.has(term)).reduce((sum, term) => sum + idf(term), 0) / idfTotal
+    const matches = stemmed.filter(term => sentenceStems.has(term))
+    const weighted = matches.reduce((sum, term) => sum + idf(term), 0) / idfTotal
     score += weighted * 24
     // A "which/what X" question wants a sentence that names an X it did not mention.
     if (names.length) score += 30
     // The same sentence in several different articles is a shared template.
-    if ((templateSources.get(text)?.size ?? 0) > 1) score -= 30
+    const shared = (templateSources.get(text)?.size ?? 0) > 1
+    if (shared) score -= 30
     if (/^(I |My |Here |Speaking |Let me|It |That |These |They |Then )/.test(text)) score -= 12
     if (text.length > 420 || text.length < 30) score -= 8
-    const cover = stemmed.filter(term => sentenceStems.has(term)).length / Math.max(1, stemmed.length)
-    return [{ text, claim, score, ci, si, tail: answerBoilerplate(answerExtracts(claim.text)[0] ?? '') && si > 0, shared: (templateSources.get(text)?.size ?? 0) > 1, named: names.length > 0, cover, weighted, onTopic: mayLead(asked, names.length > 0, cover) }]
+    const cover = matches.length / Math.max(1, stemmed.length)
+    return [{ text, claim, score, ci, si, tail: answerBoilerplate(answerExtracts(claim.text)[0] ?? '') && si > 0, shared, named: names.length > 0, cover, weighted, onTopic: mayLead(asked, names.length > 0, cover) }]
   })}).filter(item => item.claim.citations.length && item.score > 0 && item.text.length <= 620 && item.text.split(/\s+/).length <= 40 ).sort((a, b) => b.score - a.score || a.ci - b.ci || a.si - b.si)
   return ranked
 }
