@@ -40,7 +40,7 @@ try {
       latencies.sort((a,b)=>a-b)
       const includingCold=[coldMs,...latencies].sort((a,b)=>a-b)
       const tables=api.store!.hostedState(db=>Object.fromEntries(['hosted_sessions','hosted_session_mints','admissions'].map(table=>[table,Number(db.prepare(`SELECT count(*) AS n FROM ${table}`).get()!.n)])))
-      const result={scope:'Local HOSTED=1 loopback; 5,000 synthetic metadata runs, no ledger or model calls. One cold refresh reported separately; timed requests use the real 60 s cache. The target is also asserted across all requests including the cold refresh.',requests,totalRequests:requests+1,concurrency,coldMs,p50Ms:latencies[499],p95Ms:latencies[949],p95IncludingColdMs:includingCold[Math.ceil(includingCold.length*.95)-1],p99Ms:latencies[989],maxMs:latencies[999],failures,tables,stats}
+      const result={node:process.version,scope:'Local HOSTED=1 loopback; 5,000 synthetic metadata runs, no ledger or model calls. One cold refresh reported separately; timed requests use the real 60 s cache. The target is also asserted across all requests including the cold refresh.',requests,totalRequests:requests+1,concurrency,coldMs,p50Ms:latencies[499],p95Ms:latencies[949],p95IncludingColdMs:includingCold[Math.ceil(includingCold.length*.95)-1],p99Ms:latencies[989],maxMs:latencies[999],failures,tables,stats}
       writeFileSync(join(output,'load.json'),JSON.stringify(result,null,2)+'\n'); console.log(JSON.stringify(result))
       assert.equal(failures.length,0); assert(result.p95Ms<50); assert(result.p95IncludingColdMs<50); assert(Object.values(tables).every(n=>n===0))
     } finally { server.closeAllConnections(); await new Promise<void>(resolve=>server.close(()=>resolve())); await api.close() }
@@ -76,7 +76,7 @@ try {
         evidence.push({width,overflow,seriousCritical:axe.map(v=>v.id),stats})
         assert.equal(overflow,false);assert.deepEqual(axe,[])
       }
-      writeFileSync(join(output,'layout.json'),JSON.stringify({scope:'Local HOSTED=1 production build; Chromium emulation; synthetic metadata/anchors only; external HTTP/WebSocket reads blocked; no live questions.',evidence},null,2)+'\n')
+      writeFileSync(join(output,'layout.json'),JSON.stringify({node:process.version,scope:'Local HOSTED=1 production build; Chromium emulation; synthetic metadata/anchors only; external HTTP/WebSocket reads blocked; no live questions.',evidence},null,2)+'\n')
       console.log(JSON.stringify(evidence.map(({width,overflow,seriousCritical})=>({width,overflow,seriousCritical}))))
       await context.close()
     } catch(error) { console.error(outputText);throw error } finally {await browser.close()}
