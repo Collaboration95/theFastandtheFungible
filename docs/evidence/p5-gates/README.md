@@ -29,7 +29,7 @@ bundle label are printed verbatim, with the admission-time scope stated. Refunds
 do not replenish the gross budget. Redacted or missing evidence stays unchecked.
 
 `npx vitest run tests/verify-gates.test.ts tests/hosted-judges-corner.test.tsx`:
-29 tests passed. `npm run build` on Node 22: initial gzip JS **157,630 B**, unchanged
+29 tests passed. `npm run build` on Node 22: initial gzip JS **158,246 B**, unchanged
 **170,000 B** deploy ceiling. The gates module is a separate dynamic chunk, loaded
 only after Run the checks. A request spy confirms it is absent before that click.
 
