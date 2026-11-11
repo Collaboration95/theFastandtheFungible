@@ -6,7 +6,20 @@ import { resolve } from 'node:path'
 import AxeBuilder from '@axe-core/playwright'
 let server:Server, url:string
 test.beforeEach(async({page})=>{ await page.routeWebSocket(/wss:\/\/.*/,ws=>ws.close()) })
-test.beforeAll(async()=>{server=createServer(async(req,res)=>{try{const name=(req.url??'/').split('?')[0];if(!['/','/index.html','/ledger.js','/style.css','/transactions.json'].includes(name)){res.writeHead(404).end();return}res.setHeader('Content-Type',name.endsWith('.js')?'text/javascript':name.endsWith('.json')?'application/json':name.endsWith('.css')?'text/css':'text/html');res.end(await readFile(resolve('site/ledger',name==='/'?'index.html':name.slice(1))))}catch{res.writeHead(404).end()}});await new Promise<void>(r=>server.listen(0,'127.0.0.1',r));url=`http://127.0.0.1:${(server.address() as {port:number}).port}`})
+test.beforeAll(async () => {
+  server = createServer(async (req, res) => {
+    try {
+      const name = (req.url ?? '/').split('?')[0]
+      const ledgerFile = ['/', '/index.html', '/ledger.js', '/style.css', '/transactions.json'].includes(name)
+      const file = ledgerFile ? resolve('site/ledger', name === '/' ? 'index.html' : name.slice(1)) : resolve('site', name.slice(1))
+      if (!ledgerFile && (!name.startsWith('/brand/') || !file.startsWith(resolve('site/brand') + '/'))) { res.writeHead(404).end(); return }
+      res.setHeader('Content-Type', name.endsWith('.js') ? 'text/javascript' : name.endsWith('.json') ? 'application/json' : name.endsWith('.css') ? 'text/css' : name.endsWith('.woff2') ? 'font/woff2' : 'text/html')
+      res.end(await readFile(file))
+    } catch { res.writeHead(404).end() }
+  })
+  await new Promise<void>(r => server.listen(0, '127.0.0.1', r))
+  url = `http://127.0.0.1:${(server.address() as { port: number }).port}`
+})
 test.afterAll(async()=>{await new Promise<void>(r=>server.close(()=>r()))})
 test('offline evidence, keyboard and accessibility',async({page})=>{await page.goto(url);await expect(page.locator('tbody tr')).toHaveCount(61);await expect(page.getByRole('link',{name:'Download public evidence JSON'})).toHaveAttribute('download','');await expect(page.getByRole('button')).toBeEnabled();await page.getByRole('button').focus();await expect(page.getByRole('button')).toBeFocused();const a=await new AxeBuilder({page}).analyze();expect(a.violations.filter(v=>['serious','critical'].includes(v.impact??''))).toEqual([])})
 test('CORS and unavailable history retain snapshot',async({page})=>{await page.goto(url);await expect(page.locator('tbody tr')).toHaveCount(61);await expect(page.getByRole('status')).toContainText('finished');await expect(page.locator('.state').first()).toContainText('Historical')})
