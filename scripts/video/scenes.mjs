@@ -322,7 +322,7 @@ export const SCENES = [
       await t.waitFor(screen => { if (/failed to connect|CONNECTION_CLOSED/.test(screen)) throw new Error('MCP did not connect'); return /testnet\.xrpl\.org\/transactions\//.test(screen) }, { timeout: 300_000, label: 'explorer links', approve: [/Do you want to proceed\?/, /❯ 1\. Yes/] })
       t.mark('links_visible')
       await t.waitFor(screen => /for (?:\d+m )?\d+s\s*·\s*done/.test(screen), { timeout: 240_000, stableMs: 2500, label: 'Claude to finish' })
-      if (!/team-authored/.test(t.screen())) throw new Error('MCP result must visibly say team-authored')
+      if (!hasTeamAuthoredResult(t.screen())) throw new Error('MCP result must visibly say team-authored')
       t.mark('done')
       await t.sleep(4000)
     },
@@ -367,6 +367,11 @@ export const SCENES = [
 
 // The typed prompt asks for a short report so the final screen fits; everything it prints is Claude's own output.
 export const CLAUDE_PROMPT = 'Use researchagent: ask_expert \'What does an x402 402 Payment Required response contain?\' with budget_sgd=2. Reply briefly: the answer in two sentences, the explorer links, and the labels on one line, including the exact team-authored label returned by the tool.'
+
+/** Match the returned labels, rather than the instruction visible above them. */
+export function hasTeamAuthoredResult(screen) {
+  return /\b(?:labels?|writers?)\s*:[\s\S]*?\bteam-authored\b/i.test(screen)
+}
 
 /** What each terminal scene needs in its shell (variables only; nothing secret). */
 export function terminalEnv(fresh) {

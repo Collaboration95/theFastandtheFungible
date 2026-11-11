@@ -9,7 +9,7 @@ import { THEMES, lineHtml, paletteColor, parseLine, plain, redactLine } from '..
 import { clockText, fillTokens, placeSentences, planShot, resolveRef, resolveSegments, speedLabel, speechText, splitSentences, splitSubtitles, srtTime, timeCues, toSrt } from '../scripts/video/lib/timeline.mjs'
 import { assertPublished, checkVideoPins } from '../scripts/video/lib/release-pins.mjs'
 import { RELEASE_TAG, TGZ, WHEEL, QUESTIONS } from '../scripts/video/config.mjs'
-import { CLAUDE_PROMPT, SCENES } from '../scripts/video/scenes.mjs'
+import { CLAUDE_PROMPT, SCENES, hasTeamAuthoredResult } from '../scripts/video/scenes.mjs'
 import { sessionEnv } from '../scripts/video/lib/terminal.mjs'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
@@ -202,6 +202,11 @@ describe('the video stays honest', () => {
 
 
 describe('VID-3 release pins and local recording boundaries', () => {
+  it('requires team-authored in the MCP result labels, not merely the typed prompt', () => {
+    expect(hasTeamAuthoredResult(CLAUDE_PROMPT)).toBe(false)
+    expect(hasTeamAuthoredResult(`${CLAUDE_PROMPT}\nCalling researchagent…\nLabels: XRPL TESTNET | writer: "ResearchAgent builders (team-authored)"`)).toBe(true)
+    expect(hasTeamAuthoredResult(`${CLAUDE_PROMPT}\nLabels: XRPL TESTNET | writer: unverified`)).toBe(false)
+  })
   it('pins the same published release list as the builders corner and rejects an unpublished tag', () => {
     expect(RELEASE_TAG).toBe('v1.1.1')
     expect(() => assertPublished()).not.toThrow()
