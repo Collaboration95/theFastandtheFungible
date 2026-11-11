@@ -244,6 +244,21 @@ it('estimates a queued question’s wait from recent runs, rounded up to 5 s, an
   // A run past its typical length is never promised sooner than 10 s.
   now += 60000; expect(queue.estimateSeconds(1)).toBe(10)
 })
+it('uses the median of exactly the last ten completed runs, including an even-sized history (H7)', async () => {
+  const { c } = setup(); let now = 0
+  const queue = new HostedQueue(c, () => now); cleanup.push(() => queue.close())
+  for (const [i, seconds] of [999, 999, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100].entries()) {
+    let finish: (() => void) | undefined
+    queue.enqueue(`history-${i}`, () => new Promise<void>(resolve => { finish = resolve }), vi.fn())
+    await vi.waitFor(() => expect(finish).toBeTypeOf('function'), { interval: 1 })
+    now += seconds * 1000; finish!()
+    await vi.waitFor(() => expect(queue.busy).toBe(false), { interval: 1 })
+  }
+  queue.enqueue('next', () => new Promise<void>(() => undefined), vi.fn())
+  // The old 999 s outliers are gone; the middle two of 10..100 s are 50 and 60.
+  expect(queue.estimateSeconds(1)).toBe(55)
+  expect(queue.estimateSeconds(2)).toBe(110)
+})
 it('plans in a small lane of its own: two at once, a short wait for the next, then busy (H7)', async () => {
   vi.useFakeTimers()
   try {

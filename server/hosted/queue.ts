@@ -29,7 +29,8 @@ export class HostedQueue {
   estimateSeconds(position = this.waiting.length + 1): number | undefined {
     if (!this.recent.length) return undefined
     if (!this.active && position <= 1) return 0
-    const sorted = [...this.recent].sort((a, b) => a - b), typical = sorted[Math.floor(sorted.length / 2)]
+    const sorted = [...this.recent].sort((a, b) => a - b), middle = Math.floor(sorted.length / 2)
+    const typical = sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2
     const remaining = this.active ? Math.max(typical - (this.now() - this.activeSince), MIN_REMAINING_MS) : 0
     const ms = position <= 0 ? 0 : remaining + (position - 1) * typical
     return Math.ceil(ms / 5000) * 5
