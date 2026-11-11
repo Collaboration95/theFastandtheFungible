@@ -70,8 +70,8 @@ overflow or serious/critical axe violations.
   receives the shared uppercase 8…8 rule without changing this file.
 - KEY: `src/components/KeyRevealLifecycle.tsx`: environment paragraph uses
   `ENV.testnet`; keep “key-reveal escrow” as a separate state description.
-  Replace the two success glyphs with the shared `Icon name="check"` when
-  updating the technical details and the new matched-key result. Preserve all
+  Replace the two technical-detail success glyphs and the matched-key result
+  glyph with the shared `Icon name="check"`. Preserve all
   real verification conditions. In `KeyCheckResult`, put the fictional-writer
   disclosure outside the environment label so “no real value” stays last.
 - KEY: `src/verify/key-on-ledger.ts`: re-export `shortTx` as `shortHex` instead
