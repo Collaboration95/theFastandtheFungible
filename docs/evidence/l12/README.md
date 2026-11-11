@@ -56,6 +56,7 @@ overflow or serious/critical axe violations.
   never reveals, money back”, matching the picker and its 7 Nov recording.
 - JC: `src/components/hosted/HostedEnv.tsx`: use `ENV.hostedWriters` for the live
   writers caption and the canonical ENV values for environment headings.
+  Retain the fictional-writer disclosure wherever the catalogue includes them.
   The local simulated hosted preview currently inherits the live green dot;
   use amber for simulated payments and green for Testnet, retaining offline states.
 - JC: `src/components/hosted/HostedHome.tsx`: judges’ corner title uses
