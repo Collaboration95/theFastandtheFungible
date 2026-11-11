@@ -1,0 +1,213 @@
+{
+  "implementationHead": "0990122b",
+  "labels": "Used development banks; fixture models, simulated settlement. Failed result retained; scorer and zero-loss assertion unchanged.",
+  "failures": [
+    {
+      "bank": "v3-dev",
+      "id": "D04",
+      "before": {
+        "question": "Which field on EscrowFinish reveals the secret that unlocks a conditional escrow?",
+        "gold": "Fulfillment",
+        "answersIt": 1,
+        "buyAndCite": true,
+        "purchases": 2,
+        "spentMinor": 80,
+        "lead": [
+          {
+            "text": "EscrowCreate supplies a Condition and the expiry window; EscrowFinish supplies the matching Fulfillment, which reveals the secret.",
+            "claim": {
+              "id": "evidence-[\"product-escrow-no-show\",\"v1\",\"p2\"]",
+              "text": "XRPL conditional escrow uses PREIMAGE-SHA-256. EscrowCreate supplies a Condition and the expiry window; EscrowFinish supplies the matching Fulfillment, which reveals the secret. FinishAfter, when present, sets the earliest release time. CancelAfter sets the expiration boundary. The timing checks use ledger close time rather than the buyer laptop clock, so a visible countdown alone does not establish eligibility.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "product-escrow-no-show",
+                  "version": "v1",
+                  "spanId": "p2"
+                }
+              ]
+            }
+          },
+          {
+            "text": "a buyer can recover an unfinished key-reveal escrow with EscrowCancel after CancelAfter; expiry permits cancellation but does not automatically return funds.",
+            "claim": {
+              "id": "evidence-[\"product-escrow-no-show\",\"v1\",\"p1\"]",
+              "text": "According to ResearchAgent documentation, a buyer can recover an unfinished key-reveal escrow with EscrowCancel after CancelAfter; expiry permits cancellation but does not automatically return funds.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "product-escrow-no-show",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "failedAfter": {
+        "question": "Which field on EscrowFinish reveals the secret that unlocks a conditional escrow?",
+        "gold": "Fulfillment",
+        "answersIt": 0,
+        "buyAndCite": true,
+        "purchases": 1,
+        "spentMinor": 40,
+        "lead": [
+          {
+            "text": "If no one finishes it before its CancelAfter time, the escrow expires and anyone can cancel it.",
+            "claim": {
+              "id": "evidence-[\"c5-xrpl-crypto-condition-type\",\"v1\",\"p2\"]",
+              "text": "An escrow with a condition is created with a corresponding condition and fulfillment. The condition serves as a lock on the funds and will not release them until the correct fulfillment is provided. Anyone can finish such an escrow, but only by supplying the correct fulfillment; when the conditions are met the Escrow object is destroyed and the funds go to the recipient. If no one finishes it before its CancelAfter time, the escrow expires and anyone can cancel it.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "c5-xrpl-crypto-condition-type",
+                  "version": "v1",
+                  "spanId": "p2"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "bank": "v3-dev",
+      "id": "D15",
+      "before": {
+        "question": "Which transaction places a limit order on the XRPL decentralized exchange?",
+        "gold": "OfferCreate",
+        "answersIt": 1,
+        "buyAndCite": true,
+        "purchases": 2,
+        "spentMinor": 80,
+        "lead": [
+          {
+            "text": "OfferCreate places a decentralized-exchange order and may immediately trade against available liquidity.",
+            "claim": {
+              "id": "evidence-[\"xrpl-tx-offercreate\",\"v1\",\"p1\"]",
+              "text": "According to XRPL documentation, OfferCreate places a decentralized-exchange order and may immediately trade against available liquidity.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-tx-offercreate",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          },
+          {
+            "text": "OfferCancel removes a previously placed decentralized-exchange offer identified by its sequence number.",
+            "claim": {
+              "id": "evidence-[\"xrpl-tx-offercancel\",\"v1\",\"p1\"]",
+              "text": "According to XRPL documentation, OfferCancel removes a previously placed decentralized-exchange offer identified by its sequence number.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-tx-offercancel",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "failedAfter": {
+        "question": "Which transaction places a limit order on the XRPL decentralized exchange?",
+        "gold": "OfferCreate",
+        "answersIt": 0,
+        "buyAndCite": true,
+        "purchases": 1,
+        "spentMinor": 40,
+        "lead": [
+          {
+            "text": "OfferCancel removes a previously placed decentralized-exchange offer identified by its sequence number.",
+            "claim": {
+              "id": "evidence-[\"xrpl-tx-offercancel\",\"v1\",\"p1\"]",
+              "text": "According to XRPL documentation, OfferCancel removes a previously placed decentralized-exchange offer identified by its sequence number.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-tx-offercancel",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "bank": "v5",
+      "id": "H07",
+      "before": {
+        "question": "Which transaction type places an order on the XRPL decentralized exchange?",
+        "gold": "OfferCreate",
+        "answersIt": 1,
+        "buyAndCite": true,
+        "purchases": 2,
+        "spentMinor": 80,
+        "lead": [
+          {
+            "text": "OfferCreate places a decentralized-exchange order and may immediately trade against available liquidity.",
+            "claim": {
+              "id": "evidence-[\"xrpl-tx-offercreate\",\"v1\",\"p1\"]",
+              "text": "According to XRPL documentation, OfferCreate places a decentralized-exchange order and may immediately trade against available liquidity.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-tx-offercreate",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          },
+          {
+            "text": "OfferCancel removes a previously placed decentralized-exchange offer identified by its sequence number.",
+            "claim": {
+              "id": "evidence-[\"xrpl-tx-offercancel\",\"v1\",\"p1\"]",
+              "text": "According to XRPL documentation, OfferCancel removes a previously placed decentralized-exchange offer identified by its sequence number.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-tx-offercancel",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "failedAfter": {
+        "question": "Which transaction type places an order on the XRPL decentralized exchange?",
+        "gold": "OfferCreate",
+        "answersIt": 0,
+        "buyAndCite": true,
+        "purchases": 1,
+        "spentMinor": 40,
+        "lead": [
+          {
+            "text": "OfferCancel removes a previously placed decentralized-exchange offer identified by its sequence number.",
+            "claim": {
+              "id": "evidence-[\"xrpl-tx-offercancel\",\"v1\",\"p1\"]",
+              "text": "According to XRPL documentation, OfferCancel removes a previously placed decentralized-exchange offer identified by its sequence number.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "xrpl-tx-offercancel",
+                  "version": "v1",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

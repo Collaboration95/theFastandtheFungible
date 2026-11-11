@@ -334,6 +334,9 @@ export function rankLeadSentences(question: string, claims: Claim[], delivered?:
     if (!causal && /\b(?:field|flag|setting|type|header|transaction|permission|scheme|protocol)s?\b|\b(?:must|need).*\b(?:enable|set)\b/i.test(question) && novelIdentifier) score += asked && !names.length ? 8 : 24
     const kind = /^(?:which|what)\b|\b(?:name|called|named)\b/i.test(firstFact) ? firstFact.match(/\b(transaction|scheme|protocol|field|flag|setting|type|header|permission)s?\b/i)?.[1] : undefined
     if (kind && new RegExp(`\\b${kind}s?\\b`, 'i').test(text)) score += 16
+    // A field question prefers an explicit identifier definition (including a single-capital name), ahead of a
+    // sentence that merely mentions an unrelated CamelCase time field. The quoted sentence remains unchanged.
+    if (asked === 'field' && /\b(?!(?:The|This|Which|What|An?)\b)[A-Z][A-Za-z0-9_]*\s+(?:field|parameter|setting)\b/.test(text)) score += 20
     if (/\bwhich transactions?\b/i.test(question) && /^(?:The |An? )?[A-Z][a-z]+(?:[A-Z][a-z]+)+\b/.test(text)) score += 16
     if (/\bstatute|law|regulation\b/i.test(question) && /\bAct|statute|law|regulat/i.test(text)) score += 8
     if (/lead[- ]times?|shorter/i.test(question)) score += /\bweeks?\b/.test(lower) ? 12 : 0

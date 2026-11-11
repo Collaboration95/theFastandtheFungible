@@ -259,7 +259,7 @@ export function titleMatches(question: string, title: string): boolean {
  * Finish and Cancel, never Create. Verb stems map to the last word of a transaction name (EscrowFinish → finish).
  */
 const ACTION_MEMBERS: readonly [RegExp, readonly string[]][] = [
-  [/\b(?:creat|establish|register)\w*|\bissu(?:e|es|ed|ing)\b/gi, ['create', 'set']],
+  [/\b(?:creat|establish|register)\w*|\bissu(?:e|es|ed|ing)\b|\bplac(?:e|es|ing)\b/gi, ['create', 'set']],
   [/\b(?:modif|updat|chang|edit|configur|publish)\w*/gi, ['set']],
   [/\b(?:delet|remov|destroy)\w*/gi, ['delete']],
   [/\b(?:releas|finish)\w*/gi, ['finish']],
