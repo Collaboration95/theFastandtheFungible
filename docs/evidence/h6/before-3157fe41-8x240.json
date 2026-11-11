@@ -1,0 +1,117 @@
+{
+  "kind": "local-hosted-load",
+  "at": "2026-11-11T04:36:06.559Z",
+  "guard": "docker/hosted/start.mjs at 3157fe41",
+  "visitors": 8,
+  "seconds": 240,
+  "readinessRefreshMs": "380,400,1310,520,370,570,1900,380,650,450",
+  "mode": "HOSTED=1 · fixture models · simulated rail · ephemeral ports",
+  "cloud": false,
+  "requests": 289,
+  "guardPaused": 4,
+  "guardPausedVisitor": 0,
+  "readyz": {
+    "checks": 109,
+    "ok": 105,
+    "guardPaused": 4,
+    "hgNotReady": {}
+  },
+  "hgPaused": 0,
+  "refused429": {
+    "queue_full": 7,
+    "busy": 4
+  },
+  "other": {},
+  "runs": {
+    "asked": 34,
+    "admitted": 27,
+    "finished": 27
+  },
+  "sessionsMinted": 125,
+  "eventLoopDelayMs": {
+    "p50": 12,
+    "p99": 12.5,
+    "max": 45.3
+  },
+  "readinessRefreshes": 37,
+  "routes": {
+    "GET /api/demo/status": {
+      "n": 42,
+      "p50": 12,
+      "p95": 21,
+      "max": 335,
+      "guardPaused": 0
+    },
+    "GET /api/runs": {
+      "n": 8,
+      "p50": 8,
+      "p95": 12,
+      "max": 12,
+      "guardPaused": 0
+    },
+    "GET /readyz": {
+      "n": 109,
+      "p50": 6,
+      "p95": 1317,
+      "max": 1504,
+      "guardPaused": 4
+    },
+    "GET /api/writers/status": {
+      "n": 8,
+      "p50": 18,
+      "p95": 22,
+      "max": 22,
+      "guardPaused": 0
+    },
+    "POST /api/scope": {
+      "n": 34,
+      "p50": 10,
+      "p95": 383,
+      "max": 566,
+      "guardPaused": 0
+    },
+    "POST /runs": {
+      "n": 34,
+      "p50": 13,
+      "p95": 21,
+      "max": 22,
+      "guardPaused": 0
+    },
+    "GET /runs/:id/events": {
+      "n": 27,
+      "p50": 7,
+      "p95": 12,
+      "max": 12,
+      "guardPaused": 0
+    },
+    "GET /runs/:id": {
+      "n": 27,
+      "p50": 3,
+      "p95": 4,
+      "max": 4,
+      "guardPaused": 0
+    }
+  },
+  "guardPausedSamples": [
+    {
+      "t": 40803,
+      "route": "GET /readyz",
+      "ms": 1504
+    },
+    {
+      "t": 107191,
+      "route": "GET /readyz",
+      "ms": 1503
+    },
+    {
+      "t": 173925,
+      "route": "GET /readyz",
+      "ms": 1504
+    },
+    {
+      "t": 240683,
+      "route": "GET /readyz",
+      "ms": 1503
+    }
+  ]
+}

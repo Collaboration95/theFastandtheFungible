@@ -25,6 +25,8 @@ describe('hosted operator boundaries',()=>{
    expect(output).toContain("'billing' 'accounts' 'describe' '000000-000000-000000' '--format=value(currencyCode)'")
    expect(output).toContain('--budget-amount=RESOLVED_FROM_BILLING_CURRENCY')
    expect(output).toContain('--path=/ready')
+   // An existing uptime check is put back to 60 s on every deploy (H6: it was slowed to 900 s while probes minted sessions).
+   expect(output).toContain("'monitoring' 'uptime' 'update' 'UPTIME_ID' '--project=ra-ho-test' '--period=1'")
    expect(output).toContain("'--tunnel-through-iap' '--quiet'")
    expect(output).toContain('/run/researchagent-startup.done')
    expect(output).toContain('restart --no-block google-startup-scripts.service')
@@ -45,6 +47,22 @@ describe('hosted operator boundaries',()=>{
    expect(output).not.toMatch(/sentinel-private|firestore|gcloud.*storage.*create/)
    expect(existsSync(join(dir,'manifest.json'))).toBe(false)
   } finally {rmSync(dir,{recursive:true,force:true})}
+ })
+ it('plans a signing seed for every served writer, free-only Open Records included (R9-B drops unsigned free articles)',()=>{
+  const dir=resources().tempDir('ra-ho-writers-')
+  writeFileSync(join(dir,'gcloud'),'#!/bin/sh\nexit 99\n',{mode:0o700})
+  const args=['deploy','--project','ra-ho-test','--billing-account','000000-000000-000000','--manifest',join(dir,'manifest.json'),'--notification-channel','projects/ops/notificationChannels/123','--dry-run']
+  const output=run('docker/hosted/ops.mjs',args,{PATH:dir+':'+process.env.PATH})
+  const created=[...output.matchAll(/'secrets' 'create' '([^']+)'/g)].map(m=>m[1])
+  const served=execFileSync('ls',['data/writers'],{encoding:'utf8'}).split('\n').filter(f=>f.endsWith('.json')).map(f=>JSON.parse(readFileSync(join('data/writers',f),'utf8')).publisher)
+  expect(served.find(p=>p.slug==='open-records')).toBeTruthy()
+  expect(Object.values(served.find(p=>p.slug==='open-records').prices??{}).some(n=>Number(n)>0)).toBe(false) // free-only
+  for (const p of served) expect(created.filter(s=>s.startsWith(`ra-xrpl-publisher-${p.slug}-seed-`))).toHaveLength(1)
+  // The same wallet flow provisions it: hosted-wallets.ts plans one seed file per served writer (dry run, no Testnet).
+  const wallets=execFileSync(process.execPath,['--import','tsx','scripts/hosted-wallets.ts','--testnet','--out',join(dir,'wallets'),'--dry-run'],{encoding:'utf8'})
+  expect(wallets).toContain(join(dir,'wallets','XRPL_PUBLISHER_OPEN_RECORDS_SEED'))
+  for (const p of served) expect(wallets).toContain(`ra-xrpl-publisher-${p.slug}-seed-RELEASE`)
+  expect(existsSync(join(dir,'wallets'))).toBe(false)
  })
  it('states the budget in the billing currency, redacts the alert address and plans adoption checks',()=>{
   const dir=resources().tempDir('ra-ho-budget-')

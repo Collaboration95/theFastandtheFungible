@@ -1199,3 +1199,10 @@ persistence or a mainnet deployment. No cloud resource or live ledger call ran.
 - **Workaround:** pass only an allowlisted reason class through engine environment and health metadata, then explain the simulated preview in environment details. No automatic spending or Testnet retry.
 - **Suggested fix:** Starter Kit launchers should expose safe setup/fallback status to every UI alongside the rail label.
 - **Severity / mainnet impact:** medium UX friction; no mainnet execution, no real funds. This change conveys status and does not establish mainnet readiness.
+
+## 11 November 2026: public Testnet RPC tail latency from Singapore reached visitors (observed, hosted demo)
+
+- **Evidence:** `docs/evidence/h6/README.md` (live sample of the hosted `/ready`, 30 requests, 04:18–04:21 UTC) and `docker/hosted/start.mjs`. HG's readiness refresh asks `wss://s.altnet.rippletest.net:51233` for `account_info` and `server_info` from asia-southeast1: about 0.38 s typically, 1.31 s once, and over 1.5 s once in 30. Our packaged guard waited on that refresh with a 1.5 s timeout on every request, so the uptime check and real visitors got the paused page. The latency is an observed Testnet property. The paused page was our design fault, fixed in H6.
+- **Workaround / fix:** the guard qualifies HG once per Host and re-checks in the background, so no visitor request waits on a ledger round trip to be admitted. A slow ledger can no longer show the paused page.
+- **Suggested fix:** the Starter Kit could document regional Testnet endpoints (or expected cross-region latency), and recommend that readiness or balance checks run off the request path with a cached last-known value.
+- **Severity / mainnet impact:** medium availability friction on Testnet. On mainnet, use a nearby or owned rippled/Clio node and treat ledger reads as asynchronous health signals. No real funds; no ledger write involved.

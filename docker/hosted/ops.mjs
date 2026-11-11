@@ -103,7 +103,10 @@ let channel = options['notification-channel']
 const email=options['alert-email']
 if(channel && !/^projects\/[^/]+\/notificationChannels\/\d+$/.test(channel)) throw Error('Invalid notification channel')
 if(!channel && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email||'')) throw Error('Supply --alert-email or --notification-channel')
-const writerNames=readdirSync('data/writers').filter(f=>f.endsWith('.json')).map(f=>JSON.parse(readFileSync(join('data/writers',f))).publisher).filter(w=>Object.values(w.prices||{}).some(p=>Number(p)>0)).map(w=>'XRPL_PUBLISHER_'+w.slug.toUpperCase().replaceAll('-','_')+'_SEED')
+// Every writer the hosted publisher serves signs its deliveries, free-only writers included: since R9-B (#472) a free
+// article without its writer's signed proof is dropped, so Open Records (the open central-bank sources) needs its own
+// key too. A free-only writer's key only signs; it receives no payment and needs no funding (H6).
+const writerNames=readdirSync('data/writers').filter(f=>f.endsWith('.json')).map(f=>JSON.parse(readFileSync(join('data/writers',f))).publisher).map(w=>'XRPL_PUBLISHER_'+w.slug.toUpperCase().replaceAll('-','_')+'_SEED')
 // Writer seeds come from both data/writers and the environment; each secret is uploaded and mapped once.
 const mappings = [...new Set([...writerNames,'DEEPSEEK_API_KEY','OPENAI_API_KEY','PUBLISHER_SECRET','HOSTED_IP_HMAC_KEY',...Object.keys(process.env).filter(n=>/^XRPL_(PAYER|PUBLISHER_[A-Z0-9_]+)_(SEED|ADDRESS)$/.test(n))])]
 if (!mappings.includes('XRPL_PAYER_SEED')) mappings.push('XRPL_PAYER_SEED')
@@ -265,6 +268,9 @@ try {
   const uptimeName='ra-readyz'
   let uptime = dry ? 'UPTIME_ID' : gc(['monitoring','uptime','list-configs',...p,`--filter=displayName="${uptimeName}"`,'--format=value(name)'])
   if (!uptime) uptime=gc(['monitoring','uptime','create',uptimeName,...p,'--resource-type=uptime-url',`--resource-labels=host=${host},project_id=${project}`,'--protocol=https','--port=443','--path=/ready','--period=1','--timeout=10','--status-codes=200','--format=value(name)'])
+  // An existing check keeps any period an operator set while the guard's probes minted sessions (11 Nov from 13:00 SGT:
+  // 900 s). From H6 on neither the guard nor the check mints a session, so every deploy restores the 60 s check.
+  else gc(['monitoring','uptime','update',uptime.split('/').at(-1),...p,'--period=1'],{attempts:3})
   if(dry) show(['monitoring','uptime','create',uptimeName,...p,'--resource-type=uptime-url',`--resource-labels=host=${host},project_id=${project}`,'--protocol=https','--port=443','--path=/ready','--period=1','--timeout=10','--status-codes=200','--format=value(name)'])
   const policy={displayName:'ra-readyz-failed',combiner:'OR',notificationChannels:[channel],conditions:[{displayName:'readiness unavailable',conditionThreshold:{filter:`metric.type="monitoring.googleapis.com/uptime_check/check_passed" AND resource.type="uptime_url" AND metric.label.check_id="${uptime.split('/').at(-1)}"`,comparison:'COMPARISON_GT',thresholdValue:1,duration:'120s',aggregations:[{alignmentPeriod:'60s',perSeriesAligner:'ALIGN_NEXT_OLDER',crossSeriesReducer:'REDUCE_COUNT_FALSE',groupByFields:['resource.label.host']}]}}]}
   if (!dry) writeFileSync(join(scratch,'alert.json'),JSON.stringify(policy))

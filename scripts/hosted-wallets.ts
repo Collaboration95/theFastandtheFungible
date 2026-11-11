@@ -4,7 +4,9 @@ import { resolve, join } from 'node:path'
 import { Client, Wallet } from 'xrpl'
 import { testnetUrl } from '../shared/xrpl.js'
 import { seedEnvName } from '../publisher/registry.js'
-const paidSlugs = () => readdirSync(new URL('../data/writers/',import.meta.url)).filter(f=>f.endsWith('.json')).map(f=>JSON.parse(readFileSync(new URL('../data/writers/'+f,import.meta.url),'utf8')).publisher).filter(p=>Object.values(p.prices||{}).some(n=>Number(n)>0)).map(p=>p.slug as string).sort()
+// Every writer the hosted publisher serves, free-only ones included: each signs its deliveries (a free article without
+// its writer's signed proof is dropped since #472). A free-only writer's wallet is never paid; --fund is optional for it.
+const servedSlugs = () => readdirSync(new URL('../data/writers/',import.meta.url)).filter(f=>f.endsWith('.json')).map(f=>JSON.parse(readFileSync(new URL('../data/writers/'+f,import.meta.url),'utf8')).publisher.slug as string).sort()
 const args=process.argv.slice(2)
 const out=args[args.indexOf('--out')+1]
 if(!args.includes('--out')||!out||!args.includes('--testnet')) throw Error('Use --testnet --out PRIVATE_DIRECTORY [--fund] [--dry-run]')
@@ -13,7 +15,7 @@ const url=testnetUrl()
 const dir=resolve(out)
 const root=resolve('.')
 if(dir.startsWith(root+'/')||dir===root) throw Error('Wallet files must stay outside the repository')
-const names=['XRPL_PAYER_SEED',...paidSlugs().map(seedEnvName)]
+const names=['XRPL_PAYER_SEED',...servedSlugs().map(seedEnvName)]
 if(args.includes('--dry-run')) {
   for(const name of names) console.log(`gcloud secrets create ra-${name.toLowerCase().replaceAll('_','-')}-RELEASE --replication-policy=automatic --data-file=${join(dir,name)}`)
   console.log('planned: persist seeds, connect to allowlisted Testnet, read balances; at most one faucet call per unfunded wallet with --fund')
