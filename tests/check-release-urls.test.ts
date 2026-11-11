@@ -37,6 +37,8 @@ describe('pinned release links', () => {
     expect(await githubHead(`${REPO}/releases/download/v9.9.9/tool.tgz`, {}, options)).toEqual({ status: 200 })
     expect(commands.filter(a => a[0] === 'release')).toHaveLength(1)
     expect(commands.at(-1)).toEqual(expect.arrayContaining(['api', 'HEAD', 'https://api.github.com/repos/o/r/releases/assets/123']))
+    expect(await githubHead(`${REPO}/releases/download/v9.9.9/tool.tgz`, { method: 'GET', headers: { range: 'bytes=0-0' } }, options)).toEqual({ status: 200 })
+    expect(commands.at(-1)).toEqual(expect.arrayContaining(['GET', '-H', 'range: bytes=0-0']))
   })
 
   it('reads a base folder without templates, elisions or trailing punctuation', () => withResourceScope(async scope => {

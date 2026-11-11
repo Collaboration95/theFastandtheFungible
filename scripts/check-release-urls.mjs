@@ -89,7 +89,8 @@ export async function githubHead(url, init = {}, { execImpl = exec, releaseCache
     }
   }
   try {
-    const { stdout } = await execImpl('gh', ['api', '--method', init.method ?? 'HEAD', endpoint, '--include', '--silent', '-H', `Accept: ${accept}`], { timeout: 20_000 })
+    const headers = Object.entries(init.headers ?? {}).flatMap(([name, value]) => ['-H', `${name}: ${value}`])
+    const { stdout } = await execImpl('gh', ['api', '--method', init.method ?? 'HEAD', endpoint, '--include', '--silent', '-H', `Accept: ${accept}`, ...headers], { timeout: 20_000 })
     return { status: Number([...stdout.matchAll(/HTTP\/[\d.]+ (\d+)/g)].at(-1)?.[1] ?? 0) || 500 }
   } catch (error) {
     const status = Number([...String(error.stdout ?? '').matchAll(/HTTP\/[\d.]+ (\d+)/g)].at(-1)?.[1])
