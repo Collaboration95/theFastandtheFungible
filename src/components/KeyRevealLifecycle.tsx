@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import type { EscrowStatus } from '../../shared/contracts/escrow'
 import { shortHex, verifyKeyOnLedger, type KeyCheck } from '../verify/key-on-ledger'
 import Icon from './Icon'
+import LedgerReceipt from './LedgerReceipt'
 import './key-check.css'
 
 const EXPLORER = 'https://testnet.xrpl.org/transactions/'
@@ -108,6 +109,7 @@ function Lifecycle({ escrow: e, testnet = false, replay = import.meta.env.MODE =
       {!check && <small id={`${id}-note`} className="ra-key-check-hint">Recomputes the lock in your browser from the public XRPL Testnet ledger, not from our server.</small>}
       <div role="status" aria-live="polite">{typeof check === 'object' && <KeyCheckResult check={check} escrow={e} replay={replay} />}</div>
     </div>}
+    {checkable && e.state === 'RELEASED' && <LedgerReceipt create={e.createHash!} finish={e.finishHash!} />}
     <details><summary>Technical details</summary>
       <p>XRPL Testnet · key-reveal escrow · no real value</p>
       <p>CancelAfter: {e.cancelAfter}. EscrowFinish publishes the key{e.revealLedger ? ` in ledger ${e.revealLedger}` : ''}.</p>

@@ -14,6 +14,7 @@ import HostedEnv from './components/hosted/HostedEnv'
 import { HostedComposerNote, HostedFooter, HostedIntro, HostedWaiting } from './components/hosted/HostedHome'
 import HostedRunNotice from './components/hosted/HostedRunNotice'
 import VerifyInBrowser from './components/hosted/VerifyInBrowser'
+import LedgerCheck from './components/LedgerCheck'
 import Notice from './components/Notice'
 import Ask from './components/Ask'
 import AgentSprite from './components/AgentSprite'
@@ -535,6 +536,7 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
         {model.budgetBlocked && <p className="ra-note">Budget too small for eligible sources. Raise the budget on a new question.</p>}
         {model.phase === 'stopped' && !hosted && <p role="status">{model.stopMessage}</p>}
         {!browserDemo && finished && <VerifyInBrowser run={shown} />}
+        {!browserDemo && finished && <LedgerCheck question={shown.question} />}
         {shown.receipts.length > 0 && <details className="ra-decision-details"><summary>Why this article</summary><DecisionPanel run={shown} fold={!why && (finished || shown.intents.some(isPaid))} onWhy={() => setWhy(true)} /></details>}
       </aside>
 
