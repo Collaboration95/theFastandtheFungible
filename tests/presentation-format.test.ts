@@ -11,6 +11,8 @@ it('formats ledger amounts, fingerprints and Singapore dates independently of th
   expect(xrpAmount('40000')).toBe('0.04 XRP')
   expect(xrpAmount('1000000001')).toBe('1,000.000001 XRP')
   expect(xrpAmount('0')).toBe('0 XRP')
+  expect(xrpAmount('9007199254740993')).toBe('9,007,199,254.740993 XRP')
+  expect(xrpAmount('-40000')).toBe('-0.04 XRP')
   expect(shortTx('abcdef0123456789'.repeat(4))).toBe('ABCDEF01…23456789')
   expect(shortTx('abcdef01')).toBe('ABCDEF01')
   expect(whenSGT('2026-11-11T07:06:05Z')).toBe('11 Nov 2026, 15:06 SGT')

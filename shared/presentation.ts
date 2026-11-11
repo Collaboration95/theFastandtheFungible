@@ -23,7 +23,12 @@ export const environmentLabel = (settlement?: string, models = 'fixture models')
 /** Human labels retain both providers' real mode without their internal model identifiers. */
 export const modelsLabel = (research?: string, decision?: string) => !research || !decision ? 'models connecting' : research.startsWith('fixture') ? decision.startsWith('fixture') ? 'fixture models' : 'fixture answers, live buying' : decision.startsWith('fixture') ? 'live answers, rule-based buying' : 'live models'
 /** XRP amounts follow the explorer; fees remain in drops. */
-export const xrpAmount = (drops: string | null) => drops === null ? '—' : `${(Number(drops) / 1_000_000).toLocaleString('en-SG', { maximumFractionDigits: 6 })} XRP`
+export const xrpAmount = (drops: string | null) => {
+  if (drops === null) return '—'
+  const value = BigInt(drops), absolute = value < 0n ? -value : value
+  const fraction = (absolute % 1_000_000n).toString().padStart(6, '0').replace(/0+$/, '')
+  return `${value < 0n ? '-' : ''}${(absolute / 1_000_000n).toLocaleString('en-SG')}${fraction ? `.${fraction}` : ''} XRP`
+}
 /** Transaction and invoice fingerprints, never account addresses. */
 export const shortTx = (hash: string) => hash.length > 16 ? `${hash.slice(0, 8)}…${hash.slice(-8)}`.toUpperCase() : hash.toUpperCase()
 export const dateSGT = (iso: string) => new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Singapore' }).format(new Date(iso))
