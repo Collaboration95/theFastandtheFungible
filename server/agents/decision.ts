@@ -1,4 +1,5 @@
-import { actionGroups, actionMembers, familyMemberWords, identifierFamily, identifiersIn, identifierWords, isProtocolQuery, memberOf, memberRank, subjectFamilies, subjectRank, titleMatches, topicMatches, topicOverlap, topicWords } from '../../shared/relevance.js'
+import { actionGroups, actionMembers, memberOf, memberRank } from '../../shared/transaction-actions.js'
+import { familyMemberWords, identifierFamily, identifiersIn, identifierWords, isProtocolQuery, subjectFamilies, subjectRank, titleMatches, topicMatches, topicOverlap, topicWords } from '../../shared/relevance.js'
 import { alreadyCovered, entityPrecision, probeMetadata } from './precision.js'
 import { searchText } from '../../publisher/search-text.js'
 import { setImmediate as yieldToLoop } from 'node:timers/promises'

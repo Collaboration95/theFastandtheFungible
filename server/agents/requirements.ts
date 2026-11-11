@@ -1,4 +1,5 @@
-import { actionGroups, identifierFamily, identifiersIn, subjectFamilies, topicMatches, topicWords } from '../../shared/relevance.js'
+import { actionGroups } from '../../shared/transaction-actions.js'
+import { identifierFamily, identifiersIn, subjectFamilies, topicMatches, topicWords } from '../../shared/relevance.js'
 import { askedKind } from '../../shared/answer-entity.js'
 import { searchText } from '../../publisher/search-text.js'
 import { INSTRUCTION, quotedText } from './untrusted.js'

@@ -1,6 +1,7 @@
 import { questionTerms } from './answer-summary.js'
 import type { Answer, Gap } from './contracts/index.js'
-import { actionGroups, identifierFamily, identifiersIn, memberOf, subjectFamilies } from './relevance.js'
+import { identifierFamily, identifiersIn, subjectFamilies } from './relevance.js'
+import { actionGroups, memberOf } from './transaction-actions.js'
 import { answerBoilerplate, sentences } from './lead-finding.js'
 import { answerNames, askedKind } from './answer-entity.js'
 
@@ -100,8 +101,8 @@ export function leadSupportsFact(question: string, factText: string, leadText: s
  *   fact words, and at least three. Word forms fold (paid, payment → pay), CamelCase names count by their words
  *   (CredentialCreate names "create"), and "which transaction" is answered by the identifier the lead names.
  * `strict` keeps the R9-B rules exactly (the first two only, no folding): an answer without requested facts buys for its
- * first open gap (the legacy path), so the answer writer uses strict there, and only the display and a planned run's
- * requested facts use the rest.
+ * first open gap (the legacy path), so the answer writer uses strict there. Planned runs reconcile server-side; the browser
+ * displays their stored judgment and keeps the original lexical rule for legacy snapshots.
  * A gap that asks for a quantity stays open unless the lead carries a figure. Everything else stays open: a gap is
  * closed only by text the visitor can read first, never by a guess.
  */
