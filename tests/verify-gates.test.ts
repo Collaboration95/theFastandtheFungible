@@ -17,8 +17,8 @@ describe.each(Object.entries(fixtures))('%s receipt bundle', (_name, path) => {
     const verified = await verifyAnswer(bundle)
     expect(verified.ok).toBe(true)
     expect(statuses(bundle, verified.checks)).toEqual(['Not checked', 'Held', 'Held', 'Held', 'Held'])
-    // P4 is not yet merged: pin its decision-before-reserve, gross-budget and unique-intent
-    // expectations against the committed export. Missing read telemetry is never a pass.
+    // Pin recorded statuses here; verify-gates-parity.test.ts compares P4's merged
+    // aggregator directly. Missing read telemetry is never a pass.
     expect(summarizeGates(bundle, verified.checks).every(row => row.seqs.length > 0)).toBe(true)
     expect(JSON.stringify(bundle)).toBe(before)
     const labels = summarizeGates(bundle, verified.checks)[4].labels!
