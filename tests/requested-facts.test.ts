@@ -128,7 +128,8 @@ describe('the focused follow-up search (#210)', () => {
   const client = (k: number[] = []) => ({
     registry: async () => [{ slug: 'pub', name: 'Pub', kind: 'independent' as const }],
     searchPublisher: async (_slug: string, _q: string, size: number) => { k.push(size); return Array.from({ length: 10 }, (_, i) => hit(i + 1)).slice(0, size) },
-    readFree: async (h: SearchHit) => ({ profileId: h.publisherSlug, resourceId: h.articleId, version: h.version, title: h.title, publisher: 'Pub', body: `Body ${h.articleId}`, spans: [{ id: 'p1', text: `Body ${h.articleId}` }] }),
+    // Stands for a read readFree already checked against the writer's signed proof (H9-02 keeps only signed free reads).
+    readFree: async (h: SearchHit) => ({ profileId: h.publisherSlug, resourceId: h.articleId, version: h.version, title: h.title, publisher: 'Pub', body: `Body ${h.articleId}`, spans: [{ id: 'p1', text: `Body ${h.articleId}` }], verification: { manifest: {}, salts: [] } }),
   }) as unknown as PublisherClient
   it('an unread hit #6 surfaces when hits #1–5 were already read: k = min(10, 5 + exclusions), excluded versions dropped client-side', async () => {
     const sizes: number[] = []

@@ -55,6 +55,8 @@ const hostedExports = [
   { kind: 'fixture-purchase', file: join(hostedDir, 'hosted-purchase.receipts.json') },
   { kind: 'fixture-anchored-decline', file: join(hostedDir, 'hosted-anchored-decline.receipts.json'), anchor: 'synthetic stand-in (simulated rail)' },
   { kind: 'testnet-hosted', file: resolve('docs/evidence/hosted-export-nov11/receipts.json'), anchor: 'XRPL Testnet (hosted demo)' },
+  // H9-02: the writer serves a fictional free article without its signed proof; the export must still verify.
+  { kind: 'fixture-unsigned-free', file: join(hostedDir, 'hosted-unsigned-free.receipts.json') },
 ]
 const verifyWith = (cmd: string, args: string[], kind: string, who: string) => {
   const r = spawnSync(cmd, args, { cwd: dir, env: process.env, encoding: 'utf8', timeout: 120_000, maxBuffer: 16 * 1024 * 1024 })

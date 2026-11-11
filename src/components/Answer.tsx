@@ -1,6 +1,7 @@
 import { findingText } from '../../shared/finding-text.js'
 import { summarizeAnswer } from '../../shared/answer-summary.js'
-import { declineSummary } from '../../shared/decline.js'
+import { declineSummary, paidNoAnswerSummary } from '../../shared/decline.js'
+import { openGapsAfterLead } from '../../shared/open-gaps.js'
 import { keywordCoverage, searchWords } from '../../publisher/search-text.js'
 import AnchorStatus from './AnchorStatus'
 import ShareProof from './ShareProof'
@@ -9,7 +10,7 @@ import { sameSource } from '../../shared/source-identity.js'
 import type { ReactNode } from 'react'
 import { AnswerSchema, type Answer as AnswerData, type Citation, type Claim, type RunSnapshot } from '../../shared/contracts/index.js'
 import { getAccessibleContent } from './Sources'
-import { articleCount, candidateOf, citationKey, plainVerdict } from '../format'
+import { articleCount, candidateOf, citationKey, plainVerdict, purchaseCounts } from '../format'
 import Icon from './Icon'
 import { VERDICT_WORDS } from '../../shared/refusal-proof.js'
 import { VERDICT_LABEL } from '../copy'
@@ -67,7 +68,9 @@ export default function Answer({ run, onCitation, view, compare, onCompare, repo
     for (const round of run.decisions) for (const row of round.rows) { const key = `${row.candidate.profileId}/${row.candidate.resourceId}@${row.candidate.version}`; latest.set(key, { key, row }) }
     const considered = [...latest.values()]
     // The status line above says "Done in …"; this block carries the one plain sentence for the outcome, then the reasons.
-    return <section className="ra-verdict" aria-label="Research answer"><div className="ra-answer-heading"><h2 className="ra-caption">Answer</h2>{report}</div><p>{run.receipts.length ? 'No verified answer is available from these purchases.' : declineSummary(run)}</p>{considered.length > 0 && <details className="ra-why-not" open={considered.length <= 6 || undefined}><summary><span>Why nothing was bought</span><span className="ra-why-count"> · {articleCount(considered.length)} considered</span></summary><ul>{considered.map(({ key, row }) => <li key={key}><b>{row.candidate.title}</b><span className="ra-why-verdict">{plainVerdict(row, run).stamp === 'Would buy' ? 'Would buy' : VERDICT_WORDS[row.verdict] ?? VERDICT_LABEL[row.verdict] ?? row.verdict}</span><p>{row.reason}</p></li>)}</ul></details>}<AnchorStatus run={run} /><ShareProof run={run} /><a href="https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs/publishing.md">Write about this topic →</a></section>
+    // After a payment it never says "nothing was bought" (H9-03): it says what was bought and that none of it answered.
+    const { paid } = purchaseCounts(run)
+    return <section className="ra-verdict" aria-label="Research answer"><div className="ra-answer-heading"><h2 className="ra-caption">Answer</h2>{report}</div><p>{paid ? paidNoAnswerSummary(paid) : run.receipts.length ? 'No verified answer is available from these purchases.' : declineSummary(run)}</p>{considered.length > 0 && <details className="ra-why-not" open={considered.length <= 6 || undefined}><summary><span>{paid ? 'Why there’s no answer' : 'Why nothing was bought'}</span><span className="ra-why-count"> · {articleCount(considered.length)} considered</span></summary><ul>{considered.map(({ key, row }) => <li key={key}><b>{row.candidate.title}</b><span className="ra-why-verdict">{plainVerdict(row, run).stamp === 'Would buy' ? 'Would buy' : VERDICT_WORDS[row.verdict] ?? VERDICT_LABEL[row.verdict] ?? row.verdict}</span><p>{row.reason}</p></li>)}</ul></details>}<AnchorStatus run={run} /><ShareProof run={run} /><a href="https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs/publishing.md">Write about this topic →</a></section>
   }
   if (!answer) return <section className="ra-verdict" aria-label="Research answer" aria-busy={!['FAILED','STOPPED'].includes(run.phase)}><h2 className="ra-caption">Answer</h2>{['FAILED','STOPPED'].includes(run.phase) ? <p>No verified answer is available. Ask again to begin a new run.</p> : <div className="ra-vtext is-skel" aria-hidden="true"><i /><i /><i /></div>}</section>
   const delivered = run.candidates.flatMap(candidate => { const content = getAccessibleContent(run, candidate); return content ? [content] : [] })
@@ -75,6 +78,8 @@ export default function Answer({ run, onCitation, view, compare, onCompare, repo
   const lead = summary.lead ?? []
   const leadText = lead.map(item => item.text).join(' ')
   const context = summary.conclusion.startsWith(leadText) ? summary.conclusion.slice(leadText.length).trim() : summary.conclusion
+  // H9-10: "Still unanswered" never lists what the lead above answers (the same rule the server applies).
+  const openGaps = openGapsAfterLead(run.question, { lead, openGaps: answer.openGaps })
   // The sources answered the question in general and never name a place or period it qualified ("… in Singapore"): say so.
   const unnamed = lead.length ? missingQualifiers(run.question, lead.flatMap(item => delivered.filter(content => item.claim.citations.some(ref => sameSource(content, ref))).map(content => `${content.title} ${content.body}`))) : []
   const added = answer.claims.filter(c => !baseline?.claims.some(b => b.text === c.text))
@@ -98,7 +103,7 @@ export default function Answer({ run, onCitation, view, compare, onCompare, repo
     </section>
     <details className="ra-answer-work" open={compare || undefined}><summary>Claims and gaps</summary>
       {hasPaidEvidence && <details className="ra-answer-update"><summary>Updated with paid evidence</summary><p>{added.length} added claims, {dropped.length} removed. Only verified passages are included.</p><button type="button" className="ra-link" onClick={onCompare}>See what changed after the purchase</button></details>}
-      {answer.openGaps.length > 0 && <details className="ra-answer-context"><summary>Still unanswered ({answer.openGaps.length})</summary><ul>{answer.openGaps.map(gap => <li key={gap.text}>{gap.text}</li>)}</ul></details>}
+      {openGaps.length > 0 && <details className="ra-answer-context"><summary>Still unanswered ({openGaps.length})</summary><ul>{openGaps.map(gap => <li key={gap.text}>{gap.text}</li>)}</ul></details>}
 
     {!compare && <RequestedFacts run={run} version={answer.version} />}
     {compare && <button type="button" className="ra-link" onClick={onCompare}>Back to answer</button>}

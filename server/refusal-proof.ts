@@ -9,6 +9,7 @@ import { ReceiptBundleSchema, type ReceiptBundle } from '../shared/contracts/rec
 import type { RunSnapshot } from '../shared/contracts/index.js'
 import { canonical } from './audit.js'
 import { receiptBundle } from './receipt-bundle.js'
+import { proofEnvironmentLabel } from './proof-page.js'
 import type { Store } from './store.js'
 import {
   HOSTED_PROOFS_PER_SESSION, HOSTED_PROOFS_TOTAL, HOSTED_PROOF_RETAIN_UNTIL, PROOF_ID, PROOF_MAX_BYTES, PROOF_VERSION,
@@ -85,11 +86,13 @@ export class RefusalProofs {
         throw new ProofError(409, 'verification_failed', 'This run’s receipts did not pass the offline checks, so it can’t be shared.')
       }
       const id = randomBytes(16).toString('hex')
-      const fixture = [run.labels.research, run.labels.decision].some(label => /^fixture\b/i.test(label))
+      // A refusal writes no answer from paid text (its free extract is offline by design), so the only model that acted is the
+      // one that judged what to buy: the label names that, in the app's words (H9-14: "fixture models" contradicted "live answers").
+      const fixture = /^fixture\b/i.test(run.labels.decision)
       const { summary, found } = describeRefusal(run)
       const snapshot = ProofSnapshotSchema.parse({
         version: PROOF_VERSION, id, createdAt: new Date(now).toISOString(), question: run.question, askedAt: run.events[0]?.at ?? new Date(now).toISOString(),
-        environment: { surface: options.hosted ? 'hosted' : 'local', network: 'XRPL Testnet', models: fixture ? 'fixture' : 'live', label: `${options.hosted ? 'Shared ' : ''}XRPL Testnet demo · ${fixture ? 'fixture' : 'live'} models · no real value` },
+        environment: { surface: options.hosted ? 'hosted' : 'local', network: 'XRPL Testnet', models: fixture ? 'fixture' : 'live', label: proofEnvironmentLabel({ surface: options.hosted ? 'hosted' : 'local', models: fixture ? 'fixture' : 'live' }) },
         outcome: { summary: clip(summary, 240) }, found, bought: { count: 0, spentMinor: 0, currency: 'SGD' }, anchor,
         verification: { ok: true, passed: checked.checks.filter(check => check.status === 'PASS').length, skipped: checked.checks.filter(check => check.status === 'SKIP').length, total: checked.checks.length, at: new Date(now).toISOString() },
         bundle,

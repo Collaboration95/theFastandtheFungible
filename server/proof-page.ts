@@ -20,6 +20,13 @@ export const LEDGER_HOSTS = ['wss://s.altnet.rippletest.net:51233', 'wss://clio.
 export const VERIFY_MODULE = '/verify/proof-verify.js'
 /** The environment chip on a phone: every proof is an XRPL Testnet record with test funds, whichever surface shared it. */
 const ENV_SHORT = 'Testnet demo · no real value'
+/**
+ * The environment chip in full (H9-14). A refusal writes no answer from paid text, so the label names only what judged the
+ * purchase, in the app's own words ("rule-based buying"), never "fixture models" beside an app chip that says "live answers".
+ * Rendered from the snapshot's fields, so a proof shared before this wording reads the same way.
+ */
+export const proofEnvironmentLabel = (env: Pick<ProofSnapshot['environment'], 'surface' | 'models'>) =>
+  `${env.surface === 'hosted' ? 'Shared ' : ''}XRPL Testnet demo · ${env.models === 'fixture' ? 'rule-based buying' : 'model-judged buying'} · no real value`
 
 const CSS = `
 :root{--paper:#FBF8F2;--surface:#fff;--ink:#24211E;--muted:#655D55;--rule:#E8E2D8;--rule-2:#C9BFB2;--hover:#F3EEE4;--ok:#2F6B4F;--bad:#9B3E35}
@@ -108,6 +115,7 @@ btn.addEventListener('click', async () => {
 export type ProofPageOptions = { mode: 'page' | 'card'; origin?: string; nonce?: string }
 export function renderProofPage(snapshot: ProofSnapshot, { mode, origin = '', nonce = '' }: ProofPageOptions): string {
   const { id, question, environment: env, found, anchor, verification } = snapshot
+  const envLabel = proofEnvironmentLabel(env)
   const link = origin ? `${origin}/proof/${id}` : `/proof/${id}`
   const image = `${origin}/og/refusal-proof.png`
   const detail = found.paid ? `${plural(found.paid, 'paid article')} found, none bought. ${sgd(0)} spent.` : `No paid article matched. ${sgd(0)} spent.`
@@ -142,7 +150,7 @@ export function renderProofPage(snapshot: ProofSnapshot, { mode, origin = '', no
 <title>${esc(title)} · ResearchAgent</title>${meta}
 <style${nonce ? ` nonce="${nonce}"` : ''}>${CSS}</style></head>
 <body>
-<header class="top"><a class="brand" href="/">${MARK}<span>ResearchAgent</span></a><span class="chip"><i></i><span class="full">${esc(env.label)}</span><span class="short">${ENV_SHORT}</span></span></header>
+<header class="top"><a class="brand" href="/">${MARK}<span>ResearchAgent</span></a><span class="chip"><i></i><span class="full">${esc(envLabel)}</span><span class="short">${ENV_SHORT}</span></span></header>
 <main>
 <p class="eyebrow">${HELD}<span>Proof of refusal</span></p>
 <h1>Refused to spend.</h1>
@@ -158,7 +166,7 @@ ${items ? `<ul class="items" aria-label="Paid articles considered">${items}</ul>
 <div><dt>Anchor account</dt><dd class="mono">${esc(anchor.account)}</dd></div>
 <div><dt>Audit log head</dt><dd class="mono">${esc(anchor.head)}</dd></div>
 <div><dt>Checks</dt><dd>${verification.skipped ? `<span class="ok">${verification.passed} passed</span> <span class="note">· ${verification.skipped} not checked yet: they need the ledger or a writer lookup${mode === 'page' ? '. The browser check below runs the ledger ones' : ''}</span>` : `<span class="ok">All ${verification.total} checks passed</span> <span class="note">when shared</span>`}</dd></div>
-<div><dt>Where</dt><dd>${esc(env.label)}</dd></div>
+<div><dt>Where</dt><dd>${esc(envLabel)}</dd></div>
 </dl>
 ${verify}
 <h2>What this does and doesn’t show</h2>

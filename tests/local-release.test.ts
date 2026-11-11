@@ -36,7 +36,7 @@ it('local admission rejects stale, partial, quick, contended and tampered releas
   const manifest = { schema:1, sourceSha:sha, mode:'fixture providers; simulated settlement', artifacts:kinds.map(kind => ({kind,file:kind,version,bytes:kind.length,sha256:sha256(join(root,kind))})) }
   const manifestFile = join(root,'manifest.json'); writeFileSync(manifestFile,JSON.stringify(manifest))
   writeFileSync(join(root,'accepted-receipt.json'),'fixture receipt')
-  const hosted = {wheelSha256:sha256(join(root,'wheel')),typescriptSha256:sha256(join(root,'mcp-tgz')),exports:['fixture-purchase','fixture-anchored-decline','testnet-hosted'].map(kind => ({kind,sha256:'c'.repeat(64),anchorBinding:kind==='fixture-purchase'?'absent':'PASS',python:{pass:true},typescript:{pass:true}}))}
+  const hosted = {wheelSha256:sha256(join(root,'wheel')),typescriptSha256:sha256(join(root,'mcp-tgz')),exports:['fixture-purchase','fixture-anchored-decline','testnet-hosted','fixture-unsigned-free'].map(kind => ({kind,sha256:'c'.repeat(64),anchorBinding:['fixture-purchase','fixture-unsigned-free'].includes(kind)?'absent':'PASS',python:{pass:true},typescript:{pass:true}}))}
   const receipt = { verifiers:{typescript:{pass:true},python:{pass:true},hosted,receiptSha256:sha256(join(root,'accepted-receipt.json'))},sourceSha:sha,manifestSha256:sha256(manifestFile),consumers:['tgz','wheel','mcpb','mcp-tgz','app'].map(kind => ({kind,sha256:sha256(join(root,kind==='app'?'mcp-tgz':kind)),citations:1,receipts:1,intents:1,idempotent:true,capPreserved:true})) }
   const identity = {head:sha,tree,dirty:false}
   const gate = {schema:'local-gate-v1',state:'success',route:{all:true},source:identity,finalSource:identity,steps:localGateSteps.map((id: string) => ({id,state:'success'}))}
@@ -53,7 +53,7 @@ it('local admission rejects stale, partial, quick, contended and tampered releas
   const withHosted = (h: object) => ({...args,receipt:{...args.receipt,verifiers:{...receipt.verifiers,hosted:{...hosted,...h}}}})
   expect(() => admitLocalRelease({...args,receipt:{...args.receipt,verifiers:{...receipt.verifiers,hosted:undefined}}})).toThrow('packed wheel and TS CLI')
   expect(() => admitLocalRelease(withHosted({wheelSha256:'d'.repeat(64)}))).toThrow('packed wheel and TS CLI')
-  for (const kind of ['fixture-purchase','fixture-anchored-decline','testnet-hosted']) {
+  for (const kind of ['fixture-purchase','fixture-anchored-decline','testnet-hosted','fixture-unsigned-free']) {
     expect(() => admitLocalRelease(withHosted({exports:hosted.exports.filter(r => r.kind !== kind)}))).toThrow('Hosted export not verified: '+kind)
     expect(() => admitLocalRelease(withHosted({exports:hosted.exports.map(r => r.kind === kind ? {...r,python:{pass:false}} : r)}))).toThrow('Hosted export not verified: '+kind)
   }
@@ -179,7 +179,7 @@ const artifacts=['tgz','wheel','sdist','mcpb','mcp-tgz','metadata'].map(kind=>{
 })
 writeFileSync(join(root,'manifest.json'),JSON.stringify({schema:1,sourceSha:sha,mode:'fixture providers; simulated settlement',artifacts}))
 writeFileSync(join(root,'accepted-receipt.json'),'fixture')
-const consumers={sourceSha:sha,manifestSha256:sha256(join(root,'manifest.json')),verifiers:{typescript:{pass:true},python:{pass:true},hosted:{wheelSha256:artifacts.find(a=>a.kind==='wheel').sha256,typescriptSha256:artifacts.find(a=>a.kind==='mcp-tgz').sha256,exports:['fixture-purchase','fixture-anchored-decline','testnet-hosted'].map(kind=>({kind,sha256:'c'.repeat(64),anchorBinding:kind==='fixture-purchase'?'absent':'PASS',python:{pass:true},typescript:{pass:true}}))},receiptSha256:sha256(join(root,'accepted-receipt.json'))},consumers:['tgz','wheel','mcpb','mcp-tgz','app'].map(kind=>({kind,sha256:artifacts.find(a=>a.kind===(kind==='app'?'mcp-tgz':kind)).sha256,citations:1,receipts:1,intents:1,idempotent:true,capPreserved:true}))}
+const consumers={sourceSha:sha,manifestSha256:sha256(join(root,'manifest.json')),verifiers:{typescript:{pass:true},python:{pass:true},hosted:{wheelSha256:artifacts.find(a=>a.kind==='wheel').sha256,typescriptSha256:artifacts.find(a=>a.kind==='mcp-tgz').sha256,exports:['fixture-purchase','fixture-anchored-decline','testnet-hosted','fixture-unsigned-free'].map(kind=>({kind,sha256:'c'.repeat(64),anchorBinding:['fixture-purchase','fixture-unsigned-free'].includes(kind)?'absent':'PASS',python:{pass:true},typescript:{pass:true}}))},receiptSha256:sha256(join(root,'accepted-receipt.json'))},consumers:['tgz','wheel','mcpb','mcp-tgz','app'].map(kind=>({kind,sha256:artifacts.find(a=>a.kind===(kind==='app'?'mcp-tgz':kind)).sha256,citations:1,receipts:1,intents:1,idempotent:true,capPreserved:true}))}
 writeFileSync(join(root,'consumer-results.json'),JSON.stringify(consumers))
 const dmgs=['arm64','x64'].map(arch=>{const file=resolve('desktop/out','ResearchAgent-'+version+'-'+arch+'.dmg');writeFileSync(file,arch);return {file,bytes:arch.length,sha256:sha256(file)}})
 writeFileSync('dist/final/acceptance.json',JSON.stringify({pass:true,checksPass:true,acceptanceEligible:true,quick:false,worktreeDirty:false,sourceStable:true,sourceSha:sha,sourceTree:git('HEAD^{tree}'),schedule:{mode:'isolated soak then DAG',localArchitectures:['arm64','x64']},gates:localAcceptanceGates.map(name=>({name,pass:true,status:'PASS'})),artifacts,consumers,dmgs}))

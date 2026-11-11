@@ -12,7 +12,7 @@ import WriterEarnings, { orderWriters, writerTitle } from '../src/components/Wri
 import RunActivity from '../src/components/RunActivity'
 import Layout from '../src/components/Layout'
 import ChatThread from '../src/components/ChatThread'
-import { planNotice, writtenOffline } from '../src/notices'
+import { offlineNotice, planNotice } from '../src/notices'
 import { ucRuns } from '../src/fixtures/run'
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.doUnmock('../src/verify/browser'); vi.resetModules() })
@@ -92,11 +92,11 @@ describe('notices state their real reason', () => {
     expect(planNotice(undefined)).toBeUndefined()
     for (const label of ['fixture · scope-fixture', 'fixture · scope-fixture · spending guard']) expect(planNotice(label)).not.toMatch(/offline|unavailable/)
   })
-  it('says "written from offline extracts" only when something was written', () => {
-    const answered = { labels: { research: 'fixture · extractive-fixture' }, answers: [{ claims: [{ id: 'c' }] }] } as unknown as RunSnapshot
-    const decline = { labels: { research: 'fixture · extractive-fixture' }, answers: [{ claims: [] }] } as unknown as RunSnapshot
-    expect([writtenOffline(answered), writtenOffline(decline)]).toEqual([true, false])
-    expect(writtenOffline({ labels: { research: 'DeepSeek · deepseek-flash' }, answers: [{ claims: [{ id: 'c' }] }] } as unknown as RunSnapshot)).toBe(false)
+  it('says "written from offline extracts" only when something was written (or bought, H9-03)', () => {
+    const answered = { labels: { research: 'fixture · extractive-fixture' }, answers: [{ claims: [{ id: 'c' }] }], receipts: [], events: [] } as unknown as RunSnapshot
+    const decline = { labels: { research: 'fixture · extractive-fixture' }, answers: [{ claims: [] }], receipts: [], events: [] } as unknown as RunSnapshot
+    expect([offlineNotice(answered), offlineNotice(decline)]).toEqual(['Written from offline extracts: the model was unavailable.', undefined])
+    expect(offlineNotice({ labels: { research: 'DeepSeek · deepseek-flash' }, answers: [{ claims: [{ id: 'c' }] }], receipts: [], events: [] } as unknown as RunSnapshot)).toBeUndefined()
   })
 })
 

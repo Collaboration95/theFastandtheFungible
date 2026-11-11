@@ -123,7 +123,9 @@ export async function activeTraceUrl(): Promise<string | undefined> {
 
 const modelUsage = new AsyncLocalStorage<(usage: Record<string, unknown>) => void>()
 export function withModelUsage<T>(report: (usage: Record<string, unknown>) => void, fn: () => Promise<T>) { return modelUsage.run(report, fn) }
-export function reportModelFallback() { modelUsage.getStore()?.({ fallback: true }) }
+/** Why the offline writer stood in for the model; carried on MODEL_FALLBACK so the answer can say so (H9-03). */
+export type ModelFallbackReason = 'guard' | 'timeout' | 'http' | 'cap' | 'invalid' | 'unavailable'
+export function reportModelFallback(reason?: ModelFallbackReason) { modelUsage.getStore()?.({ fallback: true, ...(reason ? { reason } : {}) }) }
 /** Rates are operator supplied, USD per million tokens. Unknown costs remain null. */
 export function reportModelUsage(inputTokens: number | undefined, outputTokens: number | undefined) {
   if (inputTokens === undefined && outputTokens === undefined) return
