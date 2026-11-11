@@ -322,7 +322,12 @@ test('A11Y keyboard Ask → plan → result → verify, idle prefetch, offline r
   }).map(node => `${node.tagName}: ${node.textContent?.trim().slice(0, 60)}`))
   expect(await smallTargets()).toEqual([])
   await page.getByRole('group', { name: 'Demo questions' }).getByRole('button', { name: /^Kestrel–TSMC/ }).click()
+  let releaseScope!: () => void, releaseStart!: () => void
+  const scopeHeld = new Promise<void>(resolve => { releaseScope = resolve }), startHeld = new Promise<void>(resolve => { releaseStart = resolve })
+  await page.route('**/api/scope', async route => { const response = await route.fetch(); await scopeHeld; await route.fulfill({ response }) })
+  await page.route('**/runs', async route => { if (route.request().method() !== 'POST') return route.continue(); const response = await route.fetch(); await startHeld; await route.fulfill({ response }) })
   await page.getByRole('button', { name: /^Ask/ }).focus(); await page.keyboard.press('Enter')
+  await expect(page.locator('#main')).toBeFocused(); releaseScope()
   const chip = page.getByRole('button', { name: 'pricing & margins' }), start = page.getByRole('button', { name: 'Start now' })
   await expect(chip.or(start).first()).toBeVisible({ timeout: 30000 })
   expect(await page.evaluate(() => document.activeElement !== document.body)).toBe(true)
@@ -331,6 +336,7 @@ test('A11Y keyboard Ask → plan → result → verify, idle prefetch, offline r
   await expect(page.getByRole('dialog', { name: 'Search plan' })).toContainText('Planning uses one of your daily questions')
   expect(verifierLoads).toEqual([]) // No verifier request during home, clarify or plan.
   await page.keyboard.press('Enter')
+  await expect(page.locator('#main')).toBeFocused(); releaseStart()
   const title = page.locator('h1.ra-q')
   await expect(title).toBeFocused({ timeout: 30000 })
   await page.keyboard.press('Tab'); await expect(page.getByRole('button', { name: 'Show work', exact: true })).toBeFocused()
