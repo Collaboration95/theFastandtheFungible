@@ -93,7 +93,7 @@ claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=
 The full app on real Testnet, served on `127.0.0.1`. It prints the payer address, how
 to point the SDK at it and a daily cap (S$5.00 on Testnet). Add `--open` to launch your
 browser, `--iou` for TEST-SGD; drop `--testnet` for the labelled SIMULATED rail
-([details](testnet.md#zero-clone-testnet-app-v110)).
+([details](testnet.md#zero-clone-testnet-app-v111)).
 
 ```sh
 npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz app --testnet
