@@ -2,9 +2,11 @@
 
 12 November 2026. Measurement baseline: QUAL merge `f3f570fb`.
 
-Local `HOSTED=1`; live DeepSeek planner and writer via the private repo `.env`; fixture purchase decisions; keyword search. Real XRPL Testnet key-reveal escrow in XRP, test funds only, no real value. S$ is the application display price (40,000 Testnet drops per S$0.40), not a market exchange rate. The hosted-readiness callback is stubbed healthy locally; deployed readiness is outside this evidence. Ephemeral loopback ports; no public hosted questions. Existing operator Testnet writer wallets; no faucet requests or cloud changes. No signing secrets are retained in this report.
+Local `HOSTED=1`; live DeepSeek planner and writer via the private repo `.env`; fixture purchase decisions; keyword search. Real XRPL Testnet key-reveal escrow in XRP, test funds only, no real value. S$ is the application display price (40,000 Testnet drops per S$0.40), not a market exchange rate. The hosted-readiness callback is stubbed healthy locally; deployed readiness is outside this evidence. The API and publisher bind ephemeral loopback ports; no public hosted questions. Existing operator Testnet writer wallets; no faucet requests or cloud changes. No signing secrets are retained in this report.
 
 Three fresh plans for the exact proposed question: “How does the writer get paid, and what stops the agent from reading the article and then refusing to pay?” Two fresh plans each for the unchanged x402 and RLUSD questions. Each scoped plan reports `DeepSeek · deepseek-flash`; purchases use `fixture · metadata-fixture`.
+
+The initial browser-verifier launcher passed Vite `port: 0`, which Vite resolved to its fixed default 5173. That collided with DECLUTTER’s gate. Only this lane’s verifier was stopped, then restarted on OS-assigned port 64614 with `strictPort`; both verifier instances and the local API/publisher were stopped after the checks. The launcher now explicitly reserves an ephemeral port before starting Vite.
 
 Browser verification uses the actual `VerifyInBrowser` component, rendered locally by Vite, and the real `verifyInBrowser` module with read-only public Testnet WebSockets. No ledger replies or verification results are mocked. The two not-checked items are writer credentials and historical origin; they are not counted as passes.
 
