@@ -2,6 +2,8 @@
 /* Preserve Geist Mono's variable weights; the full app font covers other scripts on demand. */
 @font-face { font-family: 'Replay Geist Mono'; font-style: normal; font-weight: 100 900; font-display: swap; src: url('./fonts/geist-mono-replay.woff2') format('woff2'); unicode-range: U+0020-007E,U+00A0,U+00B7,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
 html:root { --f-mono: 'Replay Geist Mono', 'Geist Mono Variable', monospace; }
+.demo-skip { position: absolute; top: 8px; left: 16px; z-index: 100; padding: 12px; background: var(--paper); color: var(--ink); transform: translateY(-200%); }
+.demo-skip:focus { transform: none; }
 /* Reuse the app's preloaded, swap-enabled font; keep FIN's generated header intact. */
 html body, body .ra-hdr, body .ra-hdr-note, body .ra-hdr-note kbd { font-family: 'Geist Variable', system-ui, sans-serif; }
 body .ra-hdr nav { display: none; }

@@ -188,6 +188,11 @@ test('scenario links open their run within ten seconds and keep compact, honest 
           await expect(page.getByRole('combobox', { name: 'Recorded scenario', includeHidden: true })).toHaveValue(scenario === 'UC3-key-reveal' ? '' : scenario)
         }
         if (!scenario) {
+          const skip = page.getByRole('link', { name: 'Skip to recorded run' })
+          await page.keyboard.press('Tab')
+          await expect(skip).toBeFocused()
+          await page.keyboard.press('Enter')
+          await expect(page.locator('#root')).toBeFocused()
           await expect(page.locator('.demo-shell > summary .demo-label')).toHaveText('Replay · XRPL Testnet, recorded 11 Nov 2026 · fictional writers · no real value')
           if (width === 390) await page.locator('.demo-shell > summary').click()
           await expect(page.getByRole('combobox', { name: 'Recorded scenario' })).toBeVisible()

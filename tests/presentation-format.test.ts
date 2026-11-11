@@ -61,6 +61,12 @@ function violations(code: string) {
   visit(source)
   return found
 }
+function htmlViolations(html: string) {
+  const content = html.replace(/<!--[\s\S]*?-->/g, '')
+  const found = [...content.matchAll(/S\$(\d+(?:\.\d+)?)/g)].filter(amount => !/^\d+\.\d{2}$/.test(amount[1])).map(amount => `money: ${amount[0]}`)
+  for (const script of content.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)) found.push(...violations(script[1]))
+  return found
+}
 it('rejects bad money and alternative hash rules, including deliberately broken renderers', () => {
   expect(violations('<p>S$0.5</p>')).toContain('money: S$0.5')
   expect(violations('const price = `S$${minor / 100}`')).toContain('dynamic money must retain two decimals')
@@ -71,9 +77,11 @@ it('rejects bad money and alternative hash rules, including deliberately broken 
   expect(violations('<p>{txHash.slice(0, 6)}…{txHash.slice(-5)}</p>')).toContain('fingerprints must use shortTx')
   expect(violations('<p>{h.slice(0, 6)}…{h.slice(-5)}</p>')).toContain('fingerprints must use shortTx')
   expect(violations('<p>{money(price)} {shortTx(hash)}</p>')).toEqual([])
+  expect(htmlViolations('<span>S$0.5</span>')).toContain('money: S$0.5')
+  expect(htmlViolations('<script>node.textContent = txHash.slice(0, 6)</script>')).toContain('fingerprints must use shortTx')
 })
 it('guards every src/ and demo/ renderer against money and fingerprint drift', () => {
-  const files = (root: string): string[] => readdirSync(root, { withFileTypes: true }).flatMap(entry => entry.isDirectory() ? files(join(root, entry.name)) : /\.[jt]sx?$/.test(entry.name) && !/\.test\./.test(entry.name) ? [join(root, entry.name)] : [])
-  const found = [...files('src'), ...files('demo')].filter(file => !file.startsWith('src/fixtures/')).flatMap(file => violations(readFileSync(file, 'utf8')).map(issue => `${file}: ${issue}`))
+  const files = (root: string): string[] => readdirSync(root, { withFileTypes: true }).flatMap(entry => entry.isDirectory() ? files(join(root, entry.name)) : /\.(?:[jt]sx?|html)$/.test(entry.name) && !/\.test\./.test(entry.name) ? [join(root, entry.name)] : [])
+  const found = [...files('src'), ...files('demo')].filter(file => !file.startsWith('src/fixtures/')).flatMap(file => (file.endsWith('.html') ? htmlViolations : violations)(readFileSync(file, 'utf8')).map(issue => `${file}: ${issue}`))
   expect(found).toEqual([])
 })
