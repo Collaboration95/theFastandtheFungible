@@ -52,6 +52,8 @@ overflow or serious/critical axe violations.
   never reveals, money back”, matching the picker and its 7 Nov recording.
 - JC: `src/components/hosted/HostedEnv.tsx`: use `ENV.hostedWriters` for the live
   writers caption and the canonical ENV values for environment headings.
+  The local simulated hosted preview currently inherits the live green dot;
+  use amber for simulated payments and green for Testnet, retaining offline states.
 - JC: `src/components/Ask.tsx`: local/replay Home h1 “Research with a wallet.”;
   align the subtitle with hosted while retaining the actual simulated/fixture
   mode. No changes to JC-owned files in this PR.
