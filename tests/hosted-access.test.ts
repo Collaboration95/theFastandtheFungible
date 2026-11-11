@@ -203,3 +203,13 @@ it('keeps all five questions after planning or cancelling, and uses exactly one 
   expect(retry.json().runId).toBe(first.json().runId)
   expect((await wire(url + '/api/demo/status', 'GET', a)).json<{ remaining: { questions: number } }>().remaining.questions).toBe(4)
 })
+
+it('does not use a daily question when admission fails before creating a run', async () => {
+  const { url, a, store } = await setup(), headers = { ...a, 'Idempotency-Key': 'failed-admission' }, body = { question: 'How does XRPL escrow work?', budgetMinor: 0 }
+  const admit = vi.spyOn(store, 'admit').mockImplementationOnce(() => { throw new Error('test admission failure') })
+  expect((await wire(url + '/runs', 'POST', headers, body)).status).toBe(500)
+  expect((await wire(url + '/api/demo/status', 'GET', a)).json<{ remaining: { questions: number } }>().remaining.questions).toBe(5)
+  admit.mockRestore()
+  expect((await wire(url + '/runs', 'POST', headers, body)).status).toBe(201)
+  expect((await wire(url + '/api/demo/status', 'GET', a)).json<{ remaining: { questions: number } }>().remaining.questions).toBe(4)
+})

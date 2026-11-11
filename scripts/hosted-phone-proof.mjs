@@ -94,15 +94,16 @@ try {
   const cancelCount = await page.evaluate(async () => (await (await fetch('/api/demo/status')).json()).remaining.questions)
   await page.getByRole('button', { name: /^Ask/ }).click(); await chip.or(start).first().waitFor({ timeout: 30000 }); if (await chip.isVisible()) await chip.click(); await start.waitFor({ timeout: 30000 }); await start.click()
   await page.waitForFunction(() => window.__h7.doneVisibleAt !== null, undefined, { timeout: 90000 })
+  const client = await page.evaluate(() => window.__h7)
+  const server = JSON.parse(readFileSync(metricsFile, 'utf8'))
+  const runId = new URL(page.url()).searchParams.get('run')
   mkdirSync(resolve(out, '..'), { recursive: true })
   await page.screenshot({ path: out.replace(/\.json$/, '.png') })
-  const client = await page.evaluate(() => window.__h7), runId = new URL(page.url()).searchParams.get('run')
   const final = await page.evaluate(async () => { const id = new URL(location.href).searchParams.get('run'); return await (await fetch(`/runs/${id}`)).json() })
   const startCount = await page.evaluate(async () => (await (await fetch('/api/demo/status')).json()).remaining.questions)
-  const server = JSON.parse(readFileSync(metricsFile, 'utf8'))
   const hashes = Object.fromEntries(['server/routes.ts', 'server/api/runs.ts', 'server/api/sse.ts', 'server/hosted/limits.ts', 'docker/hosted/front/default.conf.template', 'docker/hosted/proxy-headers.conf'].filter(f => existsSync(join(root, f))).map(f => [f, createHash('sha256').update(readFileSync(join(root, f))).digest('hex')]))
   const uiFiles = Object.fromEntries(['src', 'shared'].flatMap(folder => readdirSync(join(root, folder), { recursive: true, withFileTypes: true }).filter(entry => entry.isFile()).map(entry => join(entry.parentPath, entry.name))).sort().map(file => [file.slice(root.length + 1), createHash('sha256').update(readFileSync(file)).digest('hex')]))
-  const result = { uiFiles, label, at: new Date().toISOString(), evidence: 'local HOSTED=1; fixture models, fictional Kestrel–TSMC corpus, simulated SGD; readiness override; test-only 1500 ms publisher transport delay; nginx front template with local TLS/port adaptations', throttle: { width: 390, height: 844, downloadMbps: 1.6, latencyMs: 150, cpuRate: 4 }, hashes, visits, questions: { afterPlan: planCount, afterCancel: cancelCount, afterStart: startCount }, server, client, doneLagMs: client.doneVisibleAt - server.doneAt, snapshotFrames: client.snapshots.length, run: { id: runId, phase: final.phase, rawBytes: Buffer.byteLength(JSON.stringify(final)), spentMinor: final.spentMinor, intents: final.intents.length, receipts: final.receipts.length, verifiedGrants: final.grants.length } }
+  const result = { uiFiles, label, at: new Date().toISOString(), evidence: 'local HOSTED=1; fixture models, fictional Kestrel–TSMC corpus, simulated SGD; readiness override; test-only 1500 ms publisher transport delay; nginx front template with local TLS/port adaptations', throttle: { width: 390, height: 844, downloadMbps: 1.6, latencyMs: 150, cpuRate: 4 }, hashes, visits, questions: { afterPlan: planCount, afterCancel: cancelCount, afterStart: startCount }, server, client, doneLagMs: client.doneVisibleAt - server.doneAt, maxTraceArrivalLagMs: Math.max(0, ...client.traces.map(frame => frame.at - Date.parse(frame.serverAt))), snapshotFrames: client.snapshots.length, run: { id: runId, phase: final.phase, rawBytes: Buffer.byteLength(JSON.stringify(final)), spentMinor: final.spentMinor, intents: final.intents.length, receipts: final.receipts.length, verifiedGrants: final.grants.length } }
   mkdirSync(resolve(out, '..'), { recursive: true }); writeFileSync(out, JSON.stringify(result, null, 2) + '\n'); console.log(JSON.stringify(result, null, 2))
   if (final.phase !== 'DONE' || !final.receipts.length) throw Error('Paid fixture run did not complete')
 } finally { await scope.close() }
