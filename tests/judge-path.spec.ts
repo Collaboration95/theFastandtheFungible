@@ -47,7 +47,12 @@ async function walk(page: Page, tab: string) {
   }
   return { seen, ready }
 }
-const contrast = async (page: Page) => !(await page.locator('.ra-payment').count()) ? [] : new AxeBuilder({ page }).include('.ra-payment').withRules(['color-contrast']).analyze().then(r => r.violations)
+const contrast = async (page: Page) => {
+  if (!(await page.locator('.ra-payment').count())) return []
+  // A warm autoplay can finish before the existing money-state fade does.
+  await page.locator('.ra-payment-status').evaluateAll(nodes => Promise.all(nodes.flatMap(node => node.getAnimations().map(animation => animation.finished))))
+  return new AxeBuilder({ page }).include('.ra-payment').withRules(['color-contrast']).analyze().then(r => r.violations)
+}
 
 test('landing points at the release, never the stale Latest', async ({ page }) => {
   await page.goto(`${base}/`)
