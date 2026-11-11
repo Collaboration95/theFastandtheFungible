@@ -13,7 +13,7 @@ it('loads aggregates only on opening, with no cookies, admission or run requests
   await screen.findByRole('region',{name:'Sandbox scoreboard'})
   expect(fetcher).toHaveBeenCalledTimes(1)
   expect(fetcher).toHaveBeenCalledWith('/api/demo/stats',expect.objectContaining({credentials:'omit'}))
-  expect(screen.getByText(SCOREBOARD_LABEL)).toBeTruthy();expect(screen.getByText('4/4')).toBeTruthy();expect(screen.getByText('US$0.0050')).toBeTruthy()
+  expect(screen.getByText(SCOREBOARD_LABEL)).toBeTruthy();expect(screen.getByText('4/4')).toBeTruthy();expect(screen.getByText('Model US$ per question · median').parentElement?.querySelector('dd')?.textContent).toBe('0.0050')
 })
 it('shows unavailable instead of invented zero totals when fetching fails',async()=>{
   vi.stubGlobal('fetch',vi.fn().mockRejectedValue(new Error('offline')))

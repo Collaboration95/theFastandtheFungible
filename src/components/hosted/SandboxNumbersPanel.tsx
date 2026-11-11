@@ -19,7 +19,7 @@ export default function Numbers() {
     ['Questions',fmt(stats.questions)], ['Purchase runs',fmt(stats.purchaseRuns)], ['Purchases settled',fmt(stats.purchasesSettled)], ['Refunds',fmt(stats.refunds)],
     ['Anchored',`${stats.anchored}/${stats.questions}`], ['Start → Done · median',fmt(stats.timing.medianMs === null ? null : stats.timing.medianMs/1000,' s')],
     ['Start → Done · p90',fmt(stats.timing.p90Ms === null ? null : stats.timing.p90Ms/1000,' s')], ['Spend per purchase run · median',stats.medianSpendMinor === null ? '—' : money(stats.medianSpendMinor)],
-    ['Model US$ per question · median',stats.medianModelUsd === null ? '—' : `US$${stats.medianModelUsd.toFixed(4)}`],
+    ['Model US$ per question · median',stats.medianModelUsd === null ? '—' : stats.medianModelUsd.toFixed(4)],
   ]
   const audits = [
     ['Paid reads before permission',stats.audit.readBeforeGrant], ['Purchases without a policy decision in the same round',stats.audit.buyWithoutPolicy],
