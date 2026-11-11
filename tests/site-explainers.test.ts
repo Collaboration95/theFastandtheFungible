@@ -76,9 +76,14 @@ describe('explainer destinations and provenance', () => {
       const html = read(`site/${file}`)
       expect(html, file).not.toMatch(/fonts\.(?:googleapis|gstatic)\.com/)
       expect(html, file).toContain('brand/fonts.css')
+      expect(html, file).not.toContain('@font-face')
     }
     expect(read('site/brand/fonts.css')).toContain('geist-mono-latin-wght-normal.woff2')
     expect(read('site/brand/fonts.css')).toContain('font-weight:100 900')
+    expect(read('site/brand/fonts.css').match(/font-display:swap/g)).toHaveLength(2)
+    const replay = read('demo/index.html')
+    expect(replay).not.toContain('@font-face')
+    expect(replay).toContain('font:500 14px/1 "Geist Variable"')
   })
   it('opens "How it works" on key reveal, with the October run under its own heading (S23)', () => {
     const talk = new JSDOM(read('site/talk/index.html')).window.document
