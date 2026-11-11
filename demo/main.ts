@@ -1,3 +1,4 @@
+import { ENV, dateSGT, shortTx } from '../shared/presentation'
 import { HOSTED_APP_URL } from '../shared/links'
 // This entry alone replaces transport. The production app and its presentation/gates are shared.
 import './style.css'
@@ -9,22 +10,20 @@ const recordings = Object.values(modules) as Recording[]
 for (const item of recordings) RunSnapshotSchema.parse(item.run)
 let active = modules['./traces/UC3-key-reveal.json'] as Recording ?? recordings.find(r => r.run.labels.settlement.includes('TESTNET')) ?? recordings[0]
 const initial = new URL(location.href)
-if (!initial.searchParams.has('scenario')) { initial.searchParams.set('run', active.run.runId); window.history.replaceState(null, '', initial) }
 const scenario = initial.searchParams.get('scenario')
-if (scenario) { active = recordings.find(r => r === modules[`./traces/${scenario}.json`]) ?? active }
-else active = recordings.find(r => r.run.runId === initial.searchParams.get('run')) ?? active
-if (active === modules['./traces/UC-key-reveal.json']) {
-  initial.searchParams.delete('scenario'); initial.searchParams.set('run', active.run.runId)
-  window.history.replaceState(null, '', initial)
-}
+active = (scenario ? modules[`./traces/${scenario}.json`] as Recording : recordings.find(r => r.run.runId === initial.searchParams.get('run'))) ?? active
+// Every entry point opens a run, including aliases and unknown scenarios falling back to the default.
+initial.searchParams.set('run', active.run.runId)
+window.history.replaceState(null, '', initial)
 const visited = new Map<string, Recording>()
 const pinned = new Set<string>()
 const testnetRun = (recording: Recording) => recording.run.labels.settlement.includes('TESTNET')
 // Recording dates read in Singapore time, as the submission and the site do.
-const recordedOn = (recording: Recording) => { const at = recording.run.events[0]?.at; return at ? new Date(at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Singapore' }) : 'date unavailable' }
+const recordedOn = (recording: Recording) => { const at = recording.run.events[0]?.at; return at ? dateSGT(at) : 'date unavailable' }
 const scenarioOf = (recording: Recording) => { const key = Object.keys(modules).find(id => modules[id] === recording)?.match(/traces\/(.+)\.json$/)?.[1] ?? ''; return key === 'UC3-key-reveal' ? '' : key }
 const showLabel = () => {
-  document.querySelector('.demo-banner > span')!.textContent = `Replay · recorded ${recordedOn(active)} · ${testnetRun(active) ? 'XRPL Testnet' : 'simulated payments'}`
+  for (const label of document.querySelectorAll('.demo-label')) label.textContent = ENV.replay(recordedOn(active), testnetRun(active))
+  document.querySelector('.demo-short')!.textContent = ENV.replayShort(testnetRun(active))
   const picker = document.querySelector<HTMLSelectElement>('.demo-banner select')
   if (picker) picker.value = scenarioOf(active)
 }
@@ -65,19 +64,24 @@ await import('../src/main')
 
 const testnet = testnetRun(active)
 const banner = document.querySelector('.demo-banner')!
-const runYourself = banner.querySelector('details')!
+const runYourself = banner.querySelector('.demo-install')!
+const shell = banner.querySelector<HTMLDetailsElement>('.demo-shell')!
+const options = banner.querySelector('.demo-options')!
+const mobile = matchMedia('(max-width: 780px)')
+const compact = () => { shell.open = !mobile.matches }
+mobile.addEventListener('change', compact); compact()
 const askOwn = document.createElement('a'); askOwn.href = HOSTED_APP_URL; askOwn.textContent = 'Ask your own question'; askOwn.className = 'demo-ask'
 // One row: what this is, its ledger check, the scenario picker, Pause, then the ways out.
 const controls = document.createElement('div'); controls.className = 'demo-controls'
 const picker = document.createElement('select'); picker.setAttribute('aria-label', 'Recorded scenario')
-for (const [label, scenario] of [['Key reveal (start here)', ''], ['Plain payment', 'UC3-testnet'], ['Writer no-show', 'UC-key-reveal'], ['Simulated: decline', 'UC1'], ['Simulated: buy', 'UC2'], ['Simulated: refund', 'UC3']]) {
+for (const [label, scenario] of [['Key reveal + refund (start here)', ''], ['Plain payment', 'UC3-testnet'], ['Writer never reveals: money back', 'UC-key-reveal'], ['Simulated: decline', 'UC1'], ['Simulated: buy', 'UC2'], ['Simulated: refund', 'UC3']]) {
   const option = document.createElement('option'); option.value = scenario; option.textContent = label; picker.append(option)
 }
 picker.onchange = () => { location.href = picker.value ? `${location.pathname}?scenario=${picker.value}` : location.pathname }
 const pause = document.createElement('button'); pause.textContent = 'Pause'
 pause.onclick = () => { const paused = pause.textContent === 'Pause'; pause.textContent = paused ? 'Resume' : 'Pause'; window.dispatchEvent(new CustomEvent('demo-pause', {detail:paused})) }
 controls.append(picker, pause)
-banner.append(controls, runYourself, askOwn)
+options.append(controls, runYourself, askOwn)
 showLabel()
 
 if (testnet) {
@@ -95,15 +99,15 @@ if (testnet) {
   const states = new Map<string, HTMLElement>()
   for (const row of rows) {
     const p = document.createElement('p'), a = document.createElement('a'), state = document.createElement('span')
-    a.href = `https://testnet.xrpl.org/transactions/${row.hash}`; a.textContent = `${'label' in row ? row.label : row.kind}: ${row.hash}`; a.target = '_blank'; a.rel = 'noopener'
+    a.href = `https://testnet.xrpl.org/transactions/${row.hash}`; a.title = row.hash; a.textContent = `${'label' in row ? row.label : row.kind}: ${shortTx(row.hash)}`; a.className = 'mono'; a.target = '_blank'; a.rel = 'noopener'
     state.textContent = ' · Recorded validated tesSUCCESS; checking live…'; states.set(row.hash, state); p.append(a, state); list.append(p)
   }
-  banner.querySelector('.demo-banner > span')!.after(panel)
+  options.append(panel)
   void refresh(rows, WebSocket, (hash: string, status: string) => {
     states.get(hash)!.textContent = ` · ${status}`
     checked++; if (status.startsWith('validated')) verified++
     summaryText.textContent = checked === rows.length
-      ? `${verified}/${rows.length} hashes verified live${verified === rows.length ? ' ✓' : ' · historical evidence available'}`
+      ? `${verified}/${rows.length} hashes verified live${verified === rows.length ? '' : ' · historical evidence available'}`
       : `Checking hashes live… ${checked}/${rows.length}`
   })
 }

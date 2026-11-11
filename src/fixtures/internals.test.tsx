@@ -119,7 +119,7 @@ describe('visible internals', () => {
   })
 
   it('labels the environment once and keeps raw model labels in Show work', () => {
-    expect(renderToStaticMarkup(<EnvIndicator labels={exampleRun.labels} recording />)).toContain('Demo · simulated payments')
+    expect(renderToStaticMarkup(<EnvIndicator labels={exampleRun.labels} recording />)).toContain('Simulated demo · fixture models · no real value')
     const models = renderToStaticMarkup(<ModelLabels labels={exampleRun.labels} />)
     for (const text of ['Research ·', 'Decide ·', 'Publisher ·', 'SIMULATED SGD']) expect(models).toContain(text)
   })

@@ -119,11 +119,11 @@ describe('Stop during each payment phase', () => {
 describe('hosted controls', () => {
   it('caps the budget picks at the hosted per-question hold', () => {
     const html = renderToStaticMarkup(<BudgetPicker value={200} onChange={() => {}} max={200} />)
-    expect(html).toContain('S$2<')
-    expect(html).not.toContain('S$3<')
-    expect(html).not.toContain('S$5<')
+    expect(html).toContain('S$2.00<')
+    expect(html).not.toContain('S$3.00<')
+    expect(html).not.toContain('S$5.00<')
     expect(html).toContain('max="2"')
-    expect(renderToStaticMarkup(<BudgetPicker value={200} onChange={() => {}} />)).toContain('S$5<')
+    expect(renderToStaticMarkup(<BudgetPicker value={200} onChange={() => {}} />)).toContain('S$5.00<')
   })
   it('offers Clear my history instead of Settings', () => {
     const props = { runs: [], onOpenRun: () => {}, onNew: () => {}, onPin: () => {}, onDelete: () => {}, busy: false, open: true, width: 260 }

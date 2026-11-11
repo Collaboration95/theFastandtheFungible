@@ -1,3 +1,4 @@
+import Icon from './Icon'
 import { useEffect, useState } from 'react'
 import type { ReputationRecord, ReputationSummary, RunSnapshot } from '../../shared/contracts/index.js'
 import { usePublisherCard, writerName } from './WriterChip'
@@ -33,7 +34,7 @@ function PublisherRow({ row }: { row: Row }) {
   return <tbody><tr>
     <th scope="row"><button type="button" className="ra-link" aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>{writerTitle(card?.name ?? row.name)}</button></th>
     <td>{score.T.toFixed(2)}</td><td>{record ? `${record.passes} / ${record.fails}` : '0 / 0'}</td><td className={score.status === 'delisted' ? 'ra-error-text' : undefined}>{score.status === 'active' ? 'Active' : score.status === 'delisted' ? 'Delisted' : 'Quarantined'}</td>
-  </tr>{expanded && <tr><td colSpan={4}><p>Honesty {score.H.toFixed(2)} · Coverage {score.C.toFixed(2)} · Refunds {record?.refunds ?? 0} · Refusals {record?.refusals ?? 0}</p><p>Bylines: {writers.map(slug => writerName(slug, card)).join(', ') || 'Not listed'}</p><a href={import.meta.env.MODE === 'browser-demo' ? `${import.meta.env.BASE_URL}?writers=1` : `/w/${row.slug}`} target="_blank" rel="noreferrer">Visit writer’s site ↗</a></td></tr>}</tbody>
+  </tr>{expanded && <tr><td colSpan={4}><p>Honesty {score.H.toFixed(2)} · Coverage {score.C.toFixed(2)} · Refunds {record?.refunds ?? 0} · Refusals {record?.refusals ?? 0}</p><p>Bylines: {writers.map(slug => writerName(slug, card)).join(', ') || 'Not listed'}</p><a href={import.meta.env.MODE === 'browser-demo' ? `${import.meta.env.BASE_URL}?writers=1` : `/w/${row.slug}`} target="_blank" rel="noreferrer">Visit writer’s site <Icon name="external" size={16} /></a></td></tr>}</tbody>
 }
 
 /** The trust matrix (D6), public: Beta honesty H × calibration C = trust T. "Writers" is a working name (X3). */

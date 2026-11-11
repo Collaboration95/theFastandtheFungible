@@ -67,7 +67,7 @@ export function tapeRows(run: RunSnapshot): TapeRow[] {
       const round = run.decisions[decideN++]
       const buys = round?.rows.filter(row => row.verdict === 'BUY').length ?? 0
       const would = round?.rows.filter(row => row.wouldBuy).length ?? 0
-      const meta = !round ? 'Scoring paywalled sources…' : run.budgetMinor === 0 && would ? `Would buy ${would} · S$0 budget` : buys ? `${buys} of ${round.rows.length} worth buying` : 'Nothing worth buying'
+      const meta = !round ? 'Scoring paywalled sources…' : run.budgetMinor === 0 && would ? `Would buy ${would} · S$0.00 budget` : buys ? `${buys} of ${round.rows.length} worth buying` : 'Nothing worth buying'
       rows.push({ key, kind: 'decide', event, title: decideN === 1 ? 'Choose what to buy' : 'Check again', state: 'now', meta })
     } else if (event.type === 'BUY') {
       const intent = run.intents[buyN++]

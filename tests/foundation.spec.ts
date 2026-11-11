@@ -72,7 +72,7 @@ test('UC2 keyboard only: palette, ask, clarify, plan, receipt, top layer, views,
   await expect(page.getByRole('dialog', { name: 'Search plan' })).toBeVisible()
   await page.keyboard.press('Control+Enter')
   await expect(page).toHaveTitle(/Answer ready/, { timeout: 60_000 })
-  await expect(page.getByRole('button', { name: /Demo · simulated payments/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /Simulated demo · fixture models · no real value/ })).toBeVisible()
   await expect(page.getByRole('region', { name: /Payment: NotFinancialTimes/ })).toContainText('Verified')
   await tabTo(page, 'Receipt')
   await page.keyboard.press('Enter')
@@ -138,7 +138,7 @@ test('failure recovery views: labelled fallback, slow Testnet, stopped unused pa
   snapshot = { ...snapshot, phase: 'BUY', stopped: false, labels: { ...snapshot.labels, settlement: XRPL_LABEL }, intents: [{ ...snapshot.intents[0], status: 'SUBMITTING' }], receipts: [], grants: [], events: [], spentMinor: 0, reservedMinor: 90 }
   await page.reload()
   await expect(page.locator('.ra-side').getByText(/Waiting/)).toBeVisible()
-  await expect(page.getByRole('button', { name: /Testnet · test funds/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /Testnet demo · no real value/ })).toBeVisible()
   snapshot = { ...ucRuns.UC2, intents: [], receipts: [], grants: [], spentMinor: 0, decisions: ucRuns.UC2.decisions.map(round => ({ ...round, rows: round.rows.map(row => ({ ...row, verdict: 'SKIP_OVER_BUDGET' as const })) })) }
   await page.reload()
   await expect(page.getByText(/Budget too small for eligible sources/)).toBeVisible()

@@ -58,7 +58,7 @@ test('first visit: orientation, the visitor’s own question first, one environm
   // Budget control: hosted questions hold at most S$2.00 of test funds.
   await page.locator('.ra-budget-chip').click()
   const budget = page.getByRole('dialog', { name: 'Budget' })
-  await expect(budget.getByRole('group', { name: 'Budget choices' }).getByRole('button')).toHaveText(['Free', 'S$0.5', 'S$1', 'S$2'])
+  await expect(budget.getByRole('group', { name: 'Budget choices' }).getByRole('button')).toHaveText(['Free', 'S$0.50', 'S$1.00', 'S$2.00'])
   await expect(budget.getByRole('spinbutton', { name: 'Custom budget (S$)' })).toHaveAttribute('max', '2')
   await page.keyboard.press('Escape')
   // One environment indicator; details on demand, and nothing else says SIMULATED on Home.

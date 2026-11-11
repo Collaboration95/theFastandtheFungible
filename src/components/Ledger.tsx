@@ -1,3 +1,4 @@
+import { money, shortTx, xrpAmount as xrp, whenSGT } from '../../shared/presentation'
 import { keyRevealLabel } from '../format'
 import { useEffect, useRef, useState } from 'react'
 import { XRPL_LABEL, type LedgerView, type RunSnapshot } from '../../shared/contracts/index.js'
@@ -5,7 +6,6 @@ import { settlementAssetLabel } from '../format'
 import { getLedger } from '../api'
 import { deriveRunState } from '../runState'
 
-const xrp = (drops: string | null) => drops === null ? '—' : `${(Number(drops) / 1_000_000).toLocaleString('en-SG', { maximumFractionDigits: 6 })} XRP`
 const short = (address: string) => `${address.slice(0, 6)}…${address.slice(-4)}`
 
 /** Testnet ledger: who paid whom in this run, and every wallet's live balance. Public data only. */
@@ -40,21 +40,21 @@ export default function Ledger({ run }: { run: RunSnapshot }) {
   const nameOf = (address: string) => view?.rail === 'xrpl-testnet' ? view.wallets.find(w => w.address === address)?.name ?? short(address) : short(address)
   return <section className="ra-panel ra-ledger" aria-label="XRPL Testnet ledger">
     <h2>Ledger · XRPL Testnet</h2>
-    <p className="ra-muted">{XRPL_LABEL} · Fixed demo rates: S$0.01 = 1,000 XRP drops; S$1 = 1 issued test unit</p>
+    <p className="ra-muted">{XRPL_LABEL} · Fixed demo rates: S$0.01 = 1,000 XRP drops; S$1.00 = 1 issued test unit</p>
     <h3>Payments this run</h3>
     {payments.length === 0 ? <p>No ledger payment yet.</p> : <ol className="ra-ledger-payments">
       {payments.map(receipt => <li key={receipt.receiptId}>
         <span className="ra-ledger-flow"><span>{nameOf(receipt.xrpl!.payer)}</span><span aria-hidden="true"> → </span><strong>{nameOf(receipt.xrpl!.payTo)}</strong></span>
-        <span>S${(receipt.amountMinor / 100).toFixed(2)} = {receipt.xrpl!.asset && receipt.xrpl!.asset !== 'XRP' ? `${receipt.xrpl!.amountDrops} ${settlementAssetLabel(receipt.xrpl!.asset)}` : xrp(receipt.xrpl!.amountDrops)} · ledger {receipt.xrpl!.ledgerIndex}</span>
+        <span>{money(receipt.amountMinor)} = {receipt.xrpl!.asset && receipt.xrpl!.asset !== 'XRP' ? `${receipt.xrpl!.amountDrops} ${settlementAssetLabel(receipt.xrpl!.asset)}` : xrp(receipt.xrpl!.amountDrops)} · ledger {receipt.xrpl!.ledgerIndex}</span>
         {receipt.escrow?.mode === 'key-reveal' && <span>{keyRevealLabel(receipt.escrow)}</span>}
-        <a href={receipt.xrpl!.explorerUrl} target="_blank" rel="noreferrer">tx {receipt.xrpl!.txHash.slice(0, 10)}… on the explorer</a>
+        <a href={receipt.xrpl!.explorerUrl} title={receipt.xrpl!.txHash} target="_blank" rel="noreferrer">tx <span className="mono">{shortTx(receipt.xrpl!.txHash)}</span> on the explorer</a>
       </li>)}
     </ol>}
     {steps.length > 0 && <ol className="ra-ledger-steps" aria-label="Payment steps">
-      {steps.map(step => <li key={step.id}><time dateTime={step.at}>{step.at.slice(11, 19)}</time> {step.label}</li>)}
+      {steps.map(step => <li key={step.id}><time dateTime={step.at}>{whenSGT(step.at)}</time> {step.label}</li>)}
     </ol>}
     <h3>Wallets</h3>
-    {error && <p role="status">Couldn’t load balances. {view && updated && `Last updated ${updated.toLocaleTimeString()}. `}<button className="ra-btn" onClick={() => { setError(false); setAttempt(n => n + 1) }}>Retry balances</button></p>}
+    {error && <p role="status">Couldn’t load balances. {view && updated && `Last updated ${whenSGT(updated.toISOString())}. `}<button className="ra-btn" onClick={() => { setError(false); setAttempt(n => n + 1) }}>Retry balances</button></p>}
     {view?.rail !== 'xrpl-testnet' ? <p>{error ? 'Balances unavailable.' : 'Loading Testnet balances…'}</p> : <table className="ra-ledger-wallets">
       <thead><tr><th scope="col">Wallet</th><th scope="col">Balance</th><th scope="col">XRP received from ResearchAgent</th></tr></thead>
       <tbody>{view.wallets.map(wallet => <tr key={wallet.address} className={moved.has(wallet.address) ? 'ra-ledger-moved' : undefined}>

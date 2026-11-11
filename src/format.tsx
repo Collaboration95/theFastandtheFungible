@@ -10,7 +10,7 @@ export { settlementAssetLabel, money, assetMoney } from '../shared/presentation.
 import { money, assetMoney } from '../shared/presentation.js'
 /** Compact amounts; the adjacent Network/asset line retains the Testnet stand-in disclosure. */
 export const compactAssetMoney: typeof assetMoney = (minor, asset) => assetMoney(minor, asset).split(' · ')[0]
-export const shortHash = (hash: string) => hash.length > 14 ? `${hash.slice(0, 6)}…${hash.slice(-5)}` : hash
+export { shortTx as shortHash } from '../shared/presentation.js'
 export const candidateOf = (run: RunSnapshot, ref: SourceRef) => run.candidates.find(item => sameSource(item, ref))
 export const citationKey = (citation: Citation) => JSON.stringify([sourceKey(citation), citation.spanId])
 /** One counting rule for every surface (the run summary and the sources strip): "bought" means paid, never "kept".

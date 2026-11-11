@@ -12,3 +12,16 @@ Raw snapshots are audited as well as every staged prefix: paid bodies require a
 VERIFIED intent, delivered grant and GRANT trace; nested body fields must match
 delivered content. The historical capture SHA/date remain in each JSON. Normal
 app pace is real; only explicit replay/recording uses staged financial history.
+
+All scenario links open their recorded run: `/demo/` and `?scenario=UC3-key-reveal`
+select “Key reveal + refund (start here)” (11 Nov); `?scenario=UC-key-reveal`
+selects “Writer never reveals: money back” (7 Nov). `?scenario=UC3-testnet`
+selects “Plain payment”. Simulated recordings retain their explicit labels.
+The canonical replay label includes the recording date, fictional writers and
+“no real value”. At phone widths, expand “Replay · Testnet demo” to see the
+full label, scenario picker, Pause and installation instructions. The banner
+carries the disclosure because the shared app intentionally hides its local
+environment pill in browser-demo mode. Reduced-motion pacing is unchanged.
+
+L12 owns `site/demo/` rebuilds until its PR merges; FIN should rebuild after
+that merge when publishing. Build output is ignored and ships via site publishing.

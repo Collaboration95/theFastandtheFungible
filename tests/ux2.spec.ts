@@ -177,7 +177,7 @@ test('the first-visit environment note never opens over a deep-linked result', a
  await expect(page.getByRole('region', { name: 'Research answer' })).toBeVisible()
  await page.waitForTimeout(500)
  await expect(page.locator('#environment-details')).toHaveCount(0)
- await expect(page.getByRole('button', { name: /Demo · simulated payments/ })).toBeVisible() // the indicator itself stays
+ await expect(page.getByRole('button', { name: /Simulated demo · fixture models · no real value/ })).toBeVisible() // the indicator itself stays
 })
 
 test('Lane K decline explains three policy decisions', async ({page}) => {
