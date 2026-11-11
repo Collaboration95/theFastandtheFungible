@@ -25,7 +25,7 @@ contract. Only deterministic policy code can spend, never past your budget. When
 worth buying it spends nothing, and that refusal is anchored on the ledger too. Every receipt
 can be re-checked in your browser or with our Python verifier.
 
-Since SingHacks (<!--f:prs-->248<!--/f--> pull requests merged since
+Since SingHacks (<!--f:prs-->270<!--/f--> pull requests merged since
 <!--f:since-->21 Sep<!--/f-->): key-reveal escrow, writer-signed refunds, anchored answers,
 two verifiers written separately, an MCP server for Claude Code, and a live sandbox at
 https://ra-front-651013803640.asia-southeast1.run.app (13–19 Nov). XRPL Testnet only, no real
@@ -39,8 +39,8 @@ gap, at most one per round and up to three rounds, paying writers directly over 
 Ledger. A decision model (or fixed rules, as in the live sandbox) judges what is worth buying, but
 only deterministic policy code can spend, and never past your budget.
 
-New since SingHacks (<!--f:prs-->248<!--/f--> pull requests merged since
-<!--f:since-->21 Sep<!--/f-->, <!--f:releases-->13<!--/f--> releases):
+New since SingHacks (<!--f:prs-->270<!--/f--> pull requests merged since
+<!--f:since-->21 Sep<!--/f-->, <!--f:releases-->15<!--/f--> releases):
 
 - **Key-reveal escrow.** Payment is locked in a native XRPL escrow whose condition is the
   hash of the article's key. The writer is paid only by publishing that key on the ledger,
@@ -106,8 +106,8 @@ key-reveal example are in the repo. What worked: escrow semantics, Credentials, 
 
 | Claim | Label | Source |
 |---|---|---|
-| "<!--f:prs-->248<!--/f--> pull requests merged since <!--f:since-->21 Sep<!--/f-->" | Merged into `main` on or after 21 Sep 2026 SGT, counted at <!--f:sha-->329b64f7<!--/f--> on <!--f:as_of-->11 Nov 2026<!--/f--> | [facts.json](facts.json) `prs` ← `site/progress/data.json` queries |
-| "<!--f:releases-->13<!--/f--> releases" | Published GitHub releases reachable from the counted commit, prereleases included | same |
+| "<!--f:prs-->270<!--/f--> pull requests merged since <!--f:since-->21 Sep<!--/f-->" | Merged into `main` on or after 21 Sep 2026 SGT, counted at <!--f:sha-->bd52beff<!--/f--> on <!--f:as_of-->11 Nov 2026<!--/f--> | [facts.json](facts.json) `prs` ← `site/progress/data.json` queries |
+| "<!--f:releases-->15<!--/f--> releases" | Published GitHub releases reachable from the counted commit, prereleases included | same |
 | Live sandbox | Shared XRPL Testnet sandbox, no real value, open 13–19 Nov 2026; one pre-funded Testnet payer, per-visitor caps; each answer labels live or fixture models | [hosted-web.md](../hosted-web.md) |
 | "buys an article only when policy judges it fills a gap, at most one per round" | The plan modal's rule: at most one article per round, up to 3 rounds, within the budget; a new writer may get one labelled probe purchase up to S$0.30 | `shared/contracts/run.ts` `PURCHASE_RULE` |
 | Key-reveal escrow, refund | XRPL Testnet, fixture models, fictional writers; the refund after a finish is writer-signed (the fixture writer cooperates) | [#377](https://github.com/Collaboration95/theFastandtheFungible/pull/377), [#379](https://github.com/Collaboration95/theFastandtheFungible/pull/379), [key-reveal-escrow.md](../key-reveal-escrow.md) |

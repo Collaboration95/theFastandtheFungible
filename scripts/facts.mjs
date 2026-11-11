@@ -189,10 +189,13 @@ const escapeHtml = text => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').rep
 /** Replace every marked value with the current fact; unknown keys are errors. HTML files get escaped values. */
 export function fill(text, facts, file = 'text') {
   const html = file.endsWith('.html')
-  return text.replace(MARK, (_, key) => {
+  const filled = text.replace(MARK, (_, key) => {
     if (!facts[key]) throw new Error(`facts: ${file} uses unknown fact "${key}"`)
     return `<!--f:${key}-->${html ? escapeHtml(facts[key].value) : facts[key].value}<!--/f-->`
   })
+  // HTML attributes cannot contain fact comments. Mark pinned release links explicitly instead.
+  return filled.replace(/data-fact-link="release" href="[^"]*"/g,
+    `data-fact-link="release" href="${REPO}/releases/tag/${facts.release.value}"`)
 }
 /** Rendered text: what GitHub shows once the comments are hidden. */
 export const strip = text => text.replace(/<!--\/?f(?::[A-Za-z0-9_]+)?-->/g, '')

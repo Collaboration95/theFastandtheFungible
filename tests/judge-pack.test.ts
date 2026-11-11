@@ -66,17 +66,18 @@ describe('judge pack: one true story', () => {
 
   it('claims no XRPL feature we do not use or that is not available on the network', () => {
     // XRPL review: not used, or not available on Testnet or Mainnet. Saying we have none of them is fine.
-    const never = /\bDIDs?\b|Permissioned Domains?|\bMPTs?\b|XLS-56|Batch (?:transaction|amendment)|payment channels?|PayChan|mainnet[- ]ready|KYC'?d|smart[- ]contract/i
+    const did = /\bDIDs?\b/ // The acronym is case-sensitive; prose such as 'Did I get paid?' is not a feature claim.
+    const never = /Permissioned Domains?|\bMPTs?\b|XLS-56|Batch (?:transaction|amendment)|payment channels?|PayChan|mainnet[- ]ready|KYC'?d|smart[- ]contract/i
     const denial = /\bno (?:smart )?contract|\bwithout (?:a )?smart contract|no Permissioned Domains|There's no contract/i
     const hits: string[] = []
     for (const file of publicFiles) {
-      for (const [i, line] of read(file).split('\n').entries()) if (never.test(line) && !denial.test(line)) hits.push(`${file}:${i + 1}`)
+      for (const [i, line] of read(file).split('\n').entries()) if ((did.test(line) || never.test(line)) && !denial.test(line)) hits.push(`${file}:${i + 1}`)
     }
     expect(hits).toEqual([])
   })
 
   it('labels what the live sandbox does not show: Credentials and token escrow are CLI and evidence only', () => {
-    expect(read('docs/submission/qa-prep.md')).toMatch(/Credentials identify writers who publish with `publish --testnet`; the sandbox's team writers are unverified/)
+    expect(read('docs/submission/qa-prep.md').replace(/\s+/g, ' ')).toMatch(/Credentials identify writers who publish with `publish --testnet`; the sandbox's team writers are unverified/)
     for (const file of ['docs/submission/compliance-slide.md', 'docs/submission/deck/index.html']) expect(read(file), file).toContain('XRPL Credentials badge for writers (publish CLI; none in the live sandbox)'.replace('for writers ', file.endsWith('.md') ? '' : 'for writers '))
     for (const file of ['README.md', 'docs/submission/short-description.md', 'docs/submission/qa-prep.md', 'docs/submission/deck/index.html']) expect(read(file), file).toMatch(/live sandbox pays in Testnet XRP/)
     // TokenEscrow is enabled on Testnet and Mainnet; only the RLUSD issuer flag blocks it.

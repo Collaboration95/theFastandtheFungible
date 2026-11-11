@@ -5,7 +5,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { withResourceScope } from '../shared/resource-scope.js'
 // @ts-expect-error plain ESM script without types
-import { check, collect, publicFiles } from '../scripts/check-release-urls.mjs'
+import { check, collect, publicFiles, githubHead } from '../scripts/check-release-urls.mjs'
 
 const REPO = 'https://github.com/Collaboration95/theFastandtheFungible'
 const answer = (status: number) => async () => ({ status }) as Response
@@ -20,6 +20,23 @@ describe('pinned release links', () => {
     expect(urls.some(u => u.startsWith('https://raw.githubusercontent.com/') && u.includes(`/v${tag}/docs/evidence/`))).toBe(true)
     expect(publicFiles()).toEqual(expect.arrayContaining(['README.md', 'docs/install.md', 'docs/submission/deck/index.html', 'site/developers/index.html']))
     expect(publicFiles().some((f: string) => f.startsWith('docs/evidence/'))).toBe(false)
+  })
+
+  it('refuses an unpublished asset and HEAD-checks an uploaded one through gh', async () => {
+    const commands: string[][] = []
+    const execImpl = async (cmd: string, args: string[]) => {
+      expect(cmd).toBe('gh')
+      commands.push(args)
+      return { stdout: args[0] === 'release'
+        ? JSON.stringify({ isDraft: false, assets: [{ name: 'tool.tgz', state: 'uploaded', apiUrl: 'https://api.github.com/repos/o/r/releases/assets/123' }] })
+        : 'HTTP/2.0 200 OK' }
+    }
+    const options = { execImpl, releaseCache: new Map() }
+    expect(await githubHead(`${REPO}/releases/download/v9.9.9/missing.tgz`, {}, options)).toEqual({ status: 404 })
+    expect(commands.filter(a => a[0] === 'api')).toHaveLength(0)
+    expect(await githubHead(`${REPO}/releases/download/v9.9.9/tool.tgz`, {}, options)).toEqual({ status: 200 })
+    expect(commands.filter(a => a[0] === 'release')).toHaveLength(1)
+    expect(commands.at(-1)).toEqual(expect.arrayContaining(['api', 'HEAD', 'https://api.github.com/repos/o/r/releases/assets/123']))
   })
 
   it('reads a base folder without templates, elisions or trailing punctuation', () => withResourceScope(async scope => {

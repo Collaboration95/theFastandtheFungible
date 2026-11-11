@@ -10,7 +10,7 @@
   - Numbers are facts: each sits between <!-/-f:key-/-> markers (written without the slashes) and
     comes from docs/submission/facts.json. `node scripts/facts.mjs` refills them; `npm run hygiene`
     fails if one is stale. Never type a number that facts.json has; add a fact instead.
-  - Slide 3's terminal is docs/evidence/r5-a/try-fresh-output.txt verbatim (links shortened to their
+  - Slide 3's terminal is docs/submission/evidence/v1.1.1/try-output.txt verbatim (links shortened to their
     hashes); slide 10's images come from `node docs/submission/deck/export.mjs --refresh-shots`.
   - <aside class="notes"> holds speaker notes and the judging criteria each slide serves. Never printed.
   - Export: node docs/submission/deck/export.mjs  (PDF beside this folder, PNGs under scratch/deck-png/).
@@ -180,9 +180,9 @@ td.was { color: var(--muted); }
     <div class="row"><div class="k">Try it live</div><div class="v"><a href="https://ra-front-651013803640.asia-southeast1.run.app">https://ra-front-651013803640.asia-southeast1.run.app</a> · <!--f:hosted-->Shared XRPL Testnet sandbox · no real value · open 13–19 Nov<!--/f--></div></div>
     <div class="row"><div class="k">Watch a run</div><div class="v"><a href="https://collaboration95.github.io/theFastandtheFungible/demo/">collaboration95.github.io/theFastandtheFungible/demo/</a> · a recorded Testnet run, any time</div></div>
   </div>
-  <div class="cmdline" style="margin-top:24px"><span class="p">$</span> <!--f:try_line-->npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz try --testnet<!--/f--></div>
+  <div class="cmdline" style="margin-top:24px"><span class="p">$</span> <!--f:try_line-->npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz try --testnet<!--/f--></div>
   <div style="margin-top:24px"><span class="env">Testnet · test funds · fictional demo writers, plus our own labelled team-authored notes · TEST-SGD stands in for RLUSD</span></div>
-  <div class="src"><span>SingHacks finals · Ripple track · Swiss Pavilion, SFF · 18 Nov 2026 · facts as of <!--f:as_of-->11 Nov 2026<!--/f--> at <!--f:sha-->329b64f7<!--/f--></span><span class="n mono">github.com/Collaboration95/theFastandtheFungible</span></div>
+  <div class="src"><span>SingHacks finals · Ripple track · Swiss Pavilion, SFF · 18 Nov 2026 · facts as of <!--f:as_of-->11 Nov 2026<!--/f--> at <!--f:sha-->bd52beff<!--/f--></span><span class="n mono">github.com/Collaboration95/theFastandtheFungible</span></div>
   <aside class="notes">
     <p><b>Criteria:</b> Reachability (25%) first: three ways in on the first page, none needing an install. Sets the honesty frame for every other criterion.</p>
     <p><b>Say:</b> ResearchAgent is research with a wallet. It answers from free sources, then buys the articles it is missing straight from the writer, over x402 on the XRP Ledger, inside your budget. Everything runs on XRPL Testnet, and you can try it in the live sandbox until 19 November.</p>
@@ -196,19 +196,19 @@ td.was { color: var(--muted); }
   <p class="lead" style="font-size:26px;margin-top:18px"><!--f:singhacks_then-->At SingHacks a language model proposed each purchase and a person approved every quote before payment; payment was a fixture by default, with optional Testnet settlement.<!--/f--></p>
   <table style="margin-top:28px">
     <tr><th style="width:250px"></th><th style="width:520px">At SingHacks</th><th>Now</th></tr>
-    <tr><td class="k">Who decides to buy</td><td class="was">A language model proposed; a person approved every quote</td><td>Policy code buys within your budget after one plan confirmation; a decision model only scores</td></tr>
+    <tr><td class="k">Who decides to buy</td><td class="was">A language model proposed; a person approved every quote</td><td>Policy code buys within your budget after one plan confirmation; a decision model (fixed rules in the sandbox) only scores</td></tr>
     <tr><td class="k">Fair exchange</td><td class="was">Pay first, then read</td><td>Key-reveal escrow: the writer is paid only by publishing the article’s key</td></tr>
     <tr><td class="k">Refunds</td><td class="was">None</td><td>A broken promise is refunded on the ledger</td></tr>
     <tr><td class="k">Proof</td><td class="was">Citations checked inside the app</td><td>An offline verifier anyone can run, in TypeScript or Python</td></tr>
     <tr><td class="k">Ways in</td><td class="was">One web page</td><td>A live sandbox, an MCP server for Claude Code and Codex, SDKs and a Mac app</td></tr>
   </table>
   <div class="stats" style="margin-top:36px">
-    <div class="stat"><b><!--f:prs-->248<!--/f--></b><span>pull requests merged since <!--f:since-->21 Sep<!--/f--></span></div>
-    <div class="stat"><b><!--f:releases-->13<!--/f--></b><span>releases, v0.1.0 to <!--f:release-->v1.0.2<!--/f--></span></div>
+    <div class="stat"><b><!--f:prs-->270<!--/f--></b><span>pull requests merged since <!--f:since-->21 Sep<!--/f--></span></div>
+    <div class="stat"><b><!--f:releases-->15<!--/f--></b><span>releases, v0.1.0 to <!--f:release-->v1.1.1<!--/f--></span></div>
     <div class="stat"><b><!--f:transactions-->61<!--/f--></b><span>Testnet transactions you can re-check live on our ledger page</span></div>
     <div class="stat"><b><!--f:vectors-->224<!--/f--></b><span>receipt test vectors; two verifiers, written separately, agree on all</span></div>
   </div>
-  <div class="src"><span>Counted at <!--f:sha-->329b64f7<!--/f--> on <!--f:as_of-->11 Nov 2026<!--/f--> (git and gh queries in site/progress/data.json) · “At SingHacks” is the 19–20 Sep event build (e16435a3)</span><span class="n"></span></div>
+  <div class="src"><span>Counted at <!--f:sha-->bd52beff<!--/f--> on <!--f:as_of-->11 Nov 2026<!--/f--> (git and gh queries in site/progress/data.json) · “At SingHacks” is the 19–20 Sep event build (e16435a3)</span><span class="n"></span></div>
   <aside class="notes">
     <p><b>Criteria:</b> all six; this is the organisers’ “progress since SingHacks” requirement. Strongest for Technical depth (who may spend) and Creativity (key reveal).</p>
     <p><b>Say:</b> At SingHacks a language model proposed each purchase, a person approved every quote, and payment was simulated by default. Since then: policy code buys, writers are paid by key reveal, refunds happen on the ledger, and anyone can verify a receipt offline. The old deck line about people approving purchases was wrong; do not repeat it.</p>
@@ -219,29 +219,31 @@ td.was { color: var(--muted); }
 <section class="slide" data-title="One line, real ledger">
   <div class="crit">Reachability · one line, no clone</div>
   <h1>One line runs the whole money path on real Testnet</h1>
-  <div class="cmdline" style="margin-top:28px"><span class="p">$</span> <!--f:try_line-->npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz try --testnet<!--/f--></div>
+  <div class="cmdline" style="margin-top:28px"><span class="p">$</span> <!--f:try_line-->npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz try --testnet<!--/f--></div>
   <div class="cols" style="grid-template-columns:1100px 1fr;gap:48px;margin-top:22px">
-    <div class="term" data-evidence="docs/evidence/r5-a/try-fresh-output.txt" data-omit="SKIP historical origin: v1 origin unresolved; original singleton semantics">
-        <div class="dim">Testnet · no real value · Fixture models and fictional writers</div>
-        <div>1. Create: <a href="https://testnet.xrpl.org/transactions/04900C76955DEF9AB86F0E0A03BCB25052887125D557B986A6EB884A16DB031C">04900C76…16DB031C</a></div>
-        <div>2. Finish · sha256(K) = Condition ✓: <a href="https://testnet.xrpl.org/transactions/E95BED8EA5A56C8F7CD250E75077ED7A20A167930A0B7462849C4B44FABF6EAA">E95BED8E…FABF6EAA</a></div>
-        <div>3. Refund · writer-signed · fixture writer cooperates (a real writer could refuse): <a href="https://testnet.xrpl.org/transactions/B248161AECFEF3F01CA1B96F994551007673C088593972CE0DDCF799F785E2BB">B248161A…F785E2BB</a></div>
-        <div>4. Re-buy create: <a href="https://testnet.xrpl.org/transactions/2F5C3D75E81AC904E411A74E60A8CD123A3AB92B98855A61339A14582D9FD1FF">2F5C3D75…2D9FD1FF</a></div>
-        <div>5. Re-buy finish · sha256(K) = Condition ✓: <a href="https://testnet.xrpl.org/transactions/528DFA6F196D600CE037BF0F171FCD1AFB498A8BF7455EF6A5C1C19392CDC389">528DFA6F…92CDC389</a></div>
-        <div>6. Anchor: <a href="https://testnet.xrpl.org/transactions/7D5B506B02AEBA15991AD9B9B501C0395EBD93C1DAFB70116DDABA55A6DBCEE7">7D5B506B…A6DBCEE7</a></div>
-        <div class="dim">VERIFY c349c3ec-ae93-4c2e-9bfd-190aa146bd6b</div>
+    <div class="term" data-evidence="docs/submission/evidence/v1.1.1/try-output.txt">
+        <div class="dim">Testnet · no real value · Fixture models · fictional and team-authored writers</div>
+        <div>1. Create: <a href="https://testnet.xrpl.org/transactions/4AF8D55C54FAEAB0EFE93167C12507B64362685003E10DF70BAF4AC2452022B6">4AF8D55C…452022B6</a></div>
+        <div>2. Finish · sha256(K) = Condition ✓: <a href="https://testnet.xrpl.org/transactions/47FB0F5C21761047489DC4E5140C2BE708C06BD08AC7AA08912E7E9AE9E83FA6">47FB0F5C…E9E83FA6</a></div>
+        <div>3. Refund · writer-signed · fixture writer cooperates (a real writer could refuse): <a href="https://testnet.xrpl.org/transactions/6A449846AC380A719DA14A8D77A163E9BBDF18C74270F2C393D87425702CE755">6A449846…702CE755</a></div>
+        <div>4. Re-buy create: <a href="https://testnet.xrpl.org/transactions/DF5650323AD3C05445EA55464A78CC297370C3F1C18825AB91F2E7154E4EF373">DF565032…4E4EF373</a></div>
+        <div>5. Re-buy finish · sha256(K) = Condition ✓: <a href="https://testnet.xrpl.org/transactions/F1AA7E20676650FE60F0F0C006141FB9BB04BE276AB3804F1E5937425DB3A95F">F1AA7E20…5DB3A95F</a></div>
+        <div>6. Anchor: <a href="https://testnet.xrpl.org/transactions/A722EB98545EB409D15831F060CEE9DD8CB9C78C921F9258D3CCA27D6FACB8AF">A722EB98…6FACB8AF</a></div>
+        <div class="dim">VERIFY 7cb2a7a4-2f7b-40d0-a84d-f5dbbf65fb98</div>
         <div class="ok">PASS CONTRIBUTIONS 1/1</div>
         <div class="ok">PASS MANIFEST   7/7</div>
         <div class="ok">PASS PASSAGES   7/7</div>
-        <div class="ok">PASS CITATION   16/16</div>
+        <div class="ok">PASS CITATION   20/20</div>
         <div class="ok">PASS GRANT      1/1</div>
         <div class="ok">PASS RECEIPT    3/3</div>
         <div class="ok">PASS REFUND     2/2</div>
         <div class="ok">PASS AUDIT CHAIN 1/1</div>
         <div class="ok">PASS testnet 12/12 (read-only, s.altnet)</div>
-        <div class="dim">SKIP writer credentials: Unsigned advisory identity; requires online check</div>
-        <div class="ok">PASS audit anchor: Validated XRPL Testnet ledger 22132261</div>
-        <div>Finished in 69.0 s · budget S$2.00 · net S$0.40 · gross S$0.70</div>
+        <div>Skipped writer credentials: the writer’s identity is self-declared; checking it needs an online lookup</div>
+        <div>Skipped historical origin: not needed for this receipt format (one origin per article)</div>
+        <div class="ok">PASS audit anchor: Validated XRPL Testnet ledger 22238845</div>
+        <div>Skipped is not failed. PASS does not prove who a writer is.</div>
+        <div>Finished in 59.2 s · budget S$2.00 · net S$0.40 · gross S$0.70</div>
         <div class="ok">RESULT PASS</div>
     </div>
     <div>
@@ -250,7 +252,7 @@ td.was { color: var(--muted); }
       <p class="cap" style="margin-top:40px">If the faucet fails, it prints a labelled SIMULATED run and the reason. The output here is a committed fresh-state run; its own clock excludes the npm download. Links are shortened to their hashes.</p>
     </div>
   </div>
-  <div class="src"><span>Output: docs/evidence/r5-a/try-fresh-output.txt (7 Nov, one SKIP line trimmed) · cold timings: docs/evidence/round4-j2/ · fixture models, fictional writers, faucet wallets</span><span class="n"></span></div>
+  <div class="src"><span>Output: docs/submission/evidence/v1.1.1/try-output.txt (11 Nov, published v1.1.1) · cold timings: docs/evidence/round4-j2/ · fixture models, labelled writers, faucet wallets</span><span class="n"></span></div>
   <aside class="notes">
     <p><b>Criteria:</b> Reachability (25%): no clone, no account, no key. Feasibility (20%): honest cold timing, misses kept. Technical depth: the same run verifies its own receipts against the ledger.</p>
     <p><b>Say:</b> Today a judge opens one link, or runs one line with no clone and no account. It buys, catches a broken promise, gets refunded, re-buys, anchors the answer and prints RESULT PASS with six Testnet links.</p>
@@ -288,7 +290,7 @@ td.was { color: var(--muted); }
   <div class="src"><span>README · Hard guarantees · docs/evidence/v5-heldout/README.md · mcp/policy.ts</span><span class="n"></span></div>
   <aside class="notes">
     <p><b>Criteria:</b> Technical depth (20%): architecture, autonomy and safeguards. Creativity: the model scores, code buys.</p>
-    <p><b>Say:</b> The model only recommends. Policy code spends, inside the budget, and five hard gates hold on every run. Our held-out banks had zero gate violations.</p>
+    <p><b>Say:</b> A decision model scores, or fixed rules in the sandbox. Policy code spends, inside the budget, and five hard gates hold on every run. Our held-out banks had zero gate violations.</p>
   </aside>
 </section>
 
@@ -308,7 +310,7 @@ td.was { color: var(--muted); }
     <div class="lane"><div class="k">Writer no-show</div><div class="steps"><span class="s">Create</span><span class="arrow">→</span><span class="s">no key by CancelAfter</span><span class="arrow">→</span><span class="s">EscrowCancel: money back, nothing granted</span><span class="tx"><a href="https://testnet.xrpl.org/transactions/8DA4ECE71145A50A5B45AABAD90775897D527686E024FADAFA2D1E168E732948">8DA4ECE7…</a> → <a href="https://testnet.xrpl.org/transactions/F89DD9B12A6C942E53C004EE247D7EE61B26470905C621FF105A4669961EEB30">F89DD9B1…</a></span></div></div>
   </div>
   <p class="honest" style="margin-top:40px"><b>What the ledger does and doesn’t enforce.</b> Key reveal makes <b>delivery</b> atomic: no key, no payment. <b>Quality</b> rests on the signed promises, a fraud proof anyone can check, and reputation. After a finish, the refund is writer-signed: our fixture writer cooperates, and a real writer could refuse. No smart contract: Escrow with a PREIMAGE-SHA-256 condition is native XRPL.</p>
-  <div class="src"><span>docs/key-reveal-escrow.md · kept and broken: the slide 3 run (docs/evidence/r5-a/) · no-show: docs/evidence/round3-e/runs.json · fixture models, fictional writers</span><span class="n"></span></div>
+  <div class="src"><span>docs/key-reveal-escrow.md · kept and broken: the 7 Nov run (docs/evidence/r5-a/) · no-show: docs/evidence/round3-e/runs.json · fixture models, fictional writers</span><span class="n"></span></div>
   <aside class="notes">
     <p><b>Criteria:</b> Creativity (20%): a new use of a native XRPL primitive for agent commerce. Technical depth: crypto-condition escrow, no smart contract.</p>
     <p><b>Say:</b> Here is what’s new. The writer only gets paid by publishing the article’s key on the ledger. We lock payment in a native XRPL escrow whose condition is the hash of that key, so delivery and payment become one ledger event.</p>
@@ -353,9 +355,9 @@ td.was { color: var(--muted); }
   <h1>Don’t trust our agent. Verify it, against the ledger.</h1>
   <div class="cols" style="grid-template-columns:1fr 1fr;gap:64px;margin-top:44px">
     <div>
-      <div class="term" style="font-size:18px" data-evidence="docs/evidence/hosted-export-nov11/verify-python-main.txt">
+      <div class="term" style="font-size:18px" data-evidence="docs/submission/evidence/v1.1.1/verify-python.txt">
         <div class="dim"># Python, no Node: a receipt the live sandbox exported</div>
-        <div><span class="p">$</span> pip install …/v1.1.0/researchagent-1.1.0-py3-none-any.whl</div>
+        <div><span class="p">$</span> pip install …/v1.1.1/researchagent-1.1.1-py3-none-any.whl</div>
         <div><span class="p">$</span> researchagent verify receipts.json --ledger</div>
         <div class="ok">PASS checks: 46 passed, 0 failed, 2 skipped</div>
         <div class="ok">PASS audit anchor: Validated XRPL Testnet ledger 22228575</div>
@@ -363,7 +365,7 @@ td.was { color: var(--muted); }
         <div class="dim">Skipped is not failed. PASS does not prove who a writer is.</div>
         <div class="ok">RESULT PASS</div>
       </div>
-      <p class="cap" style="font-size:23px;margin-top:22px">Any receipt the app or the live sandbox exports can be checked the same way, by anyone, offline or against the ledger, with release v1.1.0 or later.</p>
+      <p class="cap" style="font-size:23px;margin-top:22px">Any receipt the app or the live sandbox exports can be checked the same way, by anyone, offline or against the ledger, with release v1.1.1.</p>
     </div>
     <ul class="points" style="margin-top:4px">
       <li><b>Two verifiers, written separately</b>: TypeScript, and Python’s standard library. They agree on all <!--f:vectors-->224<!--/f--> shared vectors: <!--f:vectors_golden-->19<!--/f--> must pass and <!--f:vectors_tampered-->205<!--/f--> tampered ones must fail.</li>
@@ -374,7 +376,7 @@ td.was { color: var(--muted); }
       <li><b>Prompt injection can’t spend:</b> model inputs are untrusted, and only policy code can buy.</li>
     </ul>
   </div>
-  <div class="src"><span>Output: docs/evidence/hosted-export-nov11/ (a hosted-demo export, 11 Nov) · tests/fixtures/receipt-conformance/ · the /ledger/ page</span><span class="n"></span></div>
+  <div class="src"><span>Output: docs/submission/evidence/v1.1.1/ · v1.1.1 wheel, committed hosted export, 11 Nov · tests/fixtures/receipt-conformance/ · the /ledger/ page</span><span class="n"></span></div>
   <aside class="notes">
     <p><b>Criteria:</b> Technical depth (20%): testing, security and safeguards. Reachability: the verifier is a separate install in another language.</p>
     <p><b>Say:</b> Don’t trust us, verify it. Two verifiers, written separately, one in Python with no Node, re-check every receipt against the ledger. Our ledger page re-checks every historical Testnet transaction live.</p>
@@ -533,7 +535,7 @@ td.was { color: var(--muted); }
       <div class="person"><b>Guruprasath</b><span>Product and engineering since SingHacks: plans the work, directs the coding agents and owns the merge gate.</span></div>
       <div class="person"><b>Miul</b><span>SingHacks build: the research-plan contracts, quote binding and the first test harness.</span></div>
       <div class="person"><b>Andrew Nguyen</b><span>Before SingHacks: the idea briefs and data sources.</span></div>
-      <div class="person" style="border-bottom:1px solid var(--rule)"><b style="font-size:26px">How we build</b><span>Coding agents work in parallel lanes; every merge passes one local gate of tests and the five hard gates. <!--f:prs-->248<!--/f--> pull requests since <!--f:since-->21 Sep<!--/f-->.</span></div>
+      <div class="person" style="border-bottom:1px solid var(--rule)"><b style="font-size:26px">How we build</b><span>Coding agents work in parallel lanes; every merge passes one local gate of tests and the five hard gates. <!--f:prs-->270<!--/f--> pull requests since <!--f:since-->21 Sep<!--/f-->.</span></div>
     </div>
     <table class="links">
       <tr><th>Check it yourself</th><th></th></tr>
@@ -541,7 +543,7 @@ td.was { color: var(--muted); }
       <tr><td>Recorded Testnet run</td><td class="v"><a href="https://collaboration95.github.io/theFastandtheFungible/demo/">collaboration95.github.io/…/demo/</a></td></tr>
       <tr><td>Ledger page, live checks</td><td class="v"><a href="https://collaboration95.github.io/theFastandtheFungible/ledger/">collaboration95.github.io/…/ledger/</a></td></tr>
       <tr><td>Progress since SingHacks</td><td class="v"><a href="https://collaboration95.github.io/theFastandtheFungible/progress/">collaboration95.github.io/…/progress/</a></td></tr>
-      <tr><td>Release, every artifact</td><td class="v"><a href="https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.2"><!--f:release-->v1.0.2<!--/f--> on GitHub Releases</a></td></tr>
+      <tr><td>Release, every artifact</td><td class="v"><a data-fact-link="release" href="https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.1.1"><!--f:release-->v1.1.1<!--/f--> on GitHub Releases</a></td></tr>
       <tr><td>Code and evidence</td><td class="v"><a href="https://github.com/Collaboration95/theFastandtheFungible">github.com/Collaboration95/theFastandtheFungible</a></td></tr>
       <tr><td>Demo video</td><td class="v" data-link="video"><!--f:video-->linked in the submission form<!--/f--></td></tr>
     </table>

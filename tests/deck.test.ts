@@ -59,7 +59,9 @@ describe('finals deck', () => {
     expect(hrefs).toEqual(evidence.flatMap(l => l.match(url)?.[0] ?? []))
   })
 
-  it('shows the committed Python verifier output on slide 7', () => {
+  it('shows the published release Python verifier output on slide 7', () => {
+    expect(slides[6].textContent).toContain(`${fact('release')}/researchagent-${fact('release').slice(1)}-py3-none-any.whl`)
+    expect(doc.querySelector('[data-fact-link="release"]')?.getAttribute('href')).toBe(data.links.release)
     const term = slides[6].querySelector('.term[data-evidence]')!
     const evidence = readFileSync(term.getAttribute('data-evidence')!, 'utf8').trimEnd().split('\n')
     expect(lines(term).slice(-evidence.length)).toEqual(evidence)

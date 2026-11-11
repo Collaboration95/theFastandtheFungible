@@ -6,6 +6,8 @@
 // server.json and the in-app links; it never opens docs/evidence or the CHANGELOG (history may name tags).
 // Covered forms: releases/download/<tag>/<asset>, releases/download/<tag> (as the tag's release),
 // releases/tag/<tag>, raw.githubusercontent.com/<repo>/<tag>/<path>, and $REL/<asset> after `REL=<base>`.
+import { execFile } from 'node:child_process'
+import { promisify } from 'node:util'
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -60,8 +62,44 @@ export function collect(base = root, files = publicFiles(base)) {
   return cited
 }
 
+const exec = promisify(execFile)
+const releases = new Map()
+/** Resolve the public link through authenticated gh, then HEAD its release, asset or contents endpoint.
+ * Never sends an unauthenticated fetch to GitHub. Asset bodies are not downloaded. */
+export async function githubHead(url, init = {}, { execImpl = exec, releaseCache = releases } = {}) {
+  const parsed = new URL(url)
+  let endpoint, accept = 'application/vnd.github+json'
+  if (parsed.hostname === 'raw.githubusercontent.com') {
+    const [, owner, repo, ref, ...path] = parsed.pathname.split('/')
+    endpoint = `repos/${owner}/${repo}/contents/${path.join('/')}?ref=${ref}`
+    accept = 'application/vnd.github.raw+json'
+  } else {
+    const match = parsed.pathname.match(/^\/([^/]+\/[^/]+)\/releases\/(tag|download)\/([^/]+)(?:\/(.+))?$/)
+    if (!match) throw new Error(`unsupported GitHub release link: ${url}`)
+    const [, repo, kind, tag, asset] = match
+    if (kind === 'tag') endpoint = `repos/${repo}/releases/tags/${tag}`
+    else {
+      const key = `${repo}/${tag}`
+      if (!releaseCache.has(key)) releaseCache.set(key, execImpl('gh', ['release', 'view', tag, '--repo', repo, '--json', 'isDraft,assets'], { timeout: 20_000 }).then(r => JSON.parse(r.stdout)))
+      const release = await releaseCache.get(key)
+      const found = !release.isDraft && release.assets.find(a => a.name === decodeURIComponent(asset) && a.state === 'uploaded')
+      if (!found) return { status: 404 }
+      endpoint = found.apiUrl
+      accept = 'application/octet-stream'
+    }
+  }
+  try {
+    const { stdout } = await execImpl('gh', ['api', '--method', init.method ?? 'HEAD', endpoint, '--include', '--silent', '-H', `Accept: ${accept}`], { timeout: 20_000 })
+    return { status: Number([...stdout.matchAll(/HTTP\/[\d.]+ (\d+)/g)].at(-1)?.[1] ?? 0) || 500 }
+  } catch (error) {
+    const status = Number([...String(error.stdout ?? '').matchAll(/HTTP\/[\d.]+ (\d+)/g)].at(-1)?.[1])
+    if (status) return { status }
+    throw error
+  }
+}
+
 /** HEAD each URL (following redirects). A server that refuses HEAD gets a one-byte GET. Returns the failures. */
-export async function check(urls, { fetchImpl = fetch, timeoutMs = 20_000, concurrency = 6 } = {}) {
+export async function check(urls, { fetchImpl = githubHead, timeoutMs = 20_000, concurrency = 6 } = {}) {
   const failures = []
   const probe = async url => {
     for (let attempt = 0; attempt < 2; attempt++) {
