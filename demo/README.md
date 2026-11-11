@@ -60,3 +60,4 @@ The build emits one stylesheet and inlines it in the HTML, including the lazy
 verifier's styles. This removes a blocking CSS request and avoids a second
 dynamic CSS download. Fonts and images retain their built asset URLs. The
 question's font is ready before app takeover, keeping its glyph area stable.
+If that optional font request fails, the replay still opens using fallback fonts.
