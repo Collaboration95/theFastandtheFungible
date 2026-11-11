@@ -31,8 +31,19 @@
         {
           "scene": "hosted-ask",
           "from": "typed",
+          "to": "plan_ready",
+          "maxSeconds": 3
+        },
+        {
+          "scene": "hosted-ask",
+          "from": "plan_ready",
+          "to": "plan_confirmed"
+        },
+        {
+          "scene": "hosted-ask",
+          "from": "plan_confirmed",
           "to": "answer_read",
-          "maxSeconds": 20
+          "maxSeconds": 11
         },
         {
           "scene": "hosted-ask",

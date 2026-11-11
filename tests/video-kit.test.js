@@ -216,6 +216,14 @@ describe('VID-3 release pins and local recording boundaries', () => {
     expect(spec.shots.find(s => s.id === 's2-sandbox').deferred).toBe('record after redeploy')
     expect(spec.shots.find(s => s.id === 's2-sandbox').label).toContain('live answers, rule-based buying')
   })
+  it('keeps the five-second spending plan at 1× while compressing surrounding waits', () => {
+    const shot = spec.shots.find(s => s.id === 's2-sandbox')
+    const hosted = clip('hosted-ask', 100, { typed: 2, plan_ready: 12, plan_confirmed: 17, answer_read: 85, plan_check: 90 })
+    const plan = planShot(shot, { 'hosted-ask': hosted })
+    const modal = plan.segments.find(s => s.from === 12 && s.to === 17)
+    expect(modal).toMatchObject({ speed: 1, outDur: 5, clock: false })
+    expect(plan.segments.filter(s => s.speed > 1)).toHaveLength(2)
+  })
   it('keeps owner voice text and the cut in sync, including deferred shots', () => {
     const voice = readFileSync(join(root, 'docs/submission/video/voiceover.txt'), 'utf8')
     for (const shot of spec.shots) expect(norm(voice)).toContain(norm(shot.vo))
