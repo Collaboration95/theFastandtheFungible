@@ -121,7 +121,7 @@ describe('judge pack: one true story', () => {
 
   it('describes the purchase rule and the sandbox honestly on the hand-written site pages', () => {
     const talk = read('site/talk/index.html')
-    expect(talk).toMatch(/buys at most one article per round, up to three rounds/)
+    expect(talk).toMatch(/no more than one article in a round, for up to three rounds/)
     expect(talk).not.toMatch(/buy the article it needs/)
     // The October replay keeps its own labels; the page footer no longer calls today's writers all synthetic.
     expect(talk).toContain('October replay: writers and articles SYNTHETIC')

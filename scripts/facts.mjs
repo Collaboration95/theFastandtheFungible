@@ -195,7 +195,7 @@ export function fill(text, facts, file = 'text') {
   })
   // HTML attributes cannot contain fact comments. Mark pinned release links explicitly instead.
   return filled.replace(/data-fact-link="release" href="[^"]*"/g,
-    `data-fact-link="release" href="${REPO}/releases/tag/${facts.release.value}"`)
+    () => `data-fact-link="release" href="${REPO}/releases/tag/${facts.release.value}"`)
 }
 /** Rendered text: what GitHub shows once the comments are hidden. */
 export const strip = text => text.replace(/<!--\/?f(?::[A-Za-z0-9_]+)?-->/g, '')
