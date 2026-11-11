@@ -5,6 +5,8 @@ import LedgerCheck, { SharedPayer } from '../src/components/LedgerCheck'
 import LedgerReceipt from '../src/components/LedgerReceipt'
 import { readLedgerFact } from '../src/ledger-check'
 import bank from '../eval/questions/bank.v1.json'
+import ledgerFixture from './fixtures/ledger-check/rpc.json'
+import { ledgerReceipt } from '../shared/ledger-receipt'
 vi.mock('../src/ledger-check', async original => ({ ...await original<typeof import('../src/ledger-check')>(), readLedgerFact: vi.fn() }))
 afterEach(() => { cleanup(); vi.resetAllMocks(); vi.unstubAllEnvs(); delete (window as unknown as { desktop?: unknown }).desktop })
 it('hides the card with no read for 20 bank questions and on desktop', () => {
@@ -57,4 +59,12 @@ it('keeps the static replay tx-only, with no purchase reserve read', () => {
   const read = vi.fn()
   expect(render(<LedgerReceipt create={'A'.repeat(64)} finish={'B'.repeat(64)} read={read} />).container.textContent).toBe('')
   expect(read).not.toHaveBeenCalled()
+})
+
+it('shows the recorded purchase fees, reserve release and provenance after loading the UI', async () => {
+  const fields = ledgerReceipt(ledgerFixture.hostedCreate, ledgerFixture.hostedFinish, ledgerFixture.hostedFees)
+  render(<LedgerReceipt create={ledgerFixture.hostedCreate.hash} finish={ledgerFixture.hostedFinish.hash} read={async () => ({ fields, readAt: '2026-11-11T07:06:00Z' })} />)
+  expect((await screen.findByText(/Buyer locked 40,000 drops/)).textContent).toBe('Buyer locked 40,000 drops (fee 12, paid by the buyer) · writer revealed the key 2 ledgers later (fee 423, paid by the writer) · 0.20 XRP owner reserve held 2 s, then released.')
+  expect(screen.getByText(/XRPL Testnet.*validated ledger 22228567/).textContent).toContain('11 Nov 2026, 15:06 SGT')
+  expect(screen.getByText(/Create ledger 22228565/).textContent).toContain('historical ledger facts, read-only · no real value')
 })
