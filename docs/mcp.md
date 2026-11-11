@@ -1,9 +1,9 @@
 # Use ResearchAgent from Claude Code, Codex or any MCP client
 
-[Release v1.1.0](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.1.0): release · not yet on npm/PyPI/MCP Registry. Install without cloning.
+[Release v1.1.1](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.1.1): release · not yet on npm/PyPI/MCP Registry. Install without cloning.
 
 ```sh
-claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-mcp-1.1.0.tgz
+claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz
 ```
 
 
@@ -271,10 +271,10 @@ labelled not independently verified. See [receipt contribution contract](contrac
 and [offline fixture evidence](evidence/round2-g/README.md). Python callers can use
 `Client.receipts(run_id)`; the existing offline verifier accepts v1/v2/v3.
 
-## Zero-clone Testnet MCP (v1.1.0)
+## Zero-clone Testnet MCP (v1.1.1)
 
 ```sh
-claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-mcp-1.1.0.tgz --testnet
+claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz --testnet
 ```
 
 Release · not yet on npm/PyPI/MCP Registry. Alternatively use the
@@ -303,7 +303,7 @@ Fixture calls can keep Codex's 60-second tool timeout. A first cold TEST-SGD cal
 ```toml
 [mcp_servers.researchagent]
 command = "npx"
-args = ["-y", "https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-mcp-1.1.0.tgz", "--testnet", "--iou"]
+args = ["-y", "https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz", "--testnet", "--iou"]
 startup_timeout_sec = 60
 tool_timeout_sec = 180
 
@@ -335,7 +335,7 @@ Use this Windows child-process wrapper when the client launches `npx.cmd`. Direc
 
 <!-- BEGIN generated:windows-mcp -->
 ```powershell
-claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- cmd /c npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-mcp-1.1.0.tgz --testnet
+claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- cmd /c npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz --testnet
 ```
 <!-- END generated:windows-mcp -->
 

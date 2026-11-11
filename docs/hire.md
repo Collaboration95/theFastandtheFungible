@@ -3,7 +3,7 @@
 Run it from release v1.1.0 or later (Node ≥22.13), from any directory, with no clone:
 
 ```sh
-npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-mcp-1.1.0.tgz try --testnet --hire
+npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz try --testnet --hire
 ```
 
 Or from a clone: `make try-hire OFFSET=1900`. The CLI uses ephemeral ports.

@@ -31,8 +31,8 @@ install. The recorded run works any time. Or run the whole money path yourself, 
 no account (Node ≥ 22.13):
 
 ```sh
-REL=https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0
-npx -y $REL/researchagent-mcp-1.1.0.tgz try --testnet
+REL=https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1
+npx -y $REL/researchagent-mcp-1.1.1.tgz try --testnet
 ```
 
 <p align="center">
@@ -80,14 +80,14 @@ Give Claude Code a research wallet on XRPL Testnet. The caps live in the environ
 calling model cannot raise them:
 
 ```sh
-claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-mcp-1.1.0.tgz --testnet
+claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz --testnet
 ```
 
 Or call it from code:
 
 ```sh
-npm i https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-sdk-1.1.0.tgz
-pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-1.1.0-py3-none-any.whl
+npm i https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-sdk-1.1.1.tgz
+pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-1.1.1-py3-none-any.whl
 ```
 
 - **Agent hires agent.** Another agent pays ResearchAgent over x402, and cited writers get
@@ -115,14 +115,14 @@ Re-check the whole run with Python and no Node (read-only lookups on s.altnet), 
 `pip install` above:
 
 ```sh
-curl -LO https://raw.githubusercontent.com/Collaboration95/theFastandtheFungible/v1.1.0/docs/evidence/lane-b3/UC3.receipts.json
+curl -LO https://raw.githubusercontent.com/Collaboration95/theFastandtheFungible/v1.1.1/docs/evidence/lane-b3/UC3.receipts.json
 researchagent verify UC3.receipts.json --ledger
 ```
 
 It ends with `RESULT PASS`. The same command checks the `receipts.json` you export from any run
 in the [live sandbox](https://ra-front-651013803640.asia-southeast1.run.app) (use v1.1.0 or later;
 v1.0.2 cannot recompute the newer answer commitment). Without Python:
-`npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-mcp-1.1.0.tgz verify receipts.json --ledger`. The [ledger page](https://collaboration95.github.io/theFastandtheFungible/ledger/)
+`npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz verify receipts.json --ledger`. The [ledger page](https://collaboration95.github.io/theFastandtheFungible/ledger/)
 re-validates all <!--f:transactions-->61<!--/f--> recorded Testnet transactions from your browser.
 TypeScript and Python verifiers, written separately, agree on all <!--f:vectors-->224<!--/f-->
 shared conformance cases ([receipt format](docs/receipt-spec.md)).

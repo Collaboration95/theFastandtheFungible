@@ -30,7 +30,7 @@ and two independent receipt verifiers, TypeScript and Python.
 
 Try it in your browser at https://ra-front-651013803640.asia-southeast1.run.app (open
 13–19 Nov), or with no clone:
-`npx -y <release>/researchagent-mcp-1.1.0.tgz try --testnet`. It is also an MCP server
+`npx -y <release>/researchagent-mcp-1.1.1.tgz try --testnet`. It is also an MCP server
 for Claude Code and Codex.
 
 XRPL Testnet only, no real money. Demo writers are fictional.

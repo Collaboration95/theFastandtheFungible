@@ -2,8 +2,8 @@
 
 Every way in, from no install at all to a full checkout. Everything here runs on
 **XRPL Testnet or a labelled SIMULATED rail: no real value**. Models are fixtures
-unless you add your own keys. The commands below install release v1.1.0 from
-[GitHub Releases](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.1.0):
+unless you add your own keys. The commands below install release v1.1.1 from
+[GitHub Releases](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.1.1):
 release · not yet on npm/PyPI/MCP Registry.
 
 | You want to | Use | Needs |
@@ -36,7 +36,7 @@ and the simulated cases.
 Run the whole judge path and exit (Node ≥ 22.13):
 
 ```sh
-npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-mcp-1.1.0.tgz try --testnet
+npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz try --testnet
 ```
 
 `try` makes faucet wallets, asks the demo question with a S$2 cap, buys by key reveal,
@@ -56,7 +56,7 @@ agent → ResearchAgent → writer, with royalties and change payments: [hire.md
 Fixture models and simulated payments:
 
 ```sh
-claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-mcp-1.1.0.tgz
+claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz
 ```
 
 Real XRPL Testnet payments: faucet wallets are made on first use, key-reveal escrow and
@@ -64,13 +64,13 @@ an answer anchor are on, models and writers are fixtures. `ask_expert` returns e
 links for create, finish, refund and anchor; `wallet_status` shows `rail: xrpl-testnet`.
 
 ```sh
-claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-mcp-1.1.0.tgz --testnet
+claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz --testnet
 ```
 
 TEST-SGD, our Testnet IOU and a stand-in for RLUSD (no real value):
 
 ```sh
-claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-mcp-1.1.0.tgz --testnet --iou
+claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz --testnet --iou
 ```
 
 The first cold IOU call took 134.1 s, including 102.9 s of issuer and trust-line
@@ -96,14 +96,14 @@ browser, `--iou` for TEST-SGD; drop `--testnet` for the labelled SIMULATED rail
 ([details](testnet.md#zero-clone-testnet-app-v110)).
 
 ```sh
-npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-mcp-1.1.0.tgz app --testnet
+npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz app --testnet
 ```
 
 ## SDKs
 
 ```sh
-npm i https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-sdk-1.1.0.tgz
-pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-1.1.0-py3-none-any.whl
+npm i https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-sdk-1.1.1.tgz
+pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-1.1.1-py3-none-any.whl
 ```
 
 Complete two-terminal **start engine → connect → ask → verify** quickstarts from an
@@ -114,8 +114,8 @@ not the UI port. Plain HTTP: [api/README.md](api/README.md).
 
 ## Mac app
 
-Unsigned DMG: [Apple Silicon](https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/ResearchAgent-1.1.0-arm64.dmg)
-or [Intel](https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/ResearchAgent-1.1.0-x64.dmg).
+Unsigned DMG: [Apple Silicon](https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/ResearchAgent-1.1.1-arm64.dmg)
+or [Intel](https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/ResearchAgent-1.1.1-x64.dmg).
 Drag it into Applications, then System Settings → Privacy & Security → Open Anyway
 ([signing notes](../desktop/SIGNING.md)). It starts offline with simulated payments,
 keeps keys in the macOS Keychain, and shows a recovery screen instead of crashing.
@@ -130,8 +130,8 @@ measurement ([J3](evidence/round4-j3/README.md)). Zero clone (macOS, Linux, Powe
 
 <!-- BEGIN generated:writer-install -->
 ```sh
-npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-mcp-1.1.0.tgz init my-notes
-npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-mcp-1.1.0.tgz publish ./my-notes --testnet
+npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz init my-notes
+npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz publish ./my-notes --testnet
 ```
 <!-- END generated:writer-install -->
 
@@ -145,7 +145,7 @@ calling yourself a real writer, and keep the publisher running. Guide:
 Export → Download receipts.json (in the app or the live sandbox), then:
 
 ```sh
-pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-1.1.0-py3-none-any.whl
+pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-1.1.1-py3-none-any.whl
 researchagent verify receipts.json --ledger
 ```
 
@@ -153,7 +153,7 @@ Use v1.1.0 or later: v1.0.2 cannot recompute the answer commitment of newer expo
 `FAIL anchor binding` on them. Without Python, the same checks in TypeScript:
 
 ```sh
-npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-mcp-1.1.0.tgz verify receipts.json --ledger
+npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz verify receipts.json --ledger
 ```
 
 The Python verifier needs no Node and prints `PASS testnet N/N (read-only, s.altnet)`, `PASS audit anchor`
