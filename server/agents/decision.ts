@@ -486,7 +486,12 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
   // A question asking for a field, flag or type ("Which EscrowCreate field…") is not ranked by its verbs.
   const transactionFact = input.requirement ? input.gap : input.question
   const asksTransaction = isProtocolQuery(input.question) && clausesAskTransaction(transactionFact)
-  const member = (row: DecisionRound['rows'][number]) => asksTransaction ? memberRank(transactionFact, row.candidate.title) : 0
+  const memberScores = new Map<DecisionRound['rows'][number], number>()
+  const member = (row: DecisionRound['rows'][number]) => {
+    if (!asksTransaction) return 0
+    if (!memberScores.has(row)) memberScores.set(row, memberRank(transactionFact, row.candidate.title))
+    return memberScores.get(row)!
+  }
   // QUAL: then the article that is also on the topic of more of the run's other open facts, so one purchase can answer
   // several: "What spending controls … constrain the ResearchAgent language model" is the prompt-injection explainer's
   // topic too, so it is bought for "Whether the language model … can initiate spending" before the decision explainer, and
