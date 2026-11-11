@@ -3,6 +3,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { verificationError, verificationNeedsReload, verificationNetworkFailure } from '../../verify-network'
 import type { RunSnapshot } from '../../../shared/contracts'
 import type { BrowserVerification } from '../../verify/browser'
+import type { GateRow } from '../../verify/gates'
 
 const mark = { PASS: 'check', FAIL: 'close', SKIP: 'circle' } as const
 const word = { PASS: 'passed', FAIL: 'failed', SKIP: 'not checked' } as const
@@ -12,7 +13,7 @@ const simulatedTitle: Record<string, string> = { ledger: 'Payments on a public l
  * Given `bundleUrl` (a committed, recorded receipts.json) instead of a `run`, it re-checks that recorded run, shows the `caption`
  * under the result, and needs no admission and no live run; the Judges' corner uses it. Without them it behaves as it always did. */
 export default function VerifyInBrowser({ run, bundleUrl, caption, title }: { run?: RunSnapshot; bundleUrl?: string; caption?: string; title?: string }) {
-  const [state, setState] = useState<{ step: 'idle' | 'fetch' | 'check' | 'done' | 'error'; result?: BrowserVerification; error?: string; reload?: boolean }>({ step: 'idle' })
+  const [state, setState] = useState<{ step: 'idle' | 'fetch' | 'check' | 'done' | 'error'; result?: BrowserVerification; gates?: GateRow[]; error?: string; reload?: boolean }>({ step: 'idle' })
   const headingId = useId()
   const heading = useRef<HTMLHeadingElement>(null)
   useEffect(() => {
@@ -34,11 +35,11 @@ export default function VerifyInBrowser({ run, bundleUrl, caption, title }: { ru
       if (!response.ok) throw new Error('receipts')
       const bundle: unknown = await response.json()
       setState({ step: 'check' })
-      const { verifyInBrowser } = await import('../../verify/browser')
+      const [{ verifyInBrowser }, { summarizeGates }] = await Promise.all([import('../../verify/browser'), import('../../verify/gates')])
       const result = await verifyInBrowser(bundle)
       const unavailable = verificationNetworkFailure(result)
       if (unavailable) throw unavailable
-      setState({ step: 'done', result })
+      setState({ step: 'done', result, gates: summarizeGates(bundle, result.checks) })
     } catch (error) {
       setState({ step: 'error', error: verificationError(error, navigator.onLine), reload: verificationNeedsReload(error) })
     }
@@ -62,6 +63,16 @@ export default function VerifyInBrowser({ run, bundleUrl, caption, title }: { ru
         </details>
       </li>)}</ul>
       <p className="ra-note">Ran in this browser{result.endpoint ? `, reading ${result.endpoint} (read-only)` : ''}. Same checks as the <code>researchagent verify</code> command.</p>
+      <ul className="ra-hv-groups"><li><details className="ra-gates">
+        <summary><span>Five gates, checked for this run</span></summary>
+        <p className="ra-note">browser summary of the anchored audit log</p>
+        <ul>{state.gates?.map(gate => <li key={gate.id}><span>
+          <b>{gate.id}. {gate.title}</b><br />
+          <strong>{gate.status}</strong> · {gate.seqs.length ? `Audit ${gate.seqs.map(seq => `#${seq}`).join(', ')}` : 'No audit sequence available'}<br />
+          {gate.detail}
+          {gate.labels?.map((label, index) => <span key={index} style={{ display: 'block' }}>{label.name}: {label.value}</span>)}
+        </span></li>)}</ul>
+      </details></li></ul>
       <button type="button" className="ra-link" onClick={() => void start()}>Run again</button>
     </div>}
     {caption && <p className="ra-note ra-hv-caption">{caption}</p>}
