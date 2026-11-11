@@ -305,7 +305,7 @@ H7 closed the three follow-ups H6 left ([evidence/h7](evidence/h7/README.md)):
   `/health` and the ask gate read its last answer from memory (`server/hosted/readiness.ts`).
   **Staleness bound: 15 s.** An answer is used only while the check behind it started at most
   15 s ago; in steady state that is 5 to 11 s (a check is cut off after 6 s and counted as not
-  ready). If the timer stops, answers turn into "not ready" after 15 s: it fails closed. Pause,
+  ready). Timed-out probes do not overlap: if the underlying ledger call is still pending, readiness stays false until it settles and a fresh check succeeds. If the timer stops, answers turn into "not ready" after 15 s: it fails closed. Pause,
   the admission window, the money caps and the spending guard are not read from this cache;
   they are still read fresh at every authority boundary.
 - **Full queue is busy, not down.** `/readyz` answers 200 `{status:"busy",queue:"full"}`

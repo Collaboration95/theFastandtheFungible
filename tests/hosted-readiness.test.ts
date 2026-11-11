@@ -55,15 +55,21 @@ it('starts a refresh every 5 s from the start of the last one, never overlapping
   expect(await readiness.ready()).toBe(true)
 })
 
-it('counts a hung probe as not ready after 6 s and keeps probing', async () => {
+it('counts a hung probe as not ready after 6 s, never overlaps it, and recovers after it settles', async () => {
   let calls = 0
-  const readiness = make(() => ++calls === 1 ? Promise.resolve(true) : new Promise<boolean>(() => undefined))
+  const hung = deferred()
+  const readiness = make(() => ++calls === 2 ? hung.promise : Promise.resolve(true))
   await vi.advanceTimersByTimeAsync(0)
   expect(await readiness.ready()).toBe(true)
   await vi.advanceTimersByTimeAsync(READINESS.intervalMs + READINESS.probeTimeoutMs)
   expect(await readiness.ready()).toBe(false)
+  await vi.advanceTimersByTimeAsync(10 * READINESS.intervalMs)
+  expect(calls).toBe(2)
+  expect(await readiness.ready()).toBe(false)
+  hung.resolve(true)
   await vi.advanceTimersByTimeAsync(READINESS.intervalMs)
-  expect(calls).toBeGreaterThanOrEqual(3)
+  expect(calls).toBe(3)
+  expect(await readiness.ready()).toBe(true)
 })
 
 it('fails closed when the answer is older than 15 s because the timer stopped', async () => {

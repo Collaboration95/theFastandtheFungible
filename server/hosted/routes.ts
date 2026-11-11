@@ -72,7 +72,7 @@ export function hostedRouter(context: ApiContext, config: Config, limits: Hosted
     const c = hostedControl(config), ended = Date.now() >= Date.parse(config.HOSTED_ADMISSIONS_UNTIL || '2026-11-19T16:00:00Z')
     const remaining = limits.remaining(principal), links = readHostedLinks(config)
     const state = ended ? 'ended' : c.admissionsPaused || c.spendingPaused ? 'paused' : !(await ready()) || !remaining.questions || !remaining.minor ? 'degraded' : queue.busy ? 'busy' : 'ready'
-    return { state, questionCapMinor: limits.questionMinor, capabilities: { ask: (state === 'ready' || state === 'busy') && queue.canQueue, scope: state === 'ready', history: true, receipts: true, pdf: false, settings: false, faultControls: false }, remaining,
+    return { state, questionCapMinor: limits.questionMinor, capabilities: { ask: (state === 'ready' || state === 'busy') && queue.canQueue, scope: state === 'ready' || state === 'busy', history: true, receipts: true, pdf: false, settings: false, faultControls: false }, remaining,
       labels: { models: modelsLabel(isLlmConfigured(), !context.labels.decision.startsWith('fixture')), rail: context.payer ? 'Shared XRPL Testnet demo · no real value' : 'SIMULATED · no real value' },
       // The operator's links file (state disk, no redeploy) wins over the environment; `proof` is optional and absent until set.
       links: { repo: REPO, deck: config.HOSTED_DECK_URL || `${REPO}/blob/main/docs/submission/ResearchAgent-SFF-deck.pdf`, video: links.video || config.HOSTED_VIDEO_URL || '', progress: config.HOSTED_PROGRESS_URL || `${PAGES}/progress/`, replay: config.HOSTED_REPLAY_URL || `${PAGES}/demo/`, ...(links.proof ? { proof: links.proof } : {}) } }

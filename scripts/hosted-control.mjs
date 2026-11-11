@@ -27,7 +27,8 @@ if (o.project && o.local) throw Error('Choose local disk or remote project')
 if (o.project) {
   if (!/^[a-z][a-z0-9-]{4,28}[a-z0-9]$/.test(o.project)) throw Error('Invalid project')
   if (o.path) throw Error('Remote control uses only the fixed persistent-disk path')
-  const cmd=`sudo docker compose --env-file /etc/researchagent/images -f /opt/researchagent/compose.yaml exec -T api node /app/scripts/hosted-control.mjs ${action} ${target} --local --execute --path /state/control.json${o.reason?' --reason '+o.reason:''}${LINK_KEYS.map(k=>o[k]?` --${k} ${o[k]}`:'').join('')}${o.clear?' --clear '+o.clear:''}${o['only-if-reason']?' --only-if-reason '+o['only-if-reason']:''}`
+  const quote = value => "'" + value.replaceAll("'", "'\\''") + "'"
+  const cmd=`sudo docker compose --env-file /etc/researchagent/images -f /opt/researchagent/compose.yaml exec -T api node /app/scripts/hosted-control.mjs ${action} ${target} --local --execute --path /state/control.json${o.reason?' --reason '+o.reason:''}${LINK_KEYS.map(k=>o[k]?` --${k} ${quote(o[k])}`:'').join('')}${o.clear?' --clear '+o.clear:''}${o['only-if-reason']?' --only-if-reason '+o['only-if-reason']:''}`
   const args=['compute','ssh','ra-app',`--project=${o.project}`,'--zone=asia-southeast1-b','--tunnel-through-iap',`--command=${cmd}`]
   if (!o.execute || o['dry-run']) console.log(['gcloud',...args].map(x=>"'"+x.replaceAll("'","'\\''")+"'").join(' '))
   else execFileSync('gcloud',args,{stdio:'inherit'})

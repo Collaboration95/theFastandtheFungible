@@ -9,7 +9,8 @@
  * The check starts every `intervalMs` (5 s, start to start) and is cut off after `probeTimeoutMs` (6 s, counted as
  * not ready), so in steady state an answer rests on a check that began 5 to 11 s ago. If the timer itself stops
  * (a starved event loop), answers turn into "not ready" after 15 s: this fails closed, it never serves an old yes.
- * A probe that runs long is followed by the next one after at least 1 s, so only one is ever in flight.
+ * A probe that runs long fails readiness after 6 s; another starts only once that underlying call settles. A timeout
+ * cannot cancel an arbitrary probe, so retrying it while it is still running would accumulate ledger requests.
  * Before H7 the answer was at most 5 s old but the request that found it expired paid for the refresh.
  *
  * What this does not decide: pauses, the admission window, the money caps and the spending guard are read fresh at
@@ -23,6 +24,7 @@ export class HostedReadiness {
   private startedAt = Number.NEGATIVE_INFINITY
   private timer?: ReturnType<typeof setTimeout>
   private closed = false
+  private probeInFlight = false
   private first: Promise<void>
   private readonly intervalMs: number
   private readonly maxAgeMs: number
@@ -45,10 +47,14 @@ export class HostedReadiness {
     const startedAt = this.now()
     let value: boolean, cut: ReturnType<typeof setTimeout> | undefined
     try {
-      value = await Promise.race([
-        this.probe(),
-        new Promise<false>(resolve => { cut = setTimeout(() => resolve(false), this.probeTimeoutMs); cut.unref?.() }),
-      ]) === true
+      if (this.probeInFlight) value = false
+      else {
+        this.probeInFlight = true
+        value = await Promise.race([
+          Promise.resolve().then(this.probe).finally(() => { this.probeInFlight = false }),
+          new Promise<false>(resolve => { cut = setTimeout(() => resolve(false), this.probeTimeoutMs); cut.unref?.() }),
+        ]) === true
+      }
     } catch { value = false } finally { clearTimeout(cut) }
     if (this.closed) return
     this.healthy = value

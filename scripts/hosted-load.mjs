@@ -25,7 +25,7 @@ import { createServer, request } from 'node:http'
 import { writeFileSync, readFileSync, copyFileSync, mkdirSync, existsSync } from 'node:fs'
 import { join, resolve, dirname } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { randomUUID } from 'node:crypto'
+import { randomUUID, createHash } from 'node:crypto'
 import { DatabaseSync } from 'node:sqlite'
 const { ResourceScope } = await import('../shared/resource-scope.ts')
 
@@ -107,6 +107,7 @@ function call(method, path, { cookie, ip, body, csrf, key, sse } = {}) {
       res.on('error', () => resolveCall(record(method, path, at, 0, '', '', set)))
     })
     req.on('error', () => resolveCall(record(method, path, at, 0, '', '')))
+    if (!sse) req.setTimeout(15000, () => req.destroy(new Error('load request timed out')))
     req.end(body ? JSON.stringify(body) : undefined)
   })
 }
@@ -178,7 +179,8 @@ async function uptime() {
   while (Date.now() < stopAt) { await call('GET', '/readyz', { ip: '35.187.0.1' }); await wait(UPTIME_MS) }
 }
 
-const summary = { kind: 'local-hosted-load', at: new Date().toISOString(), guard: guardRef ? `docker/hosted/start.mjs at ${guardRef}` : 'docker/hosted/start.mjs (this checkout)', visitors: VISITORS, seconds: SECONDS, uptimeEveryMs: UPTIME_MS, readinessRefreshMs: READINESS, mode: 'HOSTED=1 · fixture models · simulated rail · ephemeral ports', cloud: false }
+const summary = { kind: 'local-hosted-load', at: new Date().toISOString(), source: flag('source', ''), readinessMode: INLINE_READINESS ? 'inline (pre-H7)' : 'background (H7)', guard: guardRef ? `docker/hosted/start.mjs at ${guardRef}` : 'docker/hosted/start.mjs (this checkout)', visitors: VISITORS, seconds: SECONDS, uptimeEveryMs: UPTIME_MS, readinessRefreshMs: READINESS, mode: 'HOSTED=1 · fixture models · simulated rail · ephemeral ports', cloud: false }
+summary.sourceFiles = Object.fromEntries(['scripts/hosted-load.mjs', 'server/routes.ts', 'server/hosted/routes.ts', 'server/hosted/limits.ts', 'server/hosted/queue.ts', 'server/hosted/readiness.ts'].map(file => [file, existsSync(join(root, file)) ? createHash('sha256').update(readFileSync(join(root, file))).digest('hex') : null]))
 try {
   start(['--import', 'tsx', 'publisher/server.ts'])
   for (let i = 0; i < 150; i++) { try { if ((await fetch(`http://127.0.0.1:${pub}/health`)).ok) break } catch { /* starting */ } await wait(200) }
@@ -226,8 +228,9 @@ try {
       }
     }))
     // The next real visitor, from another address, with no cookie.
+    const afterFlood = sessions()
     const visitor = await call('GET', '/api/demo/status', { ip: '198.51.100.200' })
-    summary.flood = { fromOneAddress: scripted, ...tally, seconds: +((Date.now() - started) / 1000).toFixed(1), sessionTableAfter: sessions(), sessionsAddedByFlood: sessions() - beforeFlood,
+    summary.flood = { fromOneAddress: scripted, ...tally, seconds: +((Date.now() - started) / 1000).toFixed(1), sessionTableAfter: sessions(), sessionsAddedByFlood: afterFlood - beforeFlood,
       nextRealVisitor: { http: visitor.status, state: visitor.json?.state, ask: visitor.json?.capabilities?.ask, error: visitor.error, gotSession: Boolean(visitor.set) } }
   }
   if (pausedCheck) {

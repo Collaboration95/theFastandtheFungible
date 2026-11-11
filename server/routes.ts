@@ -6,7 +6,7 @@ import { validateHosted, hostedPayer, pausedShell } from './hosted/bootstrap.js'
 import { HostedLimits } from './hosted/limits.js'
 import { HostedQueue } from './hosted/queue.js'
 import { hostedRouter } from './hosted/routes.js'
-import { HostedReadiness } from './hosted/readiness.js'
+import { HostedReadiness, PayerWatch } from './hosted/readiness.js'
 import { sessionGuard, accessGuard } from './hosted/session.js'
 import { hostedControl, HostedError } from './hosted/control.js'
 import { hostedExecution } from './hosted/execution.js'
@@ -179,6 +179,7 @@ async function createConfiguredApi(options: ApiOptions = {}) {
   const context: ApiContext = { work, store, client, payer, purchases, loop, reputation, labels, mcpPolicy, publisherUrl, launch, streams, onStreamEmpty: runId => { clearTimeout(snapshotTimers.get(runId)); snapshotTimers.delete(runId); lastSnapshot.delete(runId) }, reportDir, reportJobs, progress }
   let readiness: HostedReadiness | undefined
   if (hosted && queue) {
+    const payerWatch = new PayerWatch()
     // Recovery is complete before startup health becomes available. Readiness is probed in the background (H7): a
     // request reads the last answer (at most 15 s old, see server/hosted/readiness.ts) and never waits for the ledgers.
     const probeReadiness = options.hostedProbe ?? (async () => {
@@ -189,6 +190,7 @@ async function createConfiguredApi(options: ApiOptions = {}) {
         const writers = await client.registry()
         if (!writers.length || !payer) return false
         const b = await payer.balance()
+        if (b.ledgerAgeSeconds <= 30) payerWatch.record(b.balanceDrops)
         return b.ledgerAgeSeconds <= 30 && b.availableDrops > (store.walletStatus().reservedMinor + hosted.questionMinor) * 1000 + 2000 &&
           config.HOSTED_PROVIDERS_READY_UNTIL !== undefined && Date.parse(config.HOSTED_PROVIDERS_READY_UNTIL) > Date.now()
       } catch { return false }
@@ -197,7 +199,7 @@ async function createConfiguredApi(options: ApiOptions = {}) {
     const ready = () => options.hostedReadiness ? options.hostedReadiness() : readiness!.ready()
     app.use(hostedRouter(context,config,hosted,queue,ready,async () => {
       try { store.checkWritable(); return (await client.registry()).length > 0 } catch { return false }
-    }))
+    }, () => payerWatch.state()))
     // Per-principal and global SSE connection ceilings include reconnects. Behind Cloud Run and nginx a closed tab's
     // stream stayed registered here, so on the live demo every later stream of that visitor got 429 (H5). Now: a settled
     // run answers 204 (EventSource stops; the client reads the run once), a visitor's newest stream replaces their

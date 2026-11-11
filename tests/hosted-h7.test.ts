@@ -16,11 +16,14 @@ import { hostedRouter } from '../server/hosted/routes.js'
 import { sessionGuard, accessGuard } from '../server/hosted/session.js'
 import { ActiveWork } from '../server/agents/active-work.js'
 import type { ApiContext } from '../server/api/context.js'
+import { createApiApp } from '../server/routes.js'
+import { PublisherClient } from '../server/publisher-client.js'
+import { XrplPayer } from '../server/xrpl.js'
 
 // H7, through the real hosted middleware: the session flood cap, readiness off the request path, and /readyz on a full queue.
 beforeEach(() => { vi.spyOn(Date, 'now').mockReturnValue(Date.parse('2026-11-11T12:00:00Z')) })
 const cleanup: (() => unknown)[] = []
-afterEach(async () => { for (const f of cleanup.splice(0).reverse()) await f(); vi.restoreAllMocks() })
+afterEach(async () => { for (const f of cleanup.splice(0).reverse()) await f(); vi.unstubAllEnvs(); vi.restoreAllMocks() })
 type Reply = { status: number; headers: IncomingHttpHeaders; json: <T = Record<string, unknown>>() => T }
 const wire = (url: string, headers: Record<string, string> = {}) => new Promise<Reply>((resolve, reject) => {
   const req = http(url, { headers: { Host: 'demo.example', ...headers } }, res => {
@@ -131,6 +134,9 @@ it('plans while another visitor’s question holds the demo (it used to answer 4
   const never = () => new Promise<void>(() => undefined)
   queue.enqueue('someone-elses-run', never, vi.fn())
   expect(queue.busy).toBe(true)
+  queue.enqueue('waiting-1', never, vi.fn()); queue.enqueue('waiting-2', never, vi.fn())
+  const busy = await wire(url + '/api/demo/status', { 'X-Forwarded-For': '198.51.100.21' })
+  expect(busy.json()).toMatchObject({ state: 'busy', capabilities: { ask: false, scope: true } })
   const a = await visitor(url, '198.51.100.21')
   const question = 'What does XLS-34 change for escrow cancellation on the XRP Ledger?'
   const planned = await post(url, '/api/scope', { ...a, 'Idempotency-Key': 'plan-1' }, { question, clarify: 'never' })
@@ -181,7 +187,19 @@ it('re-reads the video and proof links from the state disk on every status call,
 it('refuses a links command that is not a plain https URL, and keeps the links options out of the other actions', () => {
   const { stdout, status } = control('/nonexistent/control.json', ['links', '--project', 'ra-hg-test', '--video', 'https://youtu.be/abc123', '--proof', 'https://example.org/proof', '--dry-run'])
   expect(status).toBe(0)
-  expect(stdout).toContain('links all --local --execute --path /state/control.json --video https://youtu.be/abc123 --proof https://example.org/proof')
+  expect(stdout).toContain('links all --local --execute --path /state/control.json --video')
+  // Execute the printed dry-run through a fake gcloud and a shell: query strings and shell syntax must stay one URL argument.
+  const quotedDir = resources().tempDir('ra-links-quote-'), captured = join(quotedDir, 'args.json')
+  writeFileSync(join(quotedDir, 'gcloud'), `#!${process.execPath}\nrequire('node:fs').writeFileSync(process.env.CAPTURE, JSON.stringify(process.argv.slice(2)))\n`, { mode: 0o700 })
+  writeFileSync(join(quotedDir, 'sudo'), '#!/bin/sh\nprintf "%s\\n" "$@"\n', { mode: 0o700 })
+  const url = 'https://example.org/video?a=1&b=$(id);echo(x)'
+  const planned = control('/nonexistent/control.json', ['links', '--project', 'ra-hg-test', '--video', url, '--dry-run'])
+  const env = { ...process.env, PATH: quotedDir + ':' + process.env.PATH, CAPTURE: captured }
+  expect(spawnSync('/bin/sh', ['-c', planned.stdout], { env }).status).toBe(0)
+  const remote = (JSON.parse(readFileSync(captured, 'utf8')) as string[]).find(arg => arg.startsWith('--command='))!.slice('--command='.length)
+  const executed = spawnSync('/bin/sh', ['-c', remote], { env, encoding: 'utf8' })
+  expect(executed.status).toBe(0)
+  expect(executed.stdout.trim().split('\n').at(-1)).toBe(url)
   for (const bad of ['http://example.org/x', 'https://exa mple.org', "https://example.org/'; rm -rf /", 'https://user:pw@example.org/', 'https://localhost/x', `https://example.org/${'a'.repeat(300)}`, 'javascript:alert(1)'])
     expect(control('/nonexistent/control.json', ['links', '--video', bad, '--dry-run']).status, bad).not.toBe(0)
   // The exact form the remote command runs inside the container.
@@ -217,4 +235,21 @@ it('turns the payer’s balance into ok, low or unknown, and ignores a reading i
   watch.record(Number.NaN); watch.record(-5); expect(watch.state()).toBe('low')
   now += 120_001; expect(watch.state()).toBe('unknown') // the probe stopped reading: no stale "low" or "ok"
   watch.record(94_000_000); expect(watch.state()).toBe('ok')
+})
+
+it.each([30_000_000, 29_999_999])('wires the production readiness balance into the funds endpoint at %i drops', async drops => {
+  const dir = resources().tempDir('h7-payer-wiring-'), controlPath = join(dir, 'control.json')
+  for (const [key, value] of Object.entries({ HOSTED: '1', HOSTED_ORIGIN: 'https://demo.example', HOSTED_TRUSTED_PROXY: '127.0.0.1', HOSTED_IP_HMAC_KEY: 'x'.repeat(40), HOSTED_CONTROL_PATH: controlPath, HOSTED_PROVIDERS_READY_UNTIL: '2026-11-19T16:00:00Z', SETTLEMENT_RAIL: 'simulated', LLM_PROVIDER: 'fixture', DECISION_PROVIDER: 'fixture' })) vi.stubEnv(key, value)
+  writeFileSync(controlPath, JSON.stringify({ admissionsPaused: false, spendingPaused: false, reasonCode: 'test', expiresAt: '2026-11-19T16:00:00Z' }))
+  vi.spyOn(PublisherClient.prototype, 'registry').mockResolvedValue([{}] as never)
+  const payer = new XrplPayer({ request: vi.fn() } as never)
+  const balance = vi.spyOn(payer, 'balance').mockResolvedValue({ balanceDrops: drops, availableDrops: drops - 1_000_000, reserveDrops: 1_000_000, ledgerAgeSeconds: 1 })
+  const api = await createApiApp({ dbPath: join(dir, 'app.db'), payer, publisherUrl: 'http://127.0.0.1:1' })
+  const server = api.app.listen(0, '127.0.0.1'); await once(server, 'listening')
+  cleanup.push(async () => { server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve())); await api.close() })
+  const url = `http://127.0.0.1:${(server.address() as { port: number }).port}`
+  await vi.waitFor(() => expect(balance).toHaveBeenCalled())
+  const funds = await wire(url + '/readyz/funds')
+  expect([funds.status, funds.json()]).toEqual(drops < 30_000_000 ? [503, { funds: 'low' }] : [200, { funds: 'ok' }])
+  expect((await wire(url + '/readyz')).status).toBe(200)
 })
