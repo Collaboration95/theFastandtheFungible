@@ -13,13 +13,12 @@ existing private deployment directory. Times are Singapore time.
 | [Cloud Billing](https://console.cloud.google.com/billing?project=researchagent-sff) → project spend | Compare actual and forecast spend with **S$40**. Billing reports can lag; an alert is not proof that spending has stopped. |
 | [Payer check](https://ra-front-651013803640.asia-southeast1.run.app/ready/funds) | `ok`: at or above **30 XRP**. `low`: act. `unknown`, even HTTP 200: unconfirmed. Exact balance: wallet command below. |
 | [DeepSeek](https://platform.deepseek.com) → balance | Credit remains; account works. Check daily, including **15 Nov**. |
-| Alert-email inbox | No unresolved `ra-readyz-failed`, `ra-payer-funds-low` or billing mail. Redeploy alerts still need a recovery check. |
+| Alert-email inbox; [alert policies](https://console.cloud.google.com/monitoring/alerting?project=researchagent-sff) | No unresolved `ra-readyz-failed`, `ra-payer-funds-low` or billing mail. Redeploy alerts still need a recovery check. |
 
-**S$40 boundary:** the brief's ceiling and 75%/90% warnings have no merged
-`budget-stop/` implementation or spending-cap procedure at this revision.
-[Hosted alerts](hosted-web.md#deployment-and-operations-runbook) instead document
-**S$70**, 50%/90%/100% notifications, which do not stop the VM. Pause if S$40
-is at risk; do not rely on a hard stop or warning delivery.
+**S$40 cap:** [the monthly project budget](hosted-web.md#spending-cap-owner-request-11-nov)
+warns at 75% and 90%; `ra-budget-stop` stops the VM when **actual** spend reaches S$40.
+Forecasts only warn. Billing can lag by hours and overshoot; stopping compute
+keeps disks/journals and does not end every charge. DeepSeek is billed separately.
 
 Private status and Testnet balances (**existing** wallet directory only; an empty
 one creates identities):
@@ -33,6 +32,8 @@ node --import tsx scripts/hosted-wallets.ts --testnet --out "$RA_PRIVATE_DIR/wal
 
 **Resume** means `node scripts/hosted-control.mjs resume --project researchagent-sff --execute`.
 **Pause** means `node scripts/hosted-control.mjs pause --project researchagent-sff --reason maintenance --execute`.
+**Stop VM** means `gcloud compute instances stop ra-app --zone asia-southeast1-b --project researchagent-sff`.
+**Start VM** means `gcloud compute instances start ra-app --zone asia-southeast1-b --project researchagent-sff`; use only under the conditions below.
 Check readiness afterwards. Resume requires checked funding, providers, control
 expiry and payment reconciliation. A bad resume rolls back with Pause.
 
@@ -41,19 +42,19 @@ expiry and payment reconciliation. A bad resume rolls back with Pause.
 | Paused | Run the private status command; Resume after fixing the cause. Redeploys end paused. | Pause if readiness fails; replay. |
 | Not ready | Pause; check `/ready`, status and the [readiness/guard contract](hosted-web.md#gateway-configuration-hg). | Resume after recovery; otherwise replay. HTTP 200 HTML alone proves nothing. |
 | Payer low | Pause; run the wallet check. Follow [Testnet provisioning](hosted-web.md#exact-command-sequence). `--fund` only tries below 20 XRP, once per saved identity. | Keep identities/recovery signers; Resume after verified funding. |
-| Budget warning at 75% | Open billing; run private status. Pause if forecast threatens S$40. | Resume within the same ceiling; otherwise replay. |
-| Budget warning at 90% | Pause; check lagging billing and remaining exposure. | Stay paused unless S$40 remains safe; replay. |
+| Budget warning at 75% | Open billing; run private status. Pause if forecast threatens S$40. | Resume within S$40; otherwise replay. Forecast alone never stops the VM. |
+| Budget warning at 90% | Pause; check lagging billing and remaining exposure. Stop VM if S$40 is at risk: app pause still incurs compute charges. | Owner decides Start VM only after confirming headroom within S$40. If the cap was reached, use the cap-stop row. Replay meanwhile. |
 | DeepSeek out | Pause; check account balance and [provider preflight](hosted-web.md#verify-pause-resume-and-rotate). | Resume after qualification; otherwise labelled replay/offline extracts. |
 | Testnet reset | Pause; review saved identities/markers, then `node --import tsx scripts/hosted-wallets.ts --testnet --out "$RA_PRIVATE_DIR/wallets" --fund`. Requalify before Resume. | Preserve journals/signers/markers; replay/video if ledger evidence vanished. |
 | Session flood | Run private status; keep the browser cookie. Let guards reject excess sessions; Pause if unusable. | Resume after recovery; never clear sessions or raise limits. |
 | Judge says “out of questions” | Open the status URL in their existing browser; offer the corner's recorded verification or replay. | Daily allowance resets on the UTC day; no operator reset or new-cookie bypass. |
-| Budget function stopped the VM | Open billing and the [VM](https://console.cloud.google.com/compute/instances?project=researchagent-sff); leave stopped. No supported budget-function restart command exists here. | Replay. App Resume cannot start a VM; never restart to defeat S$40. |
+| Budget function stopped the VM | Leave stopped at S$40; show replay. Only if the owner explicitly raises the budget first: Start VM. Check status; automatic resume obeys the guard below. | Stop VM. Without a budget change, the next budget message stops it again. |
 
 Limits ([contract](hosted-web.md#limits-and-accounting), `server/hosted/limits.ts`):
 **5 started questions + 15 plans per session/day**;
 **60 admissions/IP/day, 6 starts/minute**; **300 admissions/demo/day**.
-Gross limits are **1,000 / 12,000 / 60,000 minor** respectively; each question
-is at most **200 minor**. Cancelled plans spare questions, not model costs.
+Gross limits: **1,000 minor/session**, **12,000 minor/IP**, **60,000 minor/demo**;
+each question is at most **200 minor**. Cancelled plans spare questions, not model costs.
 New sessions: **120/address/hour**, table **5,000**. One run, two waiting;
 busy alone needs no intervention.
 
@@ -116,9 +117,9 @@ earn a current green check.
 
 ## Teardown · 20 Nov
 
-Admissions end **00:00 SGT**. The intended instance stop is **00:30 SGT**;
-verify its schedule in the VM console, since the deploy helper does not create
-it. Neither stops billing for every resource. Point links to the replay.
+Admissions end **00:00 SGT**; instance schedule `ra-stop-after-judging` stops
+the VM at **00:30 SGT**. Neither deletes resources or ends every charge.
+Before shutdown, point public links to the replay.
 
 **Owner decides deletion.** Pause, reconcile, archive privately and verify
 recovery readability before setting `pendingObligations: 0`, `archiveVerified: true`
@@ -131,7 +132,18 @@ make hosted-teardown ARGS="--project researchagent-sff --manifest $RA_PRIVATE_DI
 
 [Teardown](hosted-web.md#teardown-on-20-nov) removes service, VM, original disk
 and tracked infrastructure; retains final snapshot/project. **Owner decides**
-snapshot deletion, billing unlink and project deletion later. Check residual billing.
+snapshot deletion, billing unlink and project deletion later. The helper leaves
+these cap extras; **owner decides** whether to remove them afterwards:
+
+```sh
+gcloud functions delete ra-budget-stop --gen2 --region asia-southeast1 --project researchagent-sff
+gcloud pubsub topics delete ra-budget --project researchagent-sff
+gcloud compute resource-policies delete ra-stop-after-judging --region asia-southeast1 --project researchagent-sff
+gcloud iam service-accounts delete ra-budget-stop@researchagent-sff.iam.gserviceaccount.com --project researchagent-sff
+gcloud iam roles delete raBudgetStop --project researchagent-sff
+```
+
+Check residual inventory/billing; do not promise a zero final bill.
 
 ## Never do
 
