@@ -10,6 +10,10 @@ import { getDemoStatus } from '../src/api'
 import { canAsk, explorerTx, HostedContext, homeState, JUDGE_RUN, proofLink, type HomeState, type Hosted } from '../src/hosted'
 import { HostedIntro } from '../src/components/hosted/HostedHome'
 import Ask from '../src/components/Ask'
+import ledgerFixture from './fixtures/ledger-check/rpc.json'
+
+// Automatic payer reads stay offline, just like the strip's mocked verifier.
+vi.mock('../src/ledger-check', async original => ({ ...await original<typeof import('../src/ledger-check')>(), readPayer: async () => ({ network: 'XRPL Testnet', ledger: ledgerFixture.payer.ledger_index, readAt: ledgerFixture.readAt, ownerCount: ledgerFixture.payer.account_data.OwnerCount, openEscrows: ledgerFixture.escrows.account_objects.length, text: 'Shared Testnet payer rbcLo4… · recorded fixture' }) }))
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.doUnmock('../src/verify/browser'); vi.resetModules() })
 
