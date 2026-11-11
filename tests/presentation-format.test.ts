@@ -2,7 +2,7 @@ import { expect, it } from 'vitest'
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import ts from 'typescript'
-import { ENV, money, shortTx, whenSGT, xrpAmount, environmentLabel, modelsLabel } from '../shared/presentation'
+import { ENV, money, shortTx, whenSGT, xrpAmount, dropsAmount, environmentLabel, modelsLabel } from '../shared/presentation'
 
 it('formats every minor-unit amount from 0 through 500 with exactly two decimals', () => {
   for (let minor = 0; minor <= 500; minor++) expect(money(minor)).toMatch(/^S\$\d+\.\d{2}$/)
@@ -13,6 +13,7 @@ it('formats ledger amounts, fingerprints and Singapore dates independently of th
   expect(xrpAmount('0')).toBe('0 XRP')
   expect(xrpAmount('9007199254740993')).toBe('9,007,199,254.740993 XRP')
   expect(xrpAmount('-40000')).toBe('-0.04 XRP')
+  expect(dropsAmount('9007199254740993')).toBe('9,007,199,254,740,993')
   expect(shortTx('abcdef0123456789'.repeat(4))).toBe('ABCDEF01…23456789')
   expect(shortTx('abcdef01')).toBe('ABCDEF01')
   expect(whenSGT('2026-11-11T07:06:05Z')).toBe('11 Nov 2026, 15:06 SGT')

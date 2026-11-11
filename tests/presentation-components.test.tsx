@@ -34,6 +34,8 @@ it('bridges the committed hosted receipt to the explorer XRP amount', () => {
   const html = renderToStaticMarkup(<ReceiptSheet run={recording.run as unknown as RunSnapshot} receipt={{ ...payment, settledAt: '2026-11-11T07:06:05Z' }} onClose={() => {}} />)
   expect(html).toContain('S$0.40'); expect(html).toContain('0.04 XRP (40,000 drops)')
   expect(html).toContain('11 Nov 2026, 15:06 SGT')
+  const exact = renderToStaticMarkup(<ReceiptSheet run={recording.run as unknown as RunSnapshot} receipt={{ ...payment, xrpl: { ...payment.xrpl, amountDrops: '9007199254740993' } }} onClose={() => {}} />)
+  expect(exact).toContain('9,007,199,254.740993 XRP (9,007,199,254,740,993 drops)')
 })
 it('renders every quick budget with two decimals', () => {
   for (const [max, amounts] of [[200, ['Free','S$0.50','S$1.00','S$2.00']], [500, ['Free','S$1.00','S$2.00','S$3.00','S$5.00']]] as const) {

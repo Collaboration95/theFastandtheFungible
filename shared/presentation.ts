@@ -22,6 +22,7 @@ export const ENV = {
 export const environmentLabel = (settlement?: string, models = 'fixture models') => settlement?.startsWith('XRPL') ? ENV.localTestnet(models) : ENV.localSimulated(models)
 /** Human labels retain both providers' real mode without their internal model identifiers. */
 export const modelsLabel = (research?: string, decision?: string) => !research || !decision ? 'models connecting' : research.startsWith('fixture') ? decision.startsWith('fixture') ? 'fixture models' : 'fixture answers, live buying' : decision.startsWith('fixture') ? 'live answers, rule-based buying' : 'live models'
+export const dropsAmount = (drops: string) => BigInt(drops).toLocaleString('en-SG')
 /** XRP amounts follow the explorer; fees remain in drops. */
 export const xrpAmount = (drops: string | null) => {
   if (drops === null) return '—'
