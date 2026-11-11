@@ -81,7 +81,7 @@ export function aggregateSandbox(store: Store, now = Date.now()): SandboxStats {
           pendingBuy = true
           lastIntent = event.intentId || undefined
           const decision = decisions.find(d => d.round === (event.round ?? round))
-          if (!round || event.round && event.round !== round || !decision?.rows.some(r => r.verdict === 'BUY' && (decision.selectedSourceKey ? sourceKey(r.candidate) === decision.selectedSourceKey : r.candidate.resourceId === decision.selectedResourceId))) policyViolation = true
+          if (!round || (event.round ?? round) !== round || !decision?.rows.some(r => r.verdict === 'BUY' && (decision.selectedSourceKey ? sourceKey(r.candidate) === decision.selectedSourceKey : r.candidate.resourceId === decision.selectedResourceId))) policyViolation = true
           if (lastIntent) {
             if (bought.has(lastIntent) || explicitBuys.has(lastIntent)) duplicateBuy = true
             explicitBuys.add(lastIntent)

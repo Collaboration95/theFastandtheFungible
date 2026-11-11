@@ -131,6 +131,12 @@ it('rejects a later-round policy pick as authority for an earlier BUY', () => {
   const store=seeded()
   store.hostedState(db => db.prepare(`UPDATE decisions SET json=json_set(json,'$.round',2) WHERE run_id='synthetic-0'`).run())
   expect(aggregateSandbox(store).audit.buyWithoutPolicy).toBe(1)
+  store.hostedState(db => {
+    db.prepare(`UPDATE decisions SET json=json_set(json,'$.round',1) WHERE run_id='synthetic-0'`).run()
+    db.prepare(`INSERT INTO decisions SELECT run_id,0,json_set(json,'$.round',0) FROM decisions WHERE run_id='synthetic-0' AND round=1`).run()
+    db.prepare(`UPDATE events SET json=json_set(json,'$.data.round',0) WHERE run_id='synthetic-0' AND json_extract(json,'$.type')='BUY'`).run()
+  })
+  expect(aggregateSandbox(store).audit.buyWithoutPolicy).toBe(1)
 })
 
 it('returns a fixed unavailable response if the store cannot be audited, without exposing exception text', async () => {
