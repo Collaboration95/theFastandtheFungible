@@ -326,8 +326,10 @@ $RA_PRIVATE_DIR/hosted-env.sh bash -c 'node docker/hosted/ops.mjs deploy --proje
 
 A redeploy reuses the VM, disk, journals and control file. The startup script
 pauses admissions and spending before it stops the old stack, so every
-redeploy (and every VM reboot) ends **paused**; resume only after the checks
-below. The deploy waits for the boot-time startup run, queues a non-blocking
+redeploy ends **paused**; resume only after the checks below. A VM restart that
+nobody asked for does not need an operator when the release was already
+qualified: it resumes itself under the guard in
+[If the VM restarts by itself](#if-the-vm-restarts-by-itself). The deploy waits for the boot-time startup run, queues a non-blocking
 restart and requires the release marker `/run/researchagent-startup.done`
 (`<sha> <origin>`), because the metadata script runner exits 0 even when the
 script fails.
@@ -380,6 +382,68 @@ a SHA retains its original version-1 secrets. Retain session hashes and hosted h
 reconciliation and retention of old recovery signers; never overwrite a wallet
 just to resolve a pending transaction. Manifest retains earlier secret identifiers
 for teardown, and accepted prior manifests should be saved privately for rollback.
+
+`status` also prints `qualified`: the release an operator last resumed
+(`{commit, qualifiedAt}`), or `null`. That record is what arms the automatic
+resume below. Resuming the whole service writes it from the running container's
+`RA_COMMIT` (set from the deployed images file); a release with no id, a partial
+resume (`admissions` or `spending` only) and the automatic resume itself write
+nothing, and a whole-service resume of a release with no id deletes any earlier
+record, so another release's qualification never carries over (this covers a
+rollback to an older release).
+
+### If the VM restarts by itself
+
+A redeploy always ends paused. A restart nobody asked for (host failure, kernel
+panic) must not strand judges on the paused page for days, so in that one case
+the stack may resume itself. It does so only when **all** of these hold:
+
+1. An operator already qualified this exact release: the last whole-service
+   `resume` after a passed smoke recorded its commit in `qualified.json` on the
+   state disk, and the commit now deployed (VM metadata, images file and the
+   running API container) is the same one.
+2. Before the restart the service was running, or was paused only by the
+   boot-time `deploy` pause itself (a second restart during startup). A pause
+   with any other reason (`maintenance`, `operator_paused`, a budget or money
+   cap, `prelaunch`) or a half-paused service stays paused.
+3. The control has not expired, and nobody has paused it since the restart: its
+   reason is still exactly `deploy`.
+4. `/startupz` answers 200 and `/readyz` reports the paused state for at least
+   three checks over 60 seconds, within ten minutes of boot. While paused,
+   `/readyz` hides provider and funding readiness, so those are visible only
+   after the resume; if the demo is not ready then, it stays unpaused, refuses
+   new work until it recovers by itself, and the log line says so.
+5. `hosted-control resume --local` accepts it. It is the operator command, so its
+   refusals (missing, invalid or expired control) still apply, and
+   `--only-if-reason deploy` makes it refuse if the pause changed after the last
+   check.
+
+Anything else stays paused and says why in one line. A deploy through `ops.mjs`
+(and any startup run that is not the first after a boot, such as re-rendering
+after editing `env.local`) deletes `qualified.json`: it ends paused exactly as
+before, and only the manual resume after its smoke arms the automatic resume
+again. A planned VM stop and start counts as a restart too; to keep the stack
+paused through one, pause first with any reason other than `deploy`. A rollback
+is not sticky across a restart either: the restart redeploys the release named
+in the VM metadata, which stays paused unless that release was qualified.
+
+```bash
+# Armed? "qualified" holds the release an operator resumed, or null.
+node scripts/hosted-control.mjs status --project "$RA_PROJECT" --execute
+# After a restart, over IAP on the VM: one plain line, resumed or stayed paused and why.
+sudo journalctl -t researchagent-autoresume --no-pager
+sudo cat /srv/researchagent/autoresume.log
+```
+
+Examples: `autoresume: resumed. release 1a2b3c4d5e6f was qualified by an operator
+at 2026-11-12T03:10:00.000Z, the service was running before the restart, and the
+API stayed healthy for 60 s (/startupz OK, /readyz reporting only the pause).
+Readiness after resume: ready.` and `autoresume: stayed paused (new_release):
+release … was deployed but only … was qualified by an operator`. The other
+reasons are `not_qualified`, `release_mismatch`, `operator_pause`, `expired`,
+`operator_pause_now`, `unhealthy` and `resume_refused`. The code is
+`docker/hosted/autoresume.mjs`; `startup.sh` records the control file before its
+own pause and starts the check detached after the release marker is written.
 
 ## Rollback
 
@@ -524,11 +588,15 @@ rotated. The uptime alert fires whenever the service is paused, including
 during every redeploy. The project's auto-created `default` network keeps its
 open SSH/RDP rules; it has no instances.
 
-Every redeploy and reboot ends paused. The provider-preflight deadline in
+Every redeploy ends paused. The provider-preflight deadline in
 `env.local` must be moved forward at each release, or readiness turns
 `degraded` when it passes. Resume with
 `node scripts/hosted-control.mjs resume --project researchagent-sff --execute`
-after the paused smoke, then run the live smoke.
+after the paused smoke, then run the live smoke. That resume also arms the
+guarded automatic resume for the release: a restart nobody asked for brings the
+same release back without an operator, and anything else (a new commit, an
+operator or money pause, an expired control, an unhealthy API) leaves it paused.
+Not yet drilled on the VM.
 
 Reference commands were checked against official documentation for
 [Direct VPC egress](https://docs.cloud.google.com/run/docs/configuring/vpc-direct-vpc),
