@@ -56,7 +56,7 @@ describe('QUAL: recorded live preset plans', () => {
       expect(r.facts?.answered).toBeGreaterThanOrEqual(2)
     }
   })
-  it('reserves answers with both figures and one purchase', () => {
+  it('reserves remains answerable from its historical XRPL3 plans, with both figures and one purchase', () => {
     for (const r of results.filter(r => r.id.startsWith('XRPL3'))) {
       expect(r.bought).toEqual(['xrpl-reserves']); expect(r.spentMinor).toBe(40)
       expect(r.lead.join(' ')).toMatch(/1 XRP.*0\.2 XRP/)

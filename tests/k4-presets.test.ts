@@ -28,6 +28,11 @@ it.each(TESTNET_QUESTIONS)('$label leads with its requested fact',async q=>{
  expect(lead?.split(/\s+/).length).toBeLessThanOrEqual(40)
  if(q.id==='XRPL1') expect(answer.lead?.[0].text).toContain('AllowTrustLineLocking')
  if(q.id==='XRPL2') expect(answer.lead?.[0].text).toMatch(/PAYMENT-REQUIRED|PAYMENT-SIGNATURE/)
- if(q.id==='XRPL3') expect(answer.lead?.[0].text).toMatch(/\d.*XRP/)
+ if(q.id==='XRPL3') {
+  expect(result.intents.filter(i=>i.status==='VERIFIED').map(i=>i.resourceId)).toEqual(['product-writer-paid'])
+  expect(result.spentMinor).toBe(40)
+  expect(lead).toMatch(/publishing.*key on the XRP Ledger.*escrow/)
+  expect(lead).toContain('cannot read the article unless the writer is paid')
+ }
  expect(answer.openGaps.every(g=>result.checkpoint.requirements?.some(r=>r.text===g.text))).toBe(true)
 })

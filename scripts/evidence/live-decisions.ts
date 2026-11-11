@@ -77,7 +77,7 @@ const { TESTNET_QUESTIONS: presets } = await import('../../shared/contracts/exam
 const GOLD: Record<string, Gold> = {
   XRPL2: { right: ['product-x402-response'], lead: /PAYMENT-REQUIRED|scheme, network, amount|payTo/i, note: 'the 402 response explainer; lead names what the 402 carries' },
   XRPL1: { right: ['team-rlusd'], lead: /AllowTrustLineLocking/i, note: 'the team RLUSD note; lead names AllowTrustLineLocking' },
-  XRPL3: { right: ['xrpl-reserves'], lead: /\b\d+(?:\.\d+)?\s*XRP\b|base reserve/i, note: 'the reserves explainer; lead names the base reserve (or its amount)' },
+  XRPL3: { right: ['product-writer-paid'], lead: /publishing.*key on the XRP Ledger.*escrow/i, note: 'the writer-paid explainer; lead names publishing the key on the ledger to release escrow payment' },
   A3: { right: ['team-fees'], lead: /\b\d[\d,]*\s*drops\b/i, note: 'the fee note; lead states a fee in drops' },
   A4: { right: ['c5-xrpl-token-escrow-xls85'], lead: /TokenEscrow|XLS-85/i, note: 'the TokenEscrow (XLS-85) explainer; lead names the amendment' },
   A5: { right: ['xrpl-escrow', 'xrpl-tx-escrowfinish', 'xrpl-tx-escrowcancel', 'product-escrow-no-show'], lead: /EscrowFinish[\s\S]*EscrowCancel|EscrowCancel[\s\S]*EscrowFinish/, note: 'an escrow explainer or the Finish/Cancel references; lead contrasts both' },
