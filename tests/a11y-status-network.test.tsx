@@ -12,7 +12,7 @@ import { warmVerifier } from '../src/warm-verifier'
 import type { BrowserVerification } from '../src/verify/browser'
 
 const status: HostedDemoStatus = { state: 'ready', capabilities: { ask: true, scope: true, history: true, receipts: true, pdf: false, settings: false, faultControls: false }, remaining: { questions: 5, minor: 100 }, labels: { models: 'fixture models', rail: 'SIMULATED' }, links: { repo: '', deck: '', video: '', progress: '', replay: '' } }
-afterEach(() => { cleanup(); vi.useRealTimers(); vi.unstubAllGlobals() })
+afterEach(() => { cleanup(); vi.useRealTimers(); vi.unstubAllGlobals(); vi.unstubAllEnvs() })
 
 for (const delay of [6000, 12000]) it(`keeps the first status request alive for ${delay} ms, then uses its hosted answer`, async () => {
   vi.useFakeTimers()
@@ -79,4 +79,10 @@ it('schedules the verifier only at idle and cancels unused prefetches', () => {
 it('explains the existing hosted rule that planning counts even when a run never starts', () => {
   const html = renderToStaticMarkup(<HostedContext.Provider value={{ status }}><PlanSheet plan={uc2Scope.plan} onGo={() => {}} onCancel={() => {}} /></HostedContext.Provider>)
   expect(html).toContain('Planning uses one of your daily questions, even if you cancel or the run doesn’t start.')
+})
+
+it('offers the published video when the build supplies its public HTTPS URL', () => {
+  vi.stubEnv('VITE_DEMO_VIDEO_URL', 'https://video.example/demo')
+  render(<Connecting />)
+  expect(screen.getByRole('link', { name: 'Watch the demo video' }).getAttribute('href')).toBe('https://video.example/demo')
 })
