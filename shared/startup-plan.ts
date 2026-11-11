@@ -2,6 +2,7 @@ import { parseArgs } from 'node:util'
 import { homedir } from 'node:os'
 import { isAbsolute, resolve } from 'node:path'
 import { BUDGET } from './contracts/run.js'
+import { FIXTURE_WRITERS_LABEL } from './writer-label.js'
 
 export type CommandKind = 'stdio' | 'http' | 'app' | 'try' | 'init' | 'publish'
 export function parseCommand(argv: string[]) {
@@ -36,5 +37,7 @@ export function resolveStartup(env: NodeJS.ProcessEnv, command: ReturnType<typeo
   const stateDir = resolve(config.RA_DATA_DIR ?? resolve(base, 'researchagent', testnet ? (mode === 'app' ? 'testnet/app' : 'testnet') : mode === 'app' ? 'app' : 'mcp'))
   return { mode, ports: { web: options.port ?? 0, api: 0, publisher: 0, http: options.port ?? (env.NODE_ENV === 'test' ? 0 : 9689) }, stateDir,
     caps: { maxMinor: Math.min(Number(config.MCP_MAX_BUDGET_MINOR ?? (mode === 'try' ? '200' : '0')), BUDGET.maxMinor), dailyMinor: Number(config.MCP_DAILY_CAP_MINOR ?? (mode === 'try' ? '500' : '0')), walletDailyMinor: Number(config.WALLET_DAILY_CAP_MINOR ?? (testnet || mode === 'try' ? '500' : '2000')) },
-    labels: [testnet ? 'Testnet · no real value' : 'SIMULATED rail', ...(mode === 'app' || mode === 'try' || testnet ? ['Fixture models and fictional writers'] : [])] }
+    // No sources are known at startup. Name both kinds in the bundled corpus;
+    // completed MCP results narrow this same label with writersLabel(data).
+    labels: [testnet ? 'Testnet · no real value' : 'SIMULATED rail', ...(mode === 'app' || mode === 'try' || testnet ? [FIXTURE_WRITERS_LABEL] : [])] }
 }

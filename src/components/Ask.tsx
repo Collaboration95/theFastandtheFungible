@@ -5,6 +5,8 @@ import { money } from '../format'
 import BudgetPopover from './BudgetPopover'
 import AgentSprite from './AgentSprite'
 import { BUDGET_LABEL } from '../copy'
+import { useHosted } from '../hosted'
+import { HostedJudgesCorner } from './hosted/HostedHome'
 
 export interface AskProps {
   onAsk: (input: AskInput) => void | Promise<void>
@@ -48,6 +50,9 @@ export default function Ask({ onAsk, busy = false, settlement, above, universalM
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const disabled = busy || submitting
+  // On the hosted demo, "check our work without asking a question" sits between the composer and the examples. A closed demo has no
+  // composer, so there the hosted intro carries it instead.
+  const hosted = useHosted()
   return <section className="ra-home" aria-label="Ask a research question">
     {intro ?? <><AgentSprite animation="idle" still /><h1 className="ra-hero">Ask a question. <em>Give it a budget.</em></h1>
     <p className="ra-home-description">Searches free sources first. Pays a writer only when it closes a gap, never beyond your budget.</p></>}
@@ -74,7 +79,7 @@ export default function Ask({ onAsk, busy = false, settlement, above, universalM
       {composerNote}
       {error && <div className="ra-comp-foot"><span className="ra-err" role="alert">{error}</span></div>}
     </form>}
-    {!above && !closed && note}
+    {!above && !closed && (note ?? (hosted && <HostedJudgesCorner hosted={hosted} />))}
     {/* The demo questions sit under the composer, one per row; a click fills the box. */}
     {!above && !closed && <div className="ra-presets" role="group" aria-label="Demo questions">
       <p className="ra-presets-h" aria-hidden="true">{examplesLabel}</p>

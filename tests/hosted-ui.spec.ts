@@ -78,7 +78,7 @@ test('first visit: orientation, the visitor’s own question first, one environm
   await page.keyboard.press('Escape')
   // Footer links open the public pages.
   const links = page.getByRole('navigation', { name: 'Project links' })
-  for (const name of ['Source code', 'Pitch deck', 'Progress since SingHacks', 'Recorded walkthrough: key reveal and refund', 'How to verify a receipt']) await expect(links.getByRole('link', { name: new RegExp(name) })).toHaveAttribute('href', /^https:\/\//)
+  for (const name of ['Source code', 'Pitch deck', 'Progress since SingHacks', 'Recorded walkthrough: writer no-show and refund', 'How to verify a receipt']) await expect(links.getByRole('link', { name: new RegExp(name) })).toHaveAttribute('href', /^https:\/\//)
   await expect(links.getByRole('link', { name: /Demo video/ })).toHaveCount(0)
   await expect(page.getByRole('navigation', { name: 'Questions' })).toContainText('Your questions appear here.')
   expect(await serious(page)).toEqual([])
@@ -144,7 +144,9 @@ test('a visitor asks, gets a verified answer and checks it in the browser; anoth
   await expect(b.page.getByRole('navigation', { name: 'Questions' }).getByRole('button', { name: /^Run: / })).toHaveCount(0)
   await b.page.goto(runUrl)
   await expect(b.page.getByText('That question isn’t available here.', { exact: false })).toBeVisible()
-  await expect(b.page.getByRole('region', { name: /Verify/ })).toHaveCount(0)
+  // The public recorded run is available to everyone; A's private run verifier is not.
+  await expect(b.page.getByRole('region', { name: 'Verify in your browser', exact: true })).toHaveCount(0)
+  await expect(b.page.getByRole('region', { name: 'Check our work without asking a question', exact: true })).toBeVisible()
   await b.context.close()
 
   // The visitor's own allowance went down by one; Clear my history hides the finished run.

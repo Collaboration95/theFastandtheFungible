@@ -169,7 +169,9 @@ const HostedDemoStatusSchema = z.object({
   capabilities: z.object({ ask: z.boolean(), scope: z.boolean(), history: z.boolean(), receipts: z.boolean(), pdf: z.literal(false), settings: z.literal(false), faultControls: z.literal(false) }),
   remaining: z.object({ questions: z.number().int().nonnegative(), minor: z.number().int().nonnegative() }),
   labels: z.object({ models: z.string().max(200), rail: z.string().max(200) }),
-  links: z.object({ repo: z.string().max(500), deck: z.string().max(500), video: z.string().max(500), progress: z.string().max(500), replay: z.string().max(500) }),
+  links: z.object({ repo: z.string().max(500), deck: z.string().max(500), video: z.string().max(500), progress: z.string().max(500), replay: z.string().max(500),
+    /** Judges' corner: a public proof of refusal anyone can open. Optional and unchecked here, so a server that sends nothing, or something odd, never turns the whole status into an error; the page shows it only if it is a safe link. */
+    proof: z.string().max(500).optional() }),
   csrfToken: z.string().max(200).optional(),
   queue: z.array(z.object({ runId: z.string(), position: z.number().int().nonnegative().nullable(), expiresAt: z.string() })).max(16).optional(),
   wait: z.object({ ahead: z.number().int().nonnegative().max(1000), own: z.boolean() }).optional(),

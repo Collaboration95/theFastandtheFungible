@@ -17,6 +17,12 @@ it('preserves empty strings, aliases and publisher-specific variables', () => {
 })
 
 import { parseCommand, resolveStartup } from '../shared/startup-plan.js'
+import { FIXTURE_WRITERS_LABEL } from '../shared/writer-label.js'
+it.each([['app'], ['app', '--testnet'], ['try', '--testnet']])('startup %j labels the mixed corpus truthfully before any run has sources', (...argv) => {
+  const plan = resolveStartup({}, parseCommand(argv))
+  expect(plan.labels).toContain(FIXTURE_WRITERS_LABEL)
+  expect(plan.labels.join(' · ')).not.toContain('Fixture models and fictional writers')
+})
 it('resolves sanitized plans with operator-only caps and explicit port precedence', () => {
   const env = { NODE_ENV: 'test', XDG_STATE_HOME: '/tmp/startup-test', MCP_MAX_BUDGET_MINOR: '100', RA_API_TOKEN: 'private-test-token', XRPL_PAYER_SEED: 'private-test-seed' }
   const plan = resolveStartup(env, parseCommand(['app', '--testnet', '--port', '1234']))

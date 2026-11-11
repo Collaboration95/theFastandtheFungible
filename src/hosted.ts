@@ -1,6 +1,7 @@
 // Hosted judge demo: everything the UI derives from the server's `GET /api/demo/status`. Local and desktop never set it.
 import { createContext, useContext } from 'react'
 import { ApiError, type HostedDemoStatus } from './api'
+import { EXAMPLE_PROOF_URL, RELEASE_TAG, releaseBase } from '../shared/links'
 
 export type Hosted = { status: HostedDemoStatus; connection?: 'offline' | 'unreachable' }
 export const HostedContext = createContext<Hosted | undefined>(undefined)
@@ -103,5 +104,31 @@ export function hostedLinks(hosted: Hosted) {
     progress: links.progress || `${PAGES}/progress/`,
     // The README's "Verify it yourself": recorded Testnet transactions, the one-line verifier and the ledger check. receipt-spec.md is the wire-format spec, not a how-to.
     verify: `${links.repo}#verify-it-yourself`,
+  }
+}
+
+/** The recorded hosted run the Judges' corner re-checks. Served as a static file, so it works with the sandbox paused, busy or out of questions. */
+export const JUDGE_RUN = {
+  bundleUrl: '/judge/hosted-run-nov11.receipts.json',
+  caption: 'Recorded on this sandbox, 11 Nov · XRPL Testnet · live answers, rule-based buying · team-authored writers · no real value',
+  /** Its EscrowFinish: the writer publishes the article key in the Fulfillment field, and the escrow's lock is that key's hash. */
+  keyTx: '4CCB4E56137D738847E853535B068329562AD490DA4D9F5551CEC2EB1AC70638',
+} as const
+export const explorerTx = (hash: string) => `https://testnet.xrpl.org/transactions/${hash}`
+
+/** A public proof of refusal: the server's `links.proof`, else the committed one. Only an https link or this site's own /proof/ path is shown. */
+export function proofLink(hosted: Hosted): string | undefined {
+  const url = (hosted.status.links.proof || EXAMPLE_PROOF_URL || '').trim()
+  return /^https:\/\/[^\s"'<>]+$/.test(url) || /^\/proof\/[a-f0-9]{32}$/.test(url) ? url : undefined
+}
+
+/** The three lines a builder copies. Pinned to a release that is already published (shared/links.json), never to the unreleased package version. */
+export function builderLines(tag = RELEASE_TAG) {
+  const tgz = `${releaseBase(tag)}/researchagent-mcp-${tag.slice(1)}.tgz`
+  return {
+    tag,
+    claude: `claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y ${tgz} --testnet`,
+    try: `npx -y ${tgz} try --testnet`,
+    verify: `npx -y ${tgz} verify receipts.json --ledger`,
   }
 }

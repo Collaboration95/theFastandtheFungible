@@ -17,7 +17,7 @@ import { renderProofPage } from '../server/proof-page.js'
 import { verifyAnswer } from '../sdk/verify.js'
 import { XRPL_LABEL } from '../shared/contracts/publisher.js'
 import type { RunSnapshot } from '../shared/contracts/index.js'
-import { refusalEligibility, PRIVATE_QUESTION } from '../shared/refusal-proof.js'
+import { refusalEligibility, PRIVATE_QUESTION, TEAM_WRITER_NAME } from '../shared/refusal-proof.js'
 import { resources } from './helpers/resource-scope.js'
 
 const sha = (text: string) => createHash('sha256').update(text).digest('hex')
@@ -132,6 +132,15 @@ it('only a finished, unpaid, unanswered, anchored decline can be shared, and say
   await expect(proofs.create(pending, { hosted: false, principal: 'operator' })).rejects.toMatchObject({ status: 409, code: 'anchor_pending' })
   await expect(proofs.create('no-such-run', { hosted: false, principal: 'operator' })).rejects.toMatchObject({ status: 404 })
   expect(store.hostedState(db => Number(db.prepare('SELECT count(*) AS n FROM refusal_proofs').get()!.n))).toBe(0)
+})
+
+it('prints the team’s writers under one label, even for a proof stored with the older names', async () => {
+  const store = open()
+  const { proof } = await new RefusalProofs(store).create(declinedRun(store), { hosted: false, principal: 'operator' })
+  const stored = structuredClone(proof.snapshot), item = stored.found.items[0]
+  stored.found.items = [{ ...item, writer: 'ResearchAgent builders' }, { ...item, writer: 'ResearchAgent builders (team-authored)' }, { ...item, writer: 'The Fab Floor' }]
+  const writers = [...renderProofPage(stored, { mode: 'page', origin: 'https://demo.example', nonce: 'N0NCE' }).matchAll(/<small>([^<]*?) · S\$/g)].map(match => match[1])
+  expect(writers).toEqual([TEAM_WRITER_NAME, TEAM_WRITER_NAME, 'The Fab Floor'])
 })
 
 it('renders a safe, complete public page and a self-contained card', async () => {
