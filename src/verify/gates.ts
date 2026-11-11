@@ -44,10 +44,16 @@ export function summarizeGates(input: unknown, checks: readonly VerificationChec
   const intents = [...new Map(b.intents.map(i => [i.intentId, i])).values()]
   const budget = admissions.at(0)?.data.admittedMinor ?? reserves.at(0)?.data.runBudgetMinor
   const charged = new Map<string, number>()
-  for (const payment of b.payments.filter(p => p.kind === 'purchase')) if (money(payment.amountMinor)) charged.set(payment.intentId, Math.max(charged.get(payment.intentId) ?? 0, payment.amountMinor))
-  for (const receipt of b.receipts) charged.set(receipt.intentId, Math.max(charged.get(receipt.intentId) ?? 0, receipt.amountMinor))
-  for (const e of settlements) if (typeof intentOf(e) === 'string' && money(e.data.amountMinor)) charged.set(String(intentOf(e)), Math.max(charged.get(String(intentOf(e))) ?? 0, e.data.amountMinor))
-  const gross = [...charged.values()].reduce((sum, amount) => sum + amount, 0)
+  const charge = (tx: string, amount: number) => {
+    const key = tx.replace(/^(x402-|escrow-)/, '')
+    charged.set(key, Math.max(charged.get(key) ?? 0, amount))
+  }
+  for (const payment of b.payments.filter(p => p.kind === 'purchase')) if (money(payment.amountMinor)) charge(payment.txHash || payment.intentId, payment.amountMinor)
+  for (const receipt of b.receipts) charge(receipt.xrpl?.txHash ?? receipt.receiptId, receipt.amountMinor)
+  for (const e of settlements) if (typeof e.data.txHash === 'string' && money(e.data.amountMinor)) charge(e.data.txHash, e.data.amountMinor)
+  const chargedStates = ['SETTLED', 'DELIVERY_PENDING', 'DELIVERY_FAILED', 'VERIFIED', 'CLAIM_FAILED', 'CHALLENGED', 'REFUNDED', 'CHALLENGE_REJECTED', 'CHALLENGE_REFUSED']
+  const intentGross = intents.filter(i => chargedStates.includes(i.status)).reduce((sum, i) => sum + i.amountMinor, 0)
+  const gross = Math.max(intentGross, [...charged.values()].reduce((sum, amount) => sum + amount, 0))
   const over = money(budget) && (gross > budget || reserves.some(e => money(e.data.amountMinor) && money(e.data.committedMinor) && e.data.committedMinor + e.data.amountMinor > budget))
   const withoutPolicy = reserves.some(reserve => {
     const intent = intents.find(i => i.intentId === intentOf(reserve))

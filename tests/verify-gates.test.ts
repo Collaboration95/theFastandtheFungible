@@ -56,7 +56,19 @@ describe.each(Object.entries(fixtures))('%s receipt bundle', (_name, path) => {
       if (e.kind === 'reserve') e.data.runBudgetMinor = 1
     }
     expect(statuses(bundle, checks)).toEqual(['Not checked', 'Broken', 'Held', 'Held', 'Held'])
+    const intentSpend = load(path)
+    intentSpend.intents[0].amountMinor = 201
+    expect(statuses(intentSpend, checks)).toEqual(['Not checked', 'Broken', 'Held', 'Held', 'Held'])
   })
+})
+
+it('counts distinct charges on one intent toward gross spend', async () => {
+  const bundle = load(fixtures.hosted), checks = (await verifyAnswer(bundle)).checks
+  const payment = structuredClone(bundle.payments[0])
+  payment.txHash = 'A'.repeat(64)
+  payment.amountMinor = 201
+  bundle.payments.push(payment)
+  expect(statuses(bundle, checks)).toEqual(['Not checked', 'Broken', 'Broken', 'Held', 'Held'])
 })
 
 it('does not treat absent, redacted, malformed or another run’s evidence as held', () => {
