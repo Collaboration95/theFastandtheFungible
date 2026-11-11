@@ -2,7 +2,7 @@
 
 Local verification only: HOSTED=1, fixture research and decision models, simulated payments and ephemeral ports. No hosted questions, cloud changes, live providers or Testnet transactions. Readiness latency is an explicit stand-in; the hosted API, publisher and packaging guard are real local processes.
 
-The final H7 arm was rerun after the desktop gate caught an API import of a deployment helper that is not staged in the desktop build. API links validation now stays in the server build, with parity tests against the operator helper. The independent planning lane also refuses waiting work during shutdown and drains the running plan’s final database writes before storage closes. The harness additionally records both link validators and SSE implementation source hashes; those metadata-only additions do not change baseline traffic.
+The final H7 arm was rerun after the desktop gate caught an API import of a deployment helper that is not staged in the desktop build. API links validation now stays in the server build, with parity tests against the operator helper. The independent planning lane also refuses waiting work during shutdown and drains the running plan’s final database writes before storage closes. The harness additionally records both link validators and SSE implementation source hashes; those metadata-only additions do not change baseline traffic. The final harness explicitly disables advisory ledger credentials and calibration; those environment overrides were absent during the baseline run, so the effective fixture settings agree. Source-file digests are named sha256 objects, keeping file identity unambiguous to the secret scan.
 
 The original salvaged before/after JSON was replaced because its maximum event-loop delay exceeded 16 minutes. Those interrupted runs did not establish a 120-second comparison. The replacement pair ran sequentially under the shared heavy lock, with sleep inhibited.
 
@@ -12,17 +12,19 @@ Six visitors for 120 seconds with readiness latencies 380,400,1310,520,370,570,1
 
 | Measurement | Before | H7 |
 | --- | ---: | ---: |
-| Measured wall time (s) | 122.2 | 122.3 |
+| Measured wall time (s) | 122.2 | 122.6 |
 | Requests | 926 | 960 |
-| Status p50 (ms) | 4 | 3 |
-| Status p95 (ms) | 1213 | 9 |
-| Status max (ms) | 1903 | 16 |
+| Runs admitted | 70 | 60 |
+| Runs finished | 70 | 60 |
+| Status p50 (ms) | 4 | 5 |
+| Status p95 (ms) | 1213 | 10 |
+| Status max (ms) | 1903 | 23 |
 | Readiness refreshes | 19 | 25 |
 | Cookieless flood sessions minted | 4980 | 120 |
-| Session table after flood | 5000 | 143 |
+| Session table after flood | 5000 | 142 |
 | Next real visitor HTTP | 429 | 200 |
-| Event-loop p99 (ms) | 16.2 | 14.9 |
-| Event-loop maximum (ms) | 55.9 | 45.3 |
+| Event-loop p99 (ms) | 16.2 | 14.7 |
+| Event-loop maximum (ms) | 55.9 | 52.3 |
 
 Expected 429 refusals (queue, starts-per-minute and question allowances) are reported separately from false pauses. The flood reaches the baseline session ceiling, so its post-flood pause submit/scope probes are blocked by session_limit; its readiness probe still reports paused. H7's next visitor and all pause boundaries are checked after the flood.
 
@@ -30,12 +32,13 @@ Expected 429 refusals (queue, starts-per-minute and question allowances) are rep
 
 | Measurement | Before | H7 |
 | --- | ---: | ---: |
-| SSE encoded body bytes | 1340842 | 227009 |
+| SSE encoded body bytes | 1340842 | 226712 |
 | Snapshot frames | 14 | 10 |
-| Phone Done lag (ms) | 2675 | 359 |
+| Phone Done lag (ms) | 2679 | 353 |
 | Repeat static transfer (bytes) | 241573 | 1204 |
-| Repeat composer (ms) | 1755 | 409 |
-| Initial app gzip body (bytes) | 146346 | 131921 |
+| Repeat all-resource transfer (bytes) | 242319 | 1939 |
+| Repeat composer (ms) | 1774 | 417 |
+| Initial app gzip body (bytes) | 146346 | 133131 |
 | Questions after cancel | 4 | 5 |
 | Questions after Start | 4 | 4 |
 
@@ -68,4 +71,4 @@ Deployment remains with the orchestrator. State-disk video/proof links need no A
 
 The orchestrator owns API/web/front deployment and the real incremental-stream check through Cloud Run. On its own smoke run, record the raw `/runs/<id>` size and confirm `curl -N --compressed` shows frames arriving one by one. If frames batch, set `HOSTED_SSE_GZIP=0` in the VM API environment and recreate that container. Both front and VM nginx must carry the new Accept-Encoding whitelist entry. The front asset/cache changes require a front deploy; no deploy was performed here.
 
-The final initial app gzip body measured **131,921 bytes (131.9 KB)** at gzip level 5 against the **130 KB soft target**. The owner explicitly accepted the initial 1.8 KB miss on 12 Nov and required App.tsx to remain untouched while A11Y/LEDGER edit it. The table retains the exact final integrated result. Follow-up: lazy-load secondary run/receipt panels in the owning UI lane; preserve front gzip level 5. The repeat-visit target still passes (1,204 bytes, 409 ms composer). No hard gate or test threshold was lowered.
+The final initial app gzip body measured **133,131 bytes (133.1 KB)** at gzip level 5 against the **130 KB soft target**. The owner explicitly accepted the initial 1.8 KB miss on 12 Nov and required App.tsx to remain untouched while A11Y/LEDGER edit it. The table retains the exact final integrated result. Follow-up: lazy-load secondary run/receipt panels in the owning UI lane; preserve front gzip level 5. The repeat-visit target still passes (1,204 bytes, 417 ms composer). No hard gate or test threshold was lowered.

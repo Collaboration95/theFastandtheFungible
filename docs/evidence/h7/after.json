@@ -1,7 +1,7 @@
 {
   "kind": "local-hosted-load",
-  "at": "2026-11-11T16:32:57.369Z",
-  "source": "H7 final with SSE/front/refund, source SHA-256 values below",
+  "at": "2026-11-11T17:32:13.512Z",
+  "source": "H7 final integrated SSE/front/refund, source SHA-256 values below",
   "readinessMode": "background (H7)",
   "guard": "docker/hosted/start.mjs (this checkout)",
   "visitors": 6,
@@ -11,7 +11,7 @@
   "mode": "HOSTED=1 · fixture models · simulated rail · ephemeral ports",
   "cloud": false,
   "sourceFiles": {
-    "scripts/hosted-load.mjs": "e599b2122c52f64909065f0b98ea055fd5e3db55a4e78fecff041bf37b26b4b5",
+    "scripts/hosted-load.mjs": "8f4aec0974c4a6457cf22508a30d6c08ee6350b474355dc6b91ab9e11d810882",
     "server/routes.ts": "1a8cb0a3550fd274505381b249d04de7fece262b56f603a173228583802be8b7",
     "server/api/runs.ts": "07dab8ab60cb86e8c900b66c4afbb21cb4a96e22e82a7bc75cea0f3d193d78b3",
     "server/api/sse.ts": "54537c0a5b5471e188336600c2b683684c84cc3dfa0a0d57990b666818f77f95",
@@ -22,7 +22,7 @@
     "server/hosted/links.ts": "67ff0d0f71943f5e9d4de9dd325ac4737339a6328294e04f3c502dac0edbf957",
     "docker/hosted/links.mjs": "4fdcc88c3bee62534ac6d6acdc82d50c23ed80db37a0e87052068f9eb9e6ddff"
   },
-  "measuredSeconds": 122.3,
+  "measuredSeconds": 122.6,
   "requests": 960,
   "guardPaused": 0,
   "guardPausedVisitor": 0,
@@ -34,9 +34,9 @@
   },
   "hgPaused": 0,
   "refused429": {
-    "queue_full": 4,
+    "queue_full": 3,
     "allowance_exhausted": 12,
-    "start_rate": 392
+    "start_rate": 393
   },
   "other": {},
   "runs": {
@@ -47,65 +47,65 @@
   "sessionsMinted": 18,
   "eventLoopDelayMs": {
     "p50": 12,
-    "p99": 14.9,
-    "max": 45.3
+    "p99": 14.7,
+    "max": 52.3
   },
   "readinessRefreshes": 25,
   "routes": {
     "GET /api/demo/status": {
       "n": 276,
-      "p50": 3,
-      "p95": 9,
-      "max": 16,
-      "guardPaused": 0
-    },
-    "GET /readyz": {
-      "n": 12,
-      "p50": 3,
-      "p95": 7,
-      "max": 7,
+      "p50": 5,
+      "p95": 10,
+      "max": 23,
       "guardPaused": 0
     },
     "GET /api/runs": {
       "n": 6,
-      "p50": 5,
-      "p95": 13,
-      "max": 13,
+      "p50": 8,
+      "p95": 21,
+      "max": 21,
       "guardPaused": 0
     },
     "GET /api/writers/status": {
       "n": 6,
       "p50": 14,
-      "p95": 19,
-      "max": 19,
+      "p95": 23,
+      "max": 23,
+      "guardPaused": 0
+    },
+    "GET /readyz": {
+      "n": 12,
+      "p50": 5,
+      "p95": 30,
+      "max": 30,
       "guardPaused": 0
     },
     "POST /api/scope": {
       "n": 270,
       "p50": 2,
-      "p95": 8,
-      "max": 14,
+      "p95": 7,
+      "max": 27,
       "guardPaused": 0
     },
     "POST /runs": {
       "n": 270,
       "p50": 2,
       "p95": 13,
-      "max": 24,
+      "max": 26,
       "guardPaused": 0
     },
     "GET /runs/:id/events": {
       "n": 60,
       "p50": 3,
-      "p95": 7,
-      "max": 10,
+      "p95": 10,
+      "max": 18,
       "guardPaused": 0
     },
     "GET /runs/:id": {
       "n": 60,
       "p50": 1,
-      "p95": 4,
-      "max": 7,
+      "p95": 5,
+      "max": 6,
       "guardPaused": 0
     }
   },
@@ -118,7 +118,7 @@
       "429 session_rate": 5080
     },
     "seconds": 0.5,
-    "sessionTableAfter": 143,
+    "sessionTableAfter": 142,
     "sessionsAddedByFlood": 120,
     "nextRealVisitor": {
       "http": 200,
