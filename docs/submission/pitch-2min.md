@@ -20,7 +20,7 @@ mechanism, not the problem. Slide numbers refer to
 - The deck has no placeholders: every number on it is filled from
   [facts.json](facts.json), and its export fails if one is stale.
 
-## Script (~265 words)
+## Script (~350 words)
 
 **[0:00 · slide 1]**
 ResearchAgent is research with a wallet. Give it a question and a budget. It
@@ -92,16 +92,20 @@ We wrote a mainnet checklist instead of claiming readiness."
 
 ## Timing marks for rehearsal
 
+These are target cues, not measured timings. The current script is about 350
+words: two minutes needs about 175 words per minute before pauses. Rehearse
+with the cuts below to fit the slot.
+
 | Mark | Slide | Beat | Words |
 |---|---:|---|---:|
-| 0:00 | 1 | What it is, Testnet | 46 |
+| 0:00 | 1 | What it is, Testnet | 66 |
 | 0:18 | 5 | Key reveal | 42 |
-| 0:36 | 6 | Stablecoin escrow, RLUSD flag | 26 |
-| 0:48 | 2–3 | Since SingHacks, one link or one line | 46 |
-| 1:08 | 7 | Verify | 29 |
-| 1:22 | 8 | Reachability, judge bank | 34 |
-| 1:36 | 9 | Fees, gates | 23 |
-| 1:48 | 14 | Close | 19 |
+| 0:36 | 6 | Stablecoin escrow, RLUSD flag | 30 |
+| 0:48 | 2–3 | Since SingHacks, one link or one line | 66 |
+| 1:08 | 7 | Verify | 33 |
+| 1:22 | 8 | Refusal, blind negatives | 65 |
+| 1:36 | 9 | Fees, gates | 34 |
+| 1:48 | 14 | Close | 14 |
 
 Running out of time? Cut slide 6 (the stablecoin beat) first, then slide 9.
 Never cut the "Testnet" line on slide 1.
