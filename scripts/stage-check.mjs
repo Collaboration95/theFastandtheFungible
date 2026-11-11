@@ -131,19 +131,30 @@ export async function checkExplorer({ fetch, ms }) {
 export function ledgerSession({ WebSocket, ms }) {
   let socket, endpoint, opening, sequence = 0
   const pending = new Map()
+  const control = new AbortController()
   const connect = url => new Promise((resolveOpen, rejectOpen) => {
     let candidate
-    const timer = setTimeout(() => { try { candidate?.close() } catch { /* already closed */ } rejectOpen(new Error('timeout')) }, ms)
-    if (!WebSocket) { clearTimeout(timer); rejectOpen(new Error('this Node has no WebSocket; use Node 22 or later')); return }
-    try { candidate = new WebSocket(url) } catch (error) { clearTimeout(timer); rejectOpen(error); return }
-    candidate.addEventListener('open', () => { clearTimeout(timer); resolveOpen(candidate) }, { once: true })
-    candidate.addEventListener('error', () => { clearTimeout(timer); rejectOpen(new Error('unavailable')) }, { once: true })
+    const fail = error => {
+      clearTimeout(timer); control.signal.removeEventListener('abort', abort)
+      try { candidate?.close() } catch { /* already closed */ }
+      rejectOpen(error)
+    }
+    const abort = () => fail(new Error('closed'))
+    const timer = setTimeout(() => fail(new Error('timeout')), ms)
+    control.signal.addEventListener('abort', abort, { once: true })
+    if (control.signal.aborted) { abort(); return }
+    if (!WebSocket) { fail(new Error('this Node has no WebSocket; use Node 22 or later')); return }
+    try { candidate = new WebSocket(url) } catch (error) { fail(error); return }
+    candidate.addEventListener('open', () => { clearTimeout(timer); control.signal.removeEventListener('abort', abort); resolveOpen(candidate) }, { once: true })
+    candidate.addEventListener('error', () => fail(new Error('unavailable')), { once: true })
   })
   const open = () => opening ??= (async () => {
     let last
     for (const url of NODES) {
+      if (control.signal.aborted) throw new Error('closed')
       try {
         const ws = await connect(url)
+        if (control.signal.aborted) { ws.close(); throw new Error('closed') }
         ws.addEventListener('message', event => {
           let body
           try { body = JSON.parse(String(event.data)) } catch { return }
@@ -162,9 +173,10 @@ export function ledgerSession({ WebSocket, ms }) {
     endpoint: () => endpoint,
     async request(command) {
       const ws = await open(), id = ++sequence
+      if (control.signal.aborted) throw new Error('closed')
       return await new Promise((resolveRequest, rejectRequest) => { pending.set(id, { resolve: resolveRequest, reject: rejectRequest }); ws.send(JSON.stringify({ ...command, id })) })
     },
-    close() { try { socket?.close() } catch { /* nothing to close */ } for (const item of pending.values()) item.reject(new Error('closed')); pending.clear() },
+    close() { control.abort(); try { socket?.close() } catch { /* nothing to close */ } for (const item of pending.values()) item.reject(new Error('closed')); pending.clear() },
   }
 }
 

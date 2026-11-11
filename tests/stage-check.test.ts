@@ -240,6 +240,23 @@ describe('what it asks the hosted sandbox', () => {
     expect(closed).toEqual([NODES[0]])
     expect(KEY_TX).toMatch(/^4CCB4E56[0-9A-F]{56}$/)
   })
+  it('closes an unfinished connection when the checks time out, without opening a fallback after returning', async () => {
+    const opened: string[] = [], stopped: string[] = []
+    class HangingSocket {
+      constructor(public url: string) { opened.push(url) }
+      addEventListener() {}
+      close() { stopped.push(this.url) }
+    }
+    const deps = mocks()
+    deps.WebSocket = HangingSocket
+    const results = await runChecks({ ms: 20 }, deps)
+    expect(results.find(row => row.id === 'node')!.status).toBe('NO-GO')
+    expect(stopped).toEqual(opened)
+    const count = opened.length
+    await new Promise(resolve => setTimeout(resolve, 50))
+    expect(opened).toHaveLength(count)
+    expect(stopped).toEqual(opened)
+  })
 })
 
 // ---- the report --------------------------------------------------------------------------------------------------------
