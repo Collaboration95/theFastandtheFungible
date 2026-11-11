@@ -190,13 +190,23 @@ export async function getDemoStatus(signal?: AbortSignal): Promise<HostedDemoSta
   else hostedCsrf ??= ''
   return status.data
 }
-/** Boot: is this a hosted gateway? 404 means local or desktop. A transient failure is retried briefly, then reported. */
+/** Boot retries failed requests, never a request that is still in flight. Unknown is never local. */
 export async function detectHosted(attempts = 3): Promise<{ status?: HostedDemoStatus; failed: boolean }> {
+  const local = typeof location === 'undefined' || ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname) || location.protocol === 'app:'
   for (let attempt = 0; attempt < attempts; attempt++) {
-    try { return { status: await getDemoStatus(AbortSignal.timeout(4000)), failed: false } }
-    catch (error) {
-      if (error instanceof ApiError && [404, 405].includes(error.status)) return { failed: false }
-      if (attempt < attempts - 1) await new Promise(resolve => setTimeout(resolve, 400 * (attempt + 1)))
+    try {
+      const response = await fetch('/api/demo/status')
+      if (local && [404, 405].includes(response.status)) return { failed: false }
+      const body: unknown = await response.json()
+      if (typeof body === 'object' && body !== null && (body as { hosted?: unknown }).hosted === false) return { failed: false }
+      const status = HostedDemoStatusSchema.safeParse(body)
+      if (!status.success) throw new ApiError(response.status)
+      if (status.data.csrfToken) hostedCsrf = status.data.csrfToken
+      else hostedCsrf ??= ''
+      return { status: status.data, failed: false }
+    } catch {
+      // Back off only AFTER failure. A slow response remains free to finish (no AbortSignal.timeout).
+      if (attempt < attempts - 1) await new Promise(resolve => setTimeout(resolve, [4000, 8000, 15000][Math.min(attempt, 2)]))
     }
   }
   return { failed: true }

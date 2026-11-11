@@ -276,3 +276,200 @@ test('hosted budgets render a smaller server-authoritative question cap', async 
   await expect(slider).toHaveAttribute('max', '1')
   await context.close()
 })
+
+// A11Y sprint: local HOSTED=1 only. No live hosted questions.
+// Give each new case a separate TEST-NET client at the local trusted proxy. They must not
+// consume the existing proof spec's six-starts-per-minute allowance; production limits stay intact.
+let a11yClient = 10
+const a11yVisitor = async (browser: Browser, width = 1440, height = 900) => {
+  const result = await visitor(browser, width, height)
+  await result.context.setExtraHTTPHeaders({ 'X-Forwarded-For': `192.0.2.${++a11yClient}` })
+  return result
+}
+for (const delay of [6000, 12000]) test(`A11Y status delayed ${delay} ms keeps the connecting shell and the first request`, async ({ browser }) => {
+  const { context, page } = await a11yVisitor(browser, 390, 844)
+  let calls = 0, failed = 0, landed = 0
+  page.on('requestfailed', request => { if (request.url().endsWith('/api/demo/status')) failed++ })
+  await page.route('**/api/demo/status', async route => {
+    calls++
+    const response = await route.fetch()
+    await new Promise(resolve => setTimeout(resolve, delay))
+    landed = Date.now()
+    await route.fulfill({ response })
+  })
+  await page.goto('/')
+  await expect(page.getByRole('heading', { name: 'Connecting to the demo…' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Watch the recorded walkthrough' })).toBeVisible()
+  await expect(question(page)).toHaveCount(0)
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Settings' })).toHaveCount(0)
+  expect(await serious(page)).toEqual([])
+  await expect(page.getByRole('status')).toContainText('Your network is slow; still trying.', { timeout: 7000 })
+  await expect(question(page)).toBeVisible({ timeout: 16000 })
+  const renderMs = Date.now() - landed
+  expect(renderMs).toBeLessThan(1000)
+  await test.info().attach('status-timing', { body: JSON.stringify({ delayMs: delay, hostedRenderMs: renderMs, statusCalls: calls, failedRequests: failed }), contentType: 'application/json' })
+  expect(calls).toBe(1); expect(failed).toBe(0)
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await context.close()
+})
+
+test('A11Y keyboard Ask → plan → result → verify, idle prefetch, offline recovery and phone targets', async ({ browser }) => {
+  const { context, page } = await a11yVisitor(browser, 390, 844)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  const verifierLoads: string[] = [], verifierTitles: string[] = []
+  page.on('request', request => { if (/\/assets\/browser-[^/]+\.js$/.test(request.url())) { verifierLoads.push(request.url()); void page.title().then(title => verifierTitles.push(title)) } })
+  await page.goto('/')
+  await expect(question(page)).toBeVisible()
+  // Test actual hit areas, including transparent pseudo-elements, rather than only visual boxes.
+  const smallTargets = async () => page.locator('button, summary, a').evaluateAll(nodes => nodes.filter(node => {
+    const rect = node.getBoundingClientRect(), style = getComputedStyle(node)
+    if (!rect.width || !rect.height || style.visibility === 'hidden' || (node as HTMLButtonElement).disabled) return false
+    const after = getComputedStyle(node, '::after')
+    return Math.max(rect.height, after.content !== 'none' ? parseFloat(after.height) || 0 : 0) < 44 || Math.max(rect.width, after.content !== 'none' ? parseFloat(after.width) || 0 : 0) < 44
+  }).map(node => `${node.tagName}: ${node.textContent?.trim().slice(0, 60)}`))
+  expect(await smallTargets()).toEqual([])
+  await page.getByRole('group', { name: 'Demo questions' }).getByRole('button', { name: /^Kestrel–TSMC/ }).click()
+  let releaseScope!: () => void, releaseStart!: () => void
+  const scopeHeld = new Promise<void>(resolve => { releaseScope = resolve }), startHeld = new Promise<void>(resolve => { releaseStart = resolve })
+  await page.route('**/api/scope', async route => { const response = await route.fetch(); await scopeHeld; await route.fulfill({ response }) })
+  await page.route('**/runs', async route => { if (route.request().method() !== 'POST') return route.continue(); const response = await route.fetch(); await startHeld; await route.fulfill({ response }) })
+  await page.getByRole('button', { name: /^Ask/ }).focus(); await page.keyboard.press('Enter')
+  await expect(page.locator('#main')).toBeFocused(); releaseScope()
+  const chip = page.getByRole('button', { name: 'pricing & margins' }), start = page.getByRole('button', { name: 'Start now' })
+  await expect(chip.or(start).first()).toBeVisible({ timeout: 30000 })
+  expect(await page.evaluate(() => document.activeElement !== document.body)).toBe(true)
+  if (await chip.isVisible()) { await expect(page.locator('.ra-chip-opt').first()).toBeFocused(); await chip.focus(); await page.keyboard.press('Enter') }
+  await expect(start).toBeFocused()
+  await expect(page.getByRole('dialog', { name: 'Search plan' })).toContainText('Planning uses one of your daily questions')
+  expect(verifierLoads).toEqual([]) // No verifier request during home, clarify or plan.
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#main')).toBeFocused(); releaseStart()
+  const title = page.locator('h1.ra-q')
+  await expect(title).toBeFocused({ timeout: 30000 })
+  await page.keyboard.press('Tab'); await expect(page.getByRole('button', { name: 'Show work', exact: true })).toBeFocused()
+  await expect(page).toHaveTitle(/Answer ready/, { timeout: 60000 })
+  await expect.poll(() => verifierLoads.length).toBe(1)
+  await expect.poll(() => verifierTitles.length).toBe(1)
+  expect(verifierTitles[0]).toMatch(/Answer ready/)
+  expect(await smallTargets()).toEqual([])
+  expect(await serious(page)).toEqual([])
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  const verify = page.getByRole('region', { name: 'Verify in your browser' })
+  await context.setOffline(true)
+  await expect(page.locator('.ra-banner')).toContainText("You're offline. This result is final")
+  await verify.getByRole('button', { name: 'Run the checks' }).focus(); await page.keyboard.press('Enter')
+  await expect(verify.getByRole('alert')).toContainText("You're offline: the checker couldn't load")
+  await expect(verify.locator('.is-ok')).toHaveCount(0)
+  await expect(verify.getByRole('button', { name: 'Try again' })).toBeFocused()
+  expect(await page.evaluate(() => document.activeElement !== document.body)).toBe(true)
+  await context.setOffline(false)
+  const cdp = await context.newCDPSession(page)
+  await cdp.send('Network.enable')
+  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
+  await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 150, downloadThroughput: 200000, uploadThroughput: 93750 })
+  await page.evaluate(() => {
+    const verify = document.querySelector('.ra-hv')!
+    const begin = () => {
+      const at = performance.now()
+      new MutationObserver((_, observer) => { if (verify.querySelector('[role=status]')) { (window as unknown as { verifyProgressMs: number }).verifyProgressMs = performance.now() - at; observer.disconnect() } }).observe(verify, { childList: true, subtree: true })
+    }
+    verify.querySelector('button')!.addEventListener('click', begin, { once: true })
+  })
+  await verify.getByRole('button', { name: 'Try again' }).focus(); await page.keyboard.press('Enter')
+  await expect(verify.getByRole('status')).toContainText(/passed/, { timeout: 30000 })
+  await expect(verify.locator('.ra-hv-head')).toBeFocused()
+  const firstProgressMs = await page.evaluate(() => (window as unknown as { verifyProgressMs: number }).verifyProgressMs)
+  expect(firstProgressMs).toBeLessThan(300)
+  await test.info().attach('verification-timing', { body: JSON.stringify({ firstProgressMs, verifierChunkRequests: verifierLoads.length, smallVisiblePhoneTargets: 0, horizontalOverflow: false }), contentType: 'application/json' })
+  expect(await page.evaluate(() => document.activeElement !== document.body)).toBe(true)
+  expect(await serious(page)).toEqual([])
+  await context.close()
+})
+
+test('A11Y a cancelled start restores the question; coming online clears a stale offline notice', async ({ browser }) => {
+  const { context, page } = await a11yVisitor(browser)
+  await page.emulateMedia({ reducedMotion: 'reduce' }); await page.goto('/')
+  await page.getByRole('group', { name: 'Demo questions' }).getByRole('button', { name: /^Kestrel–TSMC/ }).click()
+  await page.getByRole('button', { name: /^Ask/ }).click()
+  const chip = page.getByRole('button', { name: 'pricing & margins' })
+  await expect(chip.or(page.getByRole('button', { name: 'Start now' })).first()).toBeVisible()
+  if (await chip.isVisible()) await chip.click()
+  await page.keyboard.press('Escape')
+  await expect(question(page)).toBeFocused()
+  await page.getByRole('button', { name: /^Ask/ }).click()
+  await expect(chip.or(page.getByRole('button', { name: 'Start now' })).first()).toBeVisible()
+  if (await chip.isVisible()) await chip.click()
+  const start = page.getByRole('button', { name: 'Start now' }); await expect(start).toBeVisible()
+  await context.setOffline(true); await start.click()
+  await expect(page.locator('.ra-banner')).toContainText('You’re offline. Your question is still here')
+  await context.setOffline(false)
+  await expect(page.locator('.ra-banner')).toHaveCount(0, { timeout: 1000 })
+  await expect(question(page)).toBeVisible()
+  await context.close()
+})
+
+test('A11Y an unreachable XRPL node reports infrastructure failure without a check mark', async ({ browser }) => {
+  const { context, page } = await a11yVisitor(browser)
+  // Synthetic ledger failure at the chunk boundary, independent of public Testnet availability.
+  await page.route('**/assets/browser-*.js', route => route.fulfill({ contentType: 'text/javascript', body: 'export async function verifyInBrowser(){return {ok:false,checks:[{check:"testnet",status:"FAIL",detail:"Read-only Testnet lookup unavailable"}],groups:[],endpoint:"",testnet:true}}' }))
+  await page.goto('/')
+  await page.getByRole('group', { name: 'Demo questions' }).getByRole('button', { name: /^Kestrel–TSMC/ }).click()
+  await page.getByRole('button', { name: /^Ask/ }).click()
+  const chip = page.getByRole('button', { name: 'pricing & margins' }), start = page.getByRole('button', { name: 'Start now' })
+  await expect(chip.or(start).first()).toBeVisible(); if (await chip.isVisible()) await chip.click(); await start.click()
+  await expect(page).toHaveTitle(/Answer ready/, { timeout: 60000 })
+  const verify = page.locator('.ra-hv'); await verify.getByRole('button', { name: 'Run the checks' }).click()
+  await expect(verify.getByRole('alert')).toContainText("Couldn't reach a public XRPL node")
+  await expect(verify.locator('.is-ok, .is-pass')).toHaveCount(0)
+  expect(await page.evaluate(() => document.activeElement !== document.body)).toBe(true)
+  await context.close()
+})
+
+
+test('A11Y a failed speculative checker download can recover without asking another question', async ({ browser }) => {
+  const { context, page } = await a11yVisitor(browser)
+  let loads = 0, admissions = 0
+  page.on('request', request => { if (request.method() === 'POST' && /\/(?:api\/scope|runs)$/.test(new URL(request.url()).pathname)) admissions++ })
+  await page.route('**/assets/browser-*.js', route => { loads++; return route.fulfill({ status: 503, contentType: 'text/javascript', headers: { 'Cache-Control': 'no-store' }, body: 'unavailable' }) })
+  await page.goto('/')
+  await page.getByRole('group', { name: 'Demo questions' }).getByRole('button', { name: /^Kestrel–TSMC/ }).click()
+  await page.getByRole('button', { name: /^Ask/ }).click()
+  const chip = page.getByRole('button', { name: 'pricing & margins' }), start = page.getByRole('button', { name: 'Start now' })
+  await expect(chip.or(start).first()).toBeVisible(); if (await chip.isVisible()) await chip.click(); await start.click()
+  await expect(page).toHaveTitle(/Answer ready/, { timeout: 60000 })
+  await expect.poll(() => loads).toBeGreaterThan(0)
+  await page.unroute('**/assets/browser-*.js')
+  const verify = page.locator('.ra-hv')
+  await verify.getByRole('button', { name: 'Run the checks' }).click()
+  await expect(verify.getByRole('alert')).toContainText('The checker couldn’t load')
+  await expect(verify.locator('.is-ok, .is-pass')).toHaveCount(0)
+  const reload = verify.getByRole('button', { name: 'Reload and try again' })
+  await expect(reload).toBeFocused()
+  const before = admissions
+  await Promise.all([page.waitForEvent('load'), reload.click()])
+  await expect(page).toHaveTitle(/Answer ready/, { timeout: 30000 })
+  await page.locator('.ra-hv').getByRole('button', { name: 'Run the checks' }).click()
+  await expect(page.locator('.ra-hv').getByRole('status')).toContainText(/passed/, { timeout: 30000 })
+  expect(admissions).toBe(before)
+  await context.close()
+})
+
+
+test('A11Y a plan with no clarification auto-starts and leaves keyboard focus on the run', async ({ browser }) => {
+  const { context, page } = await a11yVisitor(browser)
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.goto('/')
+  await question(page).fill('What is the XRPL base fee?')
+  await page.getByRole('button', { name: /^Ask/ }).focus(); await page.keyboard.press('Enter')
+  const start = page.getByRole('button', { name: 'Start now' })
+  await expect(start).toBeFocused({ timeout: 30000 })
+  await expect(page.getByRole('dialog', { name: 'Search plan' })).toBeVisible()
+  // Do not click: this is the normal-motion countdown path.
+  await expect(page.locator('h1.ra-q')).toBeFocused({ timeout: 30000 })
+  expect(await page.evaluate(() => document.activeElement !== document.body)).toBe(true)
+  await page.keyboard.press('Tab')
+  await expect(page.getByRole('button', { name: 'Show work', exact: true })).toBeFocused()
+  await expect(page).toHaveTitle(/Answer ready/, { timeout: 60000 })
+  await context.close()
+})
