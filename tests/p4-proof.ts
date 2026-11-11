@@ -52,6 +52,9 @@ try {
     try {
       const context=await browser.newContext({ignoreHTTPSErrors:true}),page=await context.newPage()
       const origin=`https://localhost:${ports.web}`
+      // The existing shared-payer card reads public nodes on home. Keep this synthetic proof entirely local.
+      await context.routeWebSocket(/.*/,socket=>socket.close())
+      await context.route('**/*',route=>new URL(route.request().url()).origin===origin ? route.continue() : route.abort())
       for(let i=0;i<100;i++) { try{if((await context.request.get(origin+'/livez')).ok())break}catch{/* booting */} await new Promise(r=>setTimeout(r,200)) }
       const { Store }=await import('../server/store.js'),store=new Store(join(stackDir,'app.db'))
       try{seedSandbox(store)}finally{store.close()}
@@ -71,7 +74,7 @@ try {
         evidence.push({width,overflow,seriousCritical:axe.map(v=>v.id),stats})
         assert.equal(overflow,false);assert.deepEqual(axe,[])
       }
-      writeFileSync(join(output,'layout.json'),JSON.stringify({scope:'Local HOSTED=1 production build; Chromium emulation; synthetic metadata/anchors only; no live questions.',evidence},null,2)+'\n')
+      writeFileSync(join(output,'layout.json'),JSON.stringify({scope:'Local HOSTED=1 production build; Chromium emulation; synthetic metadata/anchors only; external HTTP/WebSocket reads blocked; no live questions.',evidence},null,2)+'\n')
       console.log(JSON.stringify(evidence.map(({width,overflow,seriousCritical})=>({width,overflow,seriousCritical}))))
       await context.close()
     } catch(error) { console.error(outputText);throw error } finally {await browser.close()}

@@ -26,7 +26,7 @@ npx vitest run tests/hosted-stats.test.ts tests/sandbox-numbers.test.tsx
 sh /Users/speedpowermac/Documents/ChatGPT/tftf-wt/notes/review-nov10/heavy-lock.sh sh -c 'npm run build && node --import tsx tests/p4-proof.ts load && node --import tsx tests/p4-proof.ts visual'
 ```
 
-The load probe uses the real HOSTED=1 app, 5,000 synthetic metadata runs and 1,000 HTTP requests at concurrency eight. It reports the first uncached request separately from cached request percentiles. It also records that no session, session mint or admission was created. All listeners use allocated or ephemeral ports. The visual probe uses the existing local hosted HTTPS test stack and the production build at 1280 and 390 px. It records horizontal overflow and serious/critical axe findings. Browser/device evidence is Chromium emulation.
+The load probe uses the real HOSTED=1 app, 5,000 synthetic metadata runs and 1,000 HTTP requests at concurrency eight. It reports the first uncached request separately from cached request percentiles. It also records that no session, session mint or admission was created. All listeners use allocated or ephemeral ports. The visual probe uses the existing local hosted HTTPS test stack and the production build at 1280 and 390 px. It records horizontal overflow and serious/critical axe findings. Browser/device evidence is Chromium emulation. The browser blocks external HTTP and WebSocket traffic, including the existing shared-payer card’s public-node reads; that card shows its unavailable state rather than invented ledger figures.
 
 ## Seeded result
 
