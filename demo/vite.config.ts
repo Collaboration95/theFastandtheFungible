@@ -14,10 +14,22 @@ export default defineConfig({
     name: 'compressed-audited-replays', enforce: 'post',
     transformIndexHtml: {
       order: 'post',
-      handler(_html, { bundle }) {
+      handler(html, { bundle }) {
         if (!bundle) return []
         const app = Object.values(bundle ?? {}).find(item => item.type === 'chunk' && item.moduleIds.some(id => id.endsWith('/src/main.tsx')))
         if (!app || app.type !== 'chunk') throw Error('Replay app chunk was not emitted')
+        const cssText = (file: string) => {
+          const asset = bundle[file]
+          if (!asset || asset.type !== 'asset') throw Error(`Replay stylesheet missing: ${file}`)
+          return typeof asset.source === 'string' ? asset.source : new TextDecoder().decode(asset.source)
+        }
+        // Inline the initial styles to remove a blocking round trip. Disabled
+        // links mark them as present for Vite's dynamic CSS loader; no second fetch.
+        html = html.replace(/<link\b[^>]*rel="stylesheet"[^>]*>/g, link => {
+          const file = link.match(/href="[^"]*\/([^/]+\.css)"/)?.[1]
+          if (!file) throw Error('Replay stylesheet URL missing')
+          return `${link.replace(/>$/, ' disabled>')}<style>${cssText(`assets/${file}`)}</style>`
+        })
         const recordings = recordingIndex.map(({ scenario, runId, question, testnet }) => {
           const chunk = Object.values(bundle).find(item => item.type === 'chunk' && item.moduleIds.some(id => id.endsWith(`/demo/traces/${scenario}.json`)))
           if (!chunk) throw Error(`Replay chunk missing: ${scenario}`)
@@ -26,12 +38,15 @@ export default defineConfig({
         })
         // Download the shared app while the replay entry validates its selected trace.
         // Preloading does not execute it before the transport shim is installed.
-        return [
+        return { html, tags: [
           // Resolve the same scenario/run precedence as the entry, before its schema dependency arrives.
           { tag: 'script', children: `(${replayLoadingShell.toString()})(${JSON.stringify(recordings).replaceAll('<', '\\u003c')})` },
           { tag: 'link', attrs: { rel: 'modulepreload', crossorigin: true, href: `/theFastandtheFungible/demo/${app.fileName}` } },
-          ...[...app.viteMetadata?.importedCss ?? []].map(file => ({ tag: 'link', attrs: { rel: 'stylesheet', href: `/theFastandtheFungible/demo/${file}` } })),
-        ]
+          ...[...app.viteMetadata?.importedCss ?? []].flatMap(file => [
+            { tag: 'style', children: cssText(file) },
+            { tag: 'link', attrs: { rel: 'stylesheet', disabled: true, href: `/theFastandtheFungible/demo/${file}` } },
+          ]),
+        ] }
       },
     },
     transform(_code, id) {
