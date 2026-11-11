@@ -130,8 +130,7 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
   if (selected.length === 2) {
     const clauses = clausesOf(question)
     const [a, b] = selected.map(item => clauses.findIndex(clause => answersClause(question, clause, item.text)))
-    const samePassage = selected[0].claim.citations.every(ref => selected[1].claim.citations.some(other => sameSource(ref, other) && ref.spanId === other.spanId))
-    if (samePassage ? selected[1].si < selected[0].si : a >= 0 && b >= 0 && b < a) selected.reverse()
+    if (a >= 0 && b >= 0 && b < a) selected.reverse()
   }
   let remaining = 40
   return selected.flatMap(({ text, claim }) => {

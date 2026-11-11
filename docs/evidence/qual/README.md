@@ -4,7 +4,7 @@ Development regression evidence only. Fixture decisions, keyword search and simu
 
 Preset acceptance stubs the local hosted-readiness callback healthy; HG and deployed-edge readiness are outside this evidence.
 
-The inherited lead, gap and ranking fixes are completed with product word-form scoring, complete escrow comparison/submitter sentences, source-order leads and pinned tests. New team-authored explainers cover channels versus escrow and accepting x402 XRP payments. Preset text is unchanged.
+The inherited lead, gap and ranking fixes are completed with product word-form scoring, complete escrow comparison/submitter sentences, question-clause ordering and pinned tests. New team-authored explainers cover channels versus escrow and accepting x402 XRP payments. Preset text is unchanged.
 
 `ledger-readonly.json` rechecks both networks: server_info reserves, RLUSD issuer flags and TokenEscrow status. `read-ledger.mjs` is read-only. The corpus pin records the intended four rewrites and two additions; historical pins remain unchanged.
 
@@ -15,6 +15,8 @@ The A5 recorded modal plan buys the escrow explainer and no-show guide (S$0.80),
 Loosened: word-form topic matching includes buy/spend; product fixture scoring uses normalized forms. Display-only long requested facts close at half the fact words (minimum three), ignoring planner framing including between, with quantity and legacy strict safeguards. The stored coverage judgment and conflicts are preserved. Intended corpus/lead snapshots change; no gate, buy threshold, spending cap or leak budget changes.
 
 Clean-head merge admission is published as the PR local-gate status; check:fast and gate run under the shared heavy lock. See ../r10-presets/ for fresh live preset evidence and published-verifier results.
+
+The integrated check caught an overbroad same-passage reorder displacing the UC1/UC2 answer and a following-sentence entity answer; ordering now follows question clauses and retains the ranked answer within a clause. Existing UC and entity assertions are unchanged. The new guides were reworded to remove an unrelated faucet search hit and an eight-word overlap with public copy, with search and leak thresholds unchanged. The promise-label snapshot records the intended corpus additions and rewritten fact menus.
 
 ## Used-bank regression
 
