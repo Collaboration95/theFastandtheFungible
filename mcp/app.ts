@@ -53,15 +53,22 @@ export function settingsHeaders(path: string, headers: IncomingMessage['headers'
   return forwarded
 }
 
-async function readBody(req: IncomingMessage) {
-  const chunks: Buffer[] = []
-  let size = 0
-  for await (const chunk of req) {
-    size += (chunk as Buffer).length
-    if (size > 1 << 20) throw new Error('Request body too large')
-    chunks.push(chunk as Buffer)
-  }
-  return Buffer.concat(chunks)
+export const BODY_LIMIT = 1 << 20
+/**
+ * Buffers at most BODY_LIMIT bytes; `undefined` means the body was too large.
+ * Past the limit the rest is read and discarded, never buffered, and the caller answers 413 only after the
+ * upload ends. Destroying the request mid-upload reset the socket while the client was still writing (EPIPE /
+ * ECONNRESET instead of a status). Node's requestTimeout bounds a slow or endless upload.
+ */
+export function readBody(req: IncomingMessage): Promise<Buffer<ArrayBuffer> | undefined> {
+  return new Promise((done, fail) => {
+    const chunks: Buffer[] = []
+    let size = 0
+    req.on('data', (chunk: Buffer) => { size += chunk.length; if (size <= BODY_LIMIT) chunks.push(chunk); else chunks.length = 0 })
+    req.once('end', () => done(size > BODY_LIMIT ? undefined : Buffer.concat(chunks)))
+    req.once('error', fail)
+    req.once('close', () => { if (!req.complete) fail(new Error('Request aborted')) })
+  })
 }
 
 function openBrowser(url: string) {
@@ -115,7 +122,9 @@ export async function runApp(argv: string[], { ui: uiOverride, stop }: { ui?: st
       const method = req.method ?? 'GET'
       const abort = new AbortController()
       res.once('close', () => abort.abort())
-      const body = ['GET', 'HEAD'].includes(method) ? undefined : await readBody(req)
+      const hasBody = !['GET', 'HEAD'].includes(method)
+      const body = hasBody ? await readBody(req) : undefined
+      if (hasBody && !body) { res.writeHead(413, headers); res.end('Request body too large'); return }
       const upstream = await fetch(new URL(url.pathname + url.search, publisher ? publisherUrl : engineUrl), {
         method, body, redirect: 'error', signal: abort.signal,
         headers: { ...settingsHeaders(url.pathname, req.headers), ...(req.headers['content-type'] ? { 'Content-Type': req.headers['content-type'] } : {}), ...(req.headers.accept ? { Accept: req.headers.accept } : {}), ...(typeof req.headers['idempotency-key'] === 'string' ? { 'Idempotency-Key': req.headers['idempotency-key'] } : {}), ...(publisher ? {} : { Authorization: `Bearer ${token}` }) },

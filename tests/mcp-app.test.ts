@@ -4,7 +4,7 @@ import { request } from 'node:http'
 import { existsSync, mkdtempSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { APP_DAILY_CAP_MINOR, localOrigin, parseAppArgs, runApp, settingsHeaders } from '../mcp/app.js'
+import { APP_DAILY_CAP_MINOR, BODY_LIMIT, localOrigin, parseAppArgs, readBody, runApp, settingsHeaders } from '../mcp/app.js'
 vi.mock('../mcp/testnet.js', () => ({ prepareMcpTestnet: vi.fn(), testnetStateDir: () => `${process.env.XDG_STATE_HOME}/researchagent/testnet` }))
 import { prepareMcpTestnet } from '../mcp/testnet.js'
 import { BUDGET } from '../shared/contracts/run.js'
@@ -85,6 +85,43 @@ const raw = (url: string, init: { method?: string; host?: string; body?: Buffer 
   req.on('error', fail); req.end(init.body)
 })
 
+// The client keeps writing after the server has passed the limit. Destroying the request there reset the socket mid-upload (EPIPE).
+test('an oversize body is drained, not buffered, and answered 413 after the upload ends; the client never sees a socket error', async () => {
+  const { createServer } = await import('node:http')
+  let received = 0, overLimit: () => void = () => {}
+  const outcomes: unknown[] = []
+  const server = createServer(async (req, res) => {
+    req.on('data', (chunk: Buffer) => { received += chunk.length; if (received > BODY_LIMIT) overLimit() })
+    try { const body = await readBody(req); outcomes.push(body?.length); res.writeHead(body ? 200 : 413); res.end() } catch (error) { outcomes.push(error); res.destroy() }
+  })
+  await new Promise<void>(done => server.listen(0, '127.0.0.1', done))
+  const port = (server.address() as { port: number }).port
+  const upload = (agent: false | undefined, parts: Buffer[], wait?: Promise<void>) => new Promise<number>((done, fail) => {
+    const req = request({ host: '127.0.0.1', port, method: 'POST', path: '/', agent }, res => { res.resume(); res.on('end', () => done(res.statusCode ?? 0)) })
+    req.on('error', fail)
+    void (async () => { req.write(parts[0]); await wait; for (const part of parts.slice(1)) req.write(part); req.end() })()
+  })
+  try {
+    // agent:false sends Connection: close, which made even an early 413 race the client's remaining writes.
+    for (const agent of [false, undefined] as const) {
+      received = 0
+      const wait = new Promise<void>(done => { overLimit = done })
+      expect(await upload(agent, [Buffer.alloc(BODY_LIMIT + 1, 97), Buffer.alloc(BODY_LIMIT, 98)], wait)).toBe(413)
+    }
+    expect(await upload(false, [Buffer.alloc(BODY_LIMIT, 97)])).toBe(200)
+    expect(outcomes).toEqual([undefined, undefined, BODY_LIMIT])
+    // An aborted upload rejects instead of leaving the read pending.
+    received = 0
+    const aborted = request({ host: '127.0.0.1', port, method: 'POST', path: '/', agent: false })
+    aborted.on('error', () => {})
+    aborted.write(Buffer.alloc(1024, 97))
+    while (received < 1024) await new Promise(done => setTimeout(done, 5))
+    aborted.destroy()
+    while (outcomes.length < 4) await new Promise(done => setTimeout(done, 5))
+    expect(outcomes[3]).toBeInstanceOf(Error)
+  } finally { server.closeAllConnections(); await new Promise(done => server.close(done)) }
+})
+
 test('simulated app in-process: static rules, proxy, idempotent web ask, oversize body, clean shutdown', async () => {
   const app = await boot(['--port', '0'])
   try {
@@ -94,7 +131,7 @@ test('simulated app in-process: static rules, proxy, idempotent web ask, oversiz
     expect(await raw(app.url + '/', { host: 'evil.example' })).toBe(403)
     expect(await raw(app.url + '/api/health', { method: 'HEAD' })).toBe(200)
     expect(await raw(app.url + '/w/notfinancialtimes/')).toBe(200)
-    expect(await raw(app.url + '/api/scope', { method: 'POST', body: Buffer.alloc(2 << 20, 97) })).toBe(502)
+    expect(await raw(app.url + '/api/scope', { method: 'POST', body: Buffer.alloc(2 << 20, 97) })).toBe(413)
     const ask = () => fetch(app.url + '/runs', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': 'in-process' }, body: JSON.stringify({ question: 'What is the analyst outlook on the Kestrel Semiconductor deal with TSMC (pricing & margins)?', budgetMinor: 200 }) })
     const first = await ask(); expect(first.status).toBe(201)
     const { runId } = await first.json() as { runId: string }
