@@ -99,9 +99,10 @@ export const SCENES = [
     contextOptions: hostedContext,
     async run(rec, target) {
       await openHome(rec, target)
-      const corner = rec.page.getByRole('region', { name: 'Check our work without asking a question' })
       const calls = []
       rec.page.on('request', r => { if (/\/api\/(?:runs|scope|admission)/.test(r.url())) calls.push(r.url()) })
+      await rec.click(rec.page.locator('.ra-hwork > summary'))
+      const corner = rec.page.getByRole('region', { name: 'Check our work without asking a question' })
       await rec.scrollIntoView(corner, 1000, 140)
       rec.mark('corner_check_started')
       await rec.click(corner.getByRole('button', { name: 'Run the checks' }))
@@ -120,6 +121,7 @@ export const SCENES = [
     async run(rec, target) {
       await rec.page.goto(target.base, { waitUntil: 'domcontentloaded' })
       await rec.page.waitForFunction(() => document.title.includes('Answer ready'), null, { timeout: 90000 })
+      await rec.click(rec.page.locator('.ra-spend:visible .ra-spending-proof > summary'))
       const button = rec.page.getByRole('button', { name: 'Check the key yourself' }).first()
       await button.waitFor({ timeout: 90000 })
       await rec.scrollIntoView(button, 1000, 320)
@@ -188,6 +190,7 @@ export const SCENES = [
       await rec.glide(1100, 600, 800)
       const answer = page.getByRole('region', { name: 'Research answer' })
       if (await answer.count()) { await rec.scrollIntoView(answer, 1300, 100); rec.mark('answer_read'); await rec.hold(3200) }
+      await rec.click(page.locator('.ra-spend:visible .ra-spending-proof > summary'))
       const key = page.getByRole('button', { name: 'Check the key yourself' }).first()
       await rec.glideTo(key); await key.click()
       await page.getByText('sha256(key) = lock ✓', { exact: true }).first().waitFor({ timeout: 60000 })
@@ -256,6 +259,7 @@ export const SCENES = [
       await page.waitForFunction(() => document.title.includes('Answer ready'), null, { timeout: 60000 })
       rec.mark('replay_done')
       await rec.hold(1200)
+      await rec.click(page.locator('.ra-spend:visible .ra-spending-proof > summary'))
       const card = page.getByText(/Payment unlocked by the writer/).filter({ visible: true }).first()
       await rec.glideTo(card, 1000)
       rec.mark('card_in_view')

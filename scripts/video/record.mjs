@@ -2,11 +2,11 @@
 // Record the demo video's scenes, each as its own clip in video-out/vid-3/clips (outside git).
 //
 //   node scripts/video/record.mjs                    every enabled local scene; hosted-URL scenes are deferred
-//   node scripts/video/record.mjs --scenes ledger,try-testnet
+//   node scripts/video/record.mjs --scenes key-check,writer-credentials
 //   node scripts/video/record.mjs --target local     never touch the hosted demo (HOSTED=1 stack on ephemeral ports)
 //   Hosted-URL scenes are intentionally deferred until after redeploy.
 //
-// A pass asks the hosted demo at most 4 questions (VIDEO_MAX_LIVE_QUESTIONS lowers it). Each clip gets a sidecar
+// A local pass consumes no hosted questions. Each clip gets a sidecar
 // <id>.json naming where its footage came from (hosted, local stack, replay…), so captions never overclaim.
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
