@@ -4,9 +4,10 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { EVENT_LABELS, FALLBACK_LABELS, REASON_LABELS, eventPresentation, searchLabel } from '../shared/trace-labels'
-import { IntentStatusSchema, RunPhaseSchema, STOP_REASONS, TRACE_EVENT_TYPES, type TraceEvent } from '../shared/contracts'
+import { XRPL_LABEL, IntentStatusSchema, RunPhaseSchema, STOP_REASONS, TRACE_EVENT_TYPES, type TraceEvent } from '../shared/contracts'
 import type { FactCover } from '../shared/contracts/manifest'
 import Activity from '../src/components/Activity'
+import Ledger from '../src/components/Ledger'
 import Wire from '../src/components/Wire'
 import ShowWork from '../src/components/ShowWork'
 import Verification from '../src/components/Verification'
@@ -65,6 +66,15 @@ it('expands the status codes shown in Wire as well as Trace', () => {
     expect(container.textContent).not.toContain(status)
     unmount()
   }
+})
+
+it('uses the same mapping for ledger step labels', () => {
+  const run = runWith(event('XRPL', 'DELIVERY_PENDING'))
+  run.labels.settlement = XRPL_LABEL
+  const { container } = render(<Ledger run={run} />)
+  expect(container.querySelector('.ra-ledger-steps')?.textContent).toContain('Waiting for the article')
+  expect(container.textContent).not.toContain('DELIVERY_PENDING')
+  expect(container.textContent).toContain('XRPL Testnet')
 })
 
 it('covers every purchase status and stop reason', () => {
