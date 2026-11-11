@@ -50,7 +50,7 @@ Each row is one key-reveal purchase: escrow created, writer published the key in
 
 ## Evidence integrity
 
-SHA-256 hashes of the exact local receipt exports used in browser checks. Raw exports and the temporary harness remain in `.playwright/t3/` in this worktree; they contain no wallet seeds or API keys.
+SHA-256 hashes of the exact local receipt exports used in browser checks. Raw exports and the temporary harness are retained locally in the main checkout’s ignored `scratch/t3-presets-nov12/` directory after shipping; they contain no wallet seeds or API keys.
 
 ```text
 27eca88e549cd9690ad68e586e56f465e697649573d5e6b6809d0f8e7bbabbd9  runs-T3-1.receipts.json
