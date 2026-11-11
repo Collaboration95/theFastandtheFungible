@@ -17,7 +17,7 @@ import { answerBoilerplate, leadFinding, missingQualifiers, remainingClaims } fr
 import { FACT_STATUS, factsSummary } from '../../shared/coverage.js'
 
 // Proof sharing is needed only after an answer; keep it off the initial search load.
-const ShareProof = lazy(() => import('./ShareProof'))
+const ShareProof = lazy(() => import('./ShareProof').catch(() => ({ default: () => null })))
 
 export function getValidatedAnswer(run: RunSnapshot, answer?: AnswerData): AnswerData | undefined {
   const parsed = AnswerSchema.safeParse(answer)
