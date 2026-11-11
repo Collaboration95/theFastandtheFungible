@@ -9,9 +9,13 @@ import { Store } from '../server/store.js'
 import { RunLoop } from '../server/agents/loop.js'
 import { ABOUT, ABOUT_LABEL, fixturePlan, needsResearch, plan, scope } from '../server/agents/scope.js'
 import { fixtureRequirements, sanitizeRequirement, splitClauses, withIds } from '../server/agents/requirements.js'
-import { FixtureDecisionProvider } from '../server/agents/decision.js'
+import { decide, FixtureDecisionProvider, REPEATS_PURCHASES } from '../server/agents/decision.js'
+import type { DecideInput, DecisionProvider } from '../server/agents/decision.js'
+import { entityPrecision } from '../server/agents/precision.js'
 import { spendingInstruction } from '../server/agents/spending-guard.js'
-import { titleMatches, topicMatches } from '../shared/relevance.js'
+import { familyMemberWords, identifierFamily, identifiersIn, titleMatches, topicMatches } from '../shared/relevance.js'
+import { exampleCandidate } from '../shared/contracts/examples.js'
+import type { PublicCandidate } from '../shared/contracts/index.js'
 
 // Round-8 mock judges (notes/review-nov10/12-mock-judges-r8.md, 11 Nov): the judges' own questions, pinned with
 // fixture models and SIMULATED payments. This is a regression check on questions already seen, not a held-out result.
@@ -26,6 +30,12 @@ const metadata = (id: string) => `${article(id).title} ${article(id).tags.join('
 
 const X402 = 'What does an x402 402 response contain, and can my agent pay it with XRP on Testnet?'
 const FEES = 'How much does one key-reveal purchase cost in XRPL network fees?'
+// R8-A2: the three round-8 questions R8-A left open (D3 wrong article, B1 and B5 three purchases).
+const TOKEN_ESCROW = 'Which XRPL amendment and issuer flag does token escrow need?'
+const CONDITION = 'How do I make an XRPL escrow release only when a secret is revealed? Which condition type and fields?'
+const CREDENTIAL = 'What does an XRPL Credential prove, and which transactions create and accept one?'
+/** A paid candidate carrying a corpus article's public title, abstract and topics (never its body). */
+const candidate = (id: string): PublicCandidate => ({ ...exampleCandidate, resourceId: id, family: id, tier: 'PAID', title: article(id).title, preview: article(id).abstract, facets: article(id).tags, relevance: 0.8, price: { amountMinor: 40, currency: 'SGD' } })
 
 describe('H8-01 topic rule: a qualifier never outranks the subject', () => {
   it('admits the x402 articles for the x402 402 question and rejects the Testnet, RLUSD and Credentials articles it used to buy', () => {
@@ -90,6 +100,7 @@ describe('round-8 judge questions, end to end with fixture models', () => {
     ['C2', 'What travel-rule information must a VASP send with a crypto transfer in Singapore?', ['c5-fatf-recommendation-16-travel-rule'], []],
     ['E1', 'How do XRPL AMM pools set their trading fee, and who can vote to change it?', ['c5-xrpl-amm-create-deposit'], ['xrpl-fees', 'team-fees']],
     ['F1', 'What is the XRPL base reserve today, and how much does each owned object add?', ['xrpl-reserves'], ['team-x402', 'c5-rlusd-networks-issuer-reserves']],
+    ['D3', TOKEN_ESCROW, ['c5-xrpl-token-escrow-xls85'], ['xrpl-escrow']],
   ]
   it.each(CASES)('%s buys the expected article first and no wrong one', async (_id, question, first, never) => {
     const { bought, final } = await ask(question)
@@ -113,6 +124,106 @@ describe('round-8 judge questions, end to end with fixture models', () => {
   it('A4, an off-topic question, buys nothing', async () => {
     expect((await ask('Who won the 2026 Singapore Grand Prix?')).bought).toEqual([])
   }, 60_000)
+  // R8-A2. D3 at the judge's S$0.50: the article that states the TokenEscrow amendment and the issuer's
+  // AllowTrustLineLocking flag, not the generic escrow explainer whose topics list every escrow transaction.
+  it('D3 at S$0.50 buys the TokenEscrow amendment article and its lead names the amendment', async () => {
+    const { bought, final } = await ask(TOKEN_ESCROW, 50)
+    expect(bought).toEqual(['c5-xrpl-token-escrow-xls85'])
+    expect(final.answers.at(-1)!.lead!.map(l => l.text).join(' ')).toContain('TokenEscrow amendment')
+  }, 60_000)
+  it('B1 buys the crypto-condition explainer once and stops: the escrow references after it name nothing new', async () => {
+    const { bought, final } = await ask(CONDITION)
+    expect(bought).toEqual(['c5-xrpl-crypto-condition-type'])
+    expect(final.decisions.at(-1)!.rows.filter(r => r.reason === REPEATS_PURCHASES).map(r => r.candidate.resourceId)).toContain('xrpl-tx-escrowcreate')
+  }, 60_000)
+  it('B5 buys the CredentialCreate and CredentialAccept references, never CredentialDelete', async () => {
+    expect((await ask(CREDENTIAL)).bought).toEqual(['xrpl-tx-credentialcreate', 'xrpl-tx-credentialaccept'])
+  }, 60_000)
+  // The live planner words the requested facts differently on every run; each wording buys the same first article and
+  // no more than the question needs.
+  it.each([
+    [['The XRPL amendment token escrow needs', 'The issuer flag token escrow needs']],
+    [['Amendment and issuer flag required to escrow issued tokens on XRPL']],
+    [['TokenEscrow prerequisites']],
+  ])('D3 buys only the TokenEscrow article whatever the planner calls the facts: %j', async texts => {
+    expect((await ask(TOKEN_ESCROW, 200, texts.map(text => ({ text })))).bought).toEqual(['c5-xrpl-token-escrow-xls85'])
+  }, 60_000)
+  it.each([
+    [['How to make an XRPL escrow release only when a secret is revealed', 'The crypto-condition type and fields it uses']],
+    [['Releasing an XRPL escrow only when a secret is revealed']],
+  ])('B1 buys only the crypto-condition explainer whatever the planner calls the facts: %j', async texts => {
+    expect((await ask(CONDITION, 200, texts.map(text => ({ text })))).bought).toEqual(['c5-xrpl-crypto-condition-type'])
+  }, 60_000)
+  it.each([
+    [['What an XRPL Credential proves', 'The transactions that create and accept a Credential']],
+    [['Which transactions create and accept an XRPL Credential', 'What an XRPL Credential attests']],
+  ])('B5 buys at most two articles, CredentialCreate first and never CredentialDelete: %j', async texts => {
+    const { bought } = await ask(CREDENTIAL, 200, texts.map(text => ({ text })))
+    expect(bought[0]).toBe('xrpl-tx-credentialcreate')
+    expect(bought.length).toBeLessThanOrEqual(2)
+    expect(bought).not.toContain('xrpl-tx-credentialdelete')
+  }, 60_000)
+})
+
+describe('R8-A2 ranking: a sibling transaction name the question never says adds no precision', () => {
+  const precision = (question: string, ids: string[]) => {
+    const pool = ids.map(candidate)
+    return Object.fromEntries(pool.map(c => [c.resourceId, entityPrecision(question, c, pool)]))
+  }
+  it('ranks the TokenEscrow amendment article above the escrow explainer that lists EscrowCreate, EscrowFinish and EscrowCancel', () => {
+    // D3's paid retrieval pool with fixture search.
+    const scores = precision(TOKEN_ESCROW, ['team-fees', 'c5-xrpl-token-escrow-xls85', 'team-rlusd', 'xrpl-tx-escrowcreate', 'xrpl-tx-escrowcancel', 'team-recovery', 'xrpl-tx-escrowfinish', 'team-credentials', 'team-asset-provisioning', 'xrpl-escrow', 'team-verification', 'xrpl-clawback'])
+    const { 'c5-xrpl-token-escrow-xls85': tokenEscrow, ...others } = scores
+    expect(tokenEscrow).toBeGreaterThan(Math.max(...Object.values(others)))
+  })
+  it('ranks CredentialAccept above CredentialDelete when the question asks how to accept a credential', () => {
+    const scores = precision('Which transaction does the subject of a Credential submit to accept it?', ['xrpl-tx-credentialaccept', 'xrpl-tx-credentialdelete', 'xrpl-tx-credentialcreate'])
+    expect(scores['xrpl-tx-credentialaccept']).toBeGreaterThan(scores['xrpl-tx-credentialdelete'])
+  })
+  it('a plural answer type ("which transactions") keeps precision instead of zeroing it', () => {
+    const scores = precision(CREDENTIAL, ['xrpl-tx-credentialaccept', 'xrpl-tx-credentialdelete', 'xrpl-tx-credentialcreate'])
+    expect(scores['xrpl-tx-credentialcreate']).toBeGreaterThan(scores['xrpl-tx-credentialdelete'])
+  })
+  it('keeps synonym vocabulary: "payment required" still counts for an x402 402 question', () => {
+    const scores = precision('What HTTP status and header does an x402 server send first?', ['product-x402-response', 'team-settlement'])
+    expect(scores['product-x402-response']).toBeGreaterThan(scores['team-settlement'])
+  })
+  it('names identifiers, their glossary family and the words that tell members apart', () => {
+    expect(identifiersIn('What does the TokenEscrow amendment (XLS-85) let an XRPL escrow hold?')).toEqual(['TokenEscrow', 'XLS-85'])
+    expect(identifierFamily('EscrowCreate')).toBe('escrow')
+    expect(identifierFamily('PermissionedDomainSet')).toBeUndefined()
+    expect([...familyMemberWords('credential')]).toEqual(['create', 'accept', 'delete'])
+    expect([...familyMemberWords('did')]).toEqual(['set', 'delete'])
+  })
+})
+
+describe('R8-A2 coverage stop: a further purchase must add part of the requested fact', () => {
+  const round = (extra: Partial<DecideInput>) => decide({ question: CONDITION, conclusion: 'Free sources only.', gap: 'How do I make an XRPL escrow release only when a secret is revealed', requirement: true, candidates: [], readSources: [], budgetMinor: 200, spentMinor: 40, reservedMinor: 0, perSourceCapMinor: 100, round: 2, provider: new FixtureDecisionProvider(), ...extra })
+  const verdict = async (extra: Partial<DecideInput>) => (await round(extra)).rows[0]
+  it('skips an escrow reference after the crypto-condition explainer, and labels why', async () => {
+    const row = await verdict({ candidates: [candidate('xrpl-tx-escrowcreate')], verifiedPurchases: [candidate('c5-xrpl-crypto-condition-type')] })
+    expect(row).toMatchObject({ verdict: 'SKIP_LOW_VALUE', reason: REPEATS_PURCHASES, wouldBuy: false })
+  })
+  it('never affects a first purchase', async () => {
+    expect((await verdict({ candidates: [candidate('xrpl-tx-escrowcreate')] })).verdict).toBe('BUY')
+    expect((await verdict({ candidates: [candidate('xrpl-tx-escrowcreate')], verifiedPurchases: [] })).verdict).toBe('BUY')
+  })
+  it('lets the answer identifier through when the fact asks for a named thing (TrustSet after the trust-line explainer)', async () => {
+    const gap = 'What must a holder submit before an account can receive an issued token such as a stablecoin on XRPL'
+    expect((await verdict({ question: gap, gap, candidates: [candidate('xrpl-tx-trustset')], verifiedPurchases: [candidate('xrpl-trust-lines')] })).reason).not.toBe(REPEATS_PURCHASES)
+  })
+  it('lets the first member of a family through for a how question (SignerListSet after the multi-signing explainer)', async () => {
+    const gap = "How can an XRPL account require more than one approver before an agent's payment is released"
+    expect((await verdict({ question: gap, gap, candidates: [candidate('xrpl-tx-signerlistset')], verifiedPurchases: [candidate('xrpl-multisign')] })).reason).not.toBe(REPEATS_PURCHASES)
+  })
+  it('skips another member when the fact names the members it wants (CredentialDelete after CredentialAccept)', async () => {
+    const gap = 'Which transaction does the subject of a Credential submit to accept it'
+    expect(await verdict({ question: gap, gap, candidates: [candidate('xrpl-tx-credentialdelete')], verifiedPurchases: [candidate('xrpl-tx-credentialaccept')] })).toMatchObject({ verdict: 'SKIP_LOW_VALUE', reason: REPEATS_PURCHASES })
+  })
+  it('a live decision provider is never affected', async () => {
+    const live: DecisionProvider = { name: 'openai', model: 'gpt-6-luna', judgeRound: async () => ({ gapMaterial: 1 }), judgeCandidate: async () => ({ addressesGap: 0.9, originality: { original: 0.9, rewrite: 0.05, overlap: 0.05 }, credibility: 0.9 }) }
+    expect((await verdict({ provider: live, candidates: [candidate('xrpl-tx-escrowcreate')], verifiedPurchases: [candidate('c5-xrpl-crypto-condition-type')] })).verdict).toBe('BUY')
+  })
 })
 
 describe('H8-04 spending guard: instructions, not topic words', () => {
