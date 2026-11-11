@@ -120,6 +120,16 @@ const titledWithQuestion = (question: string, candidate: Pick<PublicCandidate, '
 /** Words that name no particular subject: a fact naming only these says nothing a title could add. */
 const GENERIC = new Set(['xrpl', 'xrp', 'ledger', 'payment', 'transaction', 'account', 'token', 'asset', 'field', 'type', 'testnet'])
 const metadataWords = (candidate: Pick<PublicCandidate, 'title' | 'facets'>) => new Set(topicWords(`${candidate.title} ${candidate.facets.join(' ')}`))
+const MEASURES = /\b(?:fees?|costs?|reserves?|pric(?:e|es|ing)|drops)\b/gi
+const UNIT = /\b(?:drops|XRP|SGD|USD|percent)\b|S\$|%/
+const measureOf = (word: string) => word.toLowerCase().replace(/^pric(?:e|es|ing)$/, 'price').replace(/s$/, '')
+/** H9-06: 2 when a "how much" question's measure (fee, cost, reserve, price, drops) is in the title with a unit, 1 without one, else 0. */
+export function measureRank(question: string, title: string): number {
+  if (!/\bhow (?:much|many)\b/i.test(question)) return 0
+  const asked = new Set((question.match(MEASURES) ?? []).map(measureOf))
+  if (!asked.size || !(title.match(MEASURES) ?? []).some(word => asked.has(measureOf(word)))) return 0
+  return UNIT.test(title) ? 2 : 1
+}
 /**
  * A fact that asks for a named thing (which transaction, the issuer flag, what a holder must submit) rather than an
  * explanation ("what a Credential proves", "how to make an escrow release").
@@ -165,11 +175,27 @@ function repeatsPurchases(provider: DecisionProvider, input: Pick<DecideInput, '
     return !namedFamilies.has(family)
   })
 }
+/**
+ * H9-08: a technical question that names no glossary family but names a place or organisation ("Which XRPL validators
+ * are run by Singapore banks?") is on a candidate's topic only when the candidate's title and topics name that entity
+ * and one more of the question's subject words. One shared word let the Singapore regulation explainer (Singapore) and
+ * the validation-quorum article (validators) each pass for a question neither answers, and the run paid S$0.80 for it.
+ * Questions with a family, or with no such entity ("What is the XRPL base reserve today…?"), keep their rule.
+ */
+function namesEntityAndSubject(question: string, candidate: Pick<PublicCandidate, 'title' | 'facets'>): boolean {
+  if (subjectFamilies(question).length) return true
+  const entities = new Set([...questionEntities(question)].filter(entity => !GENERIC.has(entity)).flatMap(entity => topicWords(entity)))
+  if (!entities.size) return true
+  const own = metadataWords(candidate)
+  const subjects = topicWords(question).filter(word => !GENERIC.has(word) && !/^\d+$/.test(word) && !entities.has(word))
+  return [...entities].some(word => own.has(word)) && (!subjects.length || subjects.some(word => own.has(word)))
+}
 function purchaseTopicMatches(input: Pick<DecideInput, 'question' | 'gap' | 'requirement'>, candidate: PublicCandidate): boolean {
   // H8-05: for a protocol question, an article titled with the question is on topic whatever wording the planner
   // gave the requested fact, so the same question admits the same article on every run.
   if (titledWithQuestion(input.question, candidate)) return true
   if (input.requirement && isProtocolQuery(`${input.question} ${input.gap}`)) {
+    if (isProtocolQuery(input.question) && !namesEntityAndSubject(input.question, candidate)) return false
     const own = `${candidate.title} ${candidate.facets.join(' ')}`
     // A requested fact that names only a qualifier ("can my agent pay it with XRP on Testnet") keeps the question's
     // subject: a Testnet server list does not answer a question about paying an x402 response (H8-01).
@@ -380,12 +406,17 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
   // order (#204), never alphabetical and never the claimed relevance. Only BUY rows are ordered: nothing here can
   // make an ineligible article eligible.
   const titled = (row: DecisionRound['rows'][number]) => titledWithQuestion(input.question, row.candidate) ? 1 : 0
+  // H9-06: a "how much" question first prefers a title naming what it measures (fee, cost, reserve, price), more so with
+  // the answer's unit (XRP drops, SGD): "EscrowFinish fulfillment fees: XRP drops and SGD prices" before the key-reveal
+  // delivery note for "How much does one key-reveal purchase cost in XRPL network fees?".
+  const measure = (row: DecisionRound['rows'][number]) => measureRank(input.question, row.candidate.title)
   // Then a specific subject family before a broad one (H8-01): a payment-channel explainer before a finality article
   // for a micropayment question that mentions settling. Protocol questions only, like the title rule.
   const subjectOf = subjectFamilies(input.gap).length ? input.gap : input.question
   const subject = (row: DecisionRound['rows'][number]) => isProtocolQuery(input.question) ? subjectRank(subjectOf, `${row.candidate.title} ${row.candidate.facets.join(' ')}`) : 0
-  const selected = rows.filter(row => row.verdict === 'BUY').sort((a, b) => titled(b) - titled(a) || subject(b) - subject(a) || entityPrecision(input.question, b.candidate, candidates) - entityPrecision(input.question, a.candidate, candidates) || b.valuePerDollar - a.valuePerDollar || compareTieBreak(input.question, { id: a.candidate.source ? sourceKey(a.candidate) : a.candidate.resourceId, version: a.candidate.version }, { id: b.candidate.source ? sourceKey(b.candidate) : b.candidate.resourceId, version: b.candidate.version }))[0]
+  const selected = rows.filter(row => row.verdict === 'BUY').sort((a, b) => titled(b) - titled(a) || measure(b) - measure(a) || subject(b) - subject(a) || entityPrecision(input.question, b.candidate, candidates) - entityPrecision(input.question, a.candidate, candidates) || b.valuePerDollar - a.valuePerDollar || compareTieBreak(input.question, { id: a.candidate.source ? sourceKey(a.candidate) : a.candidate.resourceId, version: a.candidate.version }, { id: b.candidate.source ? sourceKey(b.candidate) : b.candidate.resourceId, version: b.candidate.version }))[0]
   if (selected && !selected.probe && titled(selected)) selected.reason += ' Prefers the article whose title matches the question.'
+  else if (selected && !selected.probe && measure(selected)) selected.reason += ' Prefers the title naming the amount asked for.'
   else if (selected && !selected.probe && entityPrecision(input.question, selected.candidate, candidates) > 0) selected.reason += ' Prefers the title or topics naming the requested entity; then value per dollar.'
   return DecisionRoundSchema.parse({ round: input.round, gap: input.gap, gapMaterial, ...(open ? { gapMaterialSource: input.requirement ? 'requirement' : 'model' } : {}), provider: provider.name, model: provider.model, ...(provider.promptVersion ? { promptVersion: provider.promptVersion } : {}), ...(calibrator ? { calibration: roundCalibration(calibrator) } : {}), threshold, rows, ...(selected ? { selectedSourceKey: sourceKey(selected.candidate), selectedResourceId: selected.candidate.resourceId } : {}) })
 }

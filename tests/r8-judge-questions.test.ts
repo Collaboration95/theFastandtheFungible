@@ -101,7 +101,8 @@ describe('round-8 judge questions, end to end with fixture models', () => {
   // [judge id, question, articles that must be bought first, articles that must never be bought]
   const CASES: [string, string, string[], string[]][] = [
     ['A2', X402, ['product-x402-response'], ['c5-xrpl-testnet-servers', 'product-rlusd-xrp', 'team-credentials', 'team-settlement']],
-    ['C5', FEES, ['xrpl-fees'], []],
+    // R9-A (H9-06): a "how much" question prefers the title naming its measure and unit, so the fee note with XRP drops comes first.
+    ['C5', FEES, ['team-fees'], []],
     ['A3', 'How can I stop a prompt-injected AI agent from draining its wallet?', ['product-prompt-injection'], ['xrpl-credentials']],
     ['A1', 'Can an XRPL escrow hold RLUSD today, and what must the issuer enable before a buyer can use it?', ['team-rlusd'], []],
     ['A5', 'How long does an XRPL payment take to become final, and when should an agent treat it as settled?', ['product-payment-finality'], []],

@@ -1,9 +1,10 @@
 import { Router } from 'express'
 import { z } from 'zod'
 import type { ApiContext } from '../api/context.js'
-import { AskSchema } from '../../shared/contracts/index.js'
+import { AskSchema, PlanSchema } from '../../shared/contracts/index.js'
+import type { Plan } from '../../shared/contracts/index.js'
 import { isLlmConfigured } from '../agents/llm.js'
-import { scope, plan as planSearch, freezeRequirements } from '../agents/scope.js'
+import { scope, plan as planSearch, freezeRequirements, boundRequirements, type ScopeResult } from '../agents/scope.js'
 import { HostedLimits, LIMITS, digest, type Hold } from './limits.js'
 import { HostedQueue } from './queue.js'
 import { hostedExecution } from './execution.js'
@@ -24,6 +25,35 @@ const REPO = 'https://github.com/Collaboration95/theFastandtheFungible', PAGES =
  * not only inside Show work, because it decides every purchase on this demo. */
 export const modelsLabel = (research: boolean, decisions: boolean) => !research ? 'fixture models'
   : decisions ? 'live research and purchase decisions · per-answer fallback labelled' : 'live research · fixture purchase decisions · per-answer fallback labelled'
+/**
+ * H9-04: the search plan a hosted visitor confirmed, from the scope result this server stored on the question's hold
+ * (the scope and the submit share one Idempotency-Key, and reserve() already refused a different question). Its label
+ * is kept, so a fallback plan stays labelled on the run. None when there is no stored research plan (a chat reply, an
+ * expired scope) or when the visitor answered clarify questions, which re-plans with the answers as the local route does.
+ */
+export function confirmedPlan(hold: Pick<Hold, 'scope_result'>, question: string, answers?: Record<string, string>): (Plan & { label: string }) | undefined {
+  if (!hold.scope_result || Object.values(answers ?? {}).some(answer => answer.trim())) return undefined
+  try {
+    const stored = z.object({ plan: PlanSchema, label: z.string().min(1), chat: z.unknown().optional() }).parse(JSON.parse(hold.scope_result))
+    if (stored.chat !== undefined) return undefined
+    // Requested facts count only when they were frozen for exactly this question (#208); otherwise freezeRequirements derives them.
+    const { requirements, requirementsKey, ...plan } = stored.plan
+    return { ...plan, ...(boundRequirements(question, stored.plan) ? { requirements, requirementsKey } : {}), label: stored.label }
+  } catch { return undefined }
+}
+/**
+ * The hosted scope, and the plan the visitor will confirm (H9-04). When the scope's live plan was refused by a guard,
+ * one dedicated planner call is made before the labelled fallback stands (H9-12): the scope model wrote "budget" itself
+ * in 2 of 2 live calls for "Can the language model in ResearchAgent spend money on its own?", and running the fallback
+ * plan that the visitor confirmed declined a question the planner's own plan answers. The guard is unchanged and checks
+ * the new plan too; a refused or failed call keeps the fallback and its label.
+ */
+export async function scopeWithPlanner(question: string, options: Parameters<typeof scope>[1] = {}, planner: typeof planSearch = planSearch, scoper: typeof scope = scope): Promise<ScopeResult> {
+  const scoped = await scoper(question, options)
+  if (scoped.chat || !/· (?:spending|subject) guard$/.test(scoped.label)) return scoped
+  const { label, ...plan } = await planner(question, {}, options.signal)
+  return label.startsWith('fixture') ? scoped : { ...scoped, plan, label }
+}
 const keyOf = (value: unknown) => z.string().regex(/^[a-zA-Z0-9_-]{1,128}$/).parse(value)
 const questionOf = (value: unknown) => {
   const question = z.string().trim().min(1).max(LIMITS.questionChars).parse(value)
@@ -74,7 +104,7 @@ export function hostedRouter(context: ApiContext, config: Config, limits: Hosted
     await new Promise<void>((resolve,reject) => {
       queue.enqueue(hold.id,async () => {
         let release: (()=>void) | undefined
-        try { release=context.work.acquire(); const result = await execute(hold,() => scope(question,{ ...(req.body.clarify === 'never' ? {clarify:'never' as const}:{}),signal:context.work.signal })); limits.update(hold.id,{scope_result:JSON.stringify(result),state:'draft'}); res.json(result); resolve() }
+        try { release=context.work.acquire(); const result = await execute(hold,() => scopeWithPlanner(question,{ ...(req.body.clarify === 'never' ? {clarify:'never' as const}:{}),signal:context.work.signal })); limits.update(hold.id,{scope_result:JSON.stringify(result),state:'draft'}); res.json(result); resolve() }
         catch(error) { reject(error) } finally { release?.(); limits.update(hold.id,{state:'draft'}) }
       },()=>reject(new HostedError(503,'queue_expired')))
     })
@@ -96,15 +126,21 @@ export function hostedRouter(context: ApiContext, config: Config, limits: Hosted
     limits.update(hold.id,{run_id:runId,state:admitted.reused?'interrupted':'queued'})
     if (admitted.reused) return res.status(200).json(store.getRun(runId))
     const expired = () => { loop.stop(runId); limits.update(hold.id,{state:'expired'}); limits.settle(hold.id); store.appendEvent(runId,{type:'SNAPSHOT',label:'The waiting time ended. No new work will start.'}) }
+    // H9-04: the plan the visitor confirmed in the 5 s modal is the plan that runs. It is the scope result this server
+    // stored on the same hold (never the client's body); a clarify answer re-plans, as the local route does.
+    const confirmed = confirmedPlan(hold, input.question, input.answers)
     queue.enqueue(runId, () => execute(hold, async () => {
       limits.update(hold.id,{state:'active'})
       try { await context.launch(runId, async () => {
-        const planned = await planSearch(input.question,input.answers,loop.signal(runId))
+        const planned = confirmed ?? await planSearch(input.question,input.answers,loop.signal(runId))
         if (loop.signal(runId).aborted) return
         const frozen = freezeRequirements(input.question,planned,input.answers)
         const {label,requirements:_r,requirementsKey:_k,...plan} = planned
+        const requirementsBy = frozen.source === 'plan' ? label : 'fixture · scope-fixture'
         const run = store.getRun(runId)
-        store.updateRun(runId,{labels:{...run.labels,plan:label},checkpoint:{...run.checkpoint,plan,requirements:frozen.requirements,requirementsBy:label,...(input.answers?{answers:input.answers}:{})}})
+        store.updateRun(runId,{labels:{...run.labels,plan:label},checkpoint:{...run.checkpoint,plan,requirements:frozen.requirements,requirementsBy,...(input.answers?{answers:input.answers}:{})}})
+        if (input.answers && Object.keys(input.answers).length) store.appendEvent(runId,{type:'CLARIFY',label:`Clarified: ${Object.values(input.answers).join(' · ')}`,data:{answers:input.answers}})
+        store.appendEvent(runId,{type:'PLAN',label:`Search plan (${label}): ${plan.subqueries.join(' · ')}`,data:{plan,planner:label,requirements:frozen.requirements.map(r => r.text),requirementsBy,confirmed:Boolean(confirmed)}})
         await loop.start(runId)
       }) } finally { limits.update(hold.id,{state:'done'}); limits.settle(hold.id) }
     }),expired)

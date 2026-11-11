@@ -15,8 +15,8 @@ import type { ProofOutcome, Reputation } from '../reputation.js'
 import type { DecisionProvider } from './decision.js'
 import { freeDraft, followUpSearch, hitsByPublisher, retrieve, sanitizeGaps, usableContents, writeAnswer, type Retrieved } from './research.js'
 import { resolveCitation, validateClaims } from './citations.js'
-import { FIXTURE_GAP_RULES, fixtureSupports, followUpQuery, INSTRUCTION, STATUS_RANK, type CoverageEvidence } from './requirements.js'
-import { titleCovers } from '../../shared/relevance.js'
+import { FIXTURE_GAP_RULES, fixtureSupports, followUpQuery, INSTRUCTION, splitClauses, STATUS_RANK, type CoverageEvidence } from './requirements.js'
+import { isProtocolQuery, titleCovers, topicWords } from '../../shared/relevance.js'
 import type { Plan } from '../../shared/contracts/index.js'
 
 export type RunLoopOptions = {
@@ -33,6 +33,31 @@ export function coverageImproves(next: Coverage['entries'], current?: Coverage['
   return a > c || (a === c && b > d)
 }
 const identity = sourceKey
+/** Words that name no particular subject (as decision.ts GENERIC): a clause made only of them asks about nothing a title could name. */
+const GENERIC_WORDS = new Set(['xrpl', 'xrp', 'ledger', 'payment', 'transaction', 'account', 'token', 'asset', 'field', 'type', 'testnet'])
+/**
+ * R9-A (H9-01): the public titles of the articles a run bought name every clause of its question. Each clause with two
+ * or more subject words ("Can an XRPL escrow hold RLUSD today" → escrow, hold, rlusd; "what must the issuer enable before
+ * a buyer can lock it" → issuer, enable, buyer, lock) has at least half of them in the titles together. A clause with one
+ * word ("what happens to my money") asks about no subject a title could name and is skipped; at least one must count.
+ * "How do XRPL AMM pools set their trading fee, and who can vote to change it?" is not named by the AMMCreate title
+ * alone (no "vote"), so the AMMVote reference can still follow. A question that asks for a named thing ("Which
+ * transaction type creates or modifies a permissioned domain?") is left to R8-A2's per-purchase rule: a title naming
+ * its subject (PermissionedDomainDelete, the DID explainer) is not yet the member it asks for. Public titles only.
+ */
+const ASKS_FOR_NAME = /\bwhich\b|\b(?:transaction|field|flag|type|amendment|setting|header|scheme)s?\b/i
+export function titlesNameQuestion(question: string, titles: string[]): boolean {
+  if (!titles.length || ASKS_FOR_NAME.test(question)) return false
+  // A leading acronym is split as identifierWords does (AMMVote → amm, vote); topicWords alone keeps "ammvote".
+  const own = new Set(titles.flatMap(title => topicWords(title.replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2'))))
+  // A clause's subject words, or all its words when it names fewer than two beyond the network ("can my agent pay it with XRP
+  // on Testnet" → pay, xrp, testnet): the XRP-on-Testnet explainer still follows the 402 response explainer.
+  const clauses = splitClauses(question).map(clause => {
+    const words = topicWords(clause).filter(word => !/^\d+$/.test(word)), subject = words.filter(word => !GENERIC_WORDS.has(word))
+    return subject.length >= 2 ? subject : words
+  }).filter(words => words.length >= 2)
+  return clauses.length > 0 && clauses.every(words => words.filter(word => own.has(word)).length / words.length >= 0.5)
+}
 /**
  * A proof's end state as reputation evidence (D5); anything else is not an outcome yet. Read only after a
  * challenge was attempted, so CLAIM_FAILED means it could not be challenged (root mismatch, no re-checkable
@@ -207,11 +232,22 @@ export class RunLoop {
    * graded such purchases "missing" and the run went on to buy up to three articles for one fact. A live coverage
    * judge decides unaided, and a story-bible cue rule keeps its exact test. This only withholds further spending;
    * the coverage the reader sees is unchanged.
+   *
+   * R9-A (H9-01): the hosted demo plans with the live model, whose requested facts are worded differently ("Whether an
+   * XRPL escrow can hold RLUSD today"), so neither title test fired and the RLUSD preset bought three articles after
+   * the one that answers it. The question itself is the stable reference: once the bought titles name every clause
+   * of the question (titlesNameQuestion), no further fact is bought for, whatever the planner's wording.
    */
   private answeredByPurchase(run: RunSnapshot, requirement: Requirement): boolean {
-    if ((this.options.provider?.name ?? 'fixture') !== 'fixture' || requirement.gap || FIXTURE_GAP_RULES.some(rule => rule.cue.test(requirement.text))) return false
+    if ((this.options.provider?.name ?? 'fixture') !== 'fixture' || requirement.gap) return false
+    const purchases = this.verifiedPurchases(run)
+    // The story-bible cue rules belong to the fictional finance questions; on a protocol question "change" is not the UC1
+    // cue ("who can vote to change it"), so it does not exempt the question-level rule (R9-A).
+    const storyQuestion = !isProtocolQuery(run.question) && FIXTURE_GAP_RULES.some(rule => rule.cue.test(run.question))
+    if (!storyQuestion && titlesNameQuestion(run.question, purchases.map(candidate => candidate.title))) return true
+    if (FIXTURE_GAP_RULES.some(rule => rule.cue.test(requirement.text))) return false
     const single = this.requirements(run)?.length === 1
-    return this.verifiedPurchases(run).some(candidate => titleCovers(requirement.text, candidate.title) || single && titleCovers(run.question, candidate.title))
+    return purchases.some(candidate => titleCovers(requirement.text, candidate.title) || single && titleCovers(run.question, candidate.title))
   }
   /** Passages for a coverage judgment: exact accessible spans, never instructions (gate 1: free or verified-granted only). */
   private evidence(contents: ContentEnvelope[], refs: { resourceId: string; version: string; spanId: string }[]): CoverageEvidence[] {

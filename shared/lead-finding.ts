@@ -176,6 +176,7 @@ export function rankLeadSentences(question: string, claims: Claim[], delivered?:
   const causal = /^why\b/i.test(firstFact)
   const quantity = /^(?:how (?:many|much)|what.*(?:amount|cost|fee|reserve|maximum|minimum))\b/i.test(firstFact)
   const capability = /^(?:is|are|can|does|do|will|has|have)\b/i.test(firstFact)
+  const contents = /^(?:which|what)\b.*\b(?:contain|include|carr(?:y|ies))s?\b/i.test(firstFact)
   const naming = /^(?:which|what)\b/i.test(firstFact)
   const fieldValue = naming && /\b(?:field|flag|header|setting|permission)s?\b/i.test(firstFact)
   const latest = /\b(?:last|latest|recent|recently|today|current(?:ly)?)\b/i.test(firstFact) && (/^when\b/i.test(firstFact) || /\b(?:meeting|announcement|statement|release|update)\b/i.test(firstFact))
@@ -250,6 +251,11 @@ export function rankLeadSentences(question: string, claims: Claim[], delivered?:
     if (/\b(?:cannot be inferred|not evidence of|does not establish)\b/i.test(text)) score -= 20
     if (capability && identifier && /\b(?:until|unless|before|requires?|enables?|permission)\b/i.test(text)) score += 20
     if (capability && /\b(?:can|cannot|must|requires?|enables?|enabled|supports?|allows?|does not|is not)\b/i.test(text)) score += 12
+    // H9-13: "What does an x402 402 response contain?" asks for what it carries, not a caution about it. A sentence naming
+    // a protocol identifier (PAYMENT-REQUIRED) ranks up; one that only says what the thing does not do ("A 402 challenge
+    // is an offer to pay; it does not itself authorize spending.") ranks down. Contents questions only.
+    if (contents && identifier) score += 10
+    if (contents && !identifier && /\b(?:does not|do not|is not|are not|cannot|never)\b|\bnot itself\b/i.test(text)) score -= 12
     if (quantity && /\d+(?:[.,]\d+)?\s*(?:XRP|drops?|%|percent|days?|SGD|USD|weeks?)\b/i.test(text)) score += 16
     if (/^when\b/i.test(firstFact) && /\b(?:20\d{2}|before|after|validated|final)\b/i.test(text)) score += 12
     if (eventTerms.some(term => tokens.includes(term))) score += 28

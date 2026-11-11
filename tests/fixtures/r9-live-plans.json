@@ -1,0 +1,852 @@
+{
+ "source": "Round-9 mock judges (notes/review-nov10/13-mock-judges-r9.md), hosted demo 11 Nov 2026: the live DeepSeek planner output recorded per question. `modal` is the plan the visitor confirmed in the 5 s modal (POST /api/scope); `run` is the plan the hosted run re-planned at start (H9-04). Public plan text, public article ids and lead sentences only.",
+ "questions": [
+  {
+   "id": "A1",
+   "question": "Can an XRPL escrow hold RLUSD today, and what must the issuer enable before a buyer can lock it?",
+   "budgetMinor": 200,
+   "modal": {
+    "restatement": "Whether XRPL escrows can hold RLUSD today and what the issuer must enable before a buyer can lock it.",
+    "subqueries": [
+     "XRPL escrow RLUSD token support",
+     "XRPL escrow token escrow amendment issuer enable",
+     "RLUSD XRPL escrow requirements issuer"
+    ],
+    "requirements": [
+     "Whether XRPL escrow can hold RLUSD today, with the enabling amendment or feature",
+     "What the RLUSD issuer must enable before a buyer can escrow RLUSD",
+     "Any issuer-side settings or flags required for token escrow on XRPL"
+    ]
+   },
+   "run": {
+    "restatement": "The question asks whether an XRPL escrow can hold RLUSD today and what the issuer must enable before a buyer can lock it.",
+    "subqueries": [
+     "XRPL escrow RLUSD support today",
+     "RLUSD issuer enable escrow XRPL requirements",
+     "XRPL escrow token issuer enablement buyer lock"
+    ],
+    "requirements": [
+     "Whether an XRPL escrow can hold RLUSD today",
+     "What the RLUSD issuer must enable before a buyer can lock RLUSD in an XRPL escrow"
+    ]
+   },
+   "observed": {
+    "bought": [
+     "team-rlusd",
+     "c5-xrpl-token-escrow-xls85",
+     "xrpl-tx-escrowcreate"
+    ],
+    "spentMinor": 120,
+    "lead": [
+     "EscrowCreate locks funds for a specified recipient until the configured time or cryptographic conditions permit release."
+    ]
+   }
+  },
+  {
+   "id": "A2",
+   "question": "What does an x402 402 response contain, and can my agent pay it with XRP on Testnet?",
+   "budgetMinor": 200,
+   "modal": {
+    "restatement": "What an x402 402 response contains and whether an agent can pay it with XRP on Testnet.",
+    "subqueries": [
+     "x402 402 response contents payment requirements",
+     "x402 protocol XRP payment support",
+     "x402 XRPL Testnet XRP payment agent"
+    ],
+    "requirements": [
+     "What fields an x402 402 Payment Required response contains",
+     "Whether x402 supports paying with XRP",
+     "Whether x402 XRP payments can run on XRPL Testnet"
+    ]
+   },
+   "run": {
+    "restatement": "The question asks what an x402 402 response contains and whether an agent can pay it with XRP on Testnet.",
+    "subqueries": [
+     "x402 402 response contents fields specification",
+     "x402 payment with XRP on Testnet support",
+     "x402 protocol 402 response payment requirements XRP Testnet"
+    ],
+    "requirements": [
+     "List the fields and data an x402 402 response contains",
+     "State whether x402 supports paying with XRP on Testnet",
+     "Identify any conditions or limitations for an agent paying an x402 402 response with XRP on Testnet"
+    ]
+   },
+   "observed": {
+    "bought": [
+     "product-x402-response"
+    ],
+    "spentMinor": 40,
+    "lead": [
+     "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
+     "A successful HTTP response can include PAYMENT-RESPONSE with settlement details."
+    ]
+   }
+  },
+  {
+   "id": "A3",
+   "question": "How much does one key-reveal purchase cost in XRPL network fees?",
+   "budgetMinor": 200,
+   "modal": {
+    "restatement": "The XRPL network fees incurred by one key-reveal purchase.",
+    "subqueries": [
+     "XRPL escrow transaction network fee cost",
+     "XRPL key reveal escrow purchase network fees",
+     "XRPL transaction fee drops typical cost"
+    ],
+    "requirements": [
+     "The XRPL network fee for the transactions in one key-reveal purchase, in drops or XRP",
+     "How many XRPL transactions a key-reveal purchase involves and their fees"
+    ]
+   },
+   "run": {
+    "restatement": "The question asks how much one key-reveal purchase costs in XRPL network fees.",
+    "subqueries": [
+     "XRPL network fee cost of one key-reveal purchase",
+     "XRPL transaction fee for key reveal purchase"
+    ],
+    "requirements": [
+     "The XRPL network fee amount, in XRP, for one key-reveal purchase transaction"
+    ]
+   },
+   "observed": {
+    "bought": [
+     "team-delivery",
+     "xrpl-fees"
+    ],
+    "spentMinor": 80,
+    "lead": [
+     "XRPL transaction fees destroy XRP to deter spam, and the required fee can rise with load.",
+     "Key reveal delivers paid research by making the writer publish a decryption key through a validated EscrowFinish."
+    ]
+   }
+  },
+  {
+   "id": "A4",
+   "question": "Which XRPL amendment and issuer flag does token escrow need?",
+   "budgetMinor": 50,
+   "modal": {
+    "restatement": "Which XRPL amendment and issuer flag are required for token escrow.",
+    "subqueries": [
+     "XRPL token escrow amendment requirement",
+     "XRPL token escrow issuer flag requirement"
+    ],
+    "requirements": [
+     "The XRPL amendment that enables token escrow",
+     "The issuer flag required for token escrow"
+    ]
+   },
+   "run": {
+    "restatement": "The question asks which XRPL amendment and which issuer flag are required for token escrow.",
+    "subqueries": [
+     "XRPL token escrow required amendment",
+     "XRPL token escrow issuer flag requirement",
+     "XRPL token escrow amendment and issuer flag"
+    ],
+    "requirements": [
+     "Identify the XRPL amendment required to enable token escrow.",
+     "Identify the issuer flag required for token escrow on XRPL."
+    ]
+   },
+   "observed": {
+    "bought": [
+     "c5-xrpl-token-escrow-xls85"
+    ],
+    "spentMinor": 40,
+    "lead": [
+     "the proposed TokenEscrow amendment enhances the existing XRPL Escrow functionality by enabling support for both trust line tokens, called IOUs, and Multi-Purpose Tokens, called MPTs."
+    ]
+   }
+  },
+  {
+   "id": "A5",
+   "question": "What's the difference between EscrowFinish and EscrowCancel, and who can submit each one?",
+   "budgetMinor": 200,
+   "modal": {
+    "restatement": "The difference between the XRPL EscrowFinish and EscrowCancel transactions and who is authorized to submit each.",
+    "subqueries": [
+     "XRPL EscrowFinish transaction who can submit",
+     "XRPL EscrowCancel transaction who can submit",
+     "XRPL escrow finish cancel difference crypto condition"
+    ],
+    "requirements": [
+     "What EscrowFinish does and who may submit it",
+     "What EscrowCancel does and who may submit it",
+     "How the crypto condition and finish time affect EscrowFinish",
+     "How the escrow cancel time and owner affect EscrowCancel"
+    ]
+   },
+   "run": {
+    "restatement": "The question asks for the difference between EscrowFinish and EscrowCancel and who is permitted to submit each one.",
+    "subqueries": [
+     "EscrowFinish vs EscrowCancel difference and who can submit each",
+     "EscrowFinish transaction who can submit it",
+     "EscrowCancel transaction who can submit it"
+    ],
+    "requirements": [
+     "Explain the difference between EscrowFinish and EscrowCancel",
+     "State who can submit an EscrowFinish transaction",
+     "State who can submit an EscrowCancel transaction"
+    ]
+   },
+   "observed": {
+    "bought": [
+     "xrpl-escrow"
+    ],
+    "spentMinor": 40,
+    "lead": [
+     "EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds.",
+     "A condition can bind release to a cryptographic fulfillment, while FinishAfter and CancelAfter control time windows."
+    ]
+   }
+  },
+  {
+   "id": "B1",
+   "question": "How can I stop a prompt-injected AI agent from draining its wallet?",
+   "budgetMinor": 200,
+   "modal": {
+    "restatement": "How to prevent a prompt-injected AI agent from draining its wallet.",
+    "subqueries": [
+     "prevent prompt injection draining AI agent wallet",
+     "AI agent spending limits policy controls prompt injection",
+     "agent payment security guardrails prompt injection"
+    ],
+    "requirements": [
+     "Best practices for securing agent wallets against prompt injection"
+    ]
+   },
+   "run": {
+    "restatement": "The user asks how to prevent a prompt-injected AI agent from draining its wallet.",
+    "subqueries": [
+     "how to stop prompt-injected AI agent from draining its wallet",
+     "prompt injection defense for AI agent wallet spending controls",
+     "prevent AI agent from unauthorized payment transfers after prompt injection"
+    ],
+    "requirements": [
+     "How can I stop a prompt-injected AI agent from draining its wallet"
+    ]
+   },
+   "observed": {
+    "bought": [
+     "product-prompt-injection"
+    ],
+    "spentMinor": 40,
+    "lead": [
+     "prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments."
+    ]
+   }
+  },
+  {
+   "id": "B2",
+   "question": "Can the language model in ResearchAgent spend money on its own?",
+   "budgetMinor": 200,
+   "modal": {
+    "restatement": "Can the language model in ResearchAgent spend money on its own?",
+    "subqueries": [
+     "language model ResearchAgent spend money own"
+    ],
+    "requirements": []
+   },
+   "run": {
+    "restatement": "Whether the language model in ResearchAgent can spend money on its own.",
+    "subqueries": [
+     "ResearchAgent language model autonomous spending money",
+     "ResearchAgent language model payment capabilities spending controls"
+    ],
+    "requirements": [
+     "Whether the language model in ResearchAgent can initiate spending or payments on its own",
+     "What spending controls or payment finality safeguards constrain the ResearchAgent language model"
+    ]
+   },
+   "observed": {
+    "bought": [
+     "product-prompt-injection"
+    ],
+    "spentMinor": 40,
+    "lead": [
+     "prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments."
+    ]
+   }
+  },
+  {
+   "id": "B5",
+   "question": "How does ResearchAgent decide which article is worth buying?",
+   "budgetMinor": 200,
+   "modal": {
+    "restatement": "How ResearchAgent decides which article is worth buying.",
+    "subqueries": [
+     "ResearchAgent article purchase decision model policy code",
+     "ResearchAgent how it decides which article to buy",
+     "ResearchAgent scoring articles payment policy"
+    ],
+    "requirements": [
+     "How ResearchAgent scores how useful each article would be",
+     "What role the decision model plays versus fixed policy code in buying decisions"
+    ]
+   },
+   "run": {
+    "restatement": "The question asks how ResearchAgent decides which article is worth buying, with no further clarification provided.",
+    "subqueries": [
+     "ResearchAgent how it decides which article is worth buying",
+     "ResearchAgent article selection criteria worth buying"
+    ],
+    "requirements": [
+     "Explain the criteria ResearchAgent uses to decide which article is worth buying"
+    ]
+   },
+   "observed": {
+    "bought": [],
+    "spentMinor": 0,
+    "lead": []
+   }
+  },
+  {
+   "id": "C1",
+   "question": "How does the writer get paid, and what stops the agent from reading the article and then refusing to pay?",
+   "budgetMinor": 200,
+   "modal": {
+    "restatement": "How the writer is paid and what prevents the agent from reading an article without paying.",
+    "subqueries": [
+     "XRPL escrow key reveal paywalled article payment",
+     "agent pays for article key reveal escrow mechanism",
+     "how escrow key reveal prevents reading without paying"
+    ],
+    "requirements": [
+     "How the writer is paid, including the role of XRPL escrow and key reveal",
+     "What prevents the agent from reading the article and then refusing to pay",
+     "How the key reveal mechanism ties payment to unlocking the article"
+    ]
+   },
+   "run": {
+    "restatement": "The question asks how the writer gets paid and what prevents the agent from reading the article and then refusing to pay.",
+    "subqueries": [
+     "how does the writer get paid for an article",
+     "what stops an agent from reading an article and then refusing to pay",
+     "payment protection for writers when an agent reads the article before paying"
+    ],
+    "requirements": [
+     "How the writer gets paid for the article",
+     "What mechanism or control stops the agent from reading the article and then refusing to pay",
+     "Whether payment is enforced before or after the agent reads the article"
+    ]
+   },
+   "observed": {
+    "bought": [
+     "product-key-reveal-trust",
+     "team-credentials"
+    ],
+    "spentMinor": 80,
+    "lead": []
+   }
+  },
+  {
+   "id": "C4",
+   "question": "How much does a writer earn per sale, and what does ResearchAgent take as a fee?",
+   "budgetMinor": 200,
+   "modal": {
+    "restatement": "The question asks how much a writer earns per sale and what fee ResearchAgent takes.",
+    "subqueries": [
+     "writer earnings per sale ResearchAgent fee",
+     "ResearchAgent commission fee per sale for writers",
+     "how much do writers earn per sale on ResearchAgent"
+    ],
+    "requirements": [
+     "The amount a writer earns per sale",
+     "The fee ResearchAgent takes per sale"
+    ]
+   },
+   "run": {
+    "restatement": "The question asks how much a writer earns per sale and what fee ResearchAgent takes.",
+    "subqueries": [
+     "writer earnings per sale amount",
+     "ResearchAgent fee per sale percentage",
+     "ResearchAgent writer payout fee structure"
+    ],
+    "requirements": [
+     "The amount a writer earns per sale",
+     "The fee ResearchAgent takes per sale"
+    ]
+   },
+   "observed": {
+    "bought": [],
+    "spentMinor": 0,
+    "lead": []
+   }
+  },
+  {
+   "id": "C5",
+   "question": "How much XRP reserve does an agent wallet need, and how much does each open escrow or trust line add?",
+   "budgetMinor": 200,
+   "modal": {
+    "restatement": "XRPL base reserve for an agent wallet and the additional reserve per open escrow or trust line.",
+    "subqueries": [
+     "XRPL account base reserve current requirement",
+     "XRPL owner reserve per trust line and escrow",
+     "XRPL reserve requirements escrow objects"
+    ],
+    "requirements": [
+     "Current XRPL base account reserve for a wallet, with figures",
+     "Current XRPL owner reserve added per open trust line",
+     "Current XRPL owner reserve added per open escrow object"
+    ]
+   },
+   "run": {
+    "restatement": "The question asks how much XRP reserve an agent wallet needs and how much each open escrow or trust line adds to that reserve.",
+    "subqueries": [
+     "XRP reserve requirement agent wallet base reserve",
+     "XRP owner reserve per open escrow or trust line",
+     "XRP ledger reserve cost of escrow and trust line"
+    ],
+    "requirements": [
+     "The base XRP reserve amount an agent wallet must hold",
+     "The additional XRP reserve added by each open escrow",
+     "The additional XRP reserve added by each open trust line"
+    ]
+   },
+   "observed": {
+    "bought": [
+     "xrpl-reserves",
+     "team-rlusd"
+    ],
+    "spentMinor": 80,
+    "lead": [
+     "An XRPL wallet needs a base reserve plus applicable owner reserves, separately from the money it intends to send."
+    ]
+   }
+  },
+  {
+   "id": "D1",
+   "question": "What travel-rule information must a VASP send with a crypto transfer in Singapore?",
+   "budgetMinor": 200,
+   "modal": {
+    "restatement": "What travel-rule information a VASP must send with a crypto transfer in Singapore.",
+    "subqueries": [
+     "Singapore VASP travel rule information required crypto transfer",
+     "MAS travel rule originator beneficiary information virtual asset transfer"
+    ],
+    "requirements": [
+     "Which originator information a Singapore VASP must send with a crypto transfer",
+     "Which beneficiary information a Singapore VASP must send with a crypto transfer",
+     "The Singapore rules or thresholds governing travel-rule data on crypto transfers"
+    ]
+   },
+   "run": {
+    "restatement": "The question asks what travel-rule information a VASP must send with a crypto transfer in Singapore.",
+    "subqueries": [
+     "Singapore VASP travel rule information required with crypto transfer",
+     "Singapore crypto travel rule originator beneficiary data requirements",
+     "MAS travel rule virtual asset service provider transfer information"
+    ],
+    "requirements": [
+     "Identify the originator information a VASP in Singapore must send with a crypto transfer under the travel rule",
+     "Identify the beneficiary information a VASP in Singapore must send with a crypto transfer under the travel rule",
+     "State which Singapore authority's travel-rule requirements apply to VASP crypto transfers"
+    ]
+   },
+   "observed": {
+    "bought": [
+     "c5-fatf-recommendation-16-travel-rule",
+     "xrpl-compliance-fatf-travel-rule"
+    ],
+    "spentMinor": 80,
+    "lead": [
+     "Recommendation 16, the travel rule, applies to virtual-asset transfers: the originating provider must obtain required and accurate originator information and required beneficiary information and send it to the beneficiary institution immediately and securely."
+    ]
+   }
+  },
+  {
+   "id": "D2",
+   "question": "Is RLUSD a regulated stablecoin, and who supervises its issuer?",
+   "budgetMinor": 200,
+   "modal": {
+    "restatement": "Whether RLUSD is a regulated stablecoin and which authority supervises its issuer.",
+    "subqueries": [
+     "RLUSD stablecoin regulatory status issuer supervision",
+     "RLUSD issuer regulated New York DFS approval"
+    ],
+    "requirements": [
+     "Whether RLUSD is a regulated stablecoin and under what framework",
+     "Which authority supervises RLUSD's issuer"
+    ]
+   },
+   "run": {
+    "restatement": "The question asks whether RLUSD is a regulated stablecoin and which authority supervises its issuer.",
+    "subqueries": [
+     "RLUSD stablecoin regulatory status and supervising authority",
+     "RLUSD issuer supervision and regulatory approval"
+    ],
+    "requirements": [
+     "Whether RLUSD is a regulated stablecoin and under what regulatory framework",
+     "Which authority supervises the issuer of RLUSD"
+    ]
+   },
+   "observed": {
+    "bought": [
+     "xrpl-rlusd"
+    ],
+    "spentMinor": 40,
+    "lead": [
+     "RLUSD is issued by Standard Custody & Trust Company under a New York limited-purpose trust charter, according to Ripple's issuer materials; that oversight does not automatically authorize every downstream service worldwide."
+    ]
+   }
+  },
+  {
+   "id": "D3",
+   "question": "Does a Singapore company need a MAS licence to pay suppliers in RLUSD?",
+   "budgetMinor": 200,
+   "modal": {
+    "restatement": "Whether a Singapore company needs a MAS licence to pay suppliers in RLUSD.",
+    "subqueries": [
+     "MAS licence stablecoin RLUSD payments Singapore company",
+     "Singapore Payment Services Act stablecoin payment licence requirements",
+     "RLUSD Ripple USD stablecoin MAS regulatory status Singapore"
+    ],
+    "requirements": [
+     "Whether paying suppliers in RLUSD triggers a MAS licence under the Payment Services Act",
+     "MAS treatment of RLUSD and stablecoin payment tokens in Singapore",
+     "Any exemptions or thresholds for a Singapore company paying suppliers in RLUSD"
+    ]
+   },
+   "run": {
+    "restatement": "The question asks whether a Singapore company needs a MAS licence to pay its suppliers in RLUSD.",
+    "subqueries": [
+     "Singapore company MAS licence requirement to pay suppliers in RLUSD",
+     "MAS payment licence scope stablecoin RLUSD supplier payments Singapore",
+     "Does paying suppliers in RLUSD require a MAS licence in Singapore"
+    ],
+    "requirements": [
+     "Whether a Singapore company paying suppliers in RLUSD requires a MAS licence",
+     "Which MAS licence category, if any, covers paying suppliers in RLUSD",
+     "Whether RLUSD counts as a digital payment token or e-money under MAS rules",
+     "Any MAS guidance on stablecoin payments to suppliers by Singapore companies"
+    ]
+   },
+   "observed": {
+    "bought": [
+     "c5-mas-licence-paying-suppliers-rlusd"
+    ],
+    "spentMinor": 40,
+    "lead": [
+     "Licensing becomes a likelier question if the company moves tokens for other parties, runs an exchange or holds tokens for others."
+    ]
+   }
+  },
+  {
+   "id": "D4",
+   "question": "If my agent pays for an article and the writer never reveals the key, what happens to my money?",
+   "budgetMinor": 200,
+   "modal": {
+    "restatement": "What happens to the payer's funds if an agent pays for an article via key reveal and the writer never publishes the key.",
+    "subqueries": [
+     "XRPL escrow key reveal article payment writer never reveals key",
+     "XRPL escrow cancel refund timeout payer funds",
+     "x402 agent payment escrow key reveal refund"
+    ],
+    "requirements": [
+     "How the key-reveal escrow holds the payment until the writer publishes the key",
+     "What happens to the payer's funds if the writer never reveals the key, including refund or escrow cancellation",
+     "Any timeout or expiry after which the escrowed payment returns to the payer"
+    ]
+   },
+   "run": {
+    "restatement": "The user asks what happens to their money if their agent pays for an article and the writer never reveals the key.",
+    "subqueries": [
+     "agent pays for article writer never reveals key what happens to money",
+     "payment for article key not delivered refund outcome",
+     "agent payment article writer withholds key dispute resolution"
+    ],
+    "requirements": [
+     "Whether a payment made by an agent for an article is final or reversible when the writer never reveals the key",
+     "What recourse or refund the payer has if the writer fails to deliver the key after payment",
+     "How payment finality and spending controls apply when an agent pays for an article and the key is withheld"
+    ]
+   },
+   "observed": {
+    "bought": [
+     "product-key-reveal-trust"
+    ],
+    "spentMinor": 40,
+    "lead": [
+     "A writer can reveal a key to content that fails its advertised promise."
+    ]
+   }
+  },
+  {
+   "id": "E1",
+   "question": "Can an XRPL escrow hold RLUSD today, and what must the issuer enable before a buyer can lock it?",
+   "budgetMinor": 200,
+   "modal": {
+    "restatement": "Whether XRPL escrows can hold RLUSD today and what the issuer must enable before a buyer can lock it.",
+    "subqueries": [
+     "XRPL escrow RLUSD token support",
+     "XRPL escrow token escrow amendment issuer requirements",
+     "RLUSD issuer enable token escrow XRPL"
+    ],
+    "requirements": [
+     "Whether XRPL escrow can hold RLUSD today, with the enabling amendment or feature",
+     "What the RLUSD issuer must enable before a buyer can lock it in escrow",
+     "Any issuer-side settings or flags required for token escrow on XRPL"
+    ]
+   },
+   "run": {
+    "restatement": "The question asks whether an XRPL escrow can hold RLUSD today and what the issuer must enable before a buyer can lock it.",
+    "subqueries": [
+     "XRPL escrow RLUSD support today",
+     "RLUSD issuer enable escrow XRPL requirements",
+     "XRPL escrow token issuer enablement buyer lock RLUSD"
+    ],
+    "requirements": [
+     "Whether an XRPL escrow can hold RLUSD today",
+     "What the RLUSD issuer must enable before a buyer can lock RLUSD in escrow",
+     "Whether RLUSD escrow capability depends on issuer-side enablement on the XRPL"
+    ]
+   },
+   "observed": {
+    "bought": [
+     "team-rlusd",
+     "c5-xrpl-token-escrow-xls85",
+     "xrpl-tx-escrowcreate"
+    ],
+    "spentMinor": 120,
+    "lead": [
+     "EscrowCreate locks funds for a specified recipient until the configured time or cryptographic conditions permit release."
+    ]
+   }
+  },
+  {
+   "id": "E2",
+   "question": "What does an XRPL Credential prove, and which transactions create and accept one?",
+   "budgetMinor": 200,
+   "modal": {
+    "restatement": "What an XRPL Credential proves and which transactions create and accept one.",
+    "subqueries": [
+     "XRPL Credential ledger object what it proves",
+     "XRPL CredentialCreate CredentialAccept transactions"
+    ],
+    "requirements": [
+     "What an XRPL Credential proves and what it contains",
+     "Which XRPL transaction creates a Credential",
+     "Which XRPL transaction accepts a Credential"
+    ]
+   },
+   "run": {
+    "restatement": "The question asks what an XRPL Credential proves and which XRPL transactions create and accept one.",
+    "subqueries": [
+     "XRPL Credential what it proves",
+     "XRPL transactions that create a Credential",
+     "XRPL transactions that accept a Credential"
+    ],
+    "requirements": [
+     "What an XRPL Credential proves or attests about its subject",
+     "Which XRPL transaction creates a Credential",
+     "Which XRPL transaction accepts a Credential"
+    ]
+   },
+   "observed": {
+    "bought": [
+     "xrpl-tx-credentialaccept"
+    ],
+    "spentMinor": 40,
+    "lead": [
+     "CredentialAccept records the subject account's acceptance of a credential issued to it.",
+     "The issuer, subject and CredentialType identify the credential being accepted."
+    ]
+   }
+  },
+  {
+   "id": "E3",
+   "question": "How do XRPL AMM pools set their trading fee, and who can vote to change it?",
+   "budgetMinor": 200,
+   "modal": {
+    "restatement": "How XRPL AMM pools set their trading fee and who can vote to change it.",
+    "subqueries": [
+     "XRPL AMM trading fee how set auction",
+     "XRPL AMM fee vote holders change trading fee"
+    ],
+    "requirements": [
+     "How XRPL AMM pools set their trading fee, including the auction mechanism",
+     "Who can vote to change an XRPL AMM pool's trading fee and the voting thresholds"
+    ]
+   },
+   "run": {
+    "restatement": "The question asks how XRPL AMM pools set their trading fee and who can vote to change it.",
+    "subqueries": [
+     "XRPL AMM pool trading fee how it is set",
+     "XRPL AMM trading fee who can vote to change it",
+     "XRPL automated market maker fee voting mechanism"
+    ],
+    "requirements": [
+     "How an XRPL AMM pool's trading fee is initially set",
+     "Who is permitted to vote on changing an XRPL AMM pool's trading fee",
+     "The mechanism by which XRPL AMM pool fee votes are cast and applied"
+    ]
+   },
+   "observed": {
+    "bought": [
+     "c5-xrpl-amm-create-deposit",
+     "xrpl-tx-ammvote"
+    ],
+    "spentMinor": 80,
+    "lead": [
+     "AMMCreate creates a new Automated Market Maker instance for a pair of assets, and its TradingFee is at most 1000, a 1% trading fee.",
+     "AMMVote lets liquidity providers express a preference for an AMM's trading fee."
+    ]
+   }
+  },
+  {
+   "id": "E4",
+   "question": "How long does an XRPL payment take to become final, and when should an agent treat it as settled?",
+   "budgetMinor": 200,
+   "modal": {
+    "restatement": "How long XRPL payments take to reach finality and when an agent should treat a payment as settled.",
+    "subqueries": [
+     "XRPL payment finality ledger close time validation",
+     "XRPL transaction finality when to treat payment as settled",
+     "XRPL escrow and payment settlement confirmation for agents"
+    ],
+    "requirements": [
+     "Typical XRPL ledger close time and how many validations make a payment final",
+     "When an agent should treat an XRPL payment as settled, including validation and escrow conditions"
+    ]
+   },
+   "run": {
+    "restatement": "The question asks how long an XRPL payment takes to reach finality and when an agent should treat it as settled.",
+    "subqueries": [
+     "XRPL payment finality time ledger close how long to become final",
+     "XRPL payment settlement when should an agent treat it as settled",
+     "XRPL ledger close time payment finality confirmation"
+    ],
+    "requirements": [
+     "How long an XRPL payment takes to become final, including typical ledger close and validation timing",
+     "What finality means on the XRPL and which conditions confirm a payment is final",
+     "When an agent should treat an XRPL payment as settled, including any confirmation or validation threshold"
+    ]
+   },
+   "observed": {
+    "bought": [
+     "product-payment-finality"
+    ],
+    "spentMinor": 40,
+    "lead": [
+     "an agent should treat a successful payment as final only when its tesSUCCESS result appears in a validated ledger; an initial submit response is provisional."
+    ]
+   }
+  },
+  {
+   "id": "E5",
+   "question": "Which XRPL validators are run by Singapore banks?",
+   "budgetMinor": 200,
+   "modal": {
+    "restatement": "Which XRPL validators are operated by Singapore banks.",
+    "subqueries": [
+     "XRPL validator list Singapore banks",
+     "Singapore bank XRPL validator node",
+     "XRPL validators operated by financial institutions Singapore"
+    ],
+    "requirements": [
+     "Which Singapore banks run XRPL validators, if any",
+     "The validator public keys or identities of any Singapore bank XRPL validators",
+     "Whether Singapore banks appear on XRPL default or UNL validator lists"
+    ]
+   },
+   "run": {
+    "restatement": "The question asks which XRPL validators are run by Singapore banks.",
+    "subqueries": [
+     "XRPL validators run by Singapore banks",
+     "Singapore banks XRP Ledger validator nodes",
+     "XRPL validator list Singapore financial institutions"
+    ],
+    "requirements": [
+     "Identify which Singapore banks operate XRPL validators",
+     "List the specific XRPL validator nodes run by Singapore banks",
+     "Establish the validator public keys or identities associated with Singapore banks on the XRP Ledger"
+    ]
+   },
+   "observed": {
+    "bought": [
+     "xrpl-singapore",
+     "c5-xrpl-validation-quorum"
+    ],
+    "spentMinor": 80,
+    "lead": [
+     "Singapore payment-service obligations depend on the service and applicable legal scope, not on whether an agent or XRPL submits the transaction."
+    ]
+   }
+  },
+  {
+   "id": "F1",
+   "question": "How much does a writer earn per sale, and what does ResearchAgent take as a fee?",
+   "budgetMinor": 200,
+   "modal": {
+    "restatement": "The question asks how much a writer earns per sale and what fee ResearchAgent takes.",
+    "subqueries": [
+     "writer earnings per sale amount",
+     "ResearchAgent fee per sale percentage",
+     "ResearchAgent writer payout fee structure"
+    ],
+    "requirements": [
+     "The amount a writer earns per sale.",
+     "The fee ResearchAgent takes per sale."
+    ]
+   },
+   "run": {
+    "restatement": "The question asks how much a writer earns per sale and what ResearchAgent takes as a fee.",
+    "subqueries": [
+     "writer earnings per sale ResearchAgent fee",
+     "ResearchAgent commission fee per sale for writers",
+     "how much do writers earn per sale on ResearchAgent"
+    ],
+    "requirements": [
+     "The amount a writer earns per sale, as stated for ResearchAgent.",
+     "The fee ResearchAgent takes per sale, and how it is calculated."
+    ]
+   },
+   "observed": {
+    "bought": [],
+    "spentMinor": 0,
+    "lead": []
+   }
+  },
+  {
+   "id": "F2",
+   "question": "What does an x402 402 response contain, and can my agent pay it with XRP on Testnet?",
+   "budgetMinor": 200,
+   "modal": {
+    "restatement": "What an x402 402 response contains and whether an agent can pay it with XRP on Testnet.",
+    "subqueries": [
+     "x402 402 response contents payment requirements",
+     "x402 XRP payment support Testnet",
+     "x402 protocol payment scheme XRP Ledger"
+    ],
+    "requirements": [
+     "What fields an x402 402 response contains",
+     "Whether x402 supports paying with XRP",
+     "Whether x402 payments can run on XRPL Testnet"
+    ]
+   },
+   "run": {
+    "restatement": "The question asks what an x402 402 response contains and whether an agent can pay it with XRP on Testnet.",
+    "subqueries": [
+     "x402 402 response contents fields",
+     "x402 payment requirements XRP Testnet",
+     "x402 agent pay XRP Testnet"
+    ],
+    "requirements": [
+     "List the fields an x402 402 response contains, including payment requirements and any payment-signature or scheme details.",
+     "State whether XRP on Testnet is a supported payment asset for x402 payment requirements.",
+     "Explain how an agent would satisfy an x402 402 response using XRP on Testnet, including payment finality considerations."
+    ]
+   },
+   "observed": {
+    "bought": [
+     "product-x402-response"
+    ],
+    "spentMinor": 40,
+    "lead": [
+     "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
+     "A successful HTTP response can include PAYMENT-RESPONSE with settlement details."
+    ]
+   }
+  }
+ ]
+}

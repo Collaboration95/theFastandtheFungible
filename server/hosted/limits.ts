@@ -4,7 +4,7 @@ import type { Store } from '../store.js'
 import type { Config } from '../config.js'
 import { HostedError, requireAdmissions, requireSpending } from './control.js'
 // USD stored as integer microdollars. Gross authority is never replenished by refunds.
-export const LIMITS = { questionMinor: 200, sessionQuestions: 5, sessionMinor: 1000, ipQuestions: 60, ipMinor: 12000, dailyQuestions: 300, dailyMinor: 60000, lifetimeQuestions: 2100, lifetimeMinor: 420000, questionModel: 50000, dailyModel: 15000000, lifetimeModel: 105000000, bodyBytes: 16384, questionChars: 2000, waiting: 2, queueMs: 90000 } as const
+export const LIMITS = { questionMinor: 200, sessionQuestions: 5, sessionMinor: 1000, ipQuestions: 60, ipMinor: 12000, ipStartsPerMinute: 6, dailyQuestions: 300, dailyMinor: 60000, lifetimeQuestions: 2100, lifetimeMinor: 420000, questionModel: 50000, dailyModel: 15000000, lifetimeModel: 105000000, bodyBytes: 16384, questionChars: 2000, waiting: 2, queueMs: 90000 } as const
 export const hash = (s: string) => createHash('sha256').update(s).digest('hex')
 const canonical = (x: unknown): unknown => Array.isArray(x) ? x.map(canonical) : x && typeof x === 'object' ? Object.fromEntries(Object.entries(x).sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => [k, canonical(v)])) : x
 export const digest = (x: unknown) => hash(JSON.stringify(canonical(x)))
@@ -67,7 +67,9 @@ export class HostedLimits {
       check(tally("ip IN (?,?) AND (day=? OR gross_open=1)", ipKey, this.ipKey(ip,now-86400000), day), LIMITS.ipQuestions, LIMITS.ipMinor)
       check(tally("day=? OR gross_open=1", day), LIMITS.dailyQuestions, LIMITS.dailyMinor)
       check(tally('1=1'), LIMITS.lifetimeQuestions, LIMITS.lifetimeMinor)
-      if (Number(tally('ip=? AND created>?', ipKey, now - 60000).n) >= 3) throw new HostedError(429, 'start_rate')
+      // H9-09: judges at one venue or office share an address; 3 a minute refused two of them in round 9. The daily
+      // per-address question and money caps above still bound abuse.
+      if (Number(tally('ip=? AND created>?', ipKey, now - 60000).n) >= LIMITS.ipStartsPerMinute) throw new HostedError(429, 'start_rate')
       if (Number(tally("principal=? AND (state IN ('active','queued') OR (state='draft' AND created>?))", principal, now - LIMITS.queueMs).n)) throw new HostedError(429, 'session_busy')
       // Every admission holds the full $0.05 envelope across midnight and restart.
       const pending = Number(db.prepare('SELECT coalesce(sum(model_envelope-model_used),0) AS n FROM hosted_holds').get()!.n)
