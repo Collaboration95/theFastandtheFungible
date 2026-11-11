@@ -9,7 +9,7 @@
    Light only, by the owner's choice. Palette and faces follow the ResearchAgent app (src/styles.css). */
 :root {
   color-scheme: light;
-  --paper: #FBF8F2; --sheet: #FFFFFF; --mist: #F3EEE4; --rule: #E8E2D8; --rule-2: #E8E2D8;
+  --paper: #FBF8F2; --sheet: #FFFFFF; --mist: #F3EEE4; --rule: #E8E2D8; --rule-2: #E8E2D8; --rule-strong: #8F8579;
   --ink: #24211E; --ink-2: #24211E; --muted: #655D55; --faint: #655D55;
   --pen: #24211E; --pen-deep: #24211E; --pen-wash: #F3EEE4; --pen-wash-2: #F3EEE4;
   --hi: #F3EEE4; --hi-wash: #FFF4B8;
@@ -29,7 +29,7 @@ a { color: var(--pen); text-underline-offset: 3px; }
 a:focus-visible, button:focus-visible, summary:focus-visible { outline: 3px solid var(--pen); outline-offset: 2px; border-radius: 6px; }
 code, .mono { font-family: var(--f-ui); }
 
-.keys kbd { font: 600 11px var(--f-ui); border: 1px solid var(--rule-2); border-bottom-width: 2px; border-radius: 4px; padding: 1px 5px; background: var(--sheet); color: var(--ink-2); }
+.keys kbd { font: 600 11px var(--f-ui); border: 1px solid var(--rule-strong); border-bottom-width: 2px; border-radius: 4px; padding: 1px 5px; background: var(--sheet); color: var(--ink-2); }
 
 .wrap { padding-inline: 16px; padding-block: 0 96px; }
 main { max-width: var(--col); margin: 0 auto; }
@@ -54,7 +54,7 @@ p { margin: 14px 0 0; }
 .tag { font: 600 11.5px/1 var(--f-ui); letter-spacing: 0; text-transform: none; color: var(--muted); }
 .tag .chip { color: var(--pay-ink); border: 1px solid color-mix(in srgb, var(--pay) 60%, transparent); background: var(--pay-wash); border-radius: 6px; padding: 4px 9px; margin-right: 10px; letter-spacing: 0; }
 .clock { font: 500 14px var(--f-ui); color: var(--ink-2); font-variant-numeric: tabular-nums; }
-.replay { font: 600 14px var(--f-ui); color: var(--ink); background: var(--mist); border: 1px solid var(--rule-2); border-radius: 8px; padding: 9px 16px; cursor: pointer; min-width: 132px; }
+.replay { font: 600 14px var(--f-ui); color: var(--ink); background: var(--mist); border: 1px solid var(--rule-strong); border-radius: 6px; padding: 9px 16px; cursor: pointer; min-width: 132px; }
 .replay:hover { background: var(--pen-wash); border-color: var(--pen-wash-2); }
 .foot { border-top: 1px solid var(--rule); padding: 14px 24px 16px; margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--muted); }
 .foot b { color: var(--ink-2); font-weight: 600; }
@@ -84,7 +84,7 @@ svg { display: block; width: 100%; height: auto; }
 .map .say { font: 650 22px/1.3 var(--f-ui); letter-spacing: -.01em; min-height: 58px; max-width: 760px; }
 .map .say small { display: block; font: 500 13px/1.4 var(--f-ui); color: var(--muted); letter-spacing: 0; margin-bottom: 4px; }
 .steps { display: flex; flex-wrap: wrap; gap: 6px; }
-.steps button { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--rule-2); background: var(--sheet); font: 600 12px var(--f-ui); color: var(--muted); cursor: pointer; }
+.steps button { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--rule-strong); background: var(--sheet); font: 600 12px var(--f-ui); color: var(--muted); cursor: pointer; }
 .steps button.on { background: var(--pen); border-color: var(--pen); color: #fff; }
 .steps button.done { background: var(--pen-wash); color: var(--pen-deep); border-color: var(--pen-wash-2); }
 
