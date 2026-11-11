@@ -33,7 +33,7 @@ export default function Numbers() {
     <dl className="ra-sandbox-audit">{audits.map(([label,value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
     <p>{stats.audit.checked} runs with retained traces · {stats.audit.unavailable} unavailable. {stats.inProgress} in progress; {stats.anchorPending} awaiting an anchor.</p>
     <p>Started questions only. Timing includes waiting, from Start to the last Done ({stats.timing.samples} samples). Spend is gross, before refunds. Model cost is the metered estimate; unfinished calls retain their upper bound. Anchors are stored confirmations, not fresh ledger checks. This audit checks the recorded sequence, budget and purchase identities; it does not recheck citation text.</p>
-    <p>{stats.excludedSimulated} simulated runs excluded. Updated {new Date(stats.updatedAt).toLocaleString('en-SG', { timeZone: 'Asia/Singapore' })} SGT · refreshes every 60 s. No questions or visitor details are published.</p>
+    <p>{stats.excludedSimulated} simulated runs excluded. Updated {new Date(stats.updatedAt).toLocaleString('en-SG', { timeZone: 'Asia/Singapore' })} SGT · refreshes every 60 s. No question text or visitor details are published.</p>
     {error && <p role="status">Refresh unavailable. Showing the last recorded totals.</p>}
   </section>
 }
