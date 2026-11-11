@@ -1,5 +1,5 @@
 import { topicMatches } from './relevance.js'
-import { answerBoilerplate, leadFinding, onTopicSentence, sentences } from './lead-finding.js'
+import { answerBoilerplate, LACKS, leadFinding, onTopicSentence, sentences } from './lead-finding.js'
 import { sameSource } from './source-identity.js'
 import type { Answer, Claim, ContentEnvelope, PublicCandidate } from './contracts/index.js'
 
@@ -16,8 +16,6 @@ export function onTopic(question: string, content: ContentEnvelope, candidates: 
   return topicMatches(question, `${subject} ${content.spans.map(s => s.text).join(' ')}`) && (!identifiers.length || identifiers.some(t => own.has(t) || t === 'xrp' && own.has('xrpl') || t === 'xrpl' && own.has('xrp'))) && (!need.length || need.filter(t => own.has(t)).length >= Math.min(2, need.length))
 }
 
-/** A sentence about what the sources lack or do not establish ("The docs contain no verified list of …", "They are not a determination …"). */
-const LACKS = /\b(?:contains?|provides?|includes?|lists?|states?|says?|establish(?:es)?|covers?)\s+no\b|\bno (?:verified|public|reliable|confirmed|independent)\b|\b(?:does|do|did) not (?:contain|include|list|provide|state|say|establish|cover)\b|\bnot (?:a|an) (?:determination|guarantee|promise)\b|\bnot evidence of\b|\bcannot be inferred\b/i
 /** "They", "These", "It", "This": a sentence that only makes sense after the one it points back to. */
 const ANAPHORIC = /^(?:They|These|Those|It|This|Such|Both|He|She|Its|Their)\b/
 /** Whether a sentence of the context paragraph reads on its own here (H8-21):

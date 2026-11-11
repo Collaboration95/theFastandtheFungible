@@ -1,4 +1,4 @@
-import { expandProtocolQuery, isProtocolQuery, topicDocument, topicMatches, topicOverlap, type TopicDocument } from '../shared/relevance.js'
+import { isProtocolQuery, searchQuery, topicDocument, topicMatches, topicOverlap, type TopicDocument } from '../shared/relevance.js'
 import { searchText, searchWords, keywordCoverage } from './search-text.js'
 // Per-publisher full-text + vector search (D2, #123). Node only; never import from src/.
 import { existsSync, readFileSync } from 'node:fs'
@@ -89,7 +89,7 @@ export const keywordRelevance = (score: number) => Math.min(1, Math.max(0.01, sc
  */
 export async function searchIndex(index: PublisherIndex, term: string, k: number, queryVector?: number[]): Promise<{ mode: SearchMode; ranked: Ranked[] }> {
   const mode: SearchMode = index.vectors && queryVector ? 'hybrid' : 'keyword'
-  const common = { term: searchText(expandProtocolQuery(term)), limit: mode === 'keyword' ? (index.terms?.size ?? k) : k, properties: ['title', 'abstract', 'tags', 'body'], boost: SEARCH_TUNING.boost, threshold: SEARCH_TUNING.threshold }
+  const common = { term: searchText(searchQuery(term)), limit: mode === 'keyword' ? (index.terms?.size ?? k) : k, properties: ['title', 'abstract', 'tags', 'body'], boost: SEARCH_TUNING.boost, threshold: SEARCH_TUNING.threshold }
   const result = mode === 'hybrid'
     ? await search(index.db, { ...common, mode: 'hybrid', vector: { value: queryVector!, property: 'embedding' }, similarity: SEARCH_TUNING.similarity, hybridWeights: SEARCH_TUNING.hybridWeights })
     : await search(index.db, { ...common, mode: 'fulltext' })

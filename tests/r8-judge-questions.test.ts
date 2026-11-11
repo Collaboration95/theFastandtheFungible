@@ -13,9 +13,12 @@ import { decide, FixtureDecisionProvider, REPEATS_PURCHASES } from '../server/ag
 import type { DecideInput, DecisionProvider } from '../server/agents/decision.js'
 import { entityPrecision } from '../server/agents/precision.js'
 import { spendingInstruction } from '../server/agents/spending-guard.js'
-import { familyMemberWords, identifierFamily, identifiersIn, titleMatches, topicMatches } from '../shared/relevance.js'
+import { expandProtocolQuery, familyMemberWords, identifierFamily, identifiersIn, searchQuery, titleMatches, topicMatches } from '../shared/relevance.js'
+import { buildIndex, searchIndex } from '../publisher/search.js'
+import { RETRIEVAL } from '../server/agents/research.js'
+import { leadFinding } from '../shared/lead-finding.js'
 import { exampleCandidate } from '../shared/contracts/examples.js'
-import type { PublicCandidate } from '../shared/contracts/index.js'
+import type { Claim, PublicCandidate } from '../shared/contracts/index.js'
 
 // Round-8 mock judges (notes/review-nov10/12-mock-judges-r8.md, 11 Nov): the judges' own questions, pinned with
 // fixture models and SIMULATED payments. This is a regression check on questions already seen, not a held-out result.
@@ -34,6 +37,12 @@ const FEES = 'How much does one key-reveal purchase cost in XRPL network fees?'
 const TOKEN_ESCROW = 'Which XRPL amendment and issuer flag does token escrow need?'
 const CONDITION = 'How do I make an XRPL escrow release only when a secret is revealed? Which condition type and fields?'
 const CREDENTIAL = 'What does an XRPL Credential prove, and which transactions create and accept one?'
+// R8-A3: the follow-ups R8-A2 left. H05 is from v5, a used bank (development and regression data only); C3 is a judge's.
+const ISSUED_TOKENS = 'Which XRPL amendment lets escrows hold issued tokens, not just XRP?'
+const FINISH_CANCEL = "What's the difference between EscrowFinish and EscrowCancel, and who can submit each one?"
+const PLURAL_TRANSACTIONS = 'Which XRPL transactions finish or cancel an escrow?'
+/** The team explainers writer's keyword index, as the publisher serves it with fixture search. */
+const explainers = await buildIndex(corpus.articles.filter(a => a.publisherSlug === 'team-xrpl-explainers'))
 /** A paid candidate carrying a corpus article's public title, abstract and topics (never its body). */
 const candidate = (id: string): PublicCandidate => ({ ...exampleCandidate, resourceId: id, family: id, tier: 'PAID', title: article(id).title, preview: article(id).abstract, facets: article(id).tags, relevance: 0.8, price: { amountMinor: 40, currency: 'SGD' } })
 
@@ -82,9 +91,9 @@ describe('round-8 judge questions, end to end with fixture models', () => {
     vi.unstubAllEnvs()
     store.close(); server.closeAllConnections(); await new Promise<void>(done => server.close(() => done())); app.locals.journal.close()
   })
-  const ask = async (question: string, budgetMinor = 200, requirements = fixtureRequirements(question, {})) => {
+  const ask = async (question: string, budgetMinor = 200, requirements = fixtureRequirements(question, {}), subqueries?: string[]) => {
     const run = store.createRun(question, budgetMinor)
-    store.updateRun(run.runId, { checkpoint: { plan: fixturePlan(question), answers: {}, requirements: withIds(requirements) } })
+    store.updateRun(run.runId, { checkpoint: { plan: { ...fixturePlan(question), ...(subqueries ? { subqueries } : {}) }, answers: {}, requirements: withIds(requirements) } })
     await loop.start(run.runId)
     const final = store.getRun(run.runId)
     return { final, bought: final.intents.filter(i => i.status === 'VERIFIED' || i.status === 'REFUNDED').map(i => i.resourceId) }
@@ -163,6 +172,95 @@ describe('round-8 judge questions, end to end with fixture models', () => {
     expect(bought.length).toBeLessThanOrEqual(2)
     expect(bought).not.toContain('xrpl-tx-credentialdelete')
   }, 60_000)
+  // R8-A3 item 1. Main bought the TokenEscrow article under none of these wordings: it ranked 7th to 9th in its
+  // writer's hits. Each case: the planner's requested facts, then its search subqueries (undefined: the fixture plan's).
+  it.each([
+    [undefined, undefined],
+    [['The XRPL amendment that lets escrows hold issued tokens'], ['amendment that lets XRPL escrows hold issued tokens']],
+    [['Amendment enabling escrows of issued tokens on XRPL', 'Whether escrows can hold tokens other than XRP'], undefined],
+    [['XRPL escrows for issued tokens'], ['Which amendment allows escrows of issued tokens on the XRP Ledger']],
+  ] as [string[] | undefined, string[] | undefined][])('H05 buys the TokenEscrow amendment article first and its lead names it: facts %j, subqueries %j', async (texts, subqueries) => {
+    const { bought, final } = await ask(ISSUED_TOKENS, 200, texts?.map(text => ({ text })), subqueries)
+    expect(bought[0]).toBe('c5-xrpl-token-escrow-xls85')
+    expect(final.answers.at(-1)!.lead!.map(l => l.text).join(' ')).toContain('TokenEscrow amendment')
+  }, 60_000)
+  // R8-A3 item 2. C3 buys and cites only the EscrowCancel reference; with the fixture facts, main left its lead empty.
+  it('C3 leads with what EscrowCancel does, from the reference it bought', async () => {
+    const { bought, final } = await ask(FINISH_CANCEL)
+    expect(bought).toEqual(['xrpl-tx-escrowcancel'])
+    expect(final.answers.at(-1)!.lead!.map(l => l.text)).toEqual(["EscrowCancel returns expired escrowed principal to the sender after the ledger's cancellation deadline."])
+  }, 60_000)
+  it.each([
+    [['The difference between EscrowFinish and EscrowCancel', 'Who can submit EscrowFinish and EscrowCancel']],
+    [['How EscrowFinish and EscrowCancel differ', 'Which accounts can submit each one']],
+    [['EscrowFinish vs EscrowCancel and who may submit each']],
+  ])('C3 always has a lead: a capitalised, cited sentence naming one side, whatever the planner calls the facts: %j', async texts => {
+    const { bought, final } = await ask(FINISH_CANCEL, 200, texts.map(text => ({ text })))
+    expect(bought).toContain('xrpl-tx-escrowcancel')
+    const lead = final.answers.at(-1)!.lead!
+    expect(lead.length).toBeGreaterThan(0)
+    for (const item of lead) {
+      expect(item.text).toMatch(/^[A-Z]/)
+      expect(item.text).toMatch(/Escrow(?:Finish|Cancel)/)
+      expect(final.contents.some(c => item.claim.citations.some(ref => ref.resourceId === c.resourceId) && c.body.includes(item.text))).toBe(true)
+    }
+  }, 60_000)
+  // R8-A3 item 3. "Which … transactions" gets the named-transaction weight "which transaction" gets. Main bought the
+  // generic escrow explainer and then the TokenEscrow article for these wordings.
+  it.each([
+    [PLURAL_TRANSACTIONS],
+    ['Which transactions does an XRPL escrow need to finish and cancel?'],
+  ])('a plural "which transactions" question buys the EscrowFinish and EscrowCancel references and stops: %s', async question => {
+    expect((await ask(question)).bought).toEqual(['xrpl-tx-escrowfinish', 'xrpl-tx-escrowcancel'])
+  }, 60_000)
+  it('the H10 shape still buys PermissionedDomainSet after PermissionedDomainDelete: "domain" is no family\'s name', async () => {
+    expect((await ask('Which transaction type creates or modifies a permissioned domain on the XRP Ledger?')).bought).toContain('xrpl-tx-permissioneddomainset')
+  }, 60_000)
+})
+
+describe('R8-A3 retrieval: keyword search gets the singular of a plural the glossary names', () => {
+  it('adds "escrow" and "issued token" when the query says "escrows" and "issued tokens", and nothing else', () => {
+    const term = 'XRPL amendment lets escrows hold issued tokens not just XRP'
+    expect(searchQuery(term)).toBe(expandProtocolQuery(term).replace(term, `${term} escrow issued token`))
+  })
+  it.each([
+    ['much each open escrow trust line add'], // preset XRPL3: already singular; no plural is ever added
+    ['RLUSD escrowed key reveal today'], // only plurals fold, never -ed
+    ['HTTP headers x402 use XRPL'],
+  ])('leaves a query with no glossary plural unchanged: %s', term => {
+    expect(searchQuery(term)).toBe(expandProtocolQuery(term))
+  })
+  it('adds "credential" for "Credentials": the glossary spells both, and an article may use only the singular', () => {
+    const term = 'XRPL Credentials change writer trust'
+    expect(searchQuery(term)).toBe(expandProtocolQuery(term).replace(term, `${term} credential`))
+  })
+  it.each([
+    ['XRPL amendment lets escrows hold issued tokens not just XRP'],
+    ['amendment that lets XRPL escrows hold issued tokens'],
+    ['XRPL escrows holding issued tokens amendment'],
+    ['Which amendment allows escrows of issued tokens on the XRP Ledger'],
+  ])('puts the TokenEscrow article in its writer\'s hits for "%s"', async term => {
+    const { ranked } = await searchIndex(explainers, term, RETRIEVAL.perPublisherK)
+    expect(ranked.map(r => r.articleId)).toContain('c5-xrpl-token-escrow-xls85')
+  })
+})
+
+describe('R8-A3 lead fallback: a cited sentence that answers one part of the question', () => {
+  const claim = (id: string, text: string): Claim => ({ id, text, stance: 'UNCERTAIN', citations: [{ resourceId: `doc-${id}`, version: 'v1', spanId: id }] })
+  const lead = (question: string, ...texts: string[]) => leadFinding(question, texts.map((text, i) => claim(`s${i}`, text))).map(item => item.text)
+  const CANCEL = "EscrowCancel returns expired escrowed principal to the sender after the ledger's cancellation deadline."
+  it('leads a comparison with the sentence about the side the article covers', () => {
+    expect(lead(FINISH_CANCEL, CANCEL)).toEqual([CANCEL])
+    expect(lead('How do EscrowFinish and EscrowCancel differ, and which account submits each?', CANCEL)).toEqual([CANCEL])
+  })
+  it('never fills the slot with a disclaimer, a fragment or a sentence about neither side', () => {
+    expect(lead(FINISH_CANCEL, 'The EscrowCancel reference does not state who may submit the cancellation.')).toEqual([])
+    expect(lead(FINISH_CANCEL, 'and EscrowCancel returns the escrowed XRP to the owner after the deadline.')).toEqual([])
+    expect(lead(FINISH_CANCEL, 'EscrowCreate locks funds for a recipient until the configured time permits release.')).toEqual([])
+  })
+  it('a clause asking for an amount needs one: no lead from a sentence about who may finish (v1 J01 shape)', () => {
+    expect(lead('How much does EscrowFinish with a fulfillment cost on XRPL Testnet?', 'Anyone can finish such an escrow, but only by supplying the correct fulfillment; the funds go to the recipient.')).toEqual([])
+  })
 })
 
 describe('R8-A2 ranking: a sibling transaction name the question never says adds no precision', () => {
@@ -183,6 +281,21 @@ describe('R8-A2 ranking: a sibling transaction name the question never says adds
   it('a plural answer type ("which transactions") keeps precision instead of zeroing it', () => {
     const scores = precision(CREDENTIAL, ['xrpl-tx-credentialaccept', 'xrpl-tx-credentialdelete', 'xrpl-tx-credentialcreate'])
     expect(scores['xrpl-tx-credentialcreate']).toBeGreaterThan(scores['xrpl-tx-credentialdelete'])
+  })
+  // R8-A3: the named-transaction bonus read only "which transaction"; for a plural question the generic escrow explainer
+  // outranked the EscrowFinish reference (1.33 against 0.83).
+  it.each([
+    [PLURAL_TRANSACTIONS],
+    ['What transactions release or return an XRPL escrow?'],
+    ['Which transactions does an XRPL escrow need to finish and cancel?'],
+  ])('a plural answer type ("%s") ranks the transaction references above the escrow explainer', question => {
+    const scores = precision(question, ['xrpl-tx-escrowfinish', 'xrpl-tx-escrowcancel', 'xrpl-escrow', 'product-escrow-no-show'])
+    expect(Math.min(scores['xrpl-tx-escrowfinish'], scores['xrpl-tx-escrowcancel'])).toBeGreaterThan(Math.max(scores['xrpl-escrow'], scores['product-escrow-no-show']))
+  })
+  it('the plural earns the same named-transaction weight as the singular', () => {
+    const pool = ['xrpl-tx-escrowfinish', 'xrpl-escrow']
+    const singular = precision('Which XRPL transaction finishes an escrow?', pool), plural = precision('Which XRPL transactions finish an escrow?', pool)
+    expect(plural['xrpl-tx-escrowfinish'] - plural['xrpl-escrow']).toBeCloseTo(singular['xrpl-tx-escrowfinish'] - singular['xrpl-escrow'])
   })
   it('keeps synonym vocabulary: "payment required" still counts for an x402 402 question', () => {
     const scores = precision('What HTTP status and header does an x402 server send first?', ['product-x402-response', 'team-settlement'])
@@ -219,6 +332,14 @@ describe('R8-A2 coverage stop: a further purchase must add part of the requested
   it('skips another member when the fact names the members it wants (CredentialDelete after CredentialAccept)', async () => {
     const gap = 'Which transaction does the subject of a Credential submit to accept it'
     expect(await verdict({ question: gap, gap, candidates: [candidate('xrpl-tx-credentialdelete')], verifiedPurchases: [candidate('xrpl-tx-credentialaccept')] })).toMatchObject({ verdict: 'SKIP_LOW_VALUE', reason: REPEATS_PURCHASES })
+  })
+  it('R8-A3: skips TokenEscrow after the EscrowFinish and EscrowCancel references; its only shared word is the family name "escrow"', async () => {
+    const gap = PLURAL_TRANSACTIONS
+    expect(await verdict({ question: gap, gap, candidates: [candidate('c5-xrpl-token-escrow-xls85')], verifiedPurchases: [candidate('xrpl-tx-escrowfinish'), candidate('xrpl-tx-escrowcancel')] })).toMatchObject({ verdict: 'SKIP_LOW_VALUE', reason: REPEATS_PURCHASES })
+  })
+  it('R8-A3: still lets PermissionedDomainSet follow PermissionedDomainDelete; "domain" names no glossary family', async () => {
+    const gap = 'Which transaction type creates or modifies a permissioned domain on the XRP Ledger'
+    expect((await verdict({ question: gap, gap, candidates: [candidate('xrpl-tx-permissioneddomainset')], verifiedPurchases: [candidate('xrpl-tx-permissioneddomaindelete')] })).reason).not.toBe(REPEATS_PURCHASES)
   })
   it('a live decision provider is never affected', async () => {
     const live: DecisionProvider = { name: 'openai', model: 'gpt-6-luna', judgeRound: async () => ({ gapMaterial: 1 }), judgeCandidate: async () => ({ addressesGap: 0.9, originality: { original: 0.9, rewrite: 0.05, overlap: 0.05 }, credibility: 0.9 }) }

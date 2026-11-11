@@ -1,0 +1,595 @@
+{
+ "note": "Round-8 mock-judge questions (12-mock-judges-r8.md section 1), fixture research and decision models, SIMULATED payments, S$2.00 budget (D3: S$0.50). Requirements come from the fixture extraction, not the live planner. Before: main 2d2794cb (identical to R8-A2 after). After: this branch.",
+ "before": [
+  {
+   "id": "A1",
+   "question": "Can an XRPL escrow hold RLUSD today, and what must the issuer enable before a buyer can use it?",
+   "budgetMinor": 200,
+   "requirements": [
+    "Can an XRPL escrow hold RLUSD today",
+    "What must the issuer enable before a buyer can use it"
+   ],
+   "bought": [
+    "team-rlusd"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "The team documented official RLUSD as blocked until its issuer enables AllowTrustLineLocking.",
+    "The experimental issuer enables token locking before the buyer and writer establish eligible trust lines."
+   ]
+  },
+  {
+   "id": "A2",
+   "question": "What does an x402 402 response contain, and can my agent pay it with XRP on Testnet?",
+   "budgetMinor": 200,
+   "requirements": [
+    "What does an x402 402 response contain",
+    "Can my agent pay it with XRP on Testnet"
+   ],
+   "bought": [
+    "product-x402-response",
+    "product-x402-xrpl-settlement"
+   ],
+   "spentMinor": 80,
+   "lead": [
+    "A 402 challenge is an offer to pay; it does not itself authorize spending.",
+    "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE."
+   ]
+  },
+  {
+   "id": "A3",
+   "question": "How can I stop a prompt-injected AI agent from draining its wallet?",
+   "budgetMinor": 200,
+   "requirements": [
+    "How can I stop a prompt-injected AI agent from draining its wallet"
+   ],
+   "bought": [
+    "product-prompt-injection"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments."
+   ]
+  },
+  {
+   "id": "A4",
+   "question": "Who won the 2026 Singapore Grand Prix?",
+   "budgetMinor": 200,
+   "requirements": [
+    "Who won the 2026 Singapore Grand Prix"
+   ],
+   "bought": [],
+   "spentMinor": 0,
+   "lead": []
+  },
+  {
+   "id": "A5",
+   "question": "How long does an XRPL payment take to become final, and when should an agent treat it as settled?",
+   "budgetMinor": 200,
+   "requirements": [
+    "How long does an XRPL payment take to become final",
+    "When should an agent treat it as settled"
+   ],
+   "bought": [
+    "product-payment-finality"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "an agent should treat a successful payment as final only when its tesSUCCESS result appears in a validated ledger; an initial submit response is provisional."
+   ]
+  },
+  {
+   "id": "B1",
+   "question": "How do I make an XRPL escrow release only when a secret is revealed? Which condition type and fields?",
+   "budgetMinor": 200,
+   "requirements": [
+    "How do I make an XRPL escrow release only when a secret is revealed",
+    "Which condition type and fields"
+   ],
+   "bought": [
+    "c5-xrpl-crypto-condition-type"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "the only supported crypto-condition type is PREIMAGE-SHA-256.",
+    "the Condition field is the previously supplied PREIMAGE-SHA-256 crypto-condition of the escrow, and the Fulfillment field is the PREIMAGE-SHA-256 crypto-condition fulfillment matching the escrow's Condition."
+   ]
+  },
+  {
+   "id": "B2",
+   "question": "Does a Singapore company need a MAS licence to pay suppliers in RLUSD?",
+   "budgetMinor": 200,
+   "requirements": [
+    "Does a Singapore company need a MAS licence to pay suppliers in RLUSD"
+   ],
+   "bought": [
+    "c5-mas-licence-paying-suppliers-rlusd"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "merely accepting digital payment tokens does not by itself trigger a Payment Services Act licence."
+   ]
+  },
+  {
+   "id": "B3",
+   "question": "What HTTP headers does x402 use on XRPL, and how does the server know the payment actually settled?",
+   "budgetMinor": 200,
+   "requirements": [
+    "What HTTP headers does x402 use on XRPL",
+    "How does the server know the payment actually settled"
+   ],
+   "bought": [
+    "product-x402-response"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
+    "A successful HTTP response can include PAYMENT-RESPONSE with settlement details."
+   ]
+  },
+  {
+   "id": "B5",
+   "question": "What does an XRPL Credential prove, and which transactions create and accept one?",
+   "budgetMinor": 200,
+   "requirements": [
+    "What does an XRPL Credential prove",
+    "Which transactions create and accept one"
+   ],
+   "bought": [
+    "xrpl-tx-credentialcreate",
+    "xrpl-tx-credentialaccept"
+   ],
+   "spentMinor": 80,
+   "lead": [
+    "CredentialAccept records the subject account's acceptance of a credential issued to it.",
+    "CredentialCreate issues a provisional on-ledger credential to a subject account."
+   ]
+  },
+  {
+   "id": "C1",
+   "question": "How does the writer get paid, and what stops the agent from reading the article and then refusing to pay?",
+   "budgetMinor": 200,
+   "requirements": [
+    "How does the writer get paid",
+    "What stops the agent from reading the article and then refusing to pay"
+   ],
+   "bought": [],
+   "spentMinor": 0,
+   "lead": []
+  },
+  {
+   "id": "C2",
+   "question": "What travel-rule information must a VASP send with a crypto transfer in Singapore?",
+   "budgetMinor": 200,
+   "requirements": [
+    "What travel-rule information must a VASP send with a crypto transfer in Singapore"
+   ],
+   "bought": [
+    "c5-fatf-recommendation-16-travel-rule"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "Recommendation 16, the travel rule, applies to virtual-asset transfers: the originating provider must obtain required and accurate originator information and required beneficiary information and send it to the beneficiary institution immediately and securely."
+   ]
+  },
+  {
+   "id": "C3",
+   "question": "What's the difference between EscrowFinish and EscrowCancel, and who can submit each one?",
+   "budgetMinor": 200,
+   "requirements": [
+    "What's the difference between EscrowFinish and EscrowCancel",
+    "Who can submit each one"
+   ],
+   "bought": [
+    "xrpl-tx-escrowcancel"
+   ],
+   "spentMinor": 40,
+   "lead": []
+  },
+  {
+   "id": "C4",
+   "question": "Can the language model in ResearchAgent spend money on its own?",
+   "budgetMinor": 200,
+   "requirements": [
+    "Can the language model in ResearchAgent spend money on its own"
+   ],
+   "bought": [],
+   "spentMinor": 0,
+   "lead": []
+  },
+  {
+   "id": "C5",
+   "question": "How much does one key-reveal purchase cost in XRPL network fees?",
+   "budgetMinor": 200,
+   "requirements": [
+    "How much does one key-reveal purchase cost in XRPL network fees"
+   ],
+   "bought": [
+    "xrpl-fees"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "The transaction-cost reference gives a standard minimum of 10 drops before load scaling, with separate formulas for multisigning and conditional EscrowFinish.",
+    "XRPL transaction fees destroy XRP to deter spam, and the required fee can rise with load."
+   ]
+  },
+  {
+   "id": "D2",
+   "question": "If my agent pays for an article and the writer never reveals the key, what happens to my money?",
+   "budgetMinor": 200,
+   "requirements": [
+    "If my agent pays for an article and the writer never reveals the key",
+    "What happens to my money"
+   ],
+   "bought": [
+    "product-key-reveal-trust",
+    "product-escrow-no-show"
+   ],
+   "spentMinor": 80,
+   "lead": [
+    "key-reveal escrow makes payment and publication of the article key atomic, but a refund after a completed purchase still requires the writer to sign."
+   ]
+  },
+  {
+   "id": "D3",
+   "question": "Which XRPL amendment and issuer flag does token escrow need?",
+   "budgetMinor": 50,
+   "requirements": [
+    "Which XRPL amendment and issuer flag does token escrow need"
+   ],
+   "bought": [
+    "c5-xrpl-token-escrow-xls85"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "the proposed TokenEscrow amendment enhances the existing XRPL Escrow functionality by enabling support for both trust line tokens, called IOUs, and Multi-Purpose Tokens, called MPTs.",
+    "For MPTs, an EscrowCreate fails if the token issuance lacks the can-escrow flag."
+   ]
+  },
+  {
+   "id": "E1",
+   "question": "How do XRPL AMM pools set their trading fee, and who can vote to change it?",
+   "budgetMinor": 200,
+   "requirements": [
+    "How do XRPL AMM pools set their trading fee",
+    "Who can vote to change it"
+   ],
+   "bought": [
+    "c5-xrpl-amm-create-deposit"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "AMMCreate creates a new Automated Market Maker instance for a pair of assets, and its TradingFee is at most 1000, a 1% trading fee."
+   ]
+  },
+  {
+   "id": "E3",
+   "question": "Is RLUSD a regulated stablecoin, and who supervises its issuer?",
+   "budgetMinor": 200,
+   "requirements": [
+    "Is RLUSD a regulated stablecoin",
+    "Who supervises its issuer"
+   ],
+   "bought": [
+    "xrpl-rlusd"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "RLUSD is issued by Standard Custody & Trust Company under a New York limited-purpose trust charter, according to Ripple's issuer materials; that oversight does not automatically authorize every downstream service worldwide."
+   ]
+  },
+  {
+   "id": "F1",
+   "question": "What is the XRPL base reserve today, and how much does each owned object add?",
+   "budgetMinor": 200,
+   "requirements": [
+    "What is the XRPL base reserve today",
+    "How much does each owned object add"
+   ],
+   "bought": [
+    "xrpl-reserves"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "The reserve documentation lists Mainnet settings of 1 XRP per account and 0.2 XRP per owned item at access time, and warns that other networks can differ."
+   ]
+  }
+ ],
+ "after": [
+  {
+   "id": "A1",
+   "question": "Can an XRPL escrow hold RLUSD today, and what must the issuer enable before a buyer can use it?",
+   "budgetMinor": 200,
+   "requirements": [
+    "Can an XRPL escrow hold RLUSD today",
+    "What must the issuer enable before a buyer can use it"
+   ],
+   "bought": [
+    "team-rlusd"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "The team documented official RLUSD as blocked until its issuer enables AllowTrustLineLocking.",
+    "The experimental issuer enables token locking before the buyer and writer establish eligible trust lines."
+   ]
+  },
+  {
+   "id": "A2",
+   "question": "What does an x402 402 response contain, and can my agent pay it with XRP on Testnet?",
+   "budgetMinor": 200,
+   "requirements": [
+    "What does an x402 402 response contain",
+    "Can my agent pay it with XRP on Testnet"
+   ],
+   "bought": [
+    "product-x402-response",
+    "product-x402-xrpl-settlement"
+   ],
+   "spentMinor": 80,
+   "lead": [
+    "A 402 challenge is an offer to pay; it does not itself authorize spending.",
+    "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE."
+   ]
+  },
+  {
+   "id": "A3",
+   "question": "How can I stop a prompt-injected AI agent from draining its wallet?",
+   "budgetMinor": 200,
+   "requirements": [
+    "How can I stop a prompt-injected AI agent from draining its wallet"
+   ],
+   "bought": [
+    "product-prompt-injection"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments."
+   ]
+  },
+  {
+   "id": "A4",
+   "question": "Who won the 2026 Singapore Grand Prix?",
+   "budgetMinor": 200,
+   "requirements": [
+    "Who won the 2026 Singapore Grand Prix"
+   ],
+   "bought": [],
+   "spentMinor": 0,
+   "lead": []
+  },
+  {
+   "id": "A5",
+   "question": "How long does an XRPL payment take to become final, and when should an agent treat it as settled?",
+   "budgetMinor": 200,
+   "requirements": [
+    "How long does an XRPL payment take to become final",
+    "When should an agent treat it as settled"
+   ],
+   "bought": [
+    "product-payment-finality"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "an agent should treat a successful payment as final only when its tesSUCCESS result appears in a validated ledger; an initial submit response is provisional."
+   ]
+  },
+  {
+   "id": "B1",
+   "question": "How do I make an XRPL escrow release only when a secret is revealed? Which condition type and fields?",
+   "budgetMinor": 200,
+   "requirements": [
+    "How do I make an XRPL escrow release only when a secret is revealed",
+    "Which condition type and fields"
+   ],
+   "bought": [
+    "c5-xrpl-crypto-condition-type"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "the only supported crypto-condition type is PREIMAGE-SHA-256.",
+    "the Condition field is the previously supplied PREIMAGE-SHA-256 crypto-condition of the escrow, and the Fulfillment field is the PREIMAGE-SHA-256 crypto-condition fulfillment matching the escrow's Condition."
+   ]
+  },
+  {
+   "id": "B2",
+   "question": "Does a Singapore company need a MAS licence to pay suppliers in RLUSD?",
+   "budgetMinor": 200,
+   "requirements": [
+    "Does a Singapore company need a MAS licence to pay suppliers in RLUSD"
+   ],
+   "bought": [
+    "c5-mas-licence-paying-suppliers-rlusd"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "merely accepting digital payment tokens does not by itself trigger a Payment Services Act licence."
+   ]
+  },
+  {
+   "id": "B3",
+   "question": "What HTTP headers does x402 use on XRPL, and how does the server know the payment actually settled?",
+   "budgetMinor": 200,
+   "requirements": [
+    "What HTTP headers does x402 use on XRPL",
+    "How does the server know the payment actually settled"
+   ],
+   "bought": [
+    "product-x402-response"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
+    "A successful HTTP response can include PAYMENT-RESPONSE with settlement details."
+   ]
+  },
+  {
+   "id": "B5",
+   "question": "What does an XRPL Credential prove, and which transactions create and accept one?",
+   "budgetMinor": 200,
+   "requirements": [
+    "What does an XRPL Credential prove",
+    "Which transactions create and accept one"
+   ],
+   "bought": [
+    "xrpl-tx-credentialcreate",
+    "xrpl-tx-credentialaccept"
+   ],
+   "spentMinor": 80,
+   "lead": [
+    "CredentialAccept records the subject account's acceptance of a credential issued to it.",
+    "CredentialCreate issues a provisional on-ledger credential to a subject account."
+   ]
+  },
+  {
+   "id": "C1",
+   "question": "How does the writer get paid, and what stops the agent from reading the article and then refusing to pay?",
+   "budgetMinor": 200,
+   "requirements": [
+    "How does the writer get paid",
+    "What stops the agent from reading the article and then refusing to pay"
+   ],
+   "bought": [],
+   "spentMinor": 0,
+   "lead": []
+  },
+  {
+   "id": "C2",
+   "question": "What travel-rule information must a VASP send with a crypto transfer in Singapore?",
+   "budgetMinor": 200,
+   "requirements": [
+    "What travel-rule information must a VASP send with a crypto transfer in Singapore"
+   ],
+   "bought": [
+    "c5-fatf-recommendation-16-travel-rule"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "Recommendation 16, the travel rule, applies to virtual-asset transfers: the originating provider must obtain required and accurate originator information and required beneficiary information and send it to the beneficiary institution immediately and securely."
+   ]
+  },
+  {
+   "id": "C3",
+   "question": "What's the difference between EscrowFinish and EscrowCancel, and who can submit each one?",
+   "budgetMinor": 200,
+   "requirements": [
+    "What's the difference between EscrowFinish and EscrowCancel",
+    "Who can submit each one"
+   ],
+   "bought": [
+    "xrpl-tx-escrowcancel"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "EscrowCancel returns expired escrowed principal to the sender after the ledger's cancellation deadline."
+   ]
+  },
+  {
+   "id": "C4",
+   "question": "Can the language model in ResearchAgent spend money on its own?",
+   "budgetMinor": 200,
+   "requirements": [
+    "Can the language model in ResearchAgent spend money on its own"
+   ],
+   "bought": [],
+   "spentMinor": 0,
+   "lead": []
+  },
+  {
+   "id": "C5",
+   "question": "How much does one key-reveal purchase cost in XRPL network fees?",
+   "budgetMinor": 200,
+   "requirements": [
+    "How much does one key-reveal purchase cost in XRPL network fees"
+   ],
+   "bought": [
+    "xrpl-fees"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "The transaction-cost reference gives a standard minimum of 10 drops before load scaling, with separate formulas for multisigning and conditional EscrowFinish.",
+    "XRPL transaction fees destroy XRP to deter spam, and the required fee can rise with load."
+   ]
+  },
+  {
+   "id": "D2",
+   "question": "If my agent pays for an article and the writer never reveals the key, what happens to my money?",
+   "budgetMinor": 200,
+   "requirements": [
+    "If my agent pays for an article and the writer never reveals the key",
+    "What happens to my money"
+   ],
+   "bought": [
+    "product-key-reveal-trust",
+    "product-escrow-no-show"
+   ],
+   "spentMinor": 80,
+   "lead": [
+    "key-reveal escrow makes payment and publication of the article key atomic, but a refund after a completed purchase still requires the writer to sign."
+   ]
+  },
+  {
+   "id": "D3",
+   "question": "Which XRPL amendment and issuer flag does token escrow need?",
+   "budgetMinor": 50,
+   "requirements": [
+    "Which XRPL amendment and issuer flag does token escrow need"
+   ],
+   "bought": [
+    "c5-xrpl-token-escrow-xls85"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "the proposed TokenEscrow amendment enhances the existing XRPL Escrow functionality by enabling support for both trust line tokens, called IOUs, and Multi-Purpose Tokens, called MPTs.",
+    "For MPTs, an EscrowCreate fails if the token issuance lacks the can-escrow flag."
+   ]
+  },
+  {
+   "id": "E1",
+   "question": "How do XRPL AMM pools set their trading fee, and who can vote to change it?",
+   "budgetMinor": 200,
+   "requirements": [
+    "How do XRPL AMM pools set their trading fee",
+    "Who can vote to change it"
+   ],
+   "bought": [
+    "c5-xrpl-amm-create-deposit"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "AMMCreate creates a new Automated Market Maker instance for a pair of assets, and its TradingFee is at most 1000, a 1% trading fee."
+   ]
+  },
+  {
+   "id": "E3",
+   "question": "Is RLUSD a regulated stablecoin, and who supervises its issuer?",
+   "budgetMinor": 200,
+   "requirements": [
+    "Is RLUSD a regulated stablecoin",
+    "Who supervises its issuer"
+   ],
+   "bought": [
+    "xrpl-rlusd"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "RLUSD is issued by Standard Custody & Trust Company under a New York limited-purpose trust charter, according to Ripple's issuer materials; that oversight does not automatically authorize every downstream service worldwide."
+   ]
+  },
+  {
+   "id": "F1",
+   "question": "What is the XRPL base reserve today, and how much does each owned object add?",
+   "budgetMinor": 200,
+   "requirements": [
+    "What is the XRPL base reserve today",
+    "How much does each owned object add"
+   ],
+   "bought": [
+    "xrpl-reserves"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "The reserve documentation lists Mainnet settings of 1 XRP per account and 0.2 XRP per owned item at access time, and warns that other networks can differ."
+   ]
+  }
+ ]
+}

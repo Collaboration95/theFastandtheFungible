@@ -12,6 +12,8 @@ const stems = (text: string) => [...new Set(words(text).map(stem))]
  * Keep source bytes (including identifier punctuation) intact for quotation. */
 const segmenter = new Intl.Segmenter('en', { granularity: 'sentence' })
 export const answerBoilerplate = (text: string) => /\breference (?:defines the operation-specific fields|describes .* as part of a larger)\b|^(?:Author interpretation|I run|I have|I spent|Here is|Speaking|Verify|Confirm|Inspect|Retain|Keep|Read|Treat|Report|Include|Test|Distinguish|Explain|Consider|Avoid|Compare|Query|Estimate|Where an amendment|Do not|Creating a pool is not evidence|The public XRPL reference describes|For an agent builder)\b|^(?:Applications?|Integrations?|Clients?|Developers?)\b[^.!?]{0,60}\bshould\b|\b(?:I recommend|we recommend|my recommendation|integration recommendation|a reminder that|was no exception)\b/i.test(text)
+/** A sentence about what the sources lack or do not establish ("The docs contain no verified list of …", "They are not a determination …"). */
+export const LACKS = /\b(?:contains?|provides?|includes?|lists?|states?|says?|establish(?:es)?|covers?)\s+no\b|\bno (?:verified|public|reliable|confirmed|independent)\b|\b(?:does|do|did) not (?:contain|include|list|provide|state|say|establish|cover)\b|\bnot (?:a|an) (?:determination|guarantee|promise)\b|\bnot evidence of\b|\bcannot be inferred\b/i
 /** A segment that ends on an abbreviation is not the end of a sentence: "…deposits, U.S. Treasury bills." must not be cut after
  * "U.S." (R8 E3). Country initials, "e.g."/"i.e.", "No.", company and title abbreviations, and a single capital + period. */
 const ABBREVIATION_END = /(?:\b(?:U\.S|U\.K|U\.N|E\.U|e\.g|i\.e|vs|etc|Inc|Ltd|Corp|Co|Dr|Mr|Mrs|Ms|St|Jr|Sr|No|Nos|approx|cf|Fig|al)\.|\b[A-Z]\.)$/
@@ -75,6 +77,23 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
     first = relaxed.find(item => item.onTopic && [...clause].filter(term => stems(item.text).includes(term)).length / Math.max(1, clause.size) >= 0.4)
     if (first) ranked = relaxed
   }
+  if (!first) {
+    // R8-A3: a comparison or two-part question whose cited article answers one part. "What's the difference between
+    // EscrowFinish and EscrowCancel, and who can submit each one?" bought and cited only the EscrowCancel reference, and
+    // both passes above need every name the question gives in the article, so the lead slot stayed empty. The last pass
+    // takes the best cited sentence that answers one clause: it names one of the question's names, is on that clause's
+    // topic, covers 40% of its words and, when the clause asks for a kind of thing (an amount, a field, a transaction),
+    // names one. It is still never a disclaimer about what the sources lack, a fragment, a lowercase start or a cut
+    // sentence; when nothing qualifies, the view keeps its one plain line.
+    const partial = rankLeadSentences(question, claims, delivered, firstRequirement, candidates, { relaxed: true, partial: true })
+    const answersClause = (clause: string, text: string) => {
+      const own = stems(clause), asked = askedKind(clause)
+      return own.filter(term => stems(text).includes(term)).length / Math.max(1, own.length) >= 0.4 && (!asked || answerNames(asked, text, question).length > 0)
+    }
+    first = partial.find(item => item.onTopic && /^[A-Z0-9]/.test(item.text) && /[.!?]["”’)]?$/.test(item.text) && !LACKS.test(item.text)
+      && clausesOf(question).some(clause => answersClause(clause, item.text)))
+    if (first) ranked = partial
+  }
   if (!first) return []
   const terms = words(question)
   const selected = [first]
@@ -92,7 +111,7 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
       // something new rather than the first sentence again.
       const own = new Set(stems(item.text))
       if (item.cover < 0.2 || jaccard(own, covered) >= 0.5) return false
-      return missing.some(term => words(item.text).includes(term)) || open.some(term => touches(own, term)) || (/\bfield|flag|setting|type|header|transaction\b/i.test(question) && /[a-z][A-Z]/.test(item.text))
+      return missing.some(term => words(item.text).includes(term)) || open.some(term => touches(own, term)) || (/\b(?:field|flag|setting|type|header|transaction)s?\b/i.test(question) && /[a-z][A-Z]/.test(item.text))
     })
     if (second) selected.push(second)
   }
@@ -143,7 +162,7 @@ const skip = (text: string, claim: Claim, ci: number, si: number): RankedSentenc
 
 /** Every eligible answer sentence of the validated claims, best first. Exported so
  * tests and the development replay can inspect the ranking. */
-export function rankLeadSentences(question: string, claims: Claim[], delivered?: ContentEnvelope[], firstRequirement?: string, candidates: PublicCandidate[] = [], options: { relaxed?: boolean } = {}): RankedSentence[] {
+export function rankLeadSentences(question: string, claims: Claim[], delivered?: ContentEnvelope[], firstRequirement?: string, candidates: PublicCandidate[] = [], options: { relaxed?: boolean; partial?: boolean } = {}): RankedSentence[] {
   if (delivered) claims = claims.flatMap(claim => claim.citations.flatMap(ref => {
     const content = delivered.find(c => sameSource(c, ref))
     const span = content?.spans.find(s => s.id === ref.spanId && content.body.includes(s.text))
@@ -191,7 +210,10 @@ export function rankLeadSentences(question: string, claims: Claim[], delivered?:
     // topical overlap in this cited passage, then rank its answer sentence.
     const subject = `${title} ${metadata?.facets.join(' ') ?? ''} ${claim.text}`
     const entityContext = `${subject} ${content?.body ?? ''}`
-    if (!topicMatches(topicFact, subject) || !entityPatterns.every(pattern => pattern.test(entityContext))) return []
+    // A partial pass (R8-A3) needs one clause's topic and one of the names, not all of them.
+    const onSubject = options.partial ? clausesOf(question).some(clause => topicMatches(clause, subject)) : topicMatches(topicFact, subject)
+    const namesIt = options.partial ? !entityPatterns.length || entityPatterns.some(pattern => pattern.test(entityContext)) : entityPatterns.every(pattern => pattern.test(entityContext))
+    if (!onSubject || !namesIt) return []
     const context = words(claim.text)
     const contextOverlap = terms.filter(term => context.includes(term)).length
     return answerExtracts(claim.text).map((text, si) => {
@@ -239,7 +261,7 @@ export function rankLeadSentences(question: string, claims: Claim[], delivered?:
     if (!causal && /\b(?:field|flag|setting|type|header|transaction|permission|scheme|protocol)s?\b|\b(?:must|need).*\b(?:enable|set)\b/i.test(question) && novelIdentifier) score += asked && !names.length ? 8 : 24
     const kind = /^(?:which|what)\b|\b(?:name|called|named)\b/i.test(firstFact) ? firstFact.match(/\b(transaction|scheme|protocol|field|flag|setting|type|header|permission)s?\b/i)?.[1] : undefined
     if (kind && new RegExp(`\\b${kind}s?\\b`, 'i').test(text)) score += 16
-    if (/\bwhich transaction\b/i.test(question) && /^(?:The |An? )?[A-Z][a-z]+(?:[A-Z][a-z]+)+\b/.test(text)) score += 16
+    if (/\bwhich transactions?\b/i.test(question) && /^(?:The |An? )?[A-Z][a-z]+(?:[A-Z][a-z]+)+\b/.test(text)) score += 16
     if (/\bstatute|law|regulation\b/i.test(question) && /\bAct|statute|law|regulat/i.test(text)) score += 8
     if (/lead[- ]times?|shorter/i.test(question)) score += /\bweeks?\b/.test(lower) ? 12 : 0
     if (/analyst|outlook|margin/i.test(question)) score += /estimate|broker|analyst|consensus/.test(lower) ? 12 : 0

@@ -61,6 +61,23 @@ export function protocolAliases(query: string): string[] {
 export function expandProtocolQuery(query: string): string {
   return [query, ...protocolAliases(query)].join(' ')
 }
+const literalText = (text: string) => ` ${text.normalize('NFKC').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()} `
+/** Plural folding only (escrows → escrow, tokens → token), the same rule phraseText applies, without its -ing/-ed. */
+const singularText = (text: string) => literalText(text).replace(/\S+/g, w => w.replace(/(?<!s)s$/, m => w.length > 3 ? '' : m))
+/**
+ * The publisher's keyword search term (R8-A3): expandProtocolQuery plus the glossary's singular spelling of a phrase
+ * the query says only in the plural ("escrows" → escrow, "issued tokens" → issued token). Keyword search does not fold
+ * plurals, and the glossary match does, so the expansion used to add only the family's sibling names (EscrowCreate,
+ * TrustSet) and never its own word. Those references then outranked the article using that word: the TokenEscrow
+ * (XLS-85) article ranked 8th in its writer's hits for "Which XRPL amendment lets escrows hold issued tokens, not just
+ * XRP?" (v5 H05). It adds no new family and no plural, so the topic checks and every other caller of
+ * expandProtocolQuery are unchanged.
+ */
+export function searchQuery(query: string): string {
+  const literal = literalText(query), singular = singularText(query)
+  const plural = matchingGroups(query).flat().filter(p => singularText(p) === literalText(p) && singular.includes(literalText(p)) && !literal.includes(literalText(p)))
+  return [query, ...new Set(plural), ...protocolAliases(query)].join(' ')
+}
 /**
  * A protocol identifier: a CamelCase transaction, field or flag name (EscrowCreate, DIDSet, AllowTrustLineLocking)
  * or a hyphenated capitalised standard name (XLS-85, PREIMAGE-SHA-256).
