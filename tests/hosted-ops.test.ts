@@ -5,6 +5,29 @@ import { resources } from './helpers/resource-scope.js'
 import { join } from 'node:path'
 const run=(file:string,args:string[],env={})=>execFileSync(process.execPath,[file,...args],{encoding:'utf8',env:{...process.env,...env}})
 describe('hosted operator boundaries',()=>{
+ it.each(['AB'.repeat(32), 'ab'.repeat(32), 'aB09'.repeat(16)])('accepts a 64-hex writer domain in the actual startup override loop: %s', domain => {
+  const dir=resources().tempDir('ra-ho-domain-')
+  writeFileSync(join(dir,'env.local'),`DECISION_PROVIDER=fixture\nWRITER_CREDENTIAL_DOMAIN=${domain}`)
+  writeFileSync(join(dir,'env.new'),'HOSTED=1\nWRITER_CREDENTIAL_DOMAIN=old\n')
+  const startup=readFileSync('docker/hosted/startup.sh','utf8')
+  const block=startup.slice(startup.indexOf('if [[ -f /etc/researchagent/env.local'),startup.indexOf('# Each value is immutable'))
+    .replaceAll('/etc/researchagent/',dir+'/').replaceAll('sed -i ', 'sed -i.bak ')
+  const result=spawnSync('bash',['-euc',block],{encoding:'utf8'})
+  expect(result.status,result.stderr).toBe(0)
+  expect(readFileSync(join(dir,'env.new'),'utf8')).toBe(`HOSTED=1\nDECISION_PROVIDER=fixture\nWRITER_CREDENTIAL_DOMAIN=${domain}\n`)
+ })
+ it.each(['', 'A'.repeat(63), 'A'.repeat(65), 'G'.repeat(64), 'A'.repeat(63)+' ', 'A'.repeat(63)+'\r', '0x'+'A'.repeat(62), 'A'.repeat(62)+'=='])('rejects an invalid writer domain with a clear error: %j', domain => {
+  const dir=resources().tempDir('ra-ho-domain-')
+  writeFileSync(join(dir,'env.local'),`WRITER_CREDENTIAL_DOMAIN=${domain}\n`)
+  writeFileSync(join(dir,'env.new'),'HOSTED=1\n')
+  const startup=readFileSync('docker/hosted/startup.sh','utf8')
+  const block=startup.slice(startup.indexOf('if [[ -f /etc/researchagent/env.local'),startup.indexOf('# Each value is immutable'))
+    .replaceAll('/etc/researchagent/',dir+'/').replaceAll('sed -i ', 'sed -i.bak ')
+  const result=spawnSync('bash',['-euc',block],{encoding:'utf8'})
+  expect(result.status).toBe(1)
+  expect(result.stderr).toContain('WRITER_CREDENTIAL_DOMAIN must be exactly 64 hexadecimal characters')
+  expect(readFileSync(join(dir,'env.new'),'utf8')).toBe('HOSTED=1\n')
+ })
  it('plans the VM/front topology without invoking cloud tools or leaking env secrets',()=>{
   const dir=resources().tempDir('ra-ho-test-')
   try {

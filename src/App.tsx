@@ -26,15 +26,17 @@ import MobileSpend from './components/MobileSpend'
 import ReportButton from './components/ReportButton'
 import SpendPanel from './components/SpendPanel'
 import DecisionPanel from './components/DecisionPanel'
-import Passage from './components/Passage'
-import ReceiptSheet from './components/ReceiptSheet'
-import ShowWork from './components/ShowWork'
+const Passage = lazy(() => import('./components/Passage'))
+const ReceiptSheet = lazy(() => import('./components/ReceiptSheet'))
+const ShowWork = lazy(() => import('./components/ShowWork'))
+import LoadingSheet from './components/LoadingSheet'
 const Presenter = lazy(() => import('./components/Presenter'))
 import Toasts, { type Toast } from './components/Toasts'
 import ClarifyChips from './components/ClarifyChips'
 import PlanSheet from './components/PlanSheet'
-import ChatThread, { type ChatMessage } from './components/ChatThread'
-import ReputationPanel from './components/ReputationPanel'
+import type { ChatMessage } from './components/ChatThread'
+const ChatThread = lazy(() => import('./components/ChatThread'))
+const ReputationPanel = lazy(() => import('./components/ReputationPanel'))
 import CommandPalette, { type Command } from './components/CommandPalette'
 import { deriveRunState } from './runState'
 import { offlineNotice, planNotice } from './notices'
@@ -480,7 +482,7 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
     : (error || healthError) && <p className="ra-banner" role="alert">{error || "Can’t reach the ResearchAgent server."} <button className="ra-link" onClick={() => window.location.reload()}>Try again</button></p>
   const state = hosted && homeState(hosted)
   if (detecting && !hosted) return <Connecting />
-  if (tab === 'writers') return provide(<Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}><main id="main" tabIndex={-1} className="ra-writers-view"><h1>Writers</h1>{writersError && <p role="alert">{writersError}</p>}{writersLoading ? <p role="status" className="ra-writer-loading"><AgentSprite animation="search" />Loading writer reputation…</p> : <ReputationPanel records={reputation} run={shown} full={run} />}{overlays}</main></Layout>)
+  if (tab === 'writers') return provide(<Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}><main id="main" tabIndex={-1} className="ra-writers-view"><h1>Writers</h1>{writersError && <p role="alert">{writersError}</p>}{writersLoading ? <p role="status" className="ra-writer-loading"><AgentSprite animation="search" />Loading writer reputation…</p> : <Suspense fallback={<p role="status" style={{ minHeight: 420 }}>Loading writers…</p>}><ReputationPanel records={reputation} run={shown} full={run} /></Suspense>}{overlays}</main></Layout>)
   if (screen === 'settings' && !hosted) return provide(<Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
     <Suspense fallback={<main id="main" tabIndex={-1} className="ra-settings"><h1>Settings</h1><p role="status">Loading settings…</p></main>}><Settings universal={universal} budgetMinor={universalMinor} settlement={settlement} notify={notify} onBack={closeSettings} onNotify={chooseNotify}
       onUniversal={on => { setUniversal(on); prefs.set(universalKey, on ? '1' : '0') }} onBudget={minor => { setUniversalMinor(minor); prefs.set(universalMinorKey, String(minor)) }} /></Suspense>
@@ -488,7 +490,7 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
   </Layout>)
 
   if (screen === 'chat') return provide(<Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
-    <ChatThread messages={thread} busy={sending || !!pending || (!!state && !canAsk(state))} onSend={sendChat} above={pendingCard} />
+    <Suspense fallback={<main id="main" tabIndex={-1} style={{ minHeight: 420 }}><p role="status">Loading conversation…</p></main>}><ChatThread messages={thread} busy={sending || !!pending || (!!state && !canAsk(state))} onSend={sendChat} above={pendingCard} /></Suspense>
     {overlays}
   </Layout>)
 
@@ -541,9 +543,9 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
       </aside>
 
     </div>
-    {passage && <Passage candidate={passage.candidate} content={getAccessibleContent(shown, passage.candidate)} citation={passage.citation} onClose={() => setPassage(undefined)} />}
-    {receipt && <ReceiptSheet run={shown} receipt={receipt} onClose={() => setReceipt(undefined)} />}
-    {work && <ShowWork run={shown} configured={health.labels} onClose={() => setWork(false)} />}
+    {passage && <Suspense fallback={<LoadingSheet label="Passage" className="ra-passage" onClose={() => setPassage(undefined)} />}><Passage candidate={passage.candidate} content={getAccessibleContent(shown, passage.candidate)} citation={passage.citation} onClose={() => setPassage(undefined)} /></Suspense>}
+    {receipt && <Suspense fallback={<LoadingSheet label="Receipt" className="ra-receipt-sheet" onClose={() => setReceipt(undefined)} />}><ReceiptSheet run={shown} receipt={receipt} onClose={() => setReceipt(undefined)} /></Suspense>}
+    {work && <Suspense fallback={<LoadingSheet label="Show work" className="ra-sheet" onClose={() => setWork(false)} />}><ShowWork run={shown} configured={health.labels} onClose={() => setWork(false)} /></Suspense>}
     {overlays}
   </Layout>)
 }

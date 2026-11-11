@@ -93,9 +93,13 @@ sed -i "s|^HOSTED_ORIGIN=.*|HOSTED_ORIGIN=$origin|" /etc/researchagent/env.new
 # file so a reboot or redeploy keeps them. Only these names are accepted; anything
 # else fails the start closed. A fixture decision model is labelled on every answer.
 if [[ -f /etc/researchagent/env.local ]]; then
-  while IFS='=' read -r name value; do
+  while IFS='=' read -r name value || [[ -n $name ]]; do
     [[ -z $name || $name == \#* ]] && continue
-    [[ $name =~ ^(HOSTED_PROVIDERS_READY_UNTIL|HOSTED_(RESEARCH|DECISION)_(INPUT|OUTPUT)_USD_PER_MILLION|HOSTED_DECISION_OUTPUT_TOKENS|HOSTED_QUESTION_CAP_MINOR|HOSTED_ADMISSIONS_UNTIL|HOSTED_(DECK|VIDEO|PROGRESS|REPLAY)_URL|WALLET_DAILY_CAP_MINOR|DECISION_PROVIDER)$ && $value =~ ^[A-Za-z0-9.:/_-]+$ ]] || exit 1
+    if [[ $name == WRITER_CREDENTIAL_DOMAIN && ! $value =~ ^[A-Fa-f0-9]{64}$ ]]; then
+      echo 'WRITER_CREDENTIAL_DOMAIN must be exactly 64 hexadecimal characters' >&2
+      exit 1
+    fi
+    [[ $name =~ ^(HOSTED_PROVIDERS_READY_UNTIL|HOSTED_(RESEARCH|DECISION)_(INPUT|OUTPUT)_USD_PER_MILLION|HOSTED_DECISION_OUTPUT_TOKENS|HOSTED_QUESTION_CAP_MINOR|HOSTED_ADMISSIONS_UNTIL|HOSTED_(DECK|VIDEO|PROGRESS|REPLAY)_URL|WALLET_DAILY_CAP_MINOR|DECISION_PROVIDER|WRITER_CREDENTIAL_DOMAIN)$ && $value =~ ^[A-Za-z0-9.:/_-]+$ ]] || exit 1
     [[ $name != DECISION_PROVIDER || $value =~ ^(openai|cloudflare|fixture)$ ]] || exit 1
     sed -i "/^$name=/d" /etc/researchagent/env.new
     printf '%s=%s\n' "$name" "$value" >>/etc/researchagent/env.new

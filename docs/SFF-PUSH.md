@@ -10,6 +10,7 @@ something significant: a feature, a metric move, a finished deliverable. Don't
 add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
+- 12 Nov: DEPLOY-FIX defers receipt, Show work, passage, Writers and conversation code; Node 22 initial JS gzip falls 170,326 → 159,261 bytes. Production builds and deploy now share the unchanged <170,000-byte check; startup accepts only a 64-hex writer credential domain. [Evidence](evidence/deploy-fix/README.md).
 - 12 Nov: RUNBOOK adds the [owner's judge-week checklist](judge-week-runbook.md), incident commands and rollbacks, S$40 cap recovery, editable links, pitch fallbacks and owner-decided teardown; a regression test checks every Node script and Make target reference.
 - 11 Nov: The hosted judge demo has a hard spending cap: a S$40 (about US$30) project budget with email alerts at 25–100%. When actual spend reaches it, a Pub/Sub-triggered function stops the VM. The VM also stops itself at 00:30 SGT on 20 Nov. Expected spend for 10–20 Nov is about US$22–24. [Spending cap](hosted-web.md#spending-cap-owner-request-11-nov).
 - 12 Nov: MJ10-FIX makes why-bought say “Bought to fill” unless saved coverage cites the purchased article, requires the prepared key transaction for live stage tiers, and rejects empty, unreadable or wrong-signature deck/video files; no playback claim. Follow-up to [KEY #480](https://github.com/Collaboration95/theFastandtheFungible/pull/480); [stage requirements](stage.md).

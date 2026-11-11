@@ -1214,3 +1214,10 @@ persistence or a mainnet deployment. No cloud resource or live ledger call ran.
 - **Workaround / fix:** the guard qualifies HG once per Host and re-checks in the background, so no visitor request waits on a ledger round trip to be admitted. A slow ledger can no longer show the paused page.
 - **Suggested fix:** the Starter Kit could document regional Testnet endpoints (or expected cross-region latency), and recommend that readiness or balance checks run off the request path with a cached last-known value.
 - **Severity / mainnet impact:** medium availability friction on Testnet. On mainnet, use a nearby or owned rippled/Clio node and treat ledger reads as asynchronous health signals. No real funds; no ledger write involved.
+
+## 12 November 2026: Node gzip differences hid a deploy bundle failure (observed local tooling)
+
+- **Evidence:** `docs/evidence/deploy-fix/README.md`; main `039c497a` built files measure 170,326 bytes gzip on Node 22.23.4 versus 169,998 on Node 26.3.1. Main's successful local-gate receipt used Node 26; the Node 22 deploy failed the same <170,000-byte assertion before cloud mutation.
+- **Workaround / fix:** lazy-load optional UI to reach 159,261 bytes on Node 22; share the manifest/gzip calculation between production builds and deploy performance checks, require Node 22, and preserve the existing threshold.
+- **Suggested tooling improvement:** use the deploy toolchain for local admission and report runtime/compression versions alongside byte budgets.
+- **Severity / mainnet impact:** medium shipping blocker in our tooling, not an XRPL or x402 defect. No ledger or mainnet impact was measured; no payment or cloud change occurred in this lane.
