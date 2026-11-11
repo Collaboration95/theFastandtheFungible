@@ -17,7 +17,7 @@ import { renderProofPage } from '../server/proof-page.js'
 import { verifyAnswer } from '../sdk/verify.js'
 import { XRPL_LABEL } from '../shared/contracts/publisher.js'
 import type { RunSnapshot } from '../shared/contracts/index.js'
-import { refusalEligibility, PRIVATE_QUESTION, TEAM_WRITER_NAME } from '../shared/refusal-proof.js'
+import { refusalEligibility, PRIVATE_QUESTION, TEAM_WRITER_NAME, ProofSnapshotSchema } from '../shared/refusal-proof.js'
 import { resources } from './helpers/resource-scope.js'
 
 const sha = (text: string) => createHash('sha256').update(text).digest('hex')
@@ -26,12 +26,16 @@ const QUESTION = 'Which Singapore banks are piloting RLUSD settlement in 2026?'
 const labels = { research: 'fixture · extractive-fixture', decision: 'fixture · metadata-fixture', publisher: 'local', settlement: XRPL_LABEL }
 
 /** A finished, anchored decline written the way the loop and AnswerAnchors write one (anchor transaction not on a real ledger). */
-function declinedRun(store: Store, options: { principal?: string; question?: string; anchored?: boolean; settlement?: RunSnapshot['labels']['settlement'] } = {}) {
+function declinedRun(store: Store, options: { principal?: string; question?: string; anchored?: boolean; settlement?: RunSnapshot['labels']['settlement']; provider?: RunSnapshot['answers'][number]['provider']; decision?: string; fallback?: boolean } = {}) {
   const question = options.question ?? QUESTION, principal = options.principal ?? 'operator'
   const { run } = store.admit({ surface: 'web', principal, question, requestedMinor: 100, idempotencyKey: randomUUID(), maxMinor: 500, labels: { ...labels, settlement: options.settlement ?? XRPL_LABEL } })
-  store.updateRun(run.runId, { candidates: uc2.candidates, labels: { ...labels, settlement: options.settlement ?? XRPL_LABEL } })
+  store.updateRun(run.runId, { candidates: uc2.candidates, labels: { ...labels, research: options.provider && options.provider !== 'fixture' ? 'DeepSeek · deepseek-flash' : labels.research, decision: options.decision ?? labels.decision, settlement: options.settlement ?? XRPL_LABEL } })
   store.addDecision(run.runId, uc2.decisions[0])
-  store.addAnswer(run.runId, { version: 1, conclusion: 'Matched articles supplied no citable answer · nothing bought', claims: [], openGaps: [{ text: 'Which Singapore banks are piloting RLUSD settlement in 2026' }], provider: 'fixture', model: 'extractive-fixture' })
+  // Live research starts with an intentional free offline draft; it is not a provider fallback.
+  const live = options.provider && options.provider !== 'fixture'
+  if (live) store.addAnswer(run.runId, { version: 1, conclusion: 'Offline free draft', claims: [], openGaps: [], provider: 'fixture', model: 'extractive-fixture' })
+  store.addAnswer(run.runId, { version: live ? 2 : 1, conclusion: 'Matched articles supplied no citable answer · nothing bought', claims: [], openGaps: [{ text: 'Which Singapore banks are piloting RLUSD settlement in 2026' }], provider: options.provider ?? 'fixture', model: options.provider && options.provider !== 'fixture' ? 'live-model' : 'extractive-fixture' })
+  if (options.fallback) store.appendEvent(run.runId, { type: 'MODEL_FALLBACK', label: 'LLM fallback · labelled fixture', data: { fallback: true } })
   store.appendEvent(run.runId, { type: 'DONE', label: 'Done' })
   store.updateRun(run.runId, { phase: 'DONE' })
   if (options.anchored !== false) anchor(store, run.runId)
@@ -46,12 +50,46 @@ function anchor(store: Store, runId: string) {
 }
 const open = () => resources().own(new Store(join(resources().tempDir('w1-proof-'), 'app.db')))
 
+it.each([
+  { decision: 'fixture · metadata-fixture', provider: 'deepseek' as const, fallback: false, models: 'fixture', words: 'live answers, rule-based buying' },
+  { decision: 'OpenAI Decisions · gpt-6-luna', provider: 'deepseek' as const, fallback: false, models: 'live', words: 'live answers, model-judged buying' },
+  { decision: 'fixture · metadata-fixture', provider: 'fixture' as const, fallback: false, models: 'fixture', words: 'offline extract answers, rule-based buying' },
+  { decision: 'OpenAI Decisions · gpt-6-luna', provider: 'fixture' as const, fallback: true, models: 'live', words: 'offline extract answers, model-judged buying' },
+  { decision: 'OpenAI Decisions · gpt-6-luna', provider: 'deepseek' as const, fallback: true, models: 'live', words: 'offline extract answers, model-judged buying' },
+])('renders recorded provenance on the hosted page and card: $words', async ({ decision, provider, fallback, models, words }) => {
+  const store = open(), runId = declinedRun(store, { decision, provider, fallback })
+  const { proof } = await new RefusalProofs(store).create(runId, { hosted: true, principal: 'operator' })
+  expect(proof.snapshot.environment).toMatchObject({ models, research: { provider, fallback }, label: `Shared XRPL Testnet demo · ${words} · no real value` })
+  // Snapshot-only metadata never enters receipts.json or the card's embedded receipts download.
+  expect(proof.snapshot.bundle).toEqual(sanitizeBundle(receiptBundle(store, runId), store.getRun(runId)))
+  expect(proof.snapshot.bundle).not.toHaveProperty('environment')
+  const found = { ...proof.snapshot.found, items: [
+    { title: 'Team article', writer: 'ResearchAgent builders · team-authored', priceMinor: 10, verdict: 'Not about this question' },
+    { title: 'Fictional article', writer: 'Example writer (fictional)', priceMinor: 10, verdict: 'Not about this question' },
+  ] }
+  for (const mode of ['page', 'card'] as const) {
+    const html = renderProofPage({ ...proof.snapshot, found }, { mode })
+    expect(html).toContain(`<div><dt>Where</dt><dd>Shared XRPL Testnet demo · ${words} · no real value</dd></div>`)
+    expect(html).toContain('XRPL Testnet'); expect(html).toContain('no real value')
+    expect(html).toContain('ResearchAgent builders (team-authored)'); expect(html).toContain('Example writer (fictional)')
+    expect(html.includes('rule-based buying')).toBe(models === 'fixture')
+    expect(html.includes('model-judged buying')).toBe(models === 'live')
+    expect(html.includes('live answers')).toBe(provider !== 'fixture' && !fallback)
+    // Old stored labels may themselves contain the false claim; rendering must ignore it.
+    const { research: _research, ...oldEnvironment } = proof.snapshot.environment
+    const old = ProofSnapshotSchema.parse({ ...proof.snapshot, environment: { ...oldEnvironment, label: 'live answers, rule-based buying' } })
+    const oldHtml = renderProofPage(old, { mode })
+    expect(oldHtml).toContain(`<div><dt>Where</dt><dd>Shared XRPL Testnet demo · ${models === 'fixture' ? 'rule-based buying' : 'model-judged buying'} · no real value</dd></div>`)
+    expect(oldHtml).not.toContain('live answers'); expect(oldHtml).not.toContain('offline extract answers')
+  }
+})
+
 it('shares an anchored decline as a sanitized snapshot whose receipts verify on their own', async () => {
   const store = open(), runId = declinedRun(store)
   const { proof, created } = await new RefusalProofs(store).create(runId, { hosted: false, principal: 'operator' })
   const s = proof.snapshot
   expect(created).toBe(true)
-  expect(s).toMatchObject({ version: 'refusal-proof-v1', question: QUESTION, bought: { count: 0, spentMinor: 0, currency: 'SGD' }, environment: { surface: 'local', network: 'XRPL Testnet', models: 'fixture', label: 'XRPL Testnet demo · rule-based buying · no real value' } })
+  expect(s).toMatchObject({ version: 'refusal-proof-v1', question: QUESTION, bought: { count: 0, spentMinor: 0, currency: 'SGD' }, environment: { surface: 'local', network: 'XRPL Testnet', models: 'fixture', label: 'XRPL Testnet demo · offline extract answers, rule-based buying · no real value' } })
   expect(s.found.paid).toBe(12)
   expect(s.found.writers).toBeGreaterThan(1)
   expect(s.found.items.length + s.found.more).toBe(12)

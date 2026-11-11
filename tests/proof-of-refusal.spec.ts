@@ -86,7 +86,12 @@ test('a visitor shares a refusal; anyone can open and check it; nobody else’s 
   // One count: the total before the browser check is the total after it, and what the browser skips is named.
   const shared = (await proof.locator('.facts').innerText()).match(/(\d+) passed · (\d+) not checked/)!, total = String(Number(shared[1]) + Number(shared[2]))
   await expect(proof.locator('.chip .full')).toBeVisible(); await expect(proof.locator('.chip .short')).toBeHidden()
-  await proof.getByRole('button', { name: 'Verify on XRPL in your browser' }).click()
+  const targets = await proof.locator('.btn').evaluateAll(elements => elements.map(el => ({
+    visibleHeight: el.getBoundingClientRect().height, hitHeight: parseFloat(getComputedStyle(el, '::after').minHeight),
+  })))
+  expect(targets.every(target => target.visibleHeight === 36 && target.hitHeight >= 44)).toBe(true)
+  // Three pixels above the visible control is still inside its transparent 44 px hit area.
+  await proof.getByRole('button', { name: 'Verify on XRPL in your browser' }).click({ position: { x: 20, y: -3 } })
   await expect(proof.locator('#vout .vhead')).toHaveText(new RegExp(`^(?:All ${total} checks passed|\\d+ passed · \\d+ not checked)$`), { timeout: 30000 })
   await expect(proof.locator('#vout .note')).toContainText('Skipped here: writer credentials')
   await expect(proof.locator('#vout')).toContainText('Answer anchored on XRPL Testnet')
@@ -95,9 +100,10 @@ test('a visitor shares a refusal; anyone can open and check it; nobody else’s 
   await proof.locator('#vout').scrollIntoViewIfNeeded()
   await shot(proof, 'hosted-proof-verified-1440')
   await proof.setViewportSize({ width: 1280, height: 900 })
+  expect(await proof.locator('#verify').evaluate(el => el.getBoundingClientRect().height)).toBe(36)
   expect(await serious(proof)).toEqual([])
   // The card is a self-contained download: no scripts, no network.
-  const [download] = await Promise.all([proof.waitForEvent('download'), proof.getByRole('link', { name: 'Download proof card' }).click()])
+  const [download] = await Promise.all([proof.waitForEvent('download'), proof.getByRole('link', { name: 'Download proof card' }).click({ position: { x: 20, y: -3 } })])
   expect(download.suggestedFilename()).toMatch(/^proof-of-refusal-[a-f0-9]{8}\.html$/)
   const card = await (await proof.request.get(`${href}/card.html`)).text()
   expect(card).not.toContain('<script'); expect(card).toContain(QUESTION)

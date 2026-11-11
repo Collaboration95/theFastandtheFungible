@@ -2,6 +2,7 @@
 import { createContext, useContext } from 'react'
 import { ApiError, type HostedDemoStatus } from './api'
 import { EXAMPLE_PROOF_URL, RELEASE_TAG, releaseBase } from '../shared/links'
+import { buyingLabels } from '../shared/execution-labels'
 
 export type Hosted = { status: HostedDemoStatus; connection?: 'offline' | 'unreachable' }
 export const HostedContext = createContext<Hosted | undefined>(undefined)
@@ -32,7 +33,8 @@ export function environment(status: HostedDemoStatus, connection?: Hosted['conne
   // Everything offline, or (11 Nov) live answers with the fixture decision model choosing what to buy.
   const fixture = /^fixture models|unavailable/i.test(status.labels.models)
   const ruleBuying = !fixture && /fixture purchase decisions/i.test(status.labels.models)
-  const models = fixture ? 'fixture models' : ruleBuying ? 'live answers, rule-based buying' : 'live models'
+  // Status describes configured buying, not the provenance of any particular answer.
+  const models = buyingLabels[fixture || ruleBuying ? 'fixture' : 'live']
   const place = testnet ? 'Shared XRPL Testnet demo' : 'Shared demo · simulated payments'
   // The phone chip is the same chip, shortened: the same two facts (which rail, no real value), never a second name.
   const kind = testnet ? 'Testnet demo' : 'Simulated'
@@ -111,7 +113,8 @@ export function hostedLinks(hosted: Hosted) {
 /** The recorded hosted run the Judges' corner re-checks. Served as a static file, so it works with the sandbox paused, busy or out of questions. */
 export const JUDGE_RUN = {
   bundleUrl: '/judge/hosted-run-nov11.receipts.json',
-  caption: 'Recorded on this sandbox, 11 Nov · XRPL Testnet · live answers, rule-based buying · team-authored writers · no real value',
+  // Final answer and decision providers are pinned by the committed bundle in the caption regression test.
+  caption: `Recorded on this sandbox, 11 Nov · XRPL Testnet · live answers, ${buyingLabels.fixture} · team-authored writers · no real value`,
   /** Its EscrowFinish: the writer publishes the article key in the Fulfillment field, and the escrow's lock is that key's hash. */
   keyTx: '4CCB4E56137D738847E853535B068329562AD490DA4D9F5551CEC2EB1AC70638',
 } as const

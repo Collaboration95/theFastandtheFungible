@@ -4,6 +4,8 @@
 import { PROOF_TOKENS } from './proof-tokens.js'
 import { PROOF_FONTS } from './proof-fonts.js'
 import { clip, explorerTx, proofWriter, sgd, type ProofSnapshot } from '../shared/refusal-proof.js'
+import { proofEnvironmentLabel } from '../shared/execution-labels.js'
+export { proofEnvironmentLabel } from '../shared/execution-labels.js'
 
 const esc = (text: string) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -22,12 +24,6 @@ export const LEDGER_HOSTS = ['wss://s.altnet.rippletest.net:51233', 'wss://clio.
 export const VERIFY_MODULE = '/verify/proof-verify.js'
 /** The environment chip on a phone: every proof is an XRPL Testnet record with test funds, whichever surface shared it. */
 const ENV_SHORT = 'Testnet demo · no real value'
-/** Same full label as the sharing surface, including the hosted demo's live answer model. */
-export const proofEnvironmentLabel = (env: Pick<ProofSnapshot['environment'], 'surface' | 'models'>) =>
-  env.surface === 'hosted'
-    ? 'Shared XRPL Testnet demo · live answers, rule-based buying · no real value'
-    : `XRPL Testnet demo · ${env.models === 'fixture' ? 'rule-based buying' : 'model-judged buying'} · no real value`
-
 const CSS = `
 ${PROOF_TOKENS}
 *{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
@@ -63,7 +59,8 @@ p{margin:0 0 10px}
 .facts dt{color:var(--muted);font-size:13px}.facts dd{margin:0;overflow-wrap:anywhere}.mono{font:500 13px/1.45 var(--f-mono)}
 .ok{color:var(--ok);font-weight:600}
 .verify{margin:14px 0 0;padding:16px 20px;border:1px solid var(--rule);border-radius:10px;background:var(--surface)}
-.btn{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:0 14px;border-radius:6px;border:1px solid var(--ink);background:var(--ink);color:#fff;font:600 13px/1 var(--f-ui);cursor:pointer;text-decoration:none}
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:0 14px;border-radius:6px;border:1px solid var(--ink);background:var(--ink);color:#fff;font:600 13px/1 var(--f-ui);cursor:pointer;text-decoration:none}
+.btn::after{content:"";position:absolute;top:50%;left:0;width:100%;height:100%;min-height:44px;transform:translateY(-50%)}
 .btn:disabled{opacity:.5;cursor:default}.btn.alt{background:var(--surface);color:var(--ink);border-color:var(--rule-strong)}
 .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px}
 .vhead{margin:14px 0 8px;font-weight:600}.vhead.ok{color:var(--ok)}.vhead.bad{color:var(--bad)}
