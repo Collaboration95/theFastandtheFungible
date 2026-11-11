@@ -161,7 +161,8 @@ function facetTerms(question: string): string[] {
 /** Places and periods the question only qualifies ("in Singapore", "on Testnet", "under the Payment Services Act"): they narrow the question
  * but are not what it asks about. Whole names, capitalised words only. */
 export function qualifierNames(question: string): string[] {
-  return [...question.matchAll(/\b(?:in|on|for|under|within|across|from|near|around)\s+(?:the\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/g)].map(match => match[1])
+  // A name ends at a word end: "in ResearchAgent" names the product, not a place called "Research".
+  return [...question.matchAll(/\b(?:in|on|for|under|within|across|from|near|around)\s+(?:the\s+)?([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g)].map(match => match[1])
 }
 /** The qualifiers of the question that none of these texts names, for a line under the lead: the sources answered the question
  * in general, and say nothing about the qualifier. */
@@ -280,6 +281,8 @@ export function rankLeadSentences(question: string, claims: Claim[], delivered?:
     if (/\b(?:cannot be inferred|not evidence of|does not establish)\b/i.test(text)) score -= 20
     if (capability && identifier && /\b(?:until|unless|before|requires?|enables?|permission)\b/i.test(text)) score += 20
     if (capability && /\b(?:can|cannot|must|requires?|enables?|enabled|supports?|allows?|does not|is not)\b/i.test(text)) score += 12
+    // QUAL: a yes/no question is answered first by the sentence that opens with its answer ("Yes, when…", "Not today: …").
+    if ((capability || /^could\b/i.test(firstFact)) && /^(?:Yes|No|Not (?:today|yet))\b\s*[,:;]/.test(text)) score += 20
     // H9-13: "What does an x402 402 response contain?" asks for what it carries, not a caution about it. A sentence naming
     // a protocol identifier (PAYMENT-REQUIRED) ranks up; one that only says what the thing does not do ("A 402 challenge
     // is an offer to pay; it does not itself authorize spending.") ranks down. Contents questions only.

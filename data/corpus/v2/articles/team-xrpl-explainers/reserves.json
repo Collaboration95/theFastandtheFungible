@@ -1,10 +1,10 @@
 {
   "articleId": "xrpl-reserves",
-  "version": "v1",
+  "version": "v2",
   "publisherSlug": "team-xrpl-explainers",
   "writerSlug": "team-xrpl-explainers",
   "title": "What XRP account reserves does an agent wallet need?",
-  "publishedAt": "2026-11-07",
+  "publishedAt": "2026-11-11",
   "tier": "PAID",
   "priceMinor": 40,
   "abstract": "Primary-source guide to what xrp account reserves does an agent wallet need?. Includes integration considerations and evidence boundaries.",
@@ -19,14 +19,14 @@
   "sources": [
     {
       "url": "https://xrpl.org/docs/concepts/accounts/reserves",
-      "accessedAt": "2026-11-07"
+      "accessedAt": "2026-11-11"
     }
   ],
-  "body": "An XRPL wallet needs a base reserve plus applicable owner reserves, separately from the money it intends to send. The reserve documentation lists Mainnet settings of 1 XRP per account and 0.2 XRP per owned item at access time, and warns that other networks can differ. Validators can change requirements through fee voting; these figures are a dated reference, not a permanent application constant. [1]\n\nBase reserve supports the account's existence; owner reserve constrains ledger objects. Escrows, offers and signer lists can affect the latter. Removing an object can release its reserve requirement. Reserves are not payments to validators, and the documentation permits reserved XRP to pay transaction costs. Treating every XRP in a balance as transferable would therefore confuse several distinct accounting concepts. [1]\n\nFor an agent builder, my recommendation is to estimate spendable XRP from validated account state and the network's reserve settings before authorizing a payment. Include pending object creation in that estimate. A wallet with enough principal for a purchase may still lack room for the escrow object or transaction fee. Report the failed prerequisite precisely rather than silently switching assets or increasing funding authority. [1]\n\nTest provisioning with an account near its required reserve, an additional owned object, and removal of that object. Keep the funding source and network in the experiment record. The documentation's special treatment of initial trust lines is another reason to query actual state rather than assume that every account has the same object cost. This is an integration recommendation derived from reserve mechanics, not evidence that a particular deployed wallet passed those cases. [1]",
+  "body": "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings. Other networks can differ, and validators can change these figures through fee voting, so they are a dated reference, not a permanent application constant. The reserve is held separately from the money the wallet intends to send. [1]\n\nBase reserve supports the account's existence; owner reserve constrains ledger objects. Escrows, offers and signer lists can affect the latter. Removing an object can release its reserve requirement. Reserves are not payments to validators, and the documentation permits reserved XRP to pay transaction costs. Treating every XRP in a balance as transferable would therefore confuse several distinct accounting concepts. [1]\n\nFor an agent builder, my recommendation is to estimate spendable XRP from validated account state and the network's reserve settings before authorizing a payment. Include pending object creation in that estimate. A wallet with enough principal for a purchase may still lack room for the escrow object or transaction fee. Report the failed prerequisite precisely rather than silently switching assets or increasing funding authority. [1]\n\nTest provisioning with an account near its required reserve, an additional owned object, and removal of that object. Keep the funding source and network in the experiment record. The documentation's special treatment of initial trust lines is another reason to query actual state rather than assume that every account has the same object cost. This is an integration recommendation derived from reserve mechanics, not evidence that a particular deployed wallet passed those cases. [1] Sources accessed 11 November 2026.",
   "passages": [
     {
       "id": "p1",
-      "text": "An XRPL wallet needs a base reserve plus applicable owner reserves, separately from the money it intends to send. The reserve documentation lists Mainnet settings of 1 XRP per account and 0.2 XRP per owned item at access time, and warns that other networks can differ. Validators can change requirements through fee voting; these figures are a dated reference, not a permanent application constant. [1]"
+      "text": "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings. Other networks can differ, and validators can change these figures through fee voting, so they are a dated reference, not a permanent application constant. The reserve is held separately from the money the wallet intends to send. [1]"
     },
     {
       "id": "p2",
@@ -38,7 +38,7 @@
     },
     {
       "id": "p4",
-      "text": "Test provisioning with an account near its required reserve, an additional owned object, and removal of that object. Keep the funding source and network in the experiment record. The documentation's special treatment of initial trust lines is another reason to query actual state rather than assume that every account has the same object cost. This is an integration recommendation derived from reserve mechanics, not evidence that a particular deployed wallet passed those cases. [1]"
+      "text": "Test provisioning with an account near its required reserve, an additional owned object, and removal of that object. Keep the funding source and network in the experiment record. The documentation's special treatment of initial trust lines is another reason to query actual state rather than assume that every account has the same object cost. This is an integration recommendation derived from reserve mechanics, not evidence that a particular deployed wallet passed those cases. [1] Sources accessed 11 November 2026."
     }
   ],
   "factMenu": {

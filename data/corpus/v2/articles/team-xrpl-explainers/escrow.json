@@ -1,10 +1,10 @@
 {
   "articleId": "xrpl-escrow",
-  "version": "v1",
+  "version": "v2",
   "publisherSlug": "team-xrpl-explainers",
   "writerSlug": "team-xrpl-explainers",
   "title": "What does XRPL conditional escrow actually guarantee?",
-  "publishedAt": "2026-11-07",
+  "publishedAt": "2026-11-11",
   "tier": "PAID",
   "priceMinor": 40,
   "abstract": "Primary-source guide to what does xrpl conditional escrow actually guarantee?. Includes integration considerations and evidence boundaries.",
@@ -21,13 +21,21 @@
     {
       "url": "https://xrpl.org/docs/concepts/payment-types/escrow",
       "accessedAt": "2026-11-07"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/escrowfinish",
+      "accessedAt": "2026-11-11"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/escrowcancel",
+      "accessedAt": "2026-11-11"
     }
   ],
-  "body": "XRPL escrow locks funds until its time or cryptographic conditions permit release; it does not judge whether purchased prose is useful or true. EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds. Expiration alone does not submit that cancellation transaction. [1]\n\nTime-based, conditional and combined escrows express different release constraints. A condition can bind release to a cryptographic fulfillment, while FinishAfter and CancelAfter control time windows. The documentation describes ledger objects that persist until completion or cancellation. A browser countdown is consequently an estimate of eligibility, not proof that the object was removed or the sender recovered funds. [1]\n\nFor encrypted information sales, my recommendation is to bind the agreed ciphertext, condition and delivered passage commitments before paying. A revealed key may satisfy a cryptographic condition without establishing factual accuracy. Preserve that distinction in dispute handling. A refund after completed release requires a separate mechanism; do not assume cancellation can undo an already finished escrow. [1]\n\nTest a valid fulfillment, an incorrect fulfillment, a seller that never finishes and a validated cancellation after expiry. Reconcile the exact escrow owner and sequence before retrying. Preserve transaction references rather than treating a network timeout as failure. These recommendations follow the lifecycle described in the source; they make no claim that a particular application has implemented semantic arbitration or unilateral refunds. [1]",
+  "body": "XRPL escrow locks funds until its time or cryptographic conditions permit release; it does not judge whether purchased prose is useful or true. EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds. Any account may submit either EscrowFinish or EscrowCancel, but the funds go only to the destination or back to the owner. Expiration alone does not submit that cancellation transaction. [1] [2] [3]\n\nTime-based, conditional and combined escrows express different release constraints. A condition can bind release to a cryptographic fulfillment, while FinishAfter and CancelAfter control time windows. The documentation describes ledger objects that persist until completion or cancellation. A browser countdown is consequently an estimate of eligibility, not proof that the object was removed or the sender recovered funds. [1]\n\nFor encrypted information sales, my recommendation is to bind the agreed ciphertext, condition and delivered passage commitments before paying. A revealed key may satisfy a cryptographic condition without establishing factual accuracy. Preserve that distinction in dispute handling. A refund after completed release requires a separate mechanism; do not assume cancellation can undo an already finished escrow. [1]\n\nTest a valid fulfillment, an incorrect fulfillment, a seller that never finishes and a validated cancellation after expiry. Reconcile the exact escrow owner and sequence before retrying. Preserve transaction references rather than treating a network timeout as failure. These recommendations follow the lifecycle described in the source; they make no claim that a particular application has implemented semantic arbitration or unilateral refunds. [1]",
   "passages": [
     {
       "id": "p1",
-      "text": "XRPL escrow locks funds until its time or cryptographic conditions permit release; it does not judge whether purchased prose is useful or true. EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds. Expiration alone does not submit that cancellation transaction. [1]"
+      "text": "XRPL escrow locks funds until its time or cryptographic conditions permit release; it does not judge whether purchased prose is useful or true. EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds. Any account may submit either EscrowFinish or EscrowCancel, but the funds go only to the destination or back to the owner. Expiration alone does not submit that cancellation transaction. [1] [2] [3]"
     },
     {
       "id": "p2",

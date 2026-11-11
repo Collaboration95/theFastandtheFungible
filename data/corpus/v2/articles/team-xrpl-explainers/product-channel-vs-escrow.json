@@ -1,0 +1,75 @@
+{
+  "articleId": "product-channel-vs-escrow",
+  "version": "v1",
+  "publisherSlug": "team-xrpl-explainers",
+  "writerSlug": "team-xrpl-explainers",
+  "title": "Can an agent pay for many small x402 requests over an XRPL payment channel instead of one escrow per article?",
+  "publishedAt": "2026-11-11",
+  "tier": "PAID",
+  "priceMinor": 40,
+  "abstract": "Sourced comparison of XRPL payment channels and key-reveal escrow for agent micropayments: what each costs on the ledger, what each guarantees about delivery, and when to use which.",
+  "tags": [
+    "x402",
+    "XRPL",
+    "payment channel",
+    "key-reveal escrow",
+    "micropayments",
+    "agent payments"
+  ],
+  "family": "product-channel-vs-escrow",
+  "sources": [
+    {
+      "url": "https://xrpl.org/docs/concepts/payment-types/payment-channels",
+      "accessedAt": "2026-11-11"
+    },
+    {
+      "url": "https://xrpl.org/docs/references/protocol/transactions/types/paymentchannelclaim",
+      "accessedAt": "2026-11-11"
+    },
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/374743dda22c3c08ccd15548bd2f0099ba1f379c/docs/key-reveal-escrow.md",
+      "accessedAt": "2026-11-11"
+    },
+    {
+      "url": "https://github.com/Collaboration95/theFastandtheFungible/blob/374743dda22c3c08ccd15548bd2f0099ba1f379c/examples/x402-key-reveal-escrow/README.md",
+      "accessedAt": "2026-11-11"
+    },
+    {
+      "url": "https://xrpl.org/docs/concepts/accounts/reserves",
+      "accessedAt": "2026-11-11"
+    }
+  ],
+  "body": "Yes, when the agent pays one provider many times: an XRPL payment channel is funded with XRP once, and each request is paid with a signed claim that needs no ledger transaction. The trade-off is delivery: a claim pays for nothing in particular, while key-reveal escrow releases each payment only when the writer publishes that article's key. [1] [3]\n\nPaymentChannelCreate sets aside XRP that can only go to one destination. The recipient verifies each signed claim without a ledger transaction and redeems the latest one with PaymentChannelClaim, so many small payments need only a few ledger transactions in total. While unclaimed XRP remains, the source must wait out the channel's SettleDelay before it can close the channel, and unclaimed XRP returns to the source when it closes. [1] [2]\n\nKey-reveal escrow pays per article. The buyer locks the price in an EscrowCreate whose condition commits to the article's key, and the writer can claim it only with an EscrowFinish that publishes the key, which lets the buyer decrypt the article it already holds. If the writer never reveals the key, the buyer cancels after CancelAfter and recovers the principal. Each open escrow also counts toward the buyer's owner reserve. [3] [4] [5]\n\nAuthor interpretation: ResearchAgent uses key-reveal escrow because every purchase must be bound to the passages it delivers and recoverable if the writer never delivers. A channel suits a trusted, repeated relationship such as metered calls to one provider, where cost matters more than proof of each delivery. The x402 exact scheme on XRPL settles single Payments, so a channel would be a separate design. Sources accessed 11 November 2026. [1] [3] [4]",
+  "passages": [
+    {
+      "id": "p1",
+      "text": "Yes, when the agent pays one provider many times: an XRPL payment channel is funded with XRP once, and each request is paid with a signed claim that needs no ledger transaction. The trade-off is delivery: a claim pays for nothing in particular, while key-reveal escrow releases each payment only when the writer publishes that article's key. [1] [3]"
+    },
+    {
+      "id": "p2",
+      "text": "PaymentChannelCreate sets aside XRP that can only go to one destination. The recipient verifies each signed claim without a ledger transaction and redeems the latest one with PaymentChannelClaim, so many small payments need only a few ledger transactions in total. While unclaimed XRP remains, the source must wait out the channel's SettleDelay before it can close the channel, and unclaimed XRP returns to the source when it closes. [1] [2]"
+    },
+    {
+      "id": "p3",
+      "text": "Key-reveal escrow pays per article. The buyer locks the price in an EscrowCreate whose condition commits to the article's key, and the writer can claim it only with an EscrowFinish that publishes the key, which lets the buyer decrypt the article it already holds. If the writer never reveals the key, the buyer cancels after CancelAfter and recovers the principal. Each open escrow also counts toward the buyer's owner reserve. [3] [4] [5]"
+    },
+    {
+      "id": "p4",
+      "text": "Author interpretation: ResearchAgent uses key-reveal escrow because every purchase must be bound to the passages it delivers and recoverable if the writer never delivers. A channel suits a trusted, repeated relationship such as metered calls to one provider, where cost matters more than proof of each delivery. The x402 exact scheme on XRPL settles single Payments, so a channel would be a separate design. Sources accessed 11 November 2026. [1] [3] [4]"
+    }
+  ],
+  "factMenu": {
+    "p1": {
+      "entity": "payment channel",
+      "measure": "trade-off"
+    },
+    "p2": {
+      "entity": "XRP",
+      "measure": "claims"
+    },
+    "p3": {
+      "entity": "escrow",
+      "measure": "delivery"
+    }
+  }
+}
