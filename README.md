@@ -27,7 +27,7 @@
   <a href="docs/x402-xrpl.md"><img alt="XRPL Testnet" src="https://img.shields.io/badge/XRPL-Testnet-24211E?style=flat-square"></a>
 </p>
 
-The live sandbox is open **13–19 Nov 2026** on XRPL Testnet with no real value and nothing to
+The live demo is open **13–19 Nov 2026** on XRPL Testnet with no real value and nothing to
 install. The recorded run works any time. Or run the whole money path yourself, with no clone and
 no account (Node ≥ 22.13):
 
@@ -39,7 +39,7 @@ npx -y $REL/researchagent-mcp-1.1.1.tgz try --testnet
 <p align="center">
   <img src="docs/media/readme-answer.png" width="900" alt="The hosted demo after an XRPL Testnet run. Question: what HTTP headers does x402 use on XRPL, and how does the server know the payment actually settled? The lead finding: an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. The payment card shows a net cost of S$0.80 of a S$2.00 budget for two articles, each paid by key reveal: payment locked in escrow, writer released the key, key matches the escrow lock, article unlocked. The answer is anchored on XRPL Testnet.">
 </p>
-<p align="center"><sub>The live sandbox, 11 Nov 2026 · XRPL Testnet · live answers, rule-based buying · team-authored writers · no real value · <a href="docs/evidence/hosted-export-nov11/README.md">its five transactions and receipts</a></sub></p>
+<p align="center"><sub>The live demo, 11 Nov 2026 · XRPL Testnet · live answers, rule-based buying · team-authored writers · no real value · <a href="docs/evidence/hosted-export-nov11/README.md">its five transactions and receipts</a></sub></p>
 
 ## What it does
 
@@ -47,7 +47,7 @@ npx -y $REL/researchagent-mcp-1.1.1.tgz try --testnet
   or the Mac app. Every question carries its own spending limit.
 - **Free sources first, then buy only what fills the gap.** Writers search their own articles and
   sign promises about what each one contains. A decision model (or fixed rules, as in the live
-  sandbox), weighted by each writer's trust score, judges which paid article is worth it: at most
+  demo), weighted by each writer's trust score, judges which paid article is worth it: at most
   one per round, up to three rounds. Only policy code can pay, within your budget.
 - **The writer is paid by revealing the key.** Policy code locks payment in a native XRPL escrow
   that only the article's key can open. Publishing the key on the ledger is what pays the writer,
@@ -122,7 +122,7 @@ researchagent verify UC3.receipts.json --ledger
 ```
 
 It ends with `RESULT PASS`. The same command checks the `receipts.json` you export from any run
-in the [live sandbox](https://ra-front-651013803640.asia-southeast1.run.app) (use v1.1.0 or later;
+in the [live demo](https://ra-front-651013803640.asia-southeast1.run.app) (use v1.1.0 or later;
 v1.0.2 cannot recompute the newer answer commitment). Without Python:
 `npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz verify receipts.json --ledger`. The [ledger page](https://collaboration95.github.io/theFastandtheFungible/ledger/)
 re-validates all <!--f:transactions-->61<!--/f--> recorded Testnet transactions from your browser.
@@ -161,8 +161,8 @@ checked as the delivered amount; a signed IOU quote overflowed the 1 KiB Memo li
   ([list](docs/evidence/real-writers.json)).
 - **New writers get one labelled probe.** A new writer's best matching article may get one probe
   purchase of up to S$0.30 inside your budget, shown as *probe purchase · new writer*.
-- **TEST-SGD stands in for RLUSD** in token escrow (CLI and evidence; the live sandbox pays in Testnet XRP); official RLUSD payments work on Testnet.
-- **Live sandbox.** One shared Testnet payer, per-visitor caps, owner controls off. Answers are
+- **TEST-SGD stands in for RLUSD** in token escrow (CLI and evidence; the live demo pays in Testnet XRP); official RLUSD payments work on Testnet.
+- **Live demo.** One shared Testnet payer, per-visitor caps, owner controls off. Answers are
   written live by DeepSeek; purchases are decided by the rule-based model, as the header chip says,
   and an answer says so if it falls back to a labelled fixture. Open 13–19 Nov 2026.
 - **Packages** are on GitHub Releases, not yet on npm, PyPI or the MCP Registry. The Mac app is an

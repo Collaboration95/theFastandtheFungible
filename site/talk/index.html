@@ -4,21 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Inside ResearchAgent</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Geist:wght@400..700&family=Geist+Mono:wght@400..600&display=swap">
 <style>
 /* Layout: one reading column of prose with full-width "instrument" panels that replay a real run; a quiet table of contents on wide screens.
    Light only, by the owner's choice. Palette and faces follow the ResearchAgent app (src/styles.css). */
 :root {
   color-scheme: light;
-  --paper: #FBF8F2; --sheet: #FFFFFF; --mist: #EEF0F5; --rule: #E8E2D8; --rule-2: #CDD2DE;
+  --paper: #FBF8F2; --sheet: #FFFFFF; --mist: #F3EEE4; --rule: #E8E2D8; --rule-2: #E8E2D8;
   --ink: #24211E; --ink-2: #24211E; --muted: #655D55; --faint: #655D55;
-  --pen: #24211E; --pen-deep: #1E2FD0; --pen-wash: #ECEEFF; --pen-wash-2: #D7DCFF;
+  --pen: #24211E; --pen-deep: #24211E; --pen-wash: #F3EEE4; --pen-wash-2: #F3EEE4;
   --hi: #F3EEE4; --hi-wash: #FFF4B8;
-  --ok: #0B7A50; --ok-bright: #2F6B4F; --ok-wash: #E3F5EC;
+  --ok: #2F6B4F; --ok-bright: #2F6B4F; --ok-wash: #E3F5EC;
   --pay: #24211E; --pay-ink: #B83B0A; --pay-wash: #FFEDE4;
-  --bad: #C8312B; --bad-wash: #FDECEA;
+  --bad: #9B3E35; --bad-wash: #FDECEA;
   --f-display: 'Geist', 'Geist', system-ui, -apple-system, sans-serif;
   --f-ui: 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --f-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
@@ -39,9 +36,9 @@ main { max-width: var(--col); margin: 0 auto; }
 section { padding-top: 72px; scroll-margin-top: 48px; }
 .prose { max-width: var(--prose); }
 .kick { font: 600 12.5px/1.2 var(--f-ui); letter-spacing: 0; text-transform: none; color: var(--pen); }
-h1, h2, h3 { font-family: var(--f-ui); text-wrap: balance; margin: 0; letter-spacing: -.02em; }
-h1 { font-size: clamp(44px, 7vw, 84px); line-height: .98; font-weight: 800; margin-top: 14px; }
-h2 { font-size: clamp(32px, 4.4vw, 50px); line-height: 1.04; font-weight: 750; margin-top: 10px; }
+h1, h2, h3 { font-family: var(--f-ui); text-wrap: balance; margin: 0; letter-spacing:-.02em; font-weight:600;}
+h1 { font-size: clamp(44px, 7vw, 84px); line-height: .98; font-weight:600; margin-top: 14px; }
+h2 { font-size: clamp(32px, 4.4vw, 50px); line-height: 1.04; font-weight:600; margin-top: 10px; }
 h3 { font-size: 22px; font-weight: 700; }
 .lede { font-size: 21px; color: var(--ink-2); margin: 16px 0 0; }
 .lede strong { color: var(--ink); }
@@ -259,7 +256,7 @@ details p, details li { font-size: 16.5px; color: var(--ink-2); }
 details ul { padding-left: 20px; margin: 10px 0 0; }
 
 .close { text-align: left; }
-.close h2 { font-size: clamp(38px, 6vw, 72px); font-weight: 800; }
+.close h2 { font-size: clamp(38px, 6vw, 72px); font-weight:600; }
 .close .links { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 10px 22px; font: 500 15px var(--f-ui); }
 .close .links a { overflow-wrap: anywhere; min-width: 0; }
 .labels { margin-top: 26px; display: flex; flex-wrap: wrap; gap: 8px; }
@@ -327,7 +324,8 @@ details ul { padding-left: 20px; margin: 10px 0 0; }
 </head>
 <body>
 <!-- site-header:start -->
-<style>@font-face{font-family:Geist;src:url("../brand/geist-latin-wght-normal.woff2")}
+<link rel="stylesheet" href="../brand/fonts.css">
+<style>@font-face{font-family:Geist;src:url("../brand/geist-latin-wght-normal.woff2");font-weight:100 900}
 .ra-hdr{box-sizing:border-box;height:52px;position:sticky;top:0;z-index:50;background:rgba(251,248,242,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid #E8E2D8;font:500 14px/1 Geist,system-ui,-apple-system,"Segoe UI",sans-serif;color:#24211E}
 .ra-hdr *{box-sizing:border-box}
 .ra-hdr-in{max-width:1180px;margin:0 auto;padding:0 16px;height:51px;display:flex;align-items:center;gap:20px}
@@ -341,11 +339,11 @@ details ul { padding-left: 20px; margin: 10px 0 0; }
 .ra-hdr-end{display:flex;align-items:center;gap:14px;flex:none;color:#655D55;font-size:13px}
 .ra-hdr-end a:hover{color:#24211E}
 .ra-hdr-note{font-family:Geist,system-ui,sans-serif;font-size:12px;color:#655D55;white-space:nowrap}
-.ra-hdr-note kbd{font:600 12px Geist,system-ui,sans-serif;border:1px solid #C9BFB2;border-bottom-width:2px;border-radius:6px;padding:1px 5px;background:#fff;color:#24211E}
+.ra-hdr-note kbd{font:600 12px Geist,system-ui,sans-serif;border:1px solid #8F8579;border-bottom-width:2px;border-radius:6px;padding:1px 5px;background:#fff;color:#24211E}
 .ra-hdr nav:focus-visible,.ra-hdr a:focus-visible{outline:2px solid #24211E;outline-offset:2px}
 .ra-hdr .ra-live{background:#24211E;color:#fff;padding:9px;border-radius:6px} body{font-family:Geist,system-ui,sans-serif} [tabindex="0"]:focus-visible{outline:2px solid #24211E;outline-offset:2px}
 .ra-hdr-menu{display:none;position:relative}
-.ra-hdr-menu summary{list-style:none;cursor:pointer;padding:8px 10px;border:1px solid #C9BFB2;border-radius:6px;color:#24211E;background:#fff}
+.ra-hdr-menu summary{list-style:none;cursor:pointer;padding:8px 10px;border:1px solid #8F8579;border-radius:6px;color:#24211E;background:#fff}
 .ra-hdr-menu summary::-webkit-details-marker{display:none}
 .ra-hdr-menu div{position:absolute;right:0;top:calc(100% + 8px);min-width:220px;display:grid;padding:8px;background:#FBF8F2;border:1px solid #E8E2D8;border-radius:8px;box-shadow:0 12px 32px -16px rgba(36,33,30,.35)}
 .ra-hdr-menu div a{padding:10px 12px;border-radius:6px;color:#24211E}
@@ -389,7 +387,7 @@ details ul { padding-left: 20px; margin: 10px 0 0; }
 
 <section id="key-reveal"><div class="prose"><div class="kick">How it works today</div><h2>The writer reveals the key to get paid.</h2><p>Policy code locks the payment in an XRPL escrow that only the article’s key can open. The writer publishes the key on the ledger to finish the escrow and get paid, so delivery and payment are one event. The buyer checks the key against the lock, decrypts the article and checks every promise before citing it.</p><p>If the writer never reveals the key, the buyer reclaims the payment after the escrow’s <code>CancelAfter</code> deadline. If the article breaks a promise after delivery, the refund needs the writer’s signature. Neither return restores the question’s spending budget.</p></div>
 <figure class="kr-fig"><img src="key-reveal.svg" width="840" height="392" alt="Key-reveal escrow in five steps: policy code locks payment to the hash of the article key; the writer publishes the key on the ledger and is paid; the buyer decrypts and checks every promise; a broken promise is refunded by the writer; the answer is anchored on the ledger"></figure>
-<div class="prose"><p><a href="../demo/?scenario=UC3-key-reveal">Watch the recorded key-reveal run →</a> · <a href="../proof/">Check the receipts</a></p></div></section>
+<div class="prose"><p><a href="../demo/">Watch the recorded key-reveal run →</a> · <a href="../proof/">Check the receipts</a></p></div></section>
 
 <section id="october"><div class="prose"><div class="kick">October talk · 9 Oct</div><h2>The first version: a plain payment, then a refund.</h2><p>The rest of this page is the explainer from our October talk at AI Tinkerers Singapore. It replays the 9 October rehearsal run, which paid writers with a plain XRPL payment, before key-reveal escrow. The seven steps below follow that run.</p></div>
   <div class="panel" id="w-run">
@@ -1326,13 +1324,13 @@ addEventListener('scroll', syncToc, { passive: true }); syncToc();
 <!-- site-footer:start -->
 <style>.ra-ftr{border-top:1px solid #E8E2D8;margin-top:48px;font:400 14px/1.5 Geist,system-ui,-apple-system,"Segoe UI",sans-serif;color:#655D55}
 .ra-ftr-in{max-width:1180px;margin:0 auto;padding:28px 16px 40px;display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px}
-.ra-ftr-env{display:inline-flex;align-items:center;gap:8px;padding:4px 12px;border:1px solid #C9BFB2;border-radius:999px;color:#24211E;background:#fff;white-space:nowrap}
-.ra-ftr-env::before{content:"";width:8px;height:8px;border-radius:50%;background:#C98500}
+.ra-ftr-env{display:inline-flex;align-items:center;gap:8px;padding:4px 12px;border:1px solid #8F8579;border-radius:999px;color:#24211E;background:#fff;white-space:nowrap}
+.ra-ftr-env::before{content:"";width:8px;height:8px;border-radius:50%;background:#2F6B4F}
 .ra-ftr nav{display:flex;flex-wrap:wrap;gap:4px 18px}
 .ra-ftr a{color:inherit;text-decoration:none}.ra-ftr a:hover,.ra-ftr a[aria-current=page]{color:#24211E;text-decoration:underline;text-underline-offset:4px}
 .ra-ftr a:focus-visible{outline:2px solid #24211E;outline-offset:2px}
 @media print{.ra-ftr{display:none}}</style>
-<footer class="ra-ftr"><div class="ra-ftr-in"><span class="ra-ftr-env">Testnet · test funds</span><nav aria-label="More pages"><a href="../ledger/">Testnet ledger</a><a href="../project-map/">Project map</a><a href="../evolution/">October build log</a><a href="../slides/">October talk slides</a><a href="https://github.com/Collaboration95/theFastandtheFungible#readme">README</a><a href="https://github.com/Collaboration95/theFastandtheFungible/releases">Releases</a></nav></div></footer>
+<footer class="ra-ftr"><div class="ra-ftr-in"><span class="ra-ftr-env">XRPL Testnet demo · no real value</span><nav aria-label="More pages"><a href="../ledger/">Testnet ledger</a><a href="../evolution/#archive">Archive</a><a href="https://github.com/Collaboration95/theFastandtheFungible#readme">README</a><a href="https://github.com/Collaboration95/theFastandtheFungible/releases">Releases</a></nav></div></footer>
 <!-- site-footer:end -->
 </body>
 </html>

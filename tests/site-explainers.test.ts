@@ -35,8 +35,8 @@ describe('explainer destinations and provenance', () => {
       expect([...doc.querySelectorAll('.ra-hdr-menu a')].map(a => a.textContent), file).toEqual([...nav, 'GitHub'])
       const footer = doc.querySelector('footer.ra-ftr')
       if (/slides|notes|demo/.test(file)) { expect(footer, file).toBeNull(); continue }
-      expect(footer?.querySelector('.ra-ftr-env')?.textContent, file).toBe('Testnet · test funds')
-      expect([...footer!.querySelectorAll('a')].map(a => a.textContent), file).toEqual(['Testnet ledger', 'Project map', 'October build log', 'October talk slides', 'README', 'Releases'])
+      expect(footer?.querySelector('.ra-ftr-env')?.textContent, file).toBe('XRPL Testnet demo · no real value')
+      expect([...footer!.querySelectorAll('a')].map(a => a.textContent), file).toEqual(['Testnet ledger', 'Archive', 'README', 'Releases'])
     }
   })
   it('keeps guide links to local fragments reachable', () => {
@@ -58,14 +58,27 @@ describe('explainer destinations and provenance', () => {
     expect(replayDate()).toBe('11 Nov 2026')
     expect(read('demo/index.html')).toContain(`<title>Replay · ${replayDate()} · ResearchAgent</title>`)
     const home = new JSDOM(read('site/index.html')).window.document
-    expect(home.querySelector('.card[href="demo/?scenario=UC3-key-reveal"]')?.textContent).toContain('Start here')
+    expect(home.querySelector('.card[href="demo/"]')?.textContent).toContain('Start here')
     expect(home.body.textContent).toContain('live 13–19 Nov')
     expect(home.body.textContent).toContain(`Replay · ${replayDate()}`)
+    expect(home.querySelector('.card[href="project-map/"]')).toBeNull()
+    const archive = new JSDOM(read('site/evolution/index.html')).window.document
+    for (const href of ['../project-map/', '../slides/']) expect(archive.querySelector(`#archive a[href="${href}"]`)).not.toBeNull()
     expect(home.body.textContent).not.toMatch(/\b7 Nov(ember)? 2026\b|the 7 November/)
     // One link row in the hero (S10); the AI Tinkerers card carries no keyboard shortcuts (S25).
     expect(home.querySelector('main > p a[href="developers/"]')).toBeNull()
     expect(home.querySelector('main kbd')).toBeNull()
-    expect(home.querySelector('.env-pill')?.textContent).toBe('Testnet · test funds')
+    expect(home.querySelector('.env-pill')?.textContent).toBe('XRPL Testnet demo · no real value')
+  })
+  it('loads only self-hosted fonts on site pages, including the code font', () => {
+    const pages = readdirSync('site', { recursive: true }).map(String).filter(f => f.endsWith('.html') && !f.startsWith('demo/'))
+    for (const file of pages) {
+      const html = read(`site/${file}`)
+      expect(html, file).not.toMatch(/fonts\.(?:googleapis|gstatic)\.com/)
+      expect(html, file).toContain('brand/fonts.css')
+    }
+    expect(read('site/brand/fonts.css')).toContain('geist-mono-latin-wght-normal.woff2')
+    expect(read('site/brand/fonts.css')).toContain('font-weight:100 900')
   })
   it('opens "How it works" on key reveal, with the October run under its own heading (S23)', () => {
     const talk = new JSDOM(read('site/talk/index.html')).window.document

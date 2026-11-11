@@ -79,7 +79,7 @@ describe('judge pack: one true story', () => {
   it('labels what the live sandbox does not show: Credentials and token escrow are CLI and evidence only', () => {
     expect(read('docs/submission/qa-prep.md').replace(/\s+/g, ' ')).toMatch(/Credentials identify writers who publish with `publish --testnet`; the sandbox's team writers are unverified/)
     for (const file of ['docs/submission/compliance-slide.md', 'docs/submission/deck/index.html']) expect(read(file), file).toContain('XRPL Credentials badge for writers (publish CLI; none in the live sandbox)'.replace('for writers ', file.endsWith('.md') ? '' : 'for writers '))
-    for (const file of ['README.md', 'docs/submission/short-description.md', 'docs/submission/qa-prep.md', 'docs/submission/deck/index.html']) expect(read(file), file).toMatch(/live sandbox pays in Testnet XRP/)
+    for (const file of ['README.md', 'docs/submission/short-description.md', 'docs/submission/qa-prep.md', 'docs/submission/deck/index.html']) expect(read(file), file).toMatch(/live (?:sandbox|demo) pays in Testnet XRP/)
     // TokenEscrow is enabled on Testnet and Mainnet; only the RLUSD issuer flag blocks it.
     expect(read('docs/submission/deck/index.html')).not.toMatch(/enabled on Testnet(?! and Mainnet)/)
     expect(read('docs/submission/qa-prep.md')).toMatch(/Testnet and Mainnet both have TokenEscrow enabled/)
@@ -126,7 +126,8 @@ describe('judge pack: one true story', () => {
     // The October replay keeps its own labels; the page footer no longer calls today's writers all synthetic.
     expect(talk).toContain('October replay: writers and articles SYNTHETIC')
     const home = read('site/index.html')
-    expect(home).toContain('Live sandbox: live answers · rule-based buying · team-authored writers. Recorded replay: fixture models · fictional writers.')
+    expect(home).toContain('Shared XRPL Testnet demo · live answers, rule-based buying · no real value')
+    expect(home).toContain('Replay · XRPL Testnet, recorded 11 Nov 2026 · fictional writers · no real value')
   })
 
   it('has a release-note title for the latest CHANGELOG release, so /progress/ builds the day it is published', () => {

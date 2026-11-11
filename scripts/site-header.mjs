@@ -21,12 +21,11 @@ const NAV = [
   ['developers', 'developers/', 'Developers'], ['feedback', 'builder-feedback/', 'Builder feedback'],
 ]
 const MORE = [
-  ['ledger', 'ledger/', 'Testnet ledger'], ['map', 'project-map/', 'Project map'],
-  ['build', 'evolution/', 'October build log'], ['slides', 'slides/', 'October talk slides'],
+  ['ledger', 'ledger/', 'Testnet ledger'], ['build', 'evolution/#archive', 'Archive'],
 ]
 // Presentation and app pages fill the viewport; they keep the header but get no footer.
 const NO_FOOTER = new Set(['demo', 'slides', 'notes'])
-const ENVIRONMENT = 'Testnet · test funds'
+const ENVIRONMENT = 'XRPL Testnet demo · no real value'
 const START = '<!-- site-header:start -->'
 const END = '<!-- site-header:end -->'
 const FOOT_START = '<!-- site-footer:start -->'
@@ -71,7 +70,7 @@ function block(page) {
     `<a href="${up}${href}"${key === page.key ? ' aria-current="page"' : ''}>${label}</a>`).join('')
   const note = page.note ? `<span class="ra-hdr-note">${page.note}</span>` : ''
   return `${START}
-<style>${CSS.replaceAll('__UP__', up)}</style>
+${page.key === 'demo' ? '' : `<link rel="stylesheet" href="${up}brand/fonts.css">\n`}<style>${(page.key === 'demo' ? CSS : CSS.replace('normal.woff2")}', 'normal.woff2");font-weight:100 900}').replaceAll('#C9BFB2', '#8F8579')).replaceAll('__UP__', up)}</style>
 <div class="ra-hdr" role="${page.key === 'demo' ? 'region' : 'banner'}"${page.key === 'demo' ? ' aria-label="Site navigation"' : ''}><div class="ra-hdr-in">
 <a class="ra-hdr-brand" href="${up}index.html" aria-label="ResearchAgent explainers home">${MARK}<span>ResearchAgent</span></a>
 <nav aria-label="Explainers">${links}</nav>
@@ -88,8 +87,8 @@ function footer(page) {
   return `${FOOT_START}
 <style>.ra-ftr{border-top:1px solid #E8E2D8;margin-top:48px;font:400 14px/1.5 Geist,system-ui,-apple-system,"Segoe UI",sans-serif;color:#655D55}
 .ra-ftr-in{max-width:1180px;margin:0 auto;padding:28px 16px 40px;display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px}
-.ra-ftr-env{display:inline-flex;align-items:center;gap:8px;padding:4px 12px;border:1px solid #C9BFB2;border-radius:999px;color:#24211E;background:#fff;white-space:nowrap}
-.ra-ftr-env::before{content:"";width:8px;height:8px;border-radius:50%;background:#C98500}
+.ra-ftr-env{display:inline-flex;align-items:center;gap:8px;padding:4px 12px;border:1px solid #8F8579;border-radius:999px;color:#24211E;background:#fff;white-space:nowrap}
+.ra-ftr-env::before{content:"";width:8px;height:8px;border-radius:50%;background:#2F6B4F}
 .ra-ftr nav{display:flex;flex-wrap:wrap;gap:4px 18px}
 .ra-ftr a{color:inherit;text-decoration:none}.ra-ftr a:hover,.ra-ftr a[aria-current=page]{color:#24211E;text-decoration:underline;text-underline-offset:4px}
 .ra-ftr a:focus-visible{outline:2px solid #24211E;outline-offset:2px}

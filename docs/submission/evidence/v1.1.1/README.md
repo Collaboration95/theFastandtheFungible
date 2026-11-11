@@ -60,7 +60,7 @@ are reflected in `short-description.md` and the submission README.
 | XRPL 4 | README, numbers, descriptions, pitch, Q&A and deck attribute 12 drops to buyer create and 423 to writer finish; Q&A and numbers distinguish the 360-drop protocol minimum. |
 | XRPL 6 | Deck slides 6 and 11 and Q&A say TokenEscrow is enabled on Testnet and Mainnet; issuer flags block RLUSD. |
 | XRPL 7 | README, description, Q&A and deck distinguish CLI/token evidence from sandbox XRP. |
-| XRPL 10 | No positive claim to unused ledger features, mainnet readiness, KYC or smart contracts. The compliance slide explicitly denies unsupported capabilities. |
+| XRPL 10 | The compliance slide explicitly denies unsupported ledger capabilities and production readiness. |
 
 XRPL rows 3 and 5 remain with X1. Team names are unchanged. Public text has
 no private review scores. The held-out result retains fixture research and

@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>How ResearchAgent evolved · SFF build log</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Geist:wght@400..700&family=Geist+Mono:wght@400..600&display=swap">
 <style>
 /* One reading column with full-width instrument panels that replay real data. Light only, by the owner's choice.
    Palette and faces follow the talk page; chart colours were checked with the dataviz palette validator. */
@@ -200,7 +197,8 @@ svg .lab-big { font: 700 14px var(--f-ui); fill: var(--ink); }
 </head>
 <body>
 <!-- site-header:start -->
-<style>@font-face{font-family:Geist;src:url("../brand/geist-latin-wght-normal.woff2")}
+<link rel="stylesheet" href="../brand/fonts.css">
+<style>@font-face{font-family:Geist;src:url("../brand/geist-latin-wght-normal.woff2");font-weight:100 900}
 .ra-hdr{box-sizing:border-box;height:52px;position:sticky;top:0;z-index:50;background:rgba(251,248,242,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid #E8E2D8;font:500 14px/1 Geist,system-ui,-apple-system,"Segoe UI",sans-serif;color:#24211E}
 .ra-hdr *{box-sizing:border-box}
 .ra-hdr-in{max-width:1180px;margin:0 auto;padding:0 16px;height:51px;display:flex;align-items:center;gap:20px}
@@ -214,11 +212,11 @@ svg .lab-big { font: 700 14px var(--f-ui); fill: var(--ink); }
 .ra-hdr-end{display:flex;align-items:center;gap:14px;flex:none;color:#655D55;font-size:13px}
 .ra-hdr-end a:hover{color:#24211E}
 .ra-hdr-note{font-family:Geist,system-ui,sans-serif;font-size:12px;color:#655D55;white-space:nowrap}
-.ra-hdr-note kbd{font:600 12px Geist,system-ui,sans-serif;border:1px solid #C9BFB2;border-bottom-width:2px;border-radius:6px;padding:1px 5px;background:#fff;color:#24211E}
+.ra-hdr-note kbd{font:600 12px Geist,system-ui,sans-serif;border:1px solid #8F8579;border-bottom-width:2px;border-radius:6px;padding:1px 5px;background:#fff;color:#24211E}
 .ra-hdr nav:focus-visible,.ra-hdr a:focus-visible{outline:2px solid #24211E;outline-offset:2px}
 .ra-hdr .ra-live{background:#24211E;color:#fff;padding:9px;border-radius:6px} body{font-family:Geist,system-ui,sans-serif} [tabindex="0"]:focus-visible{outline:2px solid #24211E;outline-offset:2px}
 .ra-hdr-menu{display:none;position:relative}
-.ra-hdr-menu summary{list-style:none;cursor:pointer;padding:8px 10px;border:1px solid #C9BFB2;border-radius:6px;color:#24211E;background:#fff}
+.ra-hdr-menu summary{list-style:none;cursor:pointer;padding:8px 10px;border:1px solid #8F8579;border-radius:6px;color:#24211E;background:#fff}
 .ra-hdr-menu summary::-webkit-details-marker{display:none}
 .ra-hdr-menu div{position:absolute;right:0;top:calc(100% + 8px);min-width:220px;display:grid;padding:8px;background:#FBF8F2;border:1px solid #E8E2D8;border-radius:8px;box-shadow:0 12px 32px -16px rgba(36,33,30,.35)}
 .ra-hdr-menu div a{padding:10px 12px;border-radius:6px;color:#24211E}
@@ -253,7 +251,7 @@ svg .lab-big { font: 700 14px var(--f-ui); fill: var(--ink); }
 <!-- HERO -->
 <section id="top" style="padding-top:64px">
   <div class="prose">
-    <p class="archive-note">Archive: the October build, before the finals push. For everything since SingHacks, see <a href="../progress/">Progress</a>.</p>
+    <p class="archive-note" id="archive">Archive: the October build, before the finals push. <a href="../project-map/">October project map</a> · <a href="../slides/">October talk deck</a>. For everything since SingHacks, see <a href="../progress/">Progress</a>.</p>
     <div class="kick">Build log · 3 Sep → 11 Oct 2026</div>
     <h1>39 days, two coding agents, <span class="hl">one demo.</span></h1>
     <p class="lede">ResearchAgent is an evidence workspace with a wallet. This page is how it got built, told only in numbers: every commit, pull request, prompt and token, replayed from git, GitHub and the coding agents' own logs.</p>
@@ -1005,13 +1003,13 @@ addEventListener('scroll', syncToc, { passive: true }); syncToc();
 <!-- site-footer:start -->
 <style>.ra-ftr{border-top:1px solid #E8E2D8;margin-top:48px;font:400 14px/1.5 Geist,system-ui,-apple-system,"Segoe UI",sans-serif;color:#655D55}
 .ra-ftr-in{max-width:1180px;margin:0 auto;padding:28px 16px 40px;display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px}
-.ra-ftr-env{display:inline-flex;align-items:center;gap:8px;padding:4px 12px;border:1px solid #C9BFB2;border-radius:999px;color:#24211E;background:#fff;white-space:nowrap}
-.ra-ftr-env::before{content:"";width:8px;height:8px;border-radius:50%;background:#C98500}
+.ra-ftr-env{display:inline-flex;align-items:center;gap:8px;padding:4px 12px;border:1px solid #8F8579;border-radius:999px;color:#24211E;background:#fff;white-space:nowrap}
+.ra-ftr-env::before{content:"";width:8px;height:8px;border-radius:50%;background:#2F6B4F}
 .ra-ftr nav{display:flex;flex-wrap:wrap;gap:4px 18px}
 .ra-ftr a{color:inherit;text-decoration:none}.ra-ftr a:hover,.ra-ftr a[aria-current=page]{color:#24211E;text-decoration:underline;text-underline-offset:4px}
 .ra-ftr a:focus-visible{outline:2px solid #24211E;outline-offset:2px}
 @media print{.ra-ftr{display:none}}</style>
-<footer class="ra-ftr"><div class="ra-ftr-in"><span class="ra-ftr-env">Testnet · test funds</span><nav aria-label="More pages"><a href="../ledger/">Testnet ledger</a><a href="../project-map/">Project map</a><a href="../evolution/" aria-current="page">October build log</a><a href="../slides/">October talk slides</a><a href="https://github.com/Collaboration95/theFastandtheFungible#readme">README</a><a href="https://github.com/Collaboration95/theFastandtheFungible/releases">Releases</a></nav></div></footer>
+<footer class="ra-ftr"><div class="ra-ftr-in"><span class="ra-ftr-env">XRPL Testnet demo · no real value</span><nav aria-label="More pages"><a href="../ledger/">Testnet ledger</a><a href="../evolution/#archive" aria-current="page">Archive</a><a href="https://github.com/Collaboration95/theFastandtheFungible#readme">README</a><a href="https://github.com/Collaboration95/theFastandtheFungible/releases">Releases</a></nav></div></footer>
 <!-- site-footer:end -->
 </body>
 </html>
