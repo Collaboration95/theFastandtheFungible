@@ -1,4 +1,4 @@
-import { credentialUrl, type WriterVerification as Verification } from '../../shared/writer-verification.js'
+import { credentialUrl, credentialDomainUrl, type WriterVerification as Verification } from '../../shared/writer-verification.js'
 // Committed round2-n observations bind these credential object IDs to create transactions.
 const creates: Record<string, string> = {
   A87F7C16204141846A1133741D101C86EBE7996CC7F53E22634BEE7520A27087: '225F19ED4BF1C206AE140D5286BE352F2F6E7A7A05A317D949DAEE876E98DAC6',
@@ -7,5 +7,7 @@ const creates: Record<string, string> = {
 /** Advisory online identity observation; never a content-quality or payment badge. */
 export function WriterVerification({ value }: { value?: Verification }) {
   if (value?.status !== 'verified') return <small>unverified writer{value?.status === 'check_failed' ? ' · check unavailable' : ''}</small>
-  return <small><a className="ra-link" title={`Identity issuer: ${value.issuerLabel}; not a content endorsement`} href={creates[value.credentialId] ? `https://testnet.xrpl.org/transactions/${creates[value.credentialId]}` : credentialUrl(value)} target="_blank" rel="noreferrer">Verified writer · XRPL Credential</a></small>
+  const tx = value.credentialTxHash ?? creates[value.credentialId]
+  const domain = credentialDomainUrl(value)
+  return <small title="Identity, not quality"><a className="ra-link" title="Identity, not quality" href={tx ? `https://testnet.xrpl.org/transactions/${tx}` : credentialUrl(value)} target="_blank" rel="noreferrer">XRPL Credential · issued by {value.issuerLabel} (Testnet, identity only, not KYC)</a>{domain && <> · <a className="ra-link" title="Identity, not quality" href={domain} target="_blank" rel="noreferrer">domain ↗</a></>}</small>
 }

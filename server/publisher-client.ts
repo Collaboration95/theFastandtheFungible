@@ -138,7 +138,7 @@ export class PublisherClient {
     return Promise.all(hits.map(async hit => {
       const wallet = this.sellerWallets.get(slug)
       let verification = { status: 'unverified' } as import('../shared/writer-verification.js').WriterVerification
-      if (!loadConfig().WRITER_CREDENTIAL_ISSUERS || !hit.manifest) return { ...hit, verification }
+      if (!(loadConfig().WRITER_CREDENTIAL_ISSUERS || loadConfig().WRITER_CREDENTIAL_DOMAIN) || !hit.manifest) return { ...hit, verification }
       try {
         const key = hit.manifest?.pubKey ?? await this.sellerKey(slug)
         if (wallet && deriveAddress(key) === wallet && (!hit.manifest || verifyManifestSignature(hit.manifest) && hit.manifest.wallet === wallet)) verification = await writerVerification(wallet)
@@ -163,7 +163,7 @@ export class PublisherClient {
       hit.source = { ...hit.source, sellerKey: article.verification.manifest.pubKey }
     }
     const signed = article.verification?.manifest
-    if (loadConfig().WRITER_CREDENTIAL_ISSUERS && signed && verifyManifestSignature(signed) && signed.wallet === this.sellerWallets.get(hit.publisherSlug) && signed.publisherSlug === hit.publisherSlug && signed.articleId === hit.articleId && signed.version === hit.version) hit.verification = await writerVerification(signed.wallet)
+    if ((loadConfig().WRITER_CREDENTIAL_ISSUERS || loadConfig().WRITER_CREDENTIAL_DOMAIN) && signed && verifyManifestSignature(signed) && signed.wallet === this.sellerWallets.get(hit.publisherSlug) && signed.publisherSlug === hit.publisherSlug && signed.articleId === hit.articleId && signed.version === hit.version) hit.verification = await writerVerification(signed.wallet)
     return ContentEnvelopeSchema.parse({ source: hit.source, profileId: hit.publisherSlug, resourceId: hit.articleId, version: hit.version, title: article.title, publisher: publisherName, body: article.body, verification: article.verification, spans: article.passages.map(p => ({ id: p.id, text: p.text, ...(p.heading ? { label: p.heading } : {}) })) })
   }
 }

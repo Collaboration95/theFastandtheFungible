@@ -18,8 +18,8 @@ const kind = (authorship: string) => authorship.replace(/ · unverified$/, '')
  * ("… · XRPL explainers (team-authored)") is carried by the badge and a short line instead of a second name (R8 H8-10). */
 export const writerTitle = (name: string) => name.replace(/^(ResearchAgent builders)(?: · [^(]*)?(?: \(team-authored\))?$/, '$1')
 const teamLine = (name: string, slug: string) => /^ResearchAgent builders/.test(name) ? /· ([^(]+?)(?: \(team-authored\))?$/.exec(name)?.[1] ?? (slug === 'team-builder-notes' ? 'Build notes' : undefined) : undefined
-const isFictional = (w: { authorship: string }) => /^fictional/i.test(w.authorship)
-const isTeam = (w: { authorship: string }) => /^team/i.test(w.authorship)
+const isFictional = (w: { authorship: string; publisherSlug?: string }) => /^fictional/i.test(w.authorship) && w.publisherSlug !== 'open-records'
+const isTeam = (w: { authorship: string; publisherSlug?: string }) => /^team/i.test(w.authorship) || w.publisherSlug === 'open-records'
 /** Writers who have sold something first, then the team's, then the rest; and, on the hosted demo, the fictional writers with no
  * sales folded away (nine of them used to open the page, R8 H8-10). */
 export function orderWriters<T extends { authorship: string; sales: unknown[]; publisher?: string; name: string }>(writers: T[], hosted: boolean): { shown: T[]; demo: T[] } {
@@ -44,7 +44,7 @@ export default function WriterEarnings() {
     return <article className="ra-writer-card" key={w.slug}>
       <h2><a href={`/w/${w.publisherSlug}`} target="_blank" rel="noreferrer">{title} ↗</a></h2>
       {team ? <p className="ra-note ra-writer-by">{team}</p> : w.publisher && w.publisher !== w.name && <p className="ra-note ra-writer-by">{`by ${w.name}`}</p>}
-      {w.verification?.status === 'verified' ? <WriterVerification value={w.verification} /> : <small className="ra-badge" title={`${kind(w.authorship)}. Identity not checked.`}>{kind(w.authorship).replace(/ writer$/, '')} · unverified</small>}
+      {w.verification?.status === 'verified' || w.verification?.status === 'check_failed' ? <WriterVerification value={w.verification} /> : <small className="ra-badge" title={`${kind(w.authorship)}. Identity not checked.`}>{kind(w.authorship).replace(/ writer$/, '')} · unverified</small>}
       <dl><div><dt>Articles</dt><dd>{w.articleCount}</dd></div><div><dt>Price range</dt><dd>{priceRange(prices)}</dd></div>
       {w.demoSales !== undefined && <div><dt>Sales on this demo</dt><dd>{salesCount(w.demoSales)}</dd></div>}
       <div><dt>Your purchases</dt><dd>{salesCount(w.sales.length)}</dd></div>
