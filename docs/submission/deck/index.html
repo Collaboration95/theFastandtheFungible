@@ -322,6 +322,7 @@ td.was { color: var(--muted); }
   <div class="cols" style="grid-template-columns:1.1fr 1fr;gap:64px;margin-top:44px">
     <div>
       <div class="h3">TEST-SGD through XLS-85 token escrow</div>
+      <p class="cap" style="font-size:22px;margin-top:10px">CLI and evidence: the live sandbox pays in Testnet XRP.</p>
       <ul class="points" style="margin-top:22px">
         <li><b>Opt in</b> with <code>--iou</code> on the MCP server or the web app.</li>
         <li><b>Preflight refuses</b> a missing issuer locking permission, frozen or unauthorized trust lines, short balances and transfer fees.</li>
@@ -333,7 +334,7 @@ td.was { color: var(--muted); }
       <div class="h3">Official RLUSD: one issuer flag away</div>
       <ul class="points" style="margin-top:22px">
         <li><b>Payments work.</b> Official Testnet RLUSD paid a writer on 3 Nov (<a class="mono" style="font-size:20px" href="https://testnet.xrpl.org/transactions/1F2449A4660747066E99A89CEA5B49276D266F35820789042A8694EDB1DA23AF">1F2449A4…</a>), and a broken promise was refunded.</li>
-        <li><b>Escrow is blocked by the issuer, not the network.</b> Token escrow is enabled on Testnet, but the RLUSD issuer’s flags lack AllowTrustLineLocking. One AccountSet by the issuer would allow it.</li>
+        <li><b>Escrow is blocked by the issuer, not the network.</b> Token escrow is enabled on Testnet and Mainnet. Only the RLUSD issuer’s flags block it, on both: AllowTrustLineLocking is off. One AccountSet by the issuer would allow it.</li>
         <li><b>So we escrow our own token</b> and say so on every amount, receipt and ledger row. It is our top builder-feedback finding.</li>
       </ul>
     </div>
@@ -342,7 +343,7 @@ td.was { color: var(--muted); }
   <div class="src"><span>docs/evidence/m1-iou/ · docs/evidence/rlusd.md (issuer flags 2174353408 at ledger 22058675; refusal predicted, never submitted) · BUILDER-FEEDBACK rank 1</span><span class="n"></span></div>
   <aside class="notes">
     <p><b>Criteria:</b> Creativity (20%) and Technical depth (20%): XLS-85 token escrow with issuer preflight. Builder feedback (10%): the RLUSD issuer flag is ranked finding 1.</p>
-    <p><b>Say:</b> It works in a stablecoin-style token too, through XLS-85 token escrow. Official RLUSD is one issuer flag away, and that’s our top piece of builder feedback.</p>
+    <p><b>Say:</b> It works in a stablecoin-style token too, from the command line, through XLS-85 token escrow. The live sandbox pays in Testnet XRP. Official RLUSD is one issuer flag away, and that’s our top piece of builder feedback.</p>
   </aside>
 </section>
 
@@ -405,7 +406,7 @@ td.was { color: var(--muted); }
   <div class="crit">Feasibility</div>
   <h1>Fractions of a cent per purchase, and it recovers from crashes</h1>
   <div class="tiles" style="margin-top:44px">
-    <div class="tile"><b><!--f:fee_drops-->435<!--/f--> drops</b><span>network fees per key-reveal purchase</span><em><!--f:fee_create-->12<!--/f--> to create the escrow and <!--f:fee_finish-->423<!--/f--> to finish it, because the finish carries the key: <!--f:fee_xrp-->0.000435<!--/f--> XRP, measured on Testnet.</em></div>
+    <div class="tile"><b><!--f:fee_drops-->435<!--/f--> drops</b><span>network fees per key-reveal purchase</span><em><!--f:fee_create-->12<!--/f--> paid by the buyer to lock the escrow and <!--f:fee_finish-->423<!--/f--> by the writer to reveal the key, because the finish carries it: <!--f:fee_xrp-->0.000435<!--/f--> XRP as we sign on Testnet (rippled’s own minimum is lower).</em></div>
     <div class="tile"><b><!--f:chaos_double-->0<!--/f--> double charges</b><span>under chaos, across retries and restarts</span><em><!--f:chaos_runs-->500<!--/f--> seeded runs with <!--f:chaos_kills-->130<!--/f--> real process kills; the reconciler recovers in-flight payments. Synthetic ledger, 3 Nov.</em></div>
   </div>
   <div class="h3" style="margin-top:44px">How it runs</div>
@@ -418,7 +419,7 @@ td.was { color: var(--muted); }
   <div class="src"><span>docs/evidence/round3-a/probe.json · docs/evidence/chaos-279-500.json · README · Status and limits</span><span class="n"></span></div>
   <aside class="notes">
     <p><b>Criteria:</b> Feasibility (20%): cost, performance, infrastructure readiness, reliability and operations.</p>
-    <p><b>Say:</b> Our measured key-reveal purchase used 435 drops in network fees. Under chaos with real process kills, it never charged twice. The hosted sandbox runs on Cloud Run with per-visitor caps.</p>
+    <p><b>Say:</b> Our measured key-reveal purchase used 435 drops in network fees: 12 from the buyer to lock, 423 from the writer to reveal. Under chaos with real process kills, it never charged twice. The hosted sandbox runs on Cloud Run with per-visitor caps.</p>
   </aside>
 </section>
 
@@ -469,7 +470,7 @@ td.was { color: var(--muted); }
       <ul class="points" style="margin-top:22px">
         <li><b>Agents act through tools:</b> Claude Code, Codex and other MCP clients call them on their own.</li>
         <li><b>x402 gives HTTP a payment step</b> a machine can complete.</li>
-        <li><b>XRPL token escrow</b> is enabled on Testnet, so the same escrow can settle in a stablecoin once issuers allow it.</li>
+        <li><b>XRPL token escrow</b> is enabled on Testnet and Mainnet, so the same escrow can settle in a stablecoin once issuers allow it.</li>
       </ul>
     </div>
   </div>
@@ -491,7 +492,7 @@ td.was { color: var(--muted); }
     <tr><td class="k">Custody</td><td>Keys stay server-side, out of logs, audit rows and the browser</td><td class="not">KMS or HSM and rotation; the hire flow holds funds in transit</td></tr>
     <tr><td class="k">Spend limits</td><td>A budget per question and a daily cap; only policy code buys</td><td class="not">Maker-checker, velocity limits</td></tr>
     <tr><td class="k">Audit</td><td>Hash-chained log, anchored heads, offline verification</td><td class="not">Signed, durable retention; retention periods undecided</td></tr>
-    <tr><td class="k">Screening, KYB</td><td>A payee denylist hook; XRPL Credentials badge for writers</td><td class="not">No sanctions provider, no KYB, no Permissioned Domains</td></tr>
+    <tr><td class="k">Screening, KYB</td><td>A payee denylist hook; XRPL Credentials badge for writers (publish CLI; none in the live sandbox)</td><td class="not">No sanctions provider, no KYB, no Permissioned Domains</td></tr>
     <tr><td class="k">Regulation</td><td>Questions mapped for MAS (PSA, DPT services), GENIUS Act, Travel Rule</td><td class="not">No licence, no legal opinion; mainnet blocked in code</td></tr>
   </table>
   <div class="src"><span>docs/COMPLIANCE.md (file:line citations) · docs/submission/compliance-slide.md · Testnet, no real value · not legal advice</span><span class="n"></span></div>

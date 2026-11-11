@@ -35,7 +35,7 @@ the ledger. We lock payment in a native XRPL escrow whose condition is the hash
 of that key. Delivery and payment become one ledger event. No smart contract.
 
 **[0:36 · slide 6]**
-It works in a stablecoin-style token too, through XLS-85 token escrow. Official
+From the command line it works in a stablecoin-style token too, through XLS-85 token escrow. Official
 RLUSD is one issuer flag away, and that's our top piece of builder feedback.
 
 **[0:48 · slides 2–3]**
@@ -61,7 +61,7 @@ nothing. The slide shows that bank with both numbers.
 
 **[1:36 · slide 9]**
 Our measured key-reveal purchase used <!--f:fee_drops-->435<!--/f--> drops in
-network fees. Only policy code spends, and the blind banks ran on Testnet with
+network fees, 12 from the buyer and 423 from the writer. Only policy code spends, and the blind banks ran on Testnet with
 <!--f:heldout_violations-->0<!--/f--> gate violations.
 
 **[1:48 · slide 14]**
@@ -128,8 +128,9 @@ Never cut the "Testnet" line on slide 1.
   default with optional Testnet settlement. The earlier prototype tag
   `hackathon-baseline` (7 Sep) had no approval step. Today there is no
   per-purchase approval: policy code buys within the budget after one plan confirmation.
-- **"<!--f:fee_drops-->435<!--/f--> drops"**: 12 for EscrowCreate plus 423 for the conditional
-  EscrowFinish, measured on Testnet. At an assumed S$2 per XRP that is S$0.00087,
+- **"<!--f:fee_drops-->435<!--/f--> drops"**: 12 for EscrowCreate, paid by the buyer, plus 423 for the
+  conditional EscrowFinish, paid by the writer, as we sign on Testnet. rippled's own minimum
+  is 360 (10 + 350). At an assumed S$2 per XRP that is S$0.00087,
   a projection.
 - **"0 gate violations"**: the read-only gate audit on the v5 held-out and
   off-topic banks, run on XRPL Testnet on 11 Nov

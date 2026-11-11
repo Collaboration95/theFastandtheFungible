@@ -17,7 +17,7 @@ fintech operator; **Y**, a YC-style partner. Their hardest questions come first.
 | **<!--f:try_s-->84.2<!--/f--> s** | `try --testnet`: empty npm cache → six Testnet links → `RESULT PASS` | Testnet, fixture models, one Mac, 7 Nov; <!--f:try_misses-->2 of 4<!--/f--> cold attempts overran 90 s | [#387](https://github.com/Collaboration95/theFastandtheFungible/pull/387), [round4-j2](../evidence/round4-j2/README.md) |
 | **<!--f:mcp_mb-->3.4<!--/f--> MB / <!--f:mcp_init_s-->6.3<!--/f--> s** | MCP package size / cold initialize (was 21.4 MB / 56.5 s) | local packed build, fresh npm cache | same |
 | **<!--f:app_ready_s-->27.0<!--/f--> s** | zero-clone app ready (was 134 s) | same | same |
-| **<!--f:fee_drops-->435<!--/f--> drops** | fees per key-reveal purchase (<!--f:fee_create-->12<!--/f--> create + <!--f:fee_finish-->423<!--/f--> finish) | Testnet, measured | [cost card](../numbers.md#testnet-cost-and-latency), [round3-a](../evidence/round3-a/README.md) |
+| **<!--f:fee_drops-->435<!--/f--> drops** | fees per key-reveal purchase as we sign: <!--f:fee_create-->12<!--/f--> paid by the buyer to create, <!--f:fee_finish-->423<!--/f--> paid by the writer to finish (rippled's own minimum: 360) | Testnet, measured | [cost card](../numbers.md#testnet-cost-and-latency), [round3-a](../evidence/round3-a/README.md) |
 | **894 drops** | all six UC3 transactions (two buys, refund, anchor) | Testnet, measured | [judge-path.md](../evidence/round4-l4/judge-path.md) |
 | **S$0.00087** | fees per purchase at an assumed S$2.00/XRP | **projection**, not a quote | [cost card](../numbers.md#testnet-cost-and-latency) |
 | **US$0.0026** | model cost per question | LIVE models, 48 fresh questions, 3 Nov | [scorecard](../numbers.md#synthetic-corpus-scorecard-3-nov) |
@@ -107,7 +107,9 @@ and they agree on every test vector."
 ### 6. What are the unit economics?
 
 **Say:** "Network fees are <!--f:fee_drops-->435<!--/f--> drops per key-reveal
-purchase, <!--f:fee_create-->12<!--/f--> to create and <!--f:fee_finish-->423<!--/f--> to finish, because the finish carries the key. That is about S$0.0009 at an
+purchase as we sign today: <!--f:fee_create-->12<!--/f--> paid by the buyer to lock the
+escrow and <!--f:fee_finish-->423<!--/f--> paid by the writer to reveal the key, because
+the finish carries it. rippled's own minimum is 360. That is about S$0.0009 at an
 assumed two dollars per XRP. The answer anchor is 12 drops, and a Testnet run that
 buys nothing is anchored too. Models cost about a quarter of a US cent per question.
 Writers set article prices, S$0.10 to S$0.90 in our corpus, capped at S$1 per
@@ -124,10 +126,11 @@ labelled demo rate, not FX (B11).
 
 **Say:** "Official RLUSD payments do work on Testnet: on 3 November a writer was
 paid 0.90 RLUSD and a broken promise was refunded. But RLUSD can't go into a
-token escrow yet. The network has TokenEscrow enabled, but the RLUSD issuer
-account doesn't have the AllowTrustLineLocking flag. So we issued our own
-Testnet token, TEST-SGD, to prove the key-reveal escrow end to end, and we
-label it as a stand-in everywhere. When Ripple sets that one flag, it's a config
+token escrow yet. Testnet and Mainnet both have TokenEscrow enabled, but the
+RLUSD issuer account on each doesn't have the AllowTrustLineLocking flag. So we
+issued our own Testnet token, TEST-SGD, to prove the key-reveal escrow end to end
+(from the command line, with evidence; the live sandbox pays in Testnet XRP), and
+we label it as a stand-in everywhere. When Ripple sets that one flag, it's a config
 change."
 
 **Behind it:** [rlusd.md](../evidence/rlusd.md) (official RLUSD, faucet 401
@@ -222,16 +225,20 @@ show the links in BUILDER-FEEDBACK's top-7 table.
 
 **Say:** "Four native features we'd otherwise need contracts for. Escrow with a
 crypto-condition carries the article key. Token escrow lets that work in a
-stablecoin. InvoiceID and memos bind each payment to its quote. Credentials
-identify writers. Fees are drops and ledgers close in seconds, which is what
+stablecoin (from the command line; the live sandbox pays in Testnet XRP). InvoiceID
+and memos bind each payment to its quote. Credentials identify writers who publish
+with `publish --testnet`; the sandbox's team writers are unverified. Fees are drops and ledgers close in seconds, which is what
 makes paying per article viable. There's no contract to deploy or audit."
 
 ### 15. Why does EscrowFinish cost 423 drops?
 
 **Say:** "Because the fee scales with the fulfilment size, and our fulfilment
-is the 32-byte article key wrapped as a preimage condition. Create and cancel
-are 12 drops. It's the same for XRP and for the token escrow. We logged it as
-builder feedback, because base-fee examples understate it."
+is the 32-byte article key wrapped as a preimage condition. We sign it at 423
+drops with a 12-drop floor; rippled's own minimum for this finish is 350. The
+writer pays it, because the writer submits the finish. The buyer pays 12 to
+lock the escrow, and the network's base fee is 10. It's the same for XRP and for
+the token escrow. We logged it as builder feedback, because base-fee examples
+understate it."
 
 **Behind it:** B19; [round3-e/xrp-fee.json](../evidence/round3-e/xrp-fee.json).
 

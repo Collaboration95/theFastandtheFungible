@@ -137,7 +137,7 @@ shared conformance cases ([receipt format](docs/receipt-spec.md)).
 |---|---|---|
 | Blind held-out judge questions (<!--f:heldout_bank-->v5<!--/f-->) | <!--f:heldout-->16/20<!--/f--> bought and cited; <!--f:offtopic-->0/10<!--/f--> off-topic purchases; <!--f:heldout_violations-->0<!--/f--> gate violations | run once on <!--f:heldout_on-->11 Nov<!--/f--> on XRPL Testnet; fixture research and decision models, answers written offline (the hosted demo writes live with DeepSeek); team-authored writers |
 | One line to a verified purchase | <!--f:try_s-->84.2<!--/f--> s cold; <!--f:try_misses-->2 of 4<!--/f--> cold runs overran 90 s | one Mac, empty npm cache, 7 Nov |
-| Network fees per key-reveal purchase | <!--f:fee_drops-->435<!--/f--> drops | XRPL Testnet, measured |
+| Network fees per key-reveal purchase | <!--f:fee_drops-->435<!--/f--> drops: <!--f:fee_create-->12<!--/f--> paid by the buyer to lock, <!--f:fee_finish-->423<!--/f--> by the writer to reveal | XRPL Testnet, measured as we sign |
 | Progress since SingHacks | <!--f:prs-->248<!--/f--> PRs merged since <!--f:since-->21 Sep<!--/f-->; <!--f:releases-->13<!--/f--> releases | counted at <!--f:sha-->329b64f7<!--/f--> on <!--f:as_of-->11 Nov 2026<!--/f--> |
 
 Development banks we tuned on, the synthetic-corpus scorecard, cost and latency:
@@ -161,7 +161,7 @@ checked as the delivered amount; a signed IOU quote overflowed the 1 KiB Memo li
   ([list](docs/evidence/real-writers.json)).
 - **New writers get one labelled probe.** A new writer's best matching article may get one probe
   purchase of up to S$0.30 inside your budget, shown as *probe purchase · new writer*.
-- **TEST-SGD stands in for RLUSD** in token escrow; official RLUSD payments work on Testnet.
+- **TEST-SGD stands in for RLUSD** in token escrow (CLI and evidence; the live sandbox pays in Testnet XRP); official RLUSD payments work on Testnet.
 - **Live sandbox.** One shared Testnet payer, per-visitor caps, owner controls off. Answers are
   written live by DeepSeek; purchases are decided by the rule-based model, as the header chip says,
   and an answer says so if it falls back to a labelled fixture. Open 13–19 Nov 2026.

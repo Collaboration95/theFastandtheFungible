@@ -45,9 +45,9 @@ New since SingHacks (<!--f:prs-->248<!--/f--> pull requests merged since
 - **Key-reveal escrow.** Payment is locked in a native XRPL escrow whose condition is the
   hash of the article's key. The writer is paid only by publishing that key on the ledger,
   so delivery and payment are one event. A broken promise is refunded by the writer.
-- **Stablecoin-style escrow.** The same flow settles in TEST-SGD, our Testnet token.
-  Official RLUSD payments work on Testnet; RLUSD escrow waits on one issuer flag, our top
-  builder feedback.
+- **Stablecoin-style escrow.** The same flow settles in TEST-SGD, our Testnet token (CLI and
+  evidence; the live sandbox pays in Testnet XRP). Official RLUSD payments work on Testnet;
+  RLUSD escrow waits on one issuer flag, our top builder feedback.
 - **Verify, don't trust.** Every Testnet answer is anchored on the ledger, including a refusal.
   TypeScript and Python verifiers, written separately, re-check receipts, and a public page
   re-validates <!--f:transactions-->61<!--/f--> Testnet transactions in your browser.
@@ -81,13 +81,14 @@ agents can hire it over x402, and cited writers get royalties.
 
 - **Escrow:** EscrowCreate, EscrowFinish and EscrowCancel with a PREIMAGE-SHA-256
   crypto-condition and CancelAfter. This is key-reveal delivery: <!--f:fee_create-->12<!--/f-->
-  + <!--f:fee_finish-->423<!--/f--> = <!--f:fee_drops-->435<!--/f--> drops per purchase.
-- **XLS-85 token escrow:** a labelled TEST-SGD IOU, because RLUSD escrow is blocked by an
-  issuer flag.
+  paid by the buyer to lock + <!--f:fee_finish-->423<!--/f--> paid by the writer to reveal =
+  <!--f:fee_drops-->435<!--/f--> drops per purchase.
+- **XLS-85 token escrow:** a labelled TEST-SGD IOU (CLI and evidence; the live sandbox pays in
+  Testnet XRP), because RLUSD escrow is blocked by an issuer flag.
 - **Payments:** InvoiceID and memos bind each payment to its signed quote.
 - **AccountSet memo anchors:** the audit-log head is written for every finished answer,
   including refusals.
-- **Credentials:** CredentialCreate and CredentialAccept for writers.
+- **Credentials:** CredentialCreate and CredentialAccept for writers who publish with the CLI (none in the live sandbox).
 - **Checks:** validated-ledger finality and `delivered_amount` checks.
 - **Browser verification:** read-only lookups on a public Testnet node over WebSocket,
   re-checking <!--f:transactions-->61<!--/f--> recorded transactions.

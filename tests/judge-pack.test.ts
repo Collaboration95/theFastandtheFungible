@@ -64,6 +64,35 @@ describe('judge pack: one true story', () => {
     for (const shot of spec.shots) if (shot.vo) expect(voiceover, shot.id).toContain(shot.vo)
   })
 
+  it('claims no XRPL feature we do not use or that is not available on the network', () => {
+    // XRPL review: not used, or not available on Testnet or Mainnet. Saying we have none of them is fine.
+    const never = /\bDIDs?\b|Permissioned Domains?|\bMPTs?\b|XLS-56|Batch (?:transaction|amendment)|payment channels?|PayChan|mainnet[- ]ready|KYC'?d|smart[- ]contract/i
+    const denial = /\bno (?:smart )?contract|\bwithout (?:a )?smart contract|no Permissioned Domains|There's no contract/i
+    const hits: string[] = []
+    for (const file of publicFiles) {
+      for (const [i, line] of read(file).split('\n').entries()) if (never.test(line) && !denial.test(line)) hits.push(`${file}:${i + 1}`)
+    }
+    expect(hits).toEqual([])
+  })
+
+  it('labels what the live sandbox does not show: Credentials and token escrow are CLI and evidence only', () => {
+    expect(read('docs/submission/qa-prep.md')).toMatch(/Credentials identify writers who publish with `publish --testnet`; the sandbox's team writers are unverified/)
+    for (const file of ['docs/submission/compliance-slide.md', 'docs/submission/deck/index.html']) expect(read(file), file).toContain('XRPL Credentials badge for writers (publish CLI; none in the live sandbox)'.replace('for writers ', file.endsWith('.md') ? '' : 'for writers '))
+    for (const file of ['README.md', 'docs/submission/short-description.md', 'docs/submission/qa-prep.md', 'docs/submission/deck/index.html']) expect(read(file), file).toMatch(/live sandbox pays in Testnet XRP/)
+    // TokenEscrow is enabled on Testnet and Mainnet; only the RLUSD issuer flag blocks it.
+    expect(read('docs/submission/deck/index.html')).not.toMatch(/enabled on Testnet(?! and Mainnet)/)
+    expect(read('docs/submission/qa-prep.md')).toMatch(/Testnet and Mainnet both have TokenEscrow enabled/)
+  })
+
+  it('says who pays which part of the fee: the buyer locks (12), the writer reveals (423), rippled needs 360', () => {
+    for (const file of ['README.md', 'docs/numbers.md', 'docs/submission/qa-prep.md', 'docs/submission/short-description.md', 'docs/submission/pitch-2min.md', 'docs/submission/deck/index.html']) {
+      expect(read(file), file).toMatch(/paid by the buyer|from the buyer/)
+      expect(read(file), file).toMatch(/by the writer|from the writer|paid by the writer/)
+    }
+    expect(read('docs/numbers.md')).toContain("rippled's own minimum is 360")
+    expect(read('docs/submission/qa-prep.md')).toContain("rippled's own minimum is 360")
+  })
+
   it('counts the team-authored writers the corpus really has', () => {
     const team = readdirSync('data/writers').filter(f => /^team-.*\.json$/.test(f))
     expect(team).toHaveLength(2)
