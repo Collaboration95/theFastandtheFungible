@@ -41,8 +41,15 @@ export const REASON_LABELS: Record<string, string> = {
 
 const lookup = (labels: Record<string, string>, code: string): string | undefined => Object.hasOwn(labels, code) ? labels[code] : undefined
 
+const SEARCH_MODE_LABELS: Record<string, string> = {
+  hybrid: 'Keyword and semantic search',
+  'keyword only (embeddings unavailable)': 'Keyword search (semantic search not used)',
+  'embeddings unavailable': 'Keyword search (semantic search not used)',
+  'keyword only': 'Keyword search (semantic search not used)',
+}
+
 export function searchLabel(label: string): string {
-  return label.replace(/\bhybrid\b/g, 'Keyword and semantic search').replace(/(?:keyword only \()?embeddings unavailable\)?|keyword only/gi, 'Keyword search (semantic search not used)')
+  return lookup(SEARCH_MODE_LABELS, label) ?? label
 }
 
 /** Older events carry their reason only inside the label. Do not guess an unrecorded reason. */
@@ -64,7 +71,10 @@ export function traceLabel(label: string): string {
 export function eventPresentation(event: TraceEvent): { title: string; detail: string; warning: boolean } {
   const reason = fallbackReason(event)
   const fallback = event.type === 'MODEL_FALLBACK'
-  const detail = fallback ? lookup(FALLBACK_LABELS, reason ?? '') ?? 'Used offline extracts instead of the model; the reason was not recorded in a recognised form.' : traceLabel(event.label)
+  // Only the recorded search-summary slot is a mode; words inside a question or title stay verbatim.
+  const parts = event.label.split(' · ')
+  if (event.type === 'SEARCH' && parts.length > 1 && /^\d+ hits from \d+ writers$/.test(parts[0])) parts[1] = searchLabel(parts[1])
+  const detail = fallback ? lookup(FALLBACK_LABELS, reason ?? '') ?? 'Used offline extracts instead of the model; the reason was not recorded in a recognised form.' : traceLabel(parts.join(' · '))
   const warning = fallback ? !['guard', 'cap'].includes(reason ?? '')
     : ['FAILED', 'DECISION_UNAVAILABLE', 'MANIFEST_DROPPED', 'ROYALTY_UNRESOLVED'].includes(event.type)
       || (event.type === 'WIRE' && typeof event.data?.status === 'number' && event.data.status >= 400 && event.data.status !== 402)

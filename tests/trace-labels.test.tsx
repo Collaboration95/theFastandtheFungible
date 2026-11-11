@@ -146,6 +146,16 @@ it('uses the same search label in Models without inferring an outage from keywor
   expect(document.querySelector('.ra-models .is-fallback')?.textContent).not.toContain('Research')
 })
 
+it('maps search-mode fields without rewriting words in a question or title', () => {
+  for (const mode of ['hybrid', 'keyword only (embeddings unavailable)', 'embeddings unavailable', 'keyword only']) {
+    expect(eventPresentation(event('SEARCH', `16 hits from 8 writers · ${mode} · unavailable: writer`)).detail).toBe(`16 hits from 8 writers · ${searchLabel(mode)} · unavailable: writer`)
+  }
+  for (const label of ['Searching again for: hybrid search', 'Search plan: keyword only search', 'A title about embeddings unavailable in hybrid clouds']) {
+    expect(eventPresentation(event('SEARCH', label)).detail).toBe(label)
+    expect(searchLabel(label)).toBe(label)
+  }
+})
+
 describe('all team fact menus render as promises rather than bare catalogue pairs', () => {
   const articles = readdirSync('data/corpus/v2/articles', { recursive: true, withFileTypes: true }).filter(file => file.isFile() && file.name.endsWith('.json') && file.parentPath.split('/').at(-1)!.startsWith('team-'))
   it('has only the shared promise renderer in the UI', () => {
