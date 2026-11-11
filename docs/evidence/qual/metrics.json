@@ -25,7 +25,7 @@
         "articlesPerBuyingRun": 1,
         "runsBuyingThree": 0,
         "spentMinor": 760,
-        "medianAskMs": 72.54750000000001
+        "medianAskMs": 68.83470799999998
       }
     },
     "v3": {
@@ -48,10 +48,10 @@
         "negativeBuys": 0,
         "violations": 0,
         "verificationFailures": 0,
-        "articlesPerBuyingRun": 1.4,
+        "articlesPerBuyingRun": 1.3,
         "runsBuyingThree": 1,
-        "spentMinor": 1120,
-        "medianAskMs": 81.37943800000016
+        "spentMinor": 1040,
+        "medianAskMs": 74.52447899999993
       }
     },
     "v3-dev": {
@@ -77,7 +77,7 @@
         "articlesPerBuyingRun": 1.2222222222222223,
         "runsBuyingThree": 0,
         "spentMinor": 880,
-        "medianAskMs": 80.60195849999991
+        "medianAskMs": 78.57743750000009
       }
     },
     "v3-negatives": {
@@ -103,7 +103,7 @@
         "articlesPerBuyingRun": 0,
         "runsBuyingThree": 0,
         "spentMinor": 0,
-        "medianAskMs": 17.13841649999995
+        "medianAskMs": 17.594978999999512
       }
     },
     "v5": {
@@ -126,10 +126,10 @@
         "negativeBuys": 0,
         "violations": 0,
         "verificationFailures": 0,
-        "articlesPerBuyingRun": 1.15,
+        "articlesPerBuyingRun": 1.1,
         "runsBuyingThree": 1,
-        "spentMinor": 920,
-        "medianAskMs": 70.36543749999964
+        "spentMinor": 880,
+        "medianAskMs": 66.82429150000007
       }
     },
     "v5-negatives": {
@@ -155,7 +155,7 @@
         "articlesPerBuyingRun": 0,
         "runsBuyingThree": 0,
         "spentMinor": 0,
-        "medianAskMs": 13.63433299999906
+        "medianAskMs": 15.446854000000712
       }
     },
     "uc": {
@@ -181,7 +181,7 @@
         "articlesPerBuyingRun": 1.5,
         "runsBuyingThree": 0,
         "spentMinor": 160,
-        "medianAskMs": 148.29966700000114
+        "medianAskMs": 132.31304100000125
       }
     },
     "uc-frozen": {
@@ -207,7 +207,7 @@
         "articlesPerBuyingRun": 1.5,
         "runsBuyingThree": 0,
         "spentMinor": 160,
-        "medianAskMs": 158.9095840000009
+        "medianAskMs": 147.60245899999973
       }
     },
     "presets": {
@@ -233,7 +233,7 @@
         "articlesPerBuyingRun": 1,
         "runsBuyingThree": 0,
         "spentMinor": 120,
-        "medianAskMs": 99.57858299999862
+        "medianAskMs": 84.8002919999999
       }
     }
   },
@@ -261,7 +261,59 @@
         "lead": [
           "Not today: an XRPL escrow can hold official RLUSD only after its issuer enables AllowTrustLineLocking, and the RLUSD issuer had not enabled it on Mainnet or Testnet when the team checked on 11 November 2026."
         ],
-        "askMs": 83.50049999999987
+        "askMs": 84.874417
+      }
+    },
+    {
+      "bank": "v1",
+      "id": "J06",
+      "question": "How does delivered_amount prevent partial payment underpayment?",
+      "before": {
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "lead": [
+          "A payment integration must credit the validated delivered_amount, because a partial Payment can succeed while delivering less than the transaction's requested amount."
+        ],
+        "askMs": 90.88295799999992
+      },
+      "after": {
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "lead": [
+          "Checking only the requested amount creates the partial-payment exploit described in the XRPL documentation.",
+          "A payment integration must credit the validated delivered_amount, because a partial Payment can succeed while delivering less than the transaction's requested amount."
+        ],
+        "askMs": 81.15658299999996
+      }
+    },
+    {
+      "bank": "v1",
+      "id": "J08",
+      "question": "What happens when a writer never reveals the key?",
+      "before": {
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "lead": [
+          "If the writer never completes delivery, policy waits for the validated deadline and submits cancellation of the original object.",
+          "a buyer can recover an unfinished key-reveal escrow with EscrowCancel after CancelAfter; expiry permits cancellation but does not automatically return funds."
+        ],
+        "askMs": 72.95508300000006
+      },
+      "after": {
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "lead": [
+          "the buyer's money stays locked if the writer never reveals the key; after CancelAfter the buyer can recover escrow principal by cancellation with EscrowCancel."
+        ],
+        "askMs": 69.19570799999997
       }
     },
     {
@@ -287,7 +339,7 @@
         "lead": [
           "Not today: an XRPL escrow can hold official RLUSD only after its issuer enables AllowTrustLineLocking, and the RLUSD issuer had not enabled it on Mainnet or Testnet when the team checked on 11 November 2026."
         ],
-        "askMs": 67.72979200000009
+        "askMs": 65.01116599999978
       }
     },
     {
@@ -313,7 +365,7 @@
         "lead": [
           "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information."
         ],
-        "askMs": 68.03908300000012
+        "askMs": 67.11362499999996
       }
     },
     {
@@ -339,7 +391,7 @@
         "lead": [
           "ResearchAgent is a Testnet prototype, with no mainnet readiness claim."
         ],
-        "askMs": 56.62162499999977
+        "askMs": 55.00037499999962
       }
     },
     {
@@ -359,13 +411,37 @@
       "after": {
         "buyAndCite": true,
         "answersIt": 1,
+        "purchases": 1,
+        "spentMinor": 40,
+        "lead": [
+          "the buyer's money stays locked if the writer never reveals the key; after CancelAfter the buyer can recover escrow principal by cancellation with EscrowCancel."
+        ],
+        "askMs": 71.69858299999987
+      }
+    },
+    {
+      "bank": "v3",
+      "id": "V07",
+      "question": "Which US state regulator supervises the trust company that issues RLUSD?",
+      "before": {
+        "buyAndCite": true,
+        "answersIt": 1,
         "purchases": 2,
         "spentMinor": 80,
         "lead": [
-          "a buyer can recover an unfinished key-reveal escrow with EscrowCancel after CancelAfter; expiry permits cancellation but does not automatically return funds.",
-          "EscrowCreate supplies a Condition and the expiry window; EscrowFinish supplies the matching Fulfillment, which reveals the secret."
+          "Ripple states that it publishes monthly third-party attestations of RLUSD's reserve assets, and that RLUSD is issued by Ripple Custody & Trust Co., a New York trust supervised by the New York State Department of Financial Services."
         ],
-        "askMs": 114.93370800000002
+        "askMs": 136.79108300000007
+      },
+      "after": {
+        "buyAndCite": true,
+        "answersIt": 1,
+        "purchases": 1,
+        "spentMinor": 40,
+        "lead": [
+          "Ripple states that it publishes monthly third-party attestations of RLUSD's reserve assets, and that RLUSD is issued by Ripple Custody & Trust Co., a New York trust supervised by the New York State Department of Financial Services."
+        ],
+        "askMs": 70.42829200000006
       }
     },
     {
@@ -390,7 +466,7 @@
         "lead": [
           "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings."
         ],
-        "askMs": 106.18179200000031
+        "askMs": 104.48283399999991
       }
     },
     {
@@ -416,23 +492,22 @@
         "lead": [
           "DIDSet creates or updates an account's decentralized identifier and associated references."
         ],
-        "askMs": 62.99491699999999
+        "askMs": 61.57024999999976
       }
     },
     {
-      "bank": "v3",
-      "id": "V17",
-      "question": "Which Singapore statute governs digital payment token services that an XRPL payments product could fall under?",
+      "bank": "v3-dev",
+      "id": "D01",
+      "question": "Which flag lets a Payment deliver less than the stated amount, and what field shows what the recipient actually got?",
       "before": {
         "buyAndCite": true,
         "answersIt": 1,
-        "purchases": 2,
-        "spentMinor": 80,
+        "purchases": 1,
+        "spentMinor": 40,
         "lead": [
-          "MAS describes the Payment Services Act as regulating payment-service providers and payment systems.",
-          "Singapore payment-service obligations depend on the service and applicable legal scope, not on whether an agent or XRPL submits the transaction."
+          "three Payment flags change how an amount is delivered: tfPartialPayment, tfNoRippleDirect and tfLimitQuality. tfPartialPayment (0x00020000) means that if the specified Amount cannot be sent without spending more than SendMax, the transaction reduces the received amount instead of failing outright."
         ],
-        "askMs": 130.51975000000039
+        "askMs": 83.84558300000026
       },
       "after": {
         "buyAndCite": true,
@@ -440,10 +515,61 @@
         "purchases": 2,
         "spentMinor": 80,
         "lead": [
-          "Singapore payment-service obligations depend on the service and applicable legal scope, not on whether an agent or XRPL submits the transaction.",
-          "MAS describes the Payment Services Act as regulating payment-service providers and payment systems."
+          "three Payment flags change how an amount is delivered: tfPartialPayment, tfNoRippleDirect and tfLimitQuality. tfPartialPayment (0x00020000) means that if the specified Amount cannot be sent without spending more than SendMax, the transaction reduces the received amount instead of failing outright."
         ],
-        "askMs": 127.83008300000074
+        "askMs": 118.71133299999929
+      }
+    },
+    {
+      "bank": "v3-dev",
+      "id": "D04",
+      "question": "Which field on EscrowFinish reveals the secret that unlocks a conditional escrow?",
+      "before": {
+        "buyAndCite": true,
+        "answersIt": 1,
+        "purchases": 2,
+        "spentMinor": 80,
+        "lead": [
+          "EscrowCreate supplies a Condition and the expiry window; EscrowFinish supplies the matching Fulfillment, which reveals the secret.",
+          "a buyer can recover an unfinished key-reveal escrow with EscrowCancel after CancelAfter; expiry permits cancellation but does not automatically return funds."
+        ],
+        "askMs": 108.99887500000023
+      },
+      "after": {
+        "buyAndCite": true,
+        "answersIt": 1,
+        "purchases": 1,
+        "spentMinor": 40,
+        "lead": [
+          "the Condition field is the previously supplied PREIMAGE-SHA-256 crypto-condition of the escrow, and the Fulfillment field is the PREIMAGE-SHA-256 crypto-condition fulfillment matching the escrow's Condition."
+        ],
+        "askMs": 75.42795900000056
+      }
+    },
+    {
+      "bank": "v3-dev",
+      "id": "D12",
+      "question": "Which field of an XRPL DID ledger entry holds the DID document?",
+      "before": {
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 1,
+        "spentMinor": 40,
+        "lead": [
+          "XLS-40 specifies the XRPL DID method and operations for managing DID data."
+        ],
+        "askMs": 60.29612499999985
+      },
+      "after": {
+        "buyAndCite": true,
+        "answersIt": 0,
+        "purchases": 2,
+        "spentMinor": 80,
+        "lead": [
+          "DIDSet creates or updates an account's decentralized identifier and associated references.",
+          "A pointer to a document is not a ledger guarantee that its claims are accurate or its host remains available."
+        ],
+        "askMs": 88.49341599999934
       }
     },
     {
@@ -468,7 +594,7 @@
         "lead": [
           "A successful HTTP response can include PAYMENT-RESPONSE with settlement details."
         ],
-        "askMs": 163.62358399999994
+        "askMs": 157.6729579999992
       }
     },
     {
@@ -493,7 +619,33 @@
         "lead": [
           "The XRPL exact scheme quotes a native XRP Payment in integer drops, and ResearchAgent's writers accept exactly that."
         ],
-        "askMs": 76.90029200000026
+        "askMs": 76.16729200000009
+      }
+    },
+    {
+      "bank": "v3-dev",
+      "id": "D15",
+      "question": "Which transaction places a limit order on the XRPL decentralized exchange?",
+      "before": {
+        "buyAndCite": true,
+        "answersIt": 1,
+        "purchases": 2,
+        "spentMinor": 80,
+        "lead": [
+          "OfferCreate places a decentralized-exchange order and may immediately trade against available liquidity.",
+          "OfferCancel removes a previously placed decentralized-exchange offer identified by its sequence number."
+        ],
+        "askMs": 85.17862500000047
+      },
+      "after": {
+        "buyAndCite": true,
+        "answersIt": 1,
+        "purchases": 1,
+        "spentMinor": 40,
+        "lead": [
+          "OfferCreate places a decentralized-exchange order and may immediately trade against available liquidity."
+        ],
+        "askMs": 54.78370900000027
       }
     },
     {
@@ -518,7 +670,33 @@
         "lead": [
           "an issuer that meets every requirement can apply for its stablecoin to be recognised and labelled a MAS-regulated stablecoin, and MAS was then working on the legislative amendments needed to implement the framework."
         ],
-        "askMs": 64.26395800000137
+        "askMs": 63.257166999999754
+      }
+    },
+    {
+      "bank": "v5",
+      "id": "H07",
+      "question": "Which transaction type places an order on the XRPL decentralized exchange?",
+      "before": {
+        "buyAndCite": true,
+        "answersIt": 1,
+        "purchases": 2,
+        "spentMinor": 80,
+        "lead": [
+          "OfferCreate places a decentralized-exchange order and may immediately trade against available liquidity.",
+          "OfferCancel removes a previously placed decentralized-exchange offer identified by its sequence number."
+        ],
+        "askMs": 78.89616700000079
+      },
+      "after": {
+        "buyAndCite": true,
+        "answersIt": 1,
+        "purchases": 1,
+        "spentMinor": 40,
+        "lead": [
+          "OfferCreate places a decentralized-exchange order and may immediately trade against available liquidity."
+        ],
+        "askMs": 53.29583400000047
       }
     },
     {
@@ -544,7 +722,7 @@
         "lead": [
           "DIDSet creates or updates an account's decentralized identifier and associated references."
         ],
-        "askMs": 69.50724999999875
+        "askMs": 61.55516700000044
       }
     },
     {
@@ -570,7 +748,7 @@
         "lead": [
           "PermissionedDomainSet creates or updates a credential-based permissioned domain."
         ],
-        "askMs": 65.97029199999997
+        "askMs": 56.94691700000112
       }
     },
     {
@@ -596,111 +774,7 @@
         "lead": [
           "Issuers must return par value within five business days of a redemption request."
         ],
-        "askMs": 30.091624999999112
-      }
-    },
-    {
-      "bank": "uc",
-      "id": "UC1",
-      "question": "What did the Bank of Japan change at its last meeting, and how did 10-year JGB yields react?",
-      "before": {
-        "buyAndCite": false,
-        "answersIt": 0,
-        "purchases": 0,
-        "spentMinor": 0,
-        "lead": [
-          "Minutes from the September meeting, released on 25 September 2026, showed that seven members voted to raise the policy rate by 25 bp to 1.00%, while two members preferred to keep it at 0.75%."
-        ],
-        "askMs": 139.91804200000115
-      },
-      "after": {
-        "buyAndCite": false,
-        "answersIt": 0,
-        "purchases": 0,
-        "spentMinor": 0,
-        "lead": [
-          "The Bank of Japan conducted its regular outright purchase operations for 5-year to 10-year JGBs on 18 September 2026, offering to buy 600 billion yen at fixed-rate and variable-rate auctions."
-        ],
-        "askMs": 148.29966700000114
-      }
-    },
-    {
-      "bank": "uc",
-      "id": "UC2",
-      "question": "What's the analyst outlook on Kestrel Semiconductor's latest deal with TSMC?",
-      "before": {
-        "buyAndCite": true,
-        "answersIt": 0,
-        "purchases": 1,
-        "spentMinor": 90,
-        "lead": [
-          "On 1 October 2026, the average fiscal 2027 gross margin estimate across the five brokers covering the Singapore-based fabless designer fell to 55.2% from 58.5%",
-          "Kestrel Semiconductor lost a fifth of its consensus gross margin in a single morning."
-        ],
-        "askMs": 95.37579199999891
-      },
-      "after": {
-        "buyAndCite": true,
-        "answersIt": 0,
-        "purchases": 1,
-        "spentMinor": 90,
-        "lead": [
-          "Kestrel Semiconductor lost a fifth of its consensus gross margin in a single morning.",
-          "On 1 October 2026, the average fiscal 2027 gross margin estimate across the five brokers covering the Singapore-based fabless designer fell to 55.2% from 58.5%"
-        ],
-        "askMs": 90.23233299999993
-      }
-    },
-    {
-      "bank": "uc-frozen",
-      "id": "UC1",
-      "question": "What did the Bank of Japan change at its last meeting, and how did 10-year JGB yields react?",
-      "before": {
-        "buyAndCite": false,
-        "answersIt": 0,
-        "purchases": 0,
-        "spentMinor": 0,
-        "lead": [
-          "Minutes from the September meeting, released on 25 September 2026, showed that seven members voted to raise the policy rate by 25 bp to 1.00%, while two members preferred to keep it at 0.75%."
-        ],
-        "askMs": 142.76633299999958
-      },
-      "after": {
-        "buyAndCite": false,
-        "answersIt": 0,
-        "purchases": 0,
-        "spentMinor": 0,
-        "lead": [
-          "The Bank of Japan conducted its regular outright purchase operations for 5-year to 10-year JGBs on 18 September 2026, offering to buy 600 billion yen at fixed-rate and variable-rate auctions."
-        ],
-        "askMs": 158.9095840000009
-      }
-    },
-    {
-      "bank": "uc-frozen",
-      "id": "UC2",
-      "question": "What's the analyst outlook on Kestrel Semiconductor's latest deal with TSMC?",
-      "before": {
-        "buyAndCite": true,
-        "answersIt": 0,
-        "purchases": 1,
-        "spentMinor": 90,
-        "lead": [
-          "On 1 October 2026, the average fiscal 2027 gross margin estimate across the five brokers covering the Singapore-based fabless designer fell to 55.2% from 58.5%",
-          "Kestrel Semiconductor lost a fifth of its consensus gross margin in a single morning."
-        ],
-        "askMs": 119.93662500000028
-      },
-      "after": {
-        "buyAndCite": true,
-        "answersIt": 0,
-        "purchases": 1,
-        "spentMinor": 90,
-        "lead": [
-          "Kestrel Semiconductor lost a fifth of its consensus gross margin in a single morning.",
-          "On 1 October 2026, the average fiscal 2027 gross margin estimate across the five brokers covering the Singapore-based fabless designer fell to 55.2% from 58.5%"
-        ],
-        "askMs": 114.17875000000095
+        "askMs": 30.486417000000074
       }
     },
     {
@@ -727,7 +801,7 @@
           "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
           "An agent can pay a 402 in XRP on Testnet, network xrpl:1."
         ],
-        "askMs": 99.57858299999862
+        "askMs": 84.8002919999999
       }
     },
     {
@@ -753,7 +827,7 @@
         "lead": [
           "Not today: an XRPL escrow can hold official RLUSD only after its issuer enables AllowTrustLineLocking, and the RLUSD issuer had not enabled it on Mainnet or Testnet when the team checked on 11 November 2026."
         ],
-        "askMs": 98.6185000000005
+        "askMs": 83.98612499999945
       }
     },
     {
@@ -778,7 +852,7 @@
         "lead": [
           "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings."
         ],
-        "askMs": 113.3135000000002
+        "askMs": 101.6180000000004
       }
     }
   ],

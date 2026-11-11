@@ -24,16 +24,16 @@ Fixture research/decisions, simulated settlement, same banks and scorer as R9-C;
 
 | Bank | N | Buy/cite | Key-fact leads | Negative purchases | Articles/buying run | Three buys | S$ spend | Median ask ms |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| v1 | 20 | 19 → 19 | 0 → 0 | 0 → 0 | 1.00 → 1.00 | 0 → 0 | 7.60 → 7.60 | 74.4 → 72.5 |
-| v3 | 20 | 20 → 20 | 18 → 18 | 0 → 0 | 1.45 → 1.40 | 1 → 1 | 11.60 → 11.20 | 102.2 → 81.4 |
-| v3-dev | 20 | 18 → 18 | 9 → 10 | 0 → 0 | 1.17 → 1.22 | 0 → 0 | 8.40 → 8.80 | 83.3 → 80.6 |
-| v3-negatives | 10 | 0 → 0 | 0 → 0 | 0 → 0 | 0.00 → 0.00 | 0 → 0 | 0.00 → 0.00 | 17.4 → 17.1 |
-| v5 | 20 | 20 → 20 | 18 → 18 | 0 → 0 | 1.25 → 1.15 | 1 → 1 | 10.00 → 9.20 | 77.6 → 70.4 |
-| v5-negatives | 10 | 0 → 0 | 0 → 0 | 0 → 0 | 0.00 → 0.00 | 0 → 0 | 0.00 → 0.00 | 21.0 → 13.6 |
-| uc | 3 | 2 → 2 | 0 → 0 | 0 → 0 | 1.50 → 1.50 | 0 → 0 | 1.60 → 1.60 | 139.9 → 148.3 |
-| uc-frozen | 3 | 2 → 2 | 0 → 0 | 0 → 0 | 1.50 → 1.50 | 0 → 0 | 1.60 → 1.60 | 142.8 → 158.9 |
-| presets | 3 | 3 → 3 | 0 → 0 | 0 → 0 | 1.33 → 1.00 | 0 → 0 | 1.60 → 1.20 | 125.7 → 99.6 |
+| v1 | 20 | 19 → 19 | 0 → 0 | 0 → 0 | 1.00 → 1.00 | 0 → 0 | 7.60 → 7.60 | 74.4 → 68.8 |
+| v3 | 20 | 20 → 20 | 18 → 18 | 0 → 0 | 1.45 → 1.30 | 1 → 1 | 11.60 → 10.40 | 102.2 → 74.5 |
+| v3-dev | 20 | 18 → 18 | 9 → 10 | 0 → 0 | 1.17 → 1.22 | 0 → 0 | 8.40 → 8.80 | 83.3 → 78.6 |
+| v3-negatives | 10 | 0 → 0 | 0 → 0 | 0 → 0 | 0.00 → 0.00 | 0 → 0 | 0.00 → 0.00 | 17.4 → 17.6 |
+| v5 | 20 | 20 → 20 | 18 → 18 | 0 → 0 | 1.25 → 1.10 | 1 → 1 | 10.00 → 8.80 | 77.6 → 66.8 |
+| v5-negatives | 10 | 0 → 0 | 0 → 0 | 0 → 0 | 0.00 → 0.00 | 0 → 0 | 0.00 → 0.00 | 21.0 → 15.4 |
+| uc | 3 | 2 → 2 | 0 → 0 | 0 → 0 | 1.50 → 1.50 | 0 → 0 | 1.60 → 1.60 | 139.9 → 132.3 |
+| uc-frozen | 3 | 2 → 2 | 0 → 0 | 0 → 0 | 1.50 → 1.50 | 0 → 0 | 1.60 → 1.60 | 142.8 → 147.6 |
+| presets | 3 | 3 → 3 | 0 → 0 | 0 → 0 | 1.33 → 1.00 | 0 → 0 | 1.60 → 1.20 | 125.7 → 84.8 |
 
-No lost results or key-fact leads. Zero gate violations and zero verifier failures in both arms. Strict UC policy changes: 0/6 (none). Strict full comparison: 26/109 identical. Metrics retain every changed lead/purchase, timing and raw misses. These are used development banks, never a new held-out result.
+No lost results or key-fact leads. Zero gate violations and zero verifier failures in both arms. Strict UC policy changes: 0/6 (none). Strict full comparison: 25/109 identical. Metrics retain every changed lead/purchase, timing and raw misses. These are used development banks, never a new held-out result.
 
 Reproduce with `LLM_PROVIDER=fixture DECISION_PROVIDER=fixture SETTLEMENT_RAIL=simulated SEARCH_EMBEDDINGS=off LANGFUSE_ENABLED=0 sh /Users/speedpowermac/Documents/ChatGPT/tftf-wt/notes/review-nov10/heavy-lock.sh npx tsx docs/evidence/qual/dev-measure.ts <output-dir>`. The harness adds per-ask timing to the established K5 runner, without changing its scorer or bank list.

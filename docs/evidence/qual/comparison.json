@@ -1,8 +1,8 @@
 {
  "summary": {
   "runs": 109,
-  "policyIdentical": 26,
-  "leadChanged": 21,
+  "policyIdentical": 25,
+  "leadChanged": 22,
   "policyDiffs": [
    "presets-XRPL1",
    "presets-XRPL2",
@@ -67,6 +67,7 @@
    "v3-dev-D18",
    "v3-dev-D19",
    "v3-dev-D20",
+   "v3-negatives-N03",
    "v5-H01",
    "v5-H02",
    "v5-H03",
@@ -135,20 +136,20 @@
   {
    "file": "uc-UC1",
    "policyEqual": true,
-   "leadChanged": true,
+   "leadChanged": false,
    "answersItBefore": 0,
    "answersItAfter": 0,
    "leadBefore": [
     "Minutes from the September meeting, released on 25 September 2026, showed that seven members voted to raise the policy rate by 25 bp to 1.00%, while two members preferred to keep it at 0.75%."
    ],
    "leadAfter": [
-    "The Bank of Japan conducted its regular outright purchase operations for 5-year to 10-year JGBs on 18 September 2026, offering to buy 600 billion yen at fixed-rate and variable-rate auctions."
+    "Minutes from the September meeting, released on 25 September 2026, showed that seven members voted to raise the policy rate by 25 bp to 1.00%, while two members preferred to keep it at 0.75%."
    ]
   },
   {
    "file": "uc-UC2",
    "policyEqual": true,
-   "leadChanged": true,
+   "leadChanged": false,
    "answersItBefore": 0,
    "answersItAfter": 0,
    "leadBefore": [
@@ -156,8 +157,8 @@
     "Kestrel Semiconductor lost a fifth of its consensus gross margin in a single morning."
    ],
    "leadAfter": [
-    "Kestrel Semiconductor lost a fifth of its consensus gross margin in a single morning.",
-    "On 1 October 2026, the average fiscal 2027 gross margin estimate across the five brokers covering the Singapore-based fabless designer fell to 55.2% from 58.5%"
+    "On 1 October 2026, the average fiscal 2027 gross margin estimate across the five brokers covering the Singapore-based fabless designer fell to 55.2% from 58.5%",
+    "Kestrel Semiconductor lost a fifth of its consensus gross margin in a single morning."
    ]
   },
   {
@@ -176,20 +177,20 @@
   {
    "file": "uc-frozen-UC1",
    "policyEqual": true,
-   "leadChanged": true,
+   "leadChanged": false,
    "answersItBefore": 0,
    "answersItAfter": 0,
    "leadBefore": [
     "Minutes from the September meeting, released on 25 September 2026, showed that seven members voted to raise the policy rate by 25 bp to 1.00%, while two members preferred to keep it at 0.75%."
    ],
    "leadAfter": [
-    "The Bank of Japan conducted its regular outright purchase operations for 5-year to 10-year JGBs on 18 September 2026, offering to buy 600 billion yen at fixed-rate and variable-rate auctions."
+    "Minutes from the September meeting, released on 25 September 2026, showed that seven members voted to raise the policy rate by 25 bp to 1.00%, while two members preferred to keep it at 0.75%."
    ]
   },
   {
    "file": "uc-frozen-UC2",
    "policyEqual": true,
-   "leadChanged": true,
+   "leadChanged": false,
    "answersItBefore": 0,
    "answersItAfter": 0,
    "leadBefore": [
@@ -197,8 +198,8 @@
     "Kestrel Semiconductor lost a fifth of its consensus gross margin in a single morning."
    ],
    "leadAfter": [
-    "Kestrel Semiconductor lost a fifth of its consensus gross margin in a single morning.",
-    "On 1 October 2026, the average fiscal 2027 gross margin estimate across the five brokers covering the Singapore-based fabless designer fell to 55.2% from 58.5%"
+    "On 1 October 2026, the average fiscal 2027 gross margin estimate across the five brokers covering the Singapore-based fabless designer fell to 55.2% from 58.5%",
+    "Kestrel Semiconductor lost a fifth of its consensus gross margin in a single morning."
    ]
   },
   {
@@ -281,13 +282,14 @@
   {
    "file": "v1-J06",
    "policyEqual": false,
-   "leadChanged": false,
+   "leadChanged": true,
    "answersItBefore": 0,
    "answersItAfter": 0,
    "leadBefore": [
     "A payment integration must credit the validated delivered_amount, because a partial Payment can succeed while delivering less than the transaction's requested amount."
    ],
    "leadAfter": [
+    "Checking only the requested amount creates the partial-payment exploit described in the XRPL documentation.",
     "A payment integration must credit the validated delivered_amount, because a partial Payment can succeed while delivering less than the transaction's requested amount."
    ]
   },
@@ -307,7 +309,7 @@
   {
    "file": "v1-J08",
    "policyEqual": false,
-   "leadChanged": false,
+   "leadChanged": true,
    "answersItBefore": 0,
    "answersItAfter": 0,
    "leadBefore": [
@@ -315,8 +317,7 @@
     "a buyer can recover an unfinished key-reveal escrow with EscrowCancel after CancelAfter; expiry permits cancellation but does not automatically return funds."
    ],
    "leadAfter": [
-    "If the writer never completes delivery, policy waits for the validated deadline and submits cancellation of the original object.",
-    "a buyer can recover an unfinished key-reveal escrow with EscrowCancel after CancelAfter; expiry permits cancellation but does not automatically return funds."
+    "the buyer's money stays locked if the writer never reveals the key; after CancelAfter the buyer can recover escrow principal by cancellation with EscrowCancel."
    ]
   },
   {
@@ -533,8 +534,7 @@
     "a buyer can recover an unfinished key-reveal escrow with EscrowCancel after CancelAfter; expiry permits cancellation but does not automatically return funds."
    ],
    "leadAfter": [
-    "a buyer can recover an unfinished key-reveal escrow with EscrowCancel after CancelAfter; expiry permits cancellation but does not automatically return funds.",
-    "EscrowCreate supplies a Condition and the expiry window; EscrowFinish supplies the matching Fulfillment, which reveals the secret."
+    "the buyer's money stays locked if the writer never reveals the key; after CancelAfter the buyer can recover escrow principal by cancellation with EscrowCancel."
    ]
   },
   {
@@ -701,7 +701,7 @@
   {
    "file": "v3-V17",
    "policyEqual": false,
-   "leadChanged": true,
+   "leadChanged": false,
    "answersItBefore": 1,
    "answersItAfter": 1,
    "leadBefore": [
@@ -709,8 +709,8 @@
     "Singapore payment-service obligations depend on the service and applicable legal scope, not on whether an agent or XRPL submits the transaction."
    ],
    "leadAfter": [
-    "Singapore payment-service obligations depend on the service and applicable legal scope, not on whether an agent or XRPL submits the transaction.",
-    "MAS describes the Payment Services Act as regulating payment-service providers and payment systems."
+    "MAS describes the Payment Services Act as regulating payment-service providers and payment systems.",
+    "Singapore payment-service obligations depend on the service and applicable legal scope, not on whether an agent or XRPL submits the transaction."
    ]
   },
   {
@@ -792,7 +792,7 @@
   {
    "file": "v3-dev-D04",
    "policyEqual": false,
-   "leadChanged": false,
+   "leadChanged": true,
    "answersItBefore": 1,
    "answersItAfter": 1,
    "leadBefore": [
@@ -800,8 +800,7 @@
     "a buyer can recover an unfinished key-reveal escrow with EscrowCancel after CancelAfter; expiry permits cancellation but does not automatically return funds."
    ],
    "leadAfter": [
-    "EscrowCreate supplies a Condition and the expiry window; EscrowFinish supplies the matching Fulfillment, which reveals the secret.",
-    "a buyer can recover an unfinished key-reveal escrow with EscrowCancel after CancelAfter; expiry permits cancellation but does not automatically return funds."
+    "the Condition field is the previously supplied PREIMAGE-SHA-256 crypto-condition of the escrow, and the Fulfillment field is the PREIMAGE-SHA-256 crypto-condition fulfillment matching the escrow's Condition."
    ]
   },
   {
@@ -898,14 +897,15 @@
   {
    "file": "v3-dev-D12",
    "policyEqual": false,
-   "leadChanged": false,
+   "leadChanged": true,
    "answersItBefore": 0,
    "answersItAfter": 0,
    "leadBefore": [
     "XLS-40 specifies the XRPL DID method and operations for managing DID data."
    ],
    "leadAfter": [
-    "XLS-40 specifies the XRPL DID method and operations for managing DID data."
+    "DIDSet creates or updates an account's decentralized identifier and associated references.",
+    "A pointer to a document is not a ledger guarantee that its claims are accurate or its host remains available."
    ]
   },
   {
@@ -937,7 +937,7 @@
   {
    "file": "v3-dev-D15",
    "policyEqual": false,
-   "leadChanged": false,
+   "leadChanged": true,
    "answersItBefore": 1,
    "answersItAfter": 1,
    "leadBefore": [
@@ -945,8 +945,7 @@
     "OfferCancel removes a previously placed decentralized-exchange offer identified by its sequence number."
    ],
    "leadAfter": [
-    "OfferCreate places a decentralized-exchange order and may immediately trade against available liquidity.",
-    "OfferCancel removes a previously placed decentralized-exchange offer identified by its sequence number."
+    "OfferCreate places a decentralized-exchange order and may immediately trade against available liquidity."
    ]
   },
   {
@@ -1030,7 +1029,7 @@
   },
   {
    "file": "v3-negatives-N03",
-   "policyEqual": true,
+   "policyEqual": false,
    "leadChanged": false,
    "answersItBefore": 0,
    "answersItAfter": 0,
@@ -1183,7 +1182,7 @@
   {
    "file": "v5-H07",
    "policyEqual": false,
-   "leadChanged": false,
+   "leadChanged": true,
    "answersItBefore": 1,
    "answersItAfter": 1,
    "leadBefore": [
@@ -1191,8 +1190,7 @@
     "OfferCancel removes a previously placed decentralized-exchange offer identified by its sequence number."
    ],
    "leadAfter": [
-    "OfferCreate places a decentralized-exchange order and may immediately trade against available liquidity.",
-    "OfferCancel removes a previously placed decentralized-exchange offer identified by its sequence number."
+    "OfferCreate places a decentralized-exchange order and may immediately trade against available liquidity."
    ]
   },
   {
