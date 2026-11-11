@@ -44,7 +44,7 @@ def main():
                     if testnet
                     else []
                 ),
-                *(["Skipped checks are not failures. Payments and passages are checked separately; PASS does not prove who a writer is."] if any(c["status"] == "SKIP" and c["check"] in ("writer credentials", "historical origin") for c in result["checks"]) else []),
+                *(["Skipped is not failed. PASS does not prove who a writer is."] if any(c["status"] == "SKIP" and c["check"] in ("writer credentials", "historical origin") for c in result["checks"]) else []),
                 "RESULT " + ("PASS" if result["ok"] else "FAIL"),
             ]
         )

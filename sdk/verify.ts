@@ -182,7 +182,7 @@ export function verificationText(result: VerificationResult): string {
   }
   // Plain words for people: a skipped check is not a failure. JSON keeps the contract status (`SKIP`).
   for (const c of result.checks.filter(c => c.status !== 'PASS' || c.check === 'audit anchor')) lines.push(`${c.status === 'SKIP' ? 'Skipped' : c.status} ${c.check}: ${c.detail}`)
-  if (result.checks.some(c => c.status === 'SKIP' && ['writer credentials', 'historical origin'].includes(c.check))) lines.push('Skipped checks are not failures. Payments and passages are checked separately; PASS does not prove who a writer is.')
+  if (result.checks.some(c => c.status === 'SKIP' && ['writer credentials', 'historical origin'].includes(c.check))) lines.push('Skipped is not failed. PASS does not prove who a writer is.')
   lines.push(`RESULT ${result.ok ? 'PASS' : 'FAIL'}`)
   return lines.join('\n')
 }

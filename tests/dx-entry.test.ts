@@ -13,6 +13,6 @@ test('verification explains skipped attribution checks in plain words without tr
   const output = verificationText({ ok: true, checks: [{ check: 'writer credentials', status: 'SKIP', detail: 'the writer’s identity is self-declared; checking it needs an online lookup' }] })
   expect(output).toContain('Skipped writer credentials')
   expect(output).not.toMatch(/^SKIP /m)
-  expect(output).toContain('Skipped checks are not failures')
+  expect(output).toContain('Skipped is not failed.')
   expect(output).toContain('PASS does not prove who a writer is')
 })

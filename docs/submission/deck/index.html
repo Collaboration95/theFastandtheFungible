@@ -352,16 +352,17 @@ td.was { color: var(--muted); }
   <h1>Don’t trust our agent. Verify it, against the ledger.</h1>
   <div class="cols" style="grid-template-columns:1fr 1fr;gap:64px;margin-top:44px">
     <div>
-      <div class="term" style="font-size:19px" data-evidence="docs/evidence/round4-j2/python-verifier.txt">
-        <div class="dim"># the Python verifier: standard library only, no Node</div>
-        <div><span class="p">$</span> pip install …/download/v1.1.0/researchagent-1.1.0-py3-none-any.whl</div>
-        <div><span class="p">$</span> researchagent verify UC3.receipts.json --ledger</div>
-        <div class="ok">PASS checks: 57 PASS, 0 FAIL, 2 SKIP</div>
-        <div class="ok">PASS audit anchor: Validated XRPL Testnet ledger 22057921</div>
-        <div class="ok">PASS testnet 12/12 (read-only, s.altnet)</div>
+      <div class="term" style="font-size:18px" data-evidence="docs/evidence/hosted-export-nov11/verify-python-main.txt">
+        <div class="dim"># Python, no Node: a receipt the live sandbox exported</div>
+        <div><span class="p">$</span> pip install …/v1.1.0/researchagent-1.1.0-py3-none-any.whl</div>
+        <div><span class="p">$</span> researchagent verify receipts.json --ledger</div>
+        <div class="ok">PASS checks: 46 passed, 0 failed, 2 skipped</div>
+        <div class="ok">PASS audit anchor: Validated XRPL Testnet ledger 22228575</div>
+        <div class="ok">PASS testnet 11/11 (read-only, s.altnet)</div>
+        <div class="dim">Skipped is not failed. PASS does not prove who a writer is.</div>
         <div class="ok">RESULT PASS</div>
       </div>
-      <p class="cap" style="font-size:23px;margin-top:22px">Any receipt the app or the live sandbox exports can be checked the same way, by anyone, offline or against the ledger (release v1.1.0 or later).</p>
+      <p class="cap" style="font-size:23px;margin-top:22px">Any receipt the app or the live sandbox exports can be checked the same way, by anyone, offline or against the ledger, with release v1.1.0 or later.</p>
     </div>
     <ul class="points" style="margin-top:4px">
       <li><b>Two independent verifiers</b>, TypeScript and Python, agree on all <!--f:vectors-->224<!--/f--> shared vectors: <!--f:vectors_golden-->19<!--/f--> must pass and <!--f:vectors_tampered-->205<!--/f--> tampered ones must fail.</li>
@@ -372,7 +373,7 @@ td.was { color: var(--muted); }
       <li><b>Prompt injection can’t spend:</b> model inputs are untrusted, and only policy code can buy.</li>
     </ul>
   </div>
-  <div class="src"><span>Output: docs/evidence/round4-j2/python-verifier.txt on docs/evidence/lane-b3/UC3.receipts.json · tests/fixtures/receipt-conformance/ · the /ledger/ page</span><span class="n"></span></div>
+  <div class="src"><span>Output: docs/evidence/hosted-export-nov11/ (a hosted-demo export, 11 Nov) · tests/fixtures/receipt-conformance/ · the /ledger/ page</span><span class="n"></span></div>
   <aside class="notes">
     <p><b>Criteria:</b> Technical depth (20%): testing, security and safeguards. Reachability: the verifier is a separate install in another language.</p>
     <p><b>Say:</b> Don’t trust us, verify it. Two independent verifiers, one in Python with no Node, re-check every receipt against the ledger. Our ledger page re-checks every historical Testnet transaction live.</p>
