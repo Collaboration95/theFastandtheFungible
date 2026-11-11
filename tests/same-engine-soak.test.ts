@@ -1,7 +1,9 @@
-import { readFileSync } from 'node:fs'
+import { readFileSync, statSync } from 'node:fs'
+import { join } from 'node:path'
+import { resources } from './helpers/resource-scope.js'
 import { expect, it } from 'vitest'
 // @ts-expect-error manual JavaScript harness is intentionally independent of the application build
-import { compare, deadline, options, burstPass, checkpointer } from '../scripts/soak-same-engine.mjs'
+import { compare, deadline, options, burstPass, progressLog } from '../scripts/soak-same-engine.mjs'
 function evidence() {
   return { options:{runs:200},asks:Array.from({length:200},(_,index)=>({index,stage:'measured',ok:true,rss:200*1048576,ms:index<100?100:200,pid:1,engineId:'one',workerId:4,storeId:'db'})),samples:Array.from({length:61},()=>({stage:'measured',rss:200*1048576,gapMs:1000,hostSleepMs:0,worker:{loopP99Ms:12}})),restarts:Array.from({length:20},()=>({closed:true})),failures:[] as string[],auditViolations:0 }
 }
@@ -87,12 +89,18 @@ it('replays the historical quick miss without rewriting its measured slope',()=>
   expect(diagnostic.acceptanceEligible).toBe(false)
 })
 
-it('checkpoints the report at most once per interval, starting with the first ask',()=>{
-  let t=0,saves=0
-  const checkpoint=checkpointer(()=>{saves++},5000,()=>t)
-  checkpoint();expect(saves).toBe(1)
-  for(t=1;t<5000;t+=250)checkpoint()
-  expect(saves).toBe(1)
-  t=5000;checkpoint();expect(saves).toBe(2)
-  t=5001;checkpoint();expect(saves).toBe(2)
+it('appends one short line per ask or sample instead of rewriting the growing report',()=>{
+  const path=join(resources().tempDir('soak-progress-'),'soak.json.progress.ndjson')
+  {
+    const progress=progressLog(path)
+    for(let i=0;i<500;i++)progress.append({ask:{index:i,ok:true,ms:150,rss:6e8}})
+    progress.append({sample:{completed:500,rss:6.1e8}})
+    const sizeAt501=statSync(path).size
+    progress.append({ask:{index:500,ok:true,ms:150,rss:6e8}});progress.close()
+    const lines=readFileSync(path,'utf8').trim().split('\n').map(line=>JSON.parse(line))
+    expect(lines).toHaveLength(502)
+    expect(lines[0]).toEqual({ask:{index:0,ok:true,ms:150,rss:6e8}});expect(lines[500].sample.completed).toBe(500)
+    // Each write adds only its own line: the 502nd costs about as much as the first, however long the run.
+    expect(statSync(path).size-sizeAt501).toBe(JSON.stringify(lines[501]).length+1)
+  }
 })

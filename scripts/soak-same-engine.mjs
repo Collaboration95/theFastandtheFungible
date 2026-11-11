@@ -1,6 +1,6 @@
 /** Manual, offline same-worker workload. No forced GC; RSS belongs to the entire process. */
 import { spawn } from 'node:child_process'
-import { writeFileSync, readFileSync, mkdirSync, existsSync, statSync } from 'node:fs'
+import { writeFileSync, readFileSync, mkdirSync, existsSync, statSync, openSync, writeSync, closeSync } from 'node:fs'
 import { resolve, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { randomUUID, createHash } from 'node:crypto'
@@ -42,13 +42,16 @@ export function compare(report) {
 }
 
 /**
- * Rewriting the whole report after every ask allocated a multi-MiB string and native write buffer per ask inside
- * the measured process: RSS covers the harness too. A 2 MiB report rewritten 3,900 times grew RSS outside the JS
- * heaps by 115 MiB (docs/evidence/soak-nov11). Write at most once per interval instead.
+ * Progress during asks goes to an append-only sidecar (`<output>.progress.ndjson`): one short JSON line per ask row
+ * and per sample, written through one open file. RSS covers the harness too, and re-serialising the whole report
+ * inside the measured process is harness noise: per ask it grew native memory by 115 MiB (docs/evidence/soak-nov11);
+ * every 5 s (#470) it still allocated a growing 1–3 MiB string about every 30 asks, which in isolation grew RSS
+ * 44 → 180 MiB over 3,900 asks against 42 → 62 MiB without it (docs/evidence/soak-nov11b). Stage boundaries, burst,
+ * restarts and the final summary still write the full report.
  */
-export function checkpointer(save, intervalMs=5000, now=Date.now) {
-  let last=-Infinity
-  return ()=>{const t=now();if(t-last>=intervalMs){last=t;save()}}
+export function progressLog(path) {
+  const fd=openSync(path,'w')
+  return { append:row=>{writeSync(fd,JSON.stringify(row)+'\n')}, close:()=>closeSync(fd) }
 }
 
 // Loaded with --import in both host and engine worker, before any engine module.
@@ -118,8 +121,8 @@ async function run(o) {
   const start=Date.now(), storeId=randomUUID(), dbPath=join(o.dataDir,'app.db')
   const r={schema:'same-engine-soak-v1',label:'BASELINE · SHARED HOST · SYNTHETIC fixtures / SIMULATED rail · not finals acceptance', options:o,harnessSha256:createHash('sha256').update(readFileSync(fileURLToPath(import.meta.url))).digest('hex'),source:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),host:{platform:platform(),release:release(),cpus:cpus().length,node:process.version,load:loadavg()},startedAt:new Date().toISOString(),storeId,pid:process.pid,samples:[],intervals:[],lags:[],asks:[],restarts:[],failures:[],auditViolations:0,burst:{requested:o.burst,pass:false},seedCases:[]}
   const save=()=>writeFileSync(o.output,JSON.stringify(r,null,2)+'\n')
-  // Per-ask progress checkpoint. Stage boundaries, burst, restarts and the final summary still save in full.
-  const checkpoint=checkpointer(save)
+  // Per-ask progress is appended to a sidecar; stage boundaries, burst, restarts and the final summary save in full.
+  const progress=progressLog(o.output+'.progress.ndjson')
   const store=new Store(dbPath)
   // Store creates validated run records; historical event insertion is batched per run.
   try {
@@ -152,7 +155,7 @@ async function run(o) {
   const channel=new BroadcastChannel('same-engine-soak-'+process.env.SOAK_ID)
   channel.onmessage=({data})=> {if(data.lag)r.lags.push({...data,stage,completed});if(data.snapshot)snapshots.push(data);if(data.burstReady)burstReady=true;if(data.burstActive!==undefined){burstActive=data.burstActive;burstPeak=Math.max(burstPeak,burstActive)};if(data.blocked)r.failures.push('non-loopback request');if(data.worker){worker=data;r.intervals.push({interval:data.interval,engineId:data.engineId,stage,completed,start:data.intervalStart,end:data.intervalEnd,engineP99Ms:data.loopP99Ms,load:loadavg()})}}
   const bytes=path=>existsSync(path)?statSync(path).size:0
-  const sample=()=>{const wall=Date.now(),mono=performance.now();r.samples.push({at:wall,elapsedMs:wall-start,stage,completed,rss:process.memoryUsage().rss,hostHeap:process.memoryUsage().heapUsed,hostMemory:process.memoryUsage(),hostHandles:process.getActiveResourcesInfo().length,worker,dbBytes:bytes(dbPath),walBytes:bytes(dbPath+'-wal'),load:loadavg(),gapMs:mono-lastMono,hostSleepMs:Math.max(0,(wall-lastWall)-(mono-lastMono))});lastWall=wall;lastMono=mono}
+  const sample=()=>{const wall=Date.now(),mono=performance.now();const row={at:wall,elapsedMs:wall-start,stage,completed,rss:process.memoryUsage().rss,hostHeap:process.memoryUsage().heapUsed,hostMemory:process.memoryUsage(),hostHandles:process.getActiveResourcesInfo().length,worker,dbBytes:bytes(dbPath),walBytes:bytes(dbPath+'-wal'),load:loadavg(),gapMs:mono-lastMono,hostSleepMs:Math.max(0,(wall-lastWall)-(mono-lastMono))};r.samples.push(row);progress.append({sample:row});lastWall=wall;lastMono=mono}
   const timer=setInterval(sample,1000)
   const boot=async()=>{worker=undefined;const e=await deadline(startEngine({dataDir:o.dataDir}),o.timeoutMs);const readyAt=performance.now();while(!worker){if(performance.now()-readyAt>o.timeoutMs)throw Error('timeout waiting for worker metrics');await new Promise(done=>setTimeout(done,10))};const h=await(await fetch(e.apiUrl+'/health')).json();if(!h.labels.research.includes('fixture')||!h.labels.decision.includes('fixture')||!h.labels.settlement.includes('SIMULATED'))throw Error('Unsafe engine mode');for(const url of [e.apiUrl,e.publisherUrl])if([5100,8788,8790].includes(+new URL(url).port))throw Error('Protected port');return e}
   const close=async e=>{await deadline(e.close(),o.timeoutMs);for(const url of [e.apiUrl,e.publisherUrl]){let reachable=false;try{await fetch(url+'/health',{signal:AbortSignal.timeout(1000)});reachable=true}catch{ /* expected refusal */ }if(reachable)throw Error('Listener survived close')}}
@@ -161,7 +164,7 @@ async function run(o) {
     const sdk=createClient({baseUrl:engine.apiUrl,token:engine.apiToken})
     const ask=async(index,s)=>{const uc=['UC1','UC2','UC3','UC4'][(index+o.seed)%4],t=performance.now();const identity={pid:process.pid,engineId:worker.engineId,workerId:worker.workerId,storeId};let row
       try{const result=await sdk.ask(USE_CASES[uc].question+(uc==='UC2'?' (pricing & margins)':''),{budgetSgd:2,idempotencyKey:`soak-${s}-${index}`,signal:AbortSignal.timeout(o.timeoutMs)});const snapshot=await(await fetch(engine.apiUrl+'/api/mcp/runs/'+result.run_id,{headers:{Authorization:'Bearer '+engine.apiToken}})).json();const audit=auditRuns([snapshot],corpus);r.auditViolations+=audit.total;row={ok:result.phase==='DONE',runId:result.run_id,phase:result.phase,reservedMinor:snapshot.reservedMinor};if(snapshot.reservedMinor)r.failures.push('unexplained reservation '+result.run_id)}catch(error){row={ok:false,error:error.message};r.failures.push('ask failed '+index)}
-      r.asks.push({...identity,...row,index,uc,stage:s,ms:performance.now()-t,rss:process.memoryUsage().rss});if(s==='measured')completed++;checkpoint()}
+      const askRow={...identity,...row,index,uc,stage:s,ms:performance.now()-t,rss:process.memoryUsage().rss};r.asks.push(askRow);if(s==='measured')completed++;progress.append({ask:askRow})}
     await snapshot('early')
     for(const [s,count] of [['warmup',o.warmup],['measured',o.runs]]){stage=s;const began=Date.now();for(let i=0;i<count;i+=o.concurrency)await Promise.all(Array.from({length:Math.min(o.concurrency,count-i)},(_,j)=>ask(i+j,s)));if(s==='measured'&&Date.now()-began<61000)await new Promise(done=>setTimeout(done,61000-(Date.now()-began)))}
     await snapshot('late')
@@ -184,7 +187,7 @@ async function run(o) {
     stage='restart';await close(engine);engine=undefined
     for(let i=0;i<20;i++){const t=performance.now();engine=await boot();const identity={engineId:worker.engineId,workerId:worker.workerId};await close(engine);engine=undefined;r.restarts.push({cycle:i+1,...identity,ms:performance.now()-t,closed:true});save()}
   } catch(error){r.failures.push(error.message)}
-  finally{if(engine)try{await close(engine)}catch(error){r.failures.push(error.message)}clearInterval(timer);sample();channel.close();control.send({stop:true});await new Promise(done=>control.once('exit',done));for(const row of r.intervals)row.control=controls.get(row.interval)??null;for(const s of r.samples)s.control=controls.get(s.worker?.interval)??null;r.controlIntervals=[...controls.values()];r.durationMs=Date.now()-start;r.summary=compare(r);save()}
+  finally{if(engine)try{await close(engine)}catch(error){r.failures.push(error.message)}clearInterval(timer);sample();channel.close();control.send({stop:true});await new Promise(done=>control.once('exit',done));for(const row of r.intervals)row.control=controls.get(row.interval)??null;for(const s of r.samples)s.control=controls.get(s.worker?.interval)??null;r.controlIntervals=[...controls.values()];r.durationMs=Date.now()-start;r.summary=compare(r);save();progress.close()}
   console.log(JSON.stringify(r.summary));return r.summary.pass?0:1
 }
 const self=fileURLToPath(import.meta.url)
