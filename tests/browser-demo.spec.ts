@@ -182,6 +182,11 @@ test('scenario links open their run within ten seconds and keep compact, honest 
         expect(new URL(page.url()).searchParams.get('run')).toBe(recording.run.runId)
         expect(await page.evaluate(() => Math.max(...['.ra-hdr', '.demo-banner', '.ra-top'].map(selector => document.querySelector(selector)!.getBoundingClientRect().bottom)))).toBeLessThanOrEqual(width === 390 ? 120 : 100)
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+        if (scenario) {
+          await page.goto(`http://127.0.0.1:${port}/theFastandtheFungible/demo/?run=${recording.run.runId}`)
+          await expect(page.getByRole('heading', { level: 1 })).toHaveText(recording.run.question, { timeout: 10_000 })
+          await expect(page.getByRole('combobox', { name: 'Recorded scenario', includeHidden: true })).toHaveValue(scenario === 'UC3-key-reveal' ? '' : scenario)
+        }
         if (!scenario) {
           await expect(page.locator('.demo-shell > summary .demo-label')).toHaveText('Replay · XRPL Testnet, recorded 11 Nov 2026 · fictional writers · no real value')
           if (width === 390) await page.locator('.demo-shell > summary').click()
