@@ -19,6 +19,24 @@ const submission = walk('docs/submission', /\.(md|html|json|txt|srt|csv)$/).filt
 const sitePages = ['index.html', 'developers/index.html', 'builder-feedback/index.html', 'proof/index.html', 'talk/index.html', 'ledger/index.html'].map(p => `site/${p}`)
 const publicFiles = ['README.md', ...submission, ...sitePages]
 
+// #482 made a Testnet Permissioned Domain real. Qualifiers must be local to
+// each claim, including across wrapped prose and SRT cue boundaries.
+const domainWindow = 200
+function domainClaimViolations(text: string): number[] {
+  const hits: number[] = []
+  for (const match of text.matchAll(/Permissioned Domains?/gi)) {
+    const at = match.index!
+    if (/\b(?:no|without|do not use|does not use)\s*$/i.test(text.slice(Math.max(0, at - 40), at))) continue
+    const nearby = text.slice(Math.max(0, at - domainWindow), at + match[0].length + domainWindow)
+    const qualified = /\b(?:Testnet|operator[- ]issued|identity only)\b/i.test(nearby)
+    const affirmative = nearby
+      .replace(/\b(?:not|no|without)\s+(?:(?:on|a)\s+)?(?:Mainnet|KYC)\b/gi, '')
+      .replace(/\bMainnet\s+(?:spending\s+)?(?:(?:is|remains)\s+)?(?:disabled|unsupported|unavailable)\b/gi, '')
+    if (!qualified || /\b(?:Mainnet|KYC(?:'d)?)\b/i.test(affirmative)) hits.push(at)
+  }
+  return hits
+}
+
 describe('judge pack: one true story', () => {
   it('names no old release as current (v1.0.x appears only to say it cannot verify new exports)', () => {
     const found: string[] = []
@@ -67,12 +85,42 @@ describe('judge pack: one true story', () => {
   it('claims no XRPL feature we do not use or that is not available on the network', () => {
     // XRPL review: not used, or not available on Testnet or Mainnet. Saying we have none of them is fine.
     const did = /\bDIDs?\b/ // The acronym is case-sensitive; prose such as 'Did I get paid?' is not a feature claim.
-    const never = /Permissioned Domains?|\bMPTs?\b|XLS-56|Batch (?:transaction|amendment)|payment channels?|PayChan|mainnet[- ]ready|KYC'?d|smart[- ]contract/i
+    const never = /\bMPTs?\b|XLS-56|Batch (?:transaction|amendment)|payment channels?|PayChan|mainnet[- ]ready|KYC'?d|smart[- ]contract/i
     const denial = /\bno (?:smart )?contract|\bwithout (?:a )?smart contract|no Permissioned Domains|There's no contract/i
     const hits: string[] = []
     for (const file of publicFiles) {
       for (const [i, line] of read(file).split('\n').entries()) if ((did.test(line) || never.test(line)) && !denial.test(line)) hits.push(`${file}:${i + 1}`)
     }
+    expect(hits).toEqual([])
+  })
+
+  it.each([
+    'A Testnet Permissioned Domain lists the accepted issuer.',
+    'Operator-issued identity uses a Permissioned Domain.',
+    'A Permissioned Domain is for identity only, not KYC.',
+    'Accepted Testnet Credentials.\n\n21\n00:01:24,264 --> 00:01:29,034\nA Permissioned Domain lists the issuer.',
+    'A Testnet Permissioned Domain is for identity only; Mainnet spending remains disabled.',
+    'No Permissioned Domains are used.',
+  ])('allows the qualified or explicitly denied domain claim: %s', text => {
+    expect(domainClaimViolations(text)).toEqual([])
+  })
+
+  it.each([
+    'A Permissioned Domain lists the accepted issuer.',
+    `Testnet ${'unrelated text '.repeat(40)}A Permissioned Domain lists the issuer.`,
+    'A Testnet Permissioned Domain is used on Mainnet.',
+    'A Mainnet Permissioned Domain is for identity only.',
+    'A Testnet Permissioned Domain provides KYC.',
+    "Operator-issued Permissioned Domains make writers KYC'd.",
+  ])('rejects the unqualified, Mainnet or KYC domain claim: %s', text => {
+    expect(domainClaimViolations(text)).not.toEqual([])
+  })
+
+  it('qualifies every Permissioned Domain claim in the submission and video', () => {
+    const hits = publicFiles.flatMap(file => {
+      const text = read(file)
+      return domainClaimViolations(text).map(at => `${file}:${text.slice(0, at).split('\n').length}`)
+    })
     expect(hits).toEqual([])
   })
 

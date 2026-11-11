@@ -93,3 +93,7 @@ deferred footage is excluded. Owner takes go in `voice/owner/<shot-id>.wav` unde
 that media directory. After fresh hosted footage is ready and deferred flags are
 removed, assemble with `--voice owner`. Timings and captions use that same cut.
 No media is committed. Upload/link remains with the owner in pinned issue #265.
+
+Signed Testnet fee reference: buyer <!--f:fee_create-->12<!--/f--> drops;
+writer <!--f:fee_finish-->423<!--/f--> drops. The unsigned probe card is a separate,
+historical observation and charges nothing.
