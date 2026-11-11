@@ -5,7 +5,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from 
 import { execFileSync } from 'node:child_process'
 import { createServer } from 'node:http'
 import { join, resolve } from 'node:path'
-import { pathToFileURL } from 'node:url'
+import { pathToFileURL, fileURLToPath } from 'node:url'
 import { createHash } from 'node:crypto'
 import { chromium } from '@playwright/test'
 const { ResourceScope, waitForOutput } = await import('../shared/resource-scope.ts')
@@ -18,8 +18,9 @@ if ([web, vm, apiPort, pubPort].some(p => [5100, 8788, 8790].includes(p))) throw
 const origin = `https://localhost:${web}`, url = file => pathToFileURL(join(root, file)).href
 const env = { ...process.env }
 for (const key of Object.keys(env)) if (/(?:API_KEY|TOKEN|SEED|SECRET)$/.test(key)) delete env[key]
-Object.assign(env, { HOSTED: '1', HOSTED_ORIGIN: origin, HOSTED_TRUSTED_PROXY: '127.0.0.1', HOSTED_IP_HMAC_KEY: 'phone-proof-fixture-only-'.padEnd(40, 'x'), HOSTED_CONTROL_PATH: join(dir, 'control.json'), SETTLEMENT_RAIL: 'simulated', ANCHOR_RAIL: 'off', LLM_PROVIDER: 'fixture', DECISION_PROVIDER: 'fixture', SEARCH_EMBEDDINGS: 'off', LANGFUSE_ENABLED: '0', DOTENV_CONFIG_PATH: join(dir, 'no-env'), APP_DB: join(dir, 'app.db'), PUBLISHER_DB: join(dir, 'publisher.db'), REPORT_DIR: join(dir, 'reports'), PUBLISHER_FAULTS: '0', K_SERVICE: '', HOSTED_PUBLISHER_UPSTREAM: '', RA_DATA_DIR: dir })
+Object.assign(env, { HOSTED: '1', HOSTED_SSE_GZIP: '1', HOSTED_ORIGIN: origin, HOSTED_TRUSTED_PROXY: '127.0.0.1', HOSTED_IP_HMAC_KEY: 'phone-proof-fixture-only-'.padEnd(40, 'x'), HOSTED_CONTROL_PATH: join(dir, 'control.json'), SETTLEMENT_RAIL: 'simulated', ANCHOR_RAIL: 'off', LLM_PROVIDER: 'fixture', DECISION_PROVIDER: 'fixture', SEARCH_EMBEDDINGS: 'off', LANGFUSE_ENABLED: '0', DOTENV_CONFIG_PATH: join(dir, 'no-env'), APP_DB: join(dir, 'app.db'), PUBLISHER_DB: join(dir, 'publisher.db'), REPORT_DIR: join(dir, 'reports'), PUBLISHER_FAULTS: '0', K_SERVICE: '', HOSTED_PUBLISHER_UPSTREAM: '', RA_DATA_DIR: dir })
 writeFileSync(env.HOSTED_CONTROL_PATH, JSON.stringify({ admissionsPaused: false, spendingPaused: false, reasonCode: 'local_phone_fixture', expiresAt: '2026-11-19T16:00:00Z' }))
+let proofPage
 const metricsFile = join(dir, 'server-metrics.json')
 // Test-only 1.5 s delay at the publisher-client transport boundary, same in both arms, to expose progress frames.
 // This changes no tracked source and no model/payment decision. Readiness alone is overridden: no funded payer here.
@@ -73,7 +74,8 @@ try {
   const nginx = scope.spawn('nginx', ['-c', join(dir, 'nginx.conf'), '-g', 'daemon off;']); nginx.stdout.resume(); nginx.stderr.pipe(process.stderr)
   const browser = await chromium.launch(); scope.defer(() => browser.close())
   const context = await browser.newContext({ ignoreHTTPSErrors: true, viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' })
-  const page = await context.newPage(), cdp = await context.newCDPSession(page)
+  const page = await context.newPage(); proofPage = page
+  const cdp = await context.newCDPSession(page)
   await cdp.send('Network.enable'); await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 150, downloadThroughput: 200000, uploadThroughput: 93750, connectionType: 'cellular4g' }); await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
   await page.addInitScript(() => {
     window.__h7 = { snapshots: [], traces: [], doneVisibleAt: null }
@@ -101,9 +103,16 @@ try {
   await page.screenshot({ path: out.replace(/\.json$/, '.png') })
   const final = await page.evaluate(async () => { const id = new URL(location.href).searchParams.get('run'); return await (await fetch(`/runs/${id}`)).json() })
   const startCount = await page.evaluate(async () => (await (await fetch('/api/demo/status')).json()).remaining.questions)
-  const hashes = Object.fromEntries(['server/routes.ts', 'server/api/runs.ts', 'server/api/sse.ts', 'server/hosted/limits.ts', 'docker/hosted/front/default.conf.template', 'docker/hosted/proxy-headers.conf'].filter(f => existsSync(join(root, f))).map(f => [f, createHash('sha256').update(readFileSync(join(root, f))).digest('hex')]))
-  const uiFiles = Object.fromEntries(['src', 'shared'].flatMap(folder => readdirSync(join(root, folder), { recursive: true, withFileTypes: true }).filter(entry => entry.isFile()).map(entry => join(entry.parentPath, entry.name))).sort().map(file => [file.slice(root.length + 1), createHash('sha256').update(readFileSync(file)).digest('hex')]))
-  const result = { uiFiles, label, at: new Date().toISOString(), evidence: 'local HOSTED=1; fixture models, fictional Kestrel–TSMC corpus, simulated SGD; readiness override; test-only 1500 ms publisher transport delay; nginx front template with local TLS/port adaptations', throttle: { width: 390, height: 844, downloadMbps: 1.6, latencyMs: 150, cpuRate: 4 }, hashes, visits, questions: { afterPlan: planCount, afterCancel: cancelCount, afterStart: startCount }, server, client, doneLagMs: client.doneVisibleAt - server.doneAt, maxTraceArrivalLagMs: Math.max(0, ...client.traces.map(frame => frame.at - Date.parse(frame.serverAt))), snapshotFrames: client.snapshots.length, run: { id: runId, phase: final.phase, rawBytes: Buffer.byteLength(JSON.stringify(final)), spentMinor: final.spentMinor, intents: final.intents.length, receipts: final.receipts.length, verifiedGrants: final.grants.length } }
+  const hashes = Object.fromEntries(['index.html', 'vite.config.ts', 'package.json', 'package-lock.json', 'server/routes.ts', 'server/api/runs.ts', 'server/api/sse.ts', 'server/hosted/limits.ts', 'docker/hosted/front/default.conf.template', 'docker/hosted/proxy-headers.conf'].filter(f => existsSync(join(root, f))).map(f => [f, createHash('sha256').update(readFileSync(join(root, f))).digest('hex')]))
+  const hashTrees = folders => Object.fromEntries(folders.flatMap(folder => readdirSync(join(root, folder), { recursive: true, withFileTypes: true }).filter(entry => entry.isFile()).map(entry => join(entry.parentPath, entry.name))).sort().map(file => [file.slice(root.length + 1), createHash('sha256').update(readFileSync(file)).digest('hex')]))
+  const uiFiles = hashTrees(['src', 'shared', 'public']), engineFiles = hashTrees(['server', 'publisher', 'data/corpus/v2', 'data/writers'])
+  const result = { engineFiles, harnessSha256: createHash('sha256').update(readFileSync(fileURLToPath(import.meta.url))).digest('hex'), uiFiles, label, at: new Date().toISOString(), evidence: 'local HOSTED=1; fixture models, fictional Kestrel–TSMC corpus, simulated SGD; readiness override; test-only 1500 ms publisher transport delay; nginx front template with local TLS/port adaptations', throttle: { width: 390, height: 844, downloadMbps: 1.6, latencyMs: 150, cpuRate: 4 }, hashes, visits, questions: { afterPlan: planCount, afterCancel: cancelCount, afterStart: startCount }, server, client, doneLagMs: client.doneVisibleAt - server.doneAt, maxTraceArrivalLagMs: Math.max(0, ...client.traces.map(frame => frame.at - Date.parse(frame.serverAt))), snapshotFrames: client.snapshots.length, run: { id: runId, phase: final.phase, labels: final.labels, elapsedMs: server.doneAt - Date.parse(final.events[0].at), rawBytes: Buffer.byteLength(JSON.stringify(final)), spentMinor: final.spentMinor, intents: final.intents.length, receipts: final.receipts.length, verifiedGrants: final.grants.length } }
   mkdirSync(resolve(out, '..'), { recursive: true }); writeFileSync(out, JSON.stringify(result, null, 2) + '\n'); console.log(JSON.stringify(result, null, 2))
   if (final.phase !== 'DONE' || !final.receipts.length) throw Error('Paid fixture run did not complete')
+} catch (error) {
+  mkdirSync('scratch', { recursive: true })
+  const failure = resolve('scratch', `h7-phone-${label.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-failure.png`)
+  try { await proofPage?.screenshot({ path: failure }); console.error(`Phone proof failure screenshot: ${failure}`) } catch { /* preserve the original failure */ }
+  for (const file of ['nginx.log', 'front.log']) if (existsSync(join(dir, file))) console.error(readFileSync(join(dir, file), 'utf8').slice(-4000))
+  throw error
 } finally { await scope.close() }
