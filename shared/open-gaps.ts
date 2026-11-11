@@ -22,6 +22,13 @@ const folded = (word: string) => FOLD.get(word) ?? stem(word)
 /** "XRP Ledger" is XRPL; with `split`, CamelCase names count whole and by their words (EscrowFinish → escrowfinish, escrow, finish). */
 const termsOf = (text: string, split: boolean) => questionTerms(`${text} ${split ? text.replace(/([a-z0-9])([A-Z])/g, '$1 $2') : ''}`.replace(/\bXRP Ledger\b/gi, split ? 'XRPL' : '$&'))
 
+const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+const MONTH = '(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)'
+const CALENDAR_DATE = new RegExp(`\\b(20\\d{2})-(\\d{2})-(\\d{2})\\b|\\b(\\d{1,2})(?:st|nd|rd|th)?\\s+(${MONTH})\\s+(20\\d{2})\\b|\\b(${MONTH})\\s+(\\d{1,2})(?:st|nd|rd|th)?,?\\s+(20\\d{2})\\b`, 'gi')
+/** Compare explicit calendar dates across ISO, day-month and month-day wording, without treating the year alone as a date. */
+const explicitDates = (text: string) => [...text.matchAll(CALENDAR_DATE)].map(m =>
+  m[1] ? `${m[1]}-${Number(m[2])}-${Number(m[3])}` : m[4] ? `${m[6]}-${MONTHS.indexOf(m[5].slice(0, 3).toLowerCase()) + 1}-${Number(m[4])}` : `${m[9]}-${MONTHS.indexOf(m[7].slice(0, 3).toLowerCase()) + 1}-${Number(m[8])}`)
+
 /** Necessary semantic checks before word overlap can establish a requested fact. These only reject unsupported facts. */
 const supportChecks = new Map<string, boolean>()
 export function factSupportBoundary(fact: string, passage: string): boolean {
@@ -30,6 +37,11 @@ export function factSupportBoundary(fact: string, passage: string): boolean {
   const check = () => {
     // A source's unrelated figure or access date cannot establish a requested date.
     if ((fact.match(/\b20\d{2}\b/g) ?? []).some(year => !passage.includes(year))) return false
+    const dates = explicitDates(fact)
+    if (dates.length) {
+      const observed = new Set(explicitDates(passage))
+      if (dates.some(date => !observed.has(date))) return false
+    }
     // A request for how a fee is set, or who votes on it, asks for a mechanism or actor, not its numeric amount.
     const explanatory = (/^(?:how\b(?!\s+(?:much|many|long))|who\b)/i.test(fact) || /\b(?:mechanism|method|policy)\b/i.test(fact)) && !/\b(?:amounts?|numbers?|figures?)\b/i.test(fact)
     if (QUANTITY.test(fact) && !explanatory && !/\b\d[\d,.]*\s*(?:%|(?:XRP|drops?|days?|hours?|minutes?|seconds?|weeks?|months?|years?|SGD|USD|bp|tickets?|objects?)\b)/i.test(passage)) return false
@@ -52,7 +64,8 @@ export function factSupportBoundary(fact: string, passage: string): boolean {
     if (/\b(?:activation date|when\b[^.!?]{0,60}\b(?:activated|enabled|launched))\b/i.test(fact)
       && !sentences(passage).some(text => /\b(?:activated|activation|enabled|launched)\b[^.!?]{0,45}\b(?:on|since)\b[^.!?]{0,30}\b20\d{2}\b/i.test(text) && !/\b(?:not|never)\b/i.test(text) && !answerBoilerplate(text))) return false
     if (/\bcredentials?\b/i.test(fact) && /\b(?:prove\w*|attest\w*|means?|meaning)\b/i.test(fact)
-      && !/\bcredentials?\b[^.!?]{0,70}\b(?:attests?|records?|represents?)\b|\bissuer'?s?\s+(?:attestation|assertion)\b/i.test(passage)) return false
+      && !sentences(passage).some(text => /\bcredentials?\b[^.!?]{0,70}\b(?:attests?|records?|represents?)\b|\bissuer'?s?\s+(?:attestation|assertion)\b/i.test(text)
+        && !/\b(?:not|never|no|without)\b[^.!?]{0,70}\b(?:attest\w*|records?|represents?|assertion)\b/i.test(text))) return false
     if (kind && ['flag', 'header', 'standard', 'code', 'field'].includes(kind) && !answerNames(kind, passage, '').length) return false
     return true
   }

@@ -125,3 +125,12 @@ it.each(['Whether RLUSD supports escrow on 1 January 2027', 'RLUSD issuer permis
 it.each(['The TokenEscrow activation date', 'When TokenEscrow was activated in 2026', 'When the issuer enabled token escrow in 2026'])('a dated status observation is not an activation date: %s', text => {
   expect(fixtureCoverage([{ id: 'dated', text }], [{ ref: 'p1', text: 'TokenEscrow requires AllowTrustLineLocking. The issuer had not enabled it on 11 November 2026.' }])).toEqual({ dated: 'missing' })
 })
+it.each(['RLUSD issuer permission as of 12 November 2026', 'RLUSD issuer permission as of 2026-11-12', 'RLUSD issuer permission on November 12, 2026'])('a different day in the same year stays missing: %s', text => {
+  expect(fixtureCoverage([{ id: 'dated', text }], [{ ref: 'p1', text: 'RLUSD requires AllowTrustLineLocking; the issuer had not enabled it on 11 November 2026.' }])).toEqual({ dated: 'missing' })
+})
+it.each(['What XRPL Credentials attest to', 'What an XRPL Credential proves', 'What a Credential means and who makes the assertion'])('a negated attestation cannot establish Credential meaning: %s', text => {
+  expect(fixtureCoverage([{ id: 'meaning', text }], [{ ref: 'p1', text: 'An XRPL Credential does not attest to any verified issuer assertion.' }])).toEqual({ meaning: 'missing' })
+})
+it('recognizes an explicit matching date across calendar formats', () => {
+  expect(fixtureCoverage([{ id: 'dated', text: 'RLUSD issuer permission as of 2026-11-11' }], [{ ref: 'p1', text: 'RLUSD requires AllowTrustLineLocking; the issuer had not enabled it on 11 November 2026.' }])).toEqual({ dated: 'supported' })
+})
