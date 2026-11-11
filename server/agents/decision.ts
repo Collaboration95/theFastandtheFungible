@@ -146,10 +146,13 @@ const metadataWords = (candidate: Pick<PublicCandidate, 'title' | 'facets'>) => 
 const MEASURES = /\b(?:fees?|costs?|reserves?|pric(?:e|es|ing)|drops)\b/gi
 const UNIT = /\b(?:drops|XRP|SGD|USD|percent)\b|S\$|%/
 const measureOf = (word: string) => word.toLowerCase().replace(/^pric(?:e|es|ing)$/, 'price').replace(/s$/, '')
-/** H9-06: 2 when a "how much" question's measure (fee, cost, reserve, price, drops) is in the title with a unit, 1 without one, else 0. */
+/**
+ * H9-06: 2 when a "how much" question's measure (fee, cost, reserve, price, drops) is in the title with a unit, 1 without
+ * one, else 0. "Cost" is answered by a fee or a price ("How much does EscrowFinish with a fulfillment cost?").
+ */
 export function measureRank(question: string, title: string): number {
   if (!/\bhow (?:much|many)\b/i.test(question)) return 0
-  const asked = new Set((question.match(MEASURES) ?? []).map(measureOf))
+  const asked = new Set((question.match(MEASURES) ?? []).map(measureOf).flatMap(measure => measure === 'cost' ? ['cost', 'fee', 'price'] : [measure]))
   if (!asked.size || !(title.match(MEASURES) ?? []).some(word => asked.has(measureOf(word)))) return 0
   return UNIT.test(title) ? 2 : 1
 }

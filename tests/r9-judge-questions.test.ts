@@ -53,6 +53,11 @@ describe('H9-06 a "how much" question prefers the title naming its measure and u
     expect(measureRank(FEES, 'Key reveal: paid research delivery, manifest signatures and content hashes')).toBe(0)
     expect(measureRank('How much XRP reserve does an agent wallet need?', 'What XRP account reserves does an agent wallet need?')).toBe(2)
   })
+  it('answers a "cost" question with the fee note (dev bank v1 J01)', () => {
+    const cost = 'How much does EscrowFinish with a fulfillment cost on XRPL Testnet?'
+    expect(measureRank(cost, 'EscrowFinish fulfillment fees: XRP drops and SGD prices in the app')).toBe(2)
+    expect(measureRank(cost, 'What does EscrowFinish do on XRPL?')).toBe(0)
+  })
   it('changes nothing for a question that asks for no amount', () => {
     expect(measureRank(RLUSD, 'EscrowFinish fulfillment fees: XRP drops and SGD prices in the app')).toBe(0)
   })
