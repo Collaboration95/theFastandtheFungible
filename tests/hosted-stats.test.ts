@@ -139,3 +139,9 @@ it('returns a fixed unavailable response if the store cannot be audited, without
   const reply=await get(`http://127.0.0.1:${(server.address() as {port:number}).port}/api/demo/stats`)
   expect(reply.status).toBe(503);expect(reply.body).not.toContain('PRIVATE_QUESTION_SENTINEL');expect(JSON.parse(reply.body)).toEqual({error:'Sandbox numbers are unavailable.'})
 })
+
+it('does not mistake a purchase observation without any BUY trace for policy authority', () => {
+  const store=seeded()
+  store.hostedState(db => db.prepare(`DELETE FROM events WHERE run_id='synthetic-0' AND json_extract(json,'$.type')='BUY'`).run())
+  expect(aggregateSandbox(store).audit.buyWithoutPolicy).toBe(1)
+})

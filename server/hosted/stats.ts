@@ -73,7 +73,7 @@ export function aggregateSandbox(store: Store, now = Date.now()): SandboxStats {
       if (receipts.some(r => !intents.some(i => i.intentId === r.intentId))) result.audit.receiptWithoutIntent++
       if (!events.length) { result.audit.unavailable++; if (duplicateIdentity) result.audit.duplicateIntent++; continue }
       result.audit.checked++
-      const grants = new Set<string>(), bought = new Set<string>(), explicitBuys = new Set<string>()
+      const grants = new Set<string>(), bought = new Set<string>(), authorized = new Set<string>(), explicitBuys = new Set<string>()
       let round = 0, pendingBuy = false, lastIntent: string | undefined, readViolation = false, policyViolation = false, duplicateBuy = false
       for (const event of events) {
         if (event.type === 'DECIDE') round = event.round ?? round+1
@@ -93,14 +93,16 @@ export function aggregateSandbox(store: Store, now = Date.now()): SandboxStats {
           const needsDecision = pendingBuy
           pendingBuy = false
           const intent = intents.find(i => i.intentId === lastIntent), decision = decisions.find(d => d.round === round)
-          if (!intent || needsDecision && !decision?.rows.some(r => r.verdict === 'BUY' && sameSource(r.candidate,intent) && (decision.selectedSourceKey ? sourceKey(intent) === decision.selectedSourceKey : decision.selectedResourceId === intent.resourceId))) policyViolation = true
+          const selected = intent && decision?.rows.some(r => r.verdict === 'BUY' && sameSource(r.candidate,intent) && (decision.selectedSourceKey ? sourceKey(intent) === decision.selectedSourceKey : decision.selectedResourceId === intent.resourceId))
+          if (needsDecision && selected && lastIntent) authorized.add(lastIntent)
+          if (!intent || !lastIntent || !authorized.has(lastIntent)) policyViolation = true
         }
         if (event.type === 'GRANT' && event.intentId) { grants.add(event.intentId); lastIntent ??= event.intentId }
         // Legacy phase traces omit data.intentId; PURCHASE/ESCROW_CREATE supplies the same trace's identity.
         if (event.type === 'READ_PAID' && !grants.has(event.intentId || lastIntent || '')) readViolation = true
       }
       if (readViolation) result.audit.readBeforeGrant++
-      if (policyViolation) result.audit.buyWithoutPolicy++
+      if (policyViolation || intents.some(i => charged.has(i.status) && !authorized.has(i.intentId))) result.audit.buyWithoutPolicy++
       if (duplicateBuy || duplicateIdentity) result.audit.duplicateIntent++
     }
     result.timing = { samples: times.length, medianMs: median(times), p90Ms: times.length ? times[Math.ceil(times.length * .9)-1] : null }
