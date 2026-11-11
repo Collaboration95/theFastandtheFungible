@@ -49,7 +49,7 @@ it('follow-up exclusions retain a new signer identity at the same origin and loc
   const { exampleCandidate }=await import('../shared/contracts/examples.js')
   const changed={...source,sellerKey:'new-key'}
   const hit={source:changed,publisherSlug:'writer',writerSlug:'writer',articleId:'article',version:'v1',title:'Article',abstract:'Abstract',tags:[],tier:'FREE' as const,priceMinor:0,url:'/w/writer/articles/article',relevance:1,family:'article',publishedAt:'2026-11-04',searchMode:'keyword' as const}
-  const client={registry:async()=>[{slug:'writer',name:'Writer',kind:'independent'}],searchPublisher:async()=>[hit],readFree:async()=>({...exampleContent,...ref,source:changed,profileId:'writer'})} as unknown as PublisherClient
+  const client={registry:async()=>[{slug:'writer',name:'Writer',kind:'independent'}],searchPublisher:async()=>[hit],readFree:async()=>({...exampleContent,...ref,source:changed,profileId:'writer',verification:{manifest:{},salts:[]}})} as unknown as PublisherClient // a read readFree already checked: signed (H9-02 keeps only signed free reads)
   const found=await followUpSearch(client,'q',[{...exampleCandidate,...ref,profileId:'writer',publisherSlug:'writer'}])
   expect(found.candidates).toHaveLength(1)
   expect(sourceKey(found.candidates[0])).toBe(sourceKey({...ref,source:changed}))

@@ -152,7 +152,7 @@ async function createConfiguredApi(options: ApiOptions = {}) {
     if (existing) { lease?.(); return existing }
     const release = lease ?? work.acquire()
     const done = progress(runId, 'Working with accessible evidence; spending policy remains enforced.')
-    const runJob = () => withModelUsage(usage => store.appendEvent(runId, { type: usage.fallback ? 'MODEL_FALLBACK' : 'MODEL_USAGE', label: usage.fallback ? 'LLM fallback · labelled fixture' : 'Provider-reported usage', data: usage }), job).catch(() => {
+    const runJob = () => withModelUsage(usage => store.appendEvent(runId, { type: usage.fallback ? 'MODEL_FALLBACK' : 'MODEL_USAGE', label: usage.fallback ? `LLM fallback${typeof usage.reason === 'string' ? ` (${usage.reason})` : ''} · labelled fixture` : 'Provider-reported usage', data: usage }), job).catch(() => {
       store.updateRun(runId, { phase: 'FAILED', error: 'Run interrupted; start a new ask or retry a settled delivery.' })
     }).finally(async () => {
       activeRuns.delete(runId)

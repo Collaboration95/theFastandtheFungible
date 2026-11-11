@@ -51,13 +51,16 @@ export function validateConsumers(manifest, receipt, sha) {
 }
 // H8-02: hosted-demo exports (fresh HOSTED=1 fixtures and the committed real Testnet export) verified by the packed
 // wheel and the packed TS CLI, with anchor binding checked on every anchored export.
-export const hostedExportKinds = ['fixture-purchase', 'fixture-anchored-decline', 'testnet-hosted']
+// H9-02: 'fixture-unsigned-free' is a hosted run whose writer serves a fictional free article without a signed delivery
+// proof (as the hosted demo's Open Records did on 11 Nov); its export must still verify, so that can never ship again.
+export const hostedExportKinds = ['fixture-purchase', 'fixture-anchored-decline', 'testnet-hosted', 'fixture-unsigned-free']
+export const anchoredHostedExportKinds = ['fixture-anchored-decline', 'testnet-hosted']
 export function validateHostedExports(manifest, receipt) {
   const hosted = receipt.verifiers?.hosted, hash = kind => manifest.artifacts.find(a => a.kind === kind)?.sha256
   if (!hosted || hosted.wheelSha256 !== hash('wheel') || hosted.typescriptSha256 !== hash('mcp-tgz')) throw Error('Hosted exports must be verified by the packed wheel and TS CLI')
   for (const kind of hostedExportKinds) {
     const rows = (hosted.exports ?? []).filter(r => r.kind === kind)
     if (rows.length !== 1 || !rows[0].python?.pass || !rows[0].typescript?.pass || !/^[a-f0-9]{64}$/.test(rows[0].sha256 ?? '')) throw Error('Hosted export not verified: ' + kind)
-    if (kind !== 'fixture-purchase' && rows[0].anchorBinding !== 'PASS') throw Error('Hosted export anchor binding not checked: ' + kind)
+    if (anchoredHostedExportKinds.includes(kind) && rows[0].anchorBinding !== 'PASS') throw Error('Hosted export anchor binding not checked: ' + kind)
   }
 }

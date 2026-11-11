@@ -51,7 +51,7 @@ it('shares an anchored decline as a sanitized snapshot whose receipts verify on 
   const { proof, created } = await new RefusalProofs(store).create(runId, { hosted: false, principal: 'operator' })
   const s = proof.snapshot
   expect(created).toBe(true)
-  expect(s).toMatchObject({ version: 'refusal-proof-v1', question: QUESTION, bought: { count: 0, spentMinor: 0, currency: 'SGD' }, environment: { surface: 'local', network: 'XRPL Testnet', models: 'fixture', label: 'XRPL Testnet demo · fixture models · no real value' } })
+  expect(s).toMatchObject({ version: 'refusal-proof-v1', question: QUESTION, bought: { count: 0, spentMinor: 0, currency: 'SGD' }, environment: { surface: 'local', network: 'XRPL Testnet', models: 'fixture', label: 'XRPL Testnet demo · rule-based buying · no real value' } })
   expect(s.found.paid).toBe(12)
   expect(s.found.writers).toBeGreaterThan(1)
   expect(s.found.items.length + s.found.more).toBe(12)
