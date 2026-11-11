@@ -18,7 +18,7 @@ export const FALLBACK_LABELS: Record<string, string> = {
   guard: 'No supplied passage matched closely enough; used offline extracts without calling the model.',
   timeout: 'The model took too long; used offline extracts instead.',
   http: 'The model provider returned an error; used offline extracts instead.',
-  cap: 'The model allowance for this question was used up; used offline extracts instead.',
+  cap: 'A model allowance limit was reached; used offline extracts instead.',
   invalid: 'The model output did not pass validation; used offline extracts instead.',
   unavailable: 'The model was unavailable; used offline extracts instead.',
 }

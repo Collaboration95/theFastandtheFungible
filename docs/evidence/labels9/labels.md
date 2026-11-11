@@ -75,7 +75,7 @@ Display only. The event and reason codes are unchanged in saved runs.
 | `MODEL_FALLBACK / guard` | No supplied passage matched closely enough; used offline extracts without calling the model. |
 | `MODEL_FALLBACK / timeout` | The model took too long; used offline extracts instead. |
 | `MODEL_FALLBACK / http` | The model provider returned an error; used offline extracts instead. |
-| `MODEL_FALLBACK / cap` | The model allowance for this question was used up; used offline extracts instead. |
+| `MODEL_FALLBACK / cap` | A model allowance limit was reached; used offline extracts instead. |
 | `MODEL_FALLBACK / invalid` | The model output did not pass validation; used offline extracts instead. |
 | `MODEL_FALLBACK / unavailable` | The model was unavailable; used offline extracts instead. |
 | `keyword only (embeddings unavailable)` | Keyword search (semantic search not used) |
