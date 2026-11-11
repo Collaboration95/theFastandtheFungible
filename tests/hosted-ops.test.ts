@@ -27,6 +27,14 @@ describe('hosted operator boundaries',()=>{
    expect(output).toContain('--path=/ready')
    // An existing uptime check is put back to 60 s on every deploy (H6: it was slowed to 900 s while probes minted sessions).
    expect(output).toContain("'monitoring' 'uptime' 'update' 'UPTIME_ID' '--project=ra-ho-test' '--period=1'")
+   // H7 (J7): a second check and policy on the same channel emails the owner when the shared payer is under 30 XRP. 503 and a
+   // stopped service pass the check (only the paused page's own 503), so only the `low` body fails it.
+   expect(output).toContain("'--path=/ready/funds'")
+   expect(output).toContain("'--status-codes=200,503' '--matcher-type=not-contains-string' '--matcher-content=\"funds\":\"low\"'")
+   expect(output).toContain("'alpha' 'monitoring' 'policies' 'create'")
+   expect(output.match(/'monitoring' 'uptime' 'create' 'ra-payer-funds'/g)).toHaveLength(1)
+   // No video URL given: the front is deployed exactly as before.
+   expect(output).toContain("'--set-env-vars=VM_UPSTREAM=10.77.0.10:8080'")
    expect(output).toContain("'--tunnel-through-iap' '--quiet'")
    expect(output).toContain('/run/researchagent-startup.done')
    expect(output).toContain('restart --no-block google-startup-scripts.service')
@@ -145,5 +153,19 @@ describe('hosted operator boundaries',()=>{
   const vm=readFileSync('docker/hosted/nginx.conf','utf8')
   for (const kind of ['client_body','proxy','fastcgi','uwsgi','scgi']) expect(vm).toMatch(new RegExp(`${kind}_temp_path /tmp/`))
   expect(readFileSync('docker/Dockerfile.publisher','utf8')).toContain('if (process.env.K_SERVICE) throw')
+ })
+})
+
+describe('hosted front video link (J5)',()=>{
+ const plan=(env:Record<string,string>)=>{
+  const dir=resources().tempDir('ra-ho-video-')
+  writeFileSync(join(dir,'gcloud'),'#!/bin/sh\nexit 99\n',{mode:0o700})
+  return spawnSync(process.execPath,['docker/hosted/ops.mjs','deploy','--project','ra-ho-test','--billing-account','000000-000000-000000','--manifest',join(dir,'manifest.json'),'--notification-channel','projects/ops/notificationChannels/123'],{encoding:'utf8',env:{...process.env,PATH:dir+':'+process.env.PATH,XRPL_PAYER_SEED:'sentinel-private-seed',...env}})
+ }
+ it('gives the front a plain https video URL for the paused page, and refuses anything nginx or gcloud could misread',()=>{
+  const ok=plan({HOSTED_VIDEO_URL:'https://youtu.be/abc123'})
+  expect(ok.status,ok.stderr).toBe(0)
+  expect(ok.stdout).toContain("'--set-env-vars=VM_UPSTREAM=10.77.0.10:8080,HOSTED_VIDEO_URL=https://youtu.be/abc123'")
+  for (const bad of ['http://youtu.be/abc','https://youtu.be/a,b=c','https://youtu.be/a"b','https://youtu.be/$host','https://youtu.be/a;b',"https://youtu.be/a'b",'https://user:pw@youtu.be/x','not a url']) expect(plan({HOSTED_VIDEO_URL:bad}).status,bad).not.toBe(0)
  })
 })

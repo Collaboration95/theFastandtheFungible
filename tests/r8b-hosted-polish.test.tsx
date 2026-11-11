@@ -137,9 +137,9 @@ describe('the demo-video link', () => {
 })
 
 describe('chat', () => {
-  it('says on the hosted demo that a chat reply counts toward the five questions', () => {
+  it('says that plans and chat share 15 attempts and only started research uses a question', () => {
     render(<HostedContext.Provider value={hosted()}><ChatThread messages={[]} onSend={() => {}} /></HostedContext.Provider>)
-    expect(document.querySelector('.ra-chat-note')?.textContent).toBe('Research questions go to Home, where they get a budget. A chat reply counts as one of your 5 questions a day.')
+    expect(document.querySelector('.ra-chat-note')?.textContent).toBe('Research questions go to Home, where they get a budget. Plans and chat replies share a limit of 15 a day. Only starting research uses one of your 5 questions.')
   })
 })
 

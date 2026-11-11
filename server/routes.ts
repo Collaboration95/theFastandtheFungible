@@ -1,3 +1,4 @@
+import { writeSse, endSse, sseBufferedBytes } from './api/sse.js'
 import { writersRouter } from './api/writers.js'
 import { hostedWriterPages } from './hosted/writers.js'
 import { requestBodyStatus } from './body-limit.js'
@@ -6,6 +7,7 @@ import { validateHosted, hostedPayer, pausedShell } from './hosted/bootstrap.js'
 import { HostedLimits } from './hosted/limits.js'
 import { HostedQueue } from './hosted/queue.js'
 import { hostedRouter } from './hosted/routes.js'
+import { HostedReadiness, PayerWatch } from './hosted/readiness.js'
 import { sessionGuard, accessGuard } from './hosted/session.js'
 import { hostedControl, HostedError } from './hosted/control.js'
 import { hostedExecution } from './hosted/execution.js'
@@ -53,7 +55,7 @@ import { type DecisionProvider } from './agents/decision.js'
 import { isLlmConfigured, llmLabel, researchModel } from './agents/llm.js'
 
 /** `observe`: the trust check's relevance re-measure (#205); defaults to Workers AI embeddings when SEARCH_EMBEDDINGS=live. */
-export type ApiOptions = { payer?: XrplPayer; dbPath?: string; publisherUrl?: string; publisherUrls?: string[]; secret?: string; reportDir?: string; provider?: DecisionProvider; observe?: RelevanceObserver; reconcileIntervalMs?: number; hostedReadiness?: () => Promise<boolean> }
+export type ApiOptions = { payer?: XrplPayer; dbPath?: string; publisherUrl?: string; publisherUrls?: string[]; secret?: string; reportDir?: string; provider?: DecisionProvider; observe?: RelevanceObserver; reconcileIntervalMs?: number; hostedReadiness?: () => Promise<boolean>; hostedProbe?: () => Promise<boolean> }
 export async function createApiApp(options: ApiOptions = {}) {
   if (process.env.HOSTED !== '1') return createConfiguredApi(options)
   try { validateHosted(loadConfig()); return await createConfiguredApi(options) }
@@ -72,35 +74,41 @@ async function createConfiguredApi(options: ApiOptions = {}) {
   const streams = new Map<string, Set<Response>>()
   const snapshotTimers = new Map<string, ReturnType<typeof setTimeout>>()
   const lastSnapshot = new Map<string, number>()
+  const terminalSnapshots = new Set<string>()
   const send = (runId: string, frame: string) => {
     const bytes = Buffer.byteLength(frame)
     for (const res of streams.get(runId) ?? []) {
       // Oversize snapshots close the stream; clients resync via the durable GET endpoint.
-      if (res.writableEnded || res.destroyed || bytes > 256 * 1024 || res.writableLength + bytes > 256 * 1024) {
-        streams.get(runId)?.delete(res); if (!streams.get(runId)?.size) { streams.delete(runId); clearTimeout(snapshotTimers.get(runId)); snapshotTimers.delete(runId); lastSnapshot.delete(runId) }
-        if (!res.writableEnded && !res.destroyed) res.end()
+      if (res.writableEnded || res.destroyed || bytes > 256 * 1024 || sseBufferedBytes(res) + bytes > 256 * 1024) {
+        streams.get(runId)?.delete(res); if (!streams.get(runId)?.size) { streams.delete(runId); clearTimeout(snapshotTimers.get(runId)); snapshotTimers.delete(runId); lastSnapshot.delete(runId); terminalSnapshots.delete(runId) }
+        if (!res.writableEnded && !res.destroyed) endSse(res)
         continue
       }
-      res.write(frame)
+      writeSse(res, frame)
     }
   }
   const snapshot = (runId: string) => {
     snapshotTimers.delete(runId)
-    if (!streams.get(runId)?.size) { lastSnapshot.delete(runId); return }
+    if (!streams.get(runId)?.size) { lastSnapshot.delete(runId); terminalSnapshots.delete(runId); return }
     lastSnapshot.set(runId, Date.now())
-    send(runId, `event: snapshot\ndata: ${JSON.stringify(store.getRun(runId))}\n\n`)
+    const run = store.getRun(runId)
+    if (['DONE','FAILED','STOPPED'].includes(run.phase)) terminalSnapshots.add(runId)
+    send(runId, `event: snapshot\ndata: ${JSON.stringify(run)}\n\n`)
   }
   let anchors: AnswerAnchors | undefined
+  const snapshotFloorMs = config.HOSTED === '1' ? 1000 : 250
   const publish = (event: TraceEvent) => {
     if (!streams.get(event.runId)?.size) return
     send(event.runId, `event: trace\ndata: ${JSON.stringify(event)}\n\n`)
-    const terminal = ['DONE','STOPPED','FAILED','SNAPSHOT'].includes(event.type)
-    if (terminal || Date.now() - (lastSnapshot.get(event.runId) ?? 0) >= 250) {
+    // A phase-only failure or a late final anchor also needs an immediate snapshot; ordinary SNAPSHOT progress coalesces.
+    const changed = event.type === 'SNAPSHOT' ? store.getRun(event.runId) : undefined
+    const terminal = ['DONE','STOPPED','FAILED'].includes(event.type) || (changed !== undefined && (config.HOSTED !== '1' || (!terminalSnapshots.has(event.runId) && ['DONE','FAILED','STOPPED'].includes(changed.phase)) || runSettled(changed)))
+    if (terminal || Date.now() - (lastSnapshot.get(event.runId) ?? 0) >= snapshotFloorMs) {
       clearTimeout(snapshotTimers.get(event.runId)); snapshot(event.runId)
       // Hosted: once the last snapshot of a settled run is out, close its streams rather than hold them for a tab that
       // may already be gone behind the proxies. An open page's EventSource reconnects, gets 204 and stops (H5).
-      if (terminal && config.HOSTED === '1' && runSettled(store.getRun(event.runId))) for (const res of streams.get(event.runId) ?? []) res.end()
-    } else if (!snapshotTimers.has(event.runId)) snapshotTimers.set(event.runId, setTimeout(() => snapshot(event.runId), 250 - (Date.now() - lastSnapshot.get(event.runId)!)))
+      if (terminal && config.HOSTED === '1' && runSettled(store.getRun(event.runId))) for (const res of streams.get(event.runId) ?? []) endSse(res)
+    } else if (!snapshotTimers.has(event.runId)) snapshotTimers.set(event.runId, setTimeout(() => snapshot(event.runId), snapshotFloorMs - (Date.now() - lastSnapshot.get(event.runId)!)))
   }
   // Every durable event is also mirrored into the active Langfuse trace (a no-op when tracing is off).
   const store = new Store(options.dbPath ?? config.APP_DB ?? 'data/app.db', event => { try { traceEvent(event); logMoneyEvent(event, store) } catch { /* telemetry never blocks the run */ } publish(event) })
@@ -175,29 +183,34 @@ async function createConfiguredApi(options: ApiOptions = {}) {
     return task
   }
   const faultsAvailable = config.PUBLISHER_FAULTS === '1' && ['localhost', '127.0.0.1', '[::1]'].includes(new URL(publisherUrl).hostname)
-  const context: ApiContext = { work, store, client, payer, purchases, loop, reputation, labels, mcpPolicy, publisherUrl, launch, streams, onStreamEmpty: runId => { clearTimeout(snapshotTimers.get(runId)); snapshotTimers.delete(runId); lastSnapshot.delete(runId) }, reportDir, reportJobs, progress }
+  const context: ApiContext = { work, store, client, payer, purchases, loop, reputation, labels, mcpPolicy, publisherUrl, launch, streams, trackWork: job => {
+    // Planning has its own capacity, but shutdown must still wait for its final durable writes.
+    const pending = job.then(() => {}, () => {})
+    jobs.add(pending); void pending.then(() => jobs.delete(pending))
+  }, sseGzip: config.HOSTED === '1' && config.HOSTED_SSE_GZIP !== '0', onStreamOpen: runId => { if (config.HOSTED === '1') { lastSnapshot.set(runId, Date.now()); if (['DONE','FAILED','STOPPED'].includes(store.getRun(runId).phase)) terminalSnapshots.add(runId) } }, onStreamEmpty: runId => { clearTimeout(snapshotTimers.get(runId)); snapshotTimers.delete(runId); lastSnapshot.delete(runId); terminalSnapshots.delete(runId) }, reportDir, reportJobs, progress }
+  let readiness: HostedReadiness | undefined
   if (hosted && queue) {
-    // Recovery is complete before startup health becomes available. Fresh probes are bounded and coalesced.
-    let probe: Promise<boolean> | undefined, checkedAt = 0, healthy = false
-    const ready = () => {
-      if (options.hostedReadiness) return options.hostedReadiness()
-      if (Date.now()-checkedAt < 5000) return Promise.resolve(healthy)
-      return probe ??= (async () => {
-        try {
-          if (!hosted.available()) return false
-          if (isLlmConfigured() && ['RESEARCH','DECISION'].some(profile => !Number.isFinite(Number(config[`HOSTED_${profile}_INPUT_USD_PER_MILLION`])) || Number(config[`HOSTED_${profile}_INPUT_USD_PER_MILLION`]) <= 0 || !Number.isFinite(Number(config[`HOSTED_${profile}_OUTPUT_USD_PER_MILLION`])) || Number(config[`HOSTED_${profile}_OUTPUT_USD_PER_MILLION`]) < 0)) return false
-          store.checkWritable()
-          const writers = await client.registry()
-          if (!writers.length || !payer) return false
-          const b = await payer.balance()
-          return b.ledgerAgeSeconds <= 30 && b.availableDrops > (store.walletStatus().reservedMinor + hosted.questionMinor) * 1000 + 2000 &&
-            config.HOSTED_PROVIDERS_READY_UNTIL !== undefined && Date.parse(config.HOSTED_PROVIDERS_READY_UNTIL) > Date.now()
-        } catch { return false }
-      })().then(value => { checkedAt = Date.now(); healthy = value; return value }).finally(() => { probe = undefined })
-    }
+    const payerWatch = new PayerWatch()
+    // Recovery is complete before startup health becomes available. Readiness is probed in the background (H7): a
+    // request reads the last answer (at most 15 s old, see server/hosted/readiness.ts) and never waits for the ledgers.
+    const probeReadiness = options.hostedProbe ?? (async () => {
+      try {
+        if (!hosted.available()) return false
+        if (isLlmConfigured() && ['RESEARCH','DECISION'].some(profile => !Number.isFinite(Number(config[`HOSTED_${profile}_INPUT_USD_PER_MILLION`])) || Number(config[`HOSTED_${profile}_INPUT_USD_PER_MILLION`]) <= 0 || !Number.isFinite(Number(config[`HOSTED_${profile}_OUTPUT_USD_PER_MILLION`])) || Number(config[`HOSTED_${profile}_OUTPUT_USD_PER_MILLION`]) < 0)) return false
+        store.checkWritable()
+        const writers = await client.registry()
+        if (!writers.length || !payer) return false
+        const b = await payer.balance()
+        if (b.ledgerAgeSeconds <= 30) payerWatch.record(b.balanceDrops)
+        return b.ledgerAgeSeconds <= 30 && b.availableDrops > (store.walletStatus().reservedMinor + hosted.questionMinor) * 1000 + 2000 &&
+          config.HOSTED_PROVIDERS_READY_UNTIL !== undefined && Date.parse(config.HOSTED_PROVIDERS_READY_UNTIL) > Date.now()
+      } catch { return false }
+    })
+    if (!options.hostedReadiness) readiness = new HostedReadiness(probeReadiness)
+    const ready = () => options.hostedReadiness ? options.hostedReadiness() : readiness!.ready()
     app.use(hostedRouter(context,config,hosted,queue,ready,async () => {
       try { store.checkWritable(); return (await client.registry()).length > 0 } catch { return false }
-    }))
+    }, () => payerWatch.state()))
     // Per-principal and global SSE connection ceilings include reconnects. Behind Cloud Run and nginx a closed tab's
     // stream stayed registered here, so on the live demo every later stream of that visitor got 429 (H5). Now: a settled
     // run answers 204 (EventSource stops; the client reads the run once), a visitor's newest stream replaces their
@@ -206,10 +219,10 @@ async function createConfiguredApi(options: ApiOptions = {}) {
       const principal = res.locals.hostedSession.principal
       if (runSettled(store.getRun(String(req.params.id)))) return res.status(204).end()
       const own = [...streams].filter(([id])=>store.runPrincipal(id)?.principal===principal).flatMap(([id,set])=>[...set].map(stream=>({id,stream})))
-      for (const { id, stream } of own.slice(0, Math.max(0, own.length - 1))) { streams.get(id)?.delete(stream); if (!streams.get(id)?.size) streams.delete(id); stream.end() }
+      for (const { id, stream } of own.slice(0, Math.max(0, own.length - 1))) { streams.get(id)?.delete(stream); if (!streams.get(id)?.size) streams.delete(id); endSse(stream) }
       const total = [...streams.values()].reduce((n,set)=>n+set.size,0)
       if(total>=16) return res.status(429).json({error:'stream_limit'})
-      const expires = setTimeout(() => res.end(), Math.min(HOSTED_STREAM_MS, Math.max(1,res.locals.hostedSession.expires-Date.now())))
+      const expires = setTimeout(() => endSse(res), Math.min(HOSTED_STREAM_MS, Math.max(1,res.locals.hostedSession.expires-Date.now())))
       res.on('close',()=>clearTimeout(expires))
       next()
     })
@@ -289,10 +302,10 @@ async function createConfiguredApi(options: ApiOptions = {}) {
   if (hosted) {
     const retain = () => {
       hosted.expireDrafts()
+      hosted.expireSessions()
       refusal.proofs.expire()
       store.prune({ olderThanDays: 1 })
       store.hostedState(db => {
-        db.prepare('DELETE FROM hosted_sessions WHERE expires<=?').run(Date.now())
         db.prepare("UPDATE hosted_holds SET scope_result=NULL,ip='' WHERE created<?").run(Date.now()-86400000)
         db.prepare('DELETE FROM hosted_reputation WHERE principal NOT IN (SELECT principal FROM hosted_sessions)').run()
       })
@@ -318,6 +331,7 @@ async function createConfiguredApi(options: ApiOptions = {}) {
   const drain = async () => {
     stopReconciler()
     queue?.close()
+    readiness?.close()
     work.controller.abort()
     loop.abortProviders()
     for (const runId of store.runnableRunIds(true)) loop.stop(runId)
@@ -332,8 +346,8 @@ async function createConfiguredApi(options: ApiOptions = {}) {
     await drain()
     timers.forEach(clearInterval)
     snapshotTimers.forEach(clearTimeout)
-    snapshotTimers.clear(); lastSnapshot.clear()
-    for (const set of streams.values()) for (const res of set) res.end()
+    snapshotTimers.clear(); lastSnapshot.clear(); terminalSnapshots.clear()
+    for (const set of streams.values()) for (const res of set) endSse(res)
     hire.close()
     store.close()
     await (payer?.ledger as { close?: () => Promise<void> } | undefined)?.close?.()

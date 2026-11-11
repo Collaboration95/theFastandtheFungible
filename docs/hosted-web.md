@@ -25,7 +25,7 @@ or GCS migration is involved. The front proxy must send the exact public Host.
 | `HOSTED_RESEARCH_INPUT_USD_PER_MILLION`, `HOSTED_RESEARCH_OUTPUT_USD_PER_MILLION` | Conservative upper billing rates for the selected research model, including its peak tier. Missing or invalid rates prevent calls. |
 | `HOSTED_DECISION_INPUT_USD_PER_MILLION`, `HOSTED_DECISION_OUTPUT_USD_PER_MILLION` | Separate conservative upper rates for the selected decision provider/model. |
 | `HOSTED_DECISION_OUTPUT_TOKENS` | Bounded decision-attempt output envelope, default 8192. Qualify the selected provider's bound before enabling admission. |
-| `HOSTED_DECK_URL`, `HOSTED_VIDEO_URL`, `HOSTED_PROGRESS_URL`, `HOSTED_REPLAY_URL` | Public evidence links. Deck, progress and replay default to the repo's deck PDF and the gh-pages `/progress/` and `/demo/` pages; the video stays hidden until `HOSTED_VIDEO_URL` is set. |
+| `HOSTED_DECK_URL`, `HOSTED_VIDEO_URL`, `HOSTED_PROGRESS_URL`, `HOSTED_REPLAY_URL` | Public evidence links. Deck, progress and replay default to the repo's deck PDF and the gh-pages `/progress/` and `/demo/` pages; the video stays hidden until `HOSTED_VIDEO_URL` is set. The operator's links file on the state disk (`hosted-control.mjs links`, below) overrides `video` and adds an optional `proof` link without a redeploy. `HOSTED_VIDEO_URL` in the deploying shell is also given to the Cloud Run front for its paused page. |
 | `APP_DB`, `REPORT_DIR` | Existing durable buyer journal and private report paths. Never serve either directory as static content. |
 | `WALLET_DAILY_CAP_MINOR` | Existing wallet authority remains an additional ceiling. Provision a suitable sponsored cap explicitly; the local default remains unchanged. |
 
@@ -42,14 +42,16 @@ alone; record the actual provider/rail identity in launch acceptance.
 
 `GET /api/demo/status` issues an opaque `__Host-ra_session` cookie (Secure,
 HttpOnly, SameSite=Lax, Path=/, absolute 24-hour lifetime) and returns `csrfToken`.
-Only a SHA-256 cookie hash is stored. Every mutation requires that cookie, the
+Only a SHA-256 cookie hash is stored. A session that never asked a question is dropped
+after 2 hours instead (it holds no money and no run); the page notices the next time it
+asks, fetches a new token and repeats the request once, so a visitor sees nothing. Every mutation requires that cookie, the
 exact `Origin`, and `X-CSRF-Token`; Fetch Metadata must be same-origin when sent.
 No CORS permission is emitted. Public bearer/principal/internal routing headers
 are stripped. A supplied owner bearer cannot grant public authority.
 
 HU must preserve an `Idempotency-Key` (1–128 ASCII letters, digits, underscore or
 hyphen) across scope, submit, network retries and reload recovery. Scope reserves
-a draft and its full question/model envelope; submit uses the same key. The full
+a draft and its full money/model envelope; submit uses the same key. A plan or chat reply counts toward 15 daily planning attempts, not the five started research questions. Only a durable run bound by Start uses a question; cancelled or abandoned plans do not. Money and model caps are unchanged. The full
 canonical request digest is bound independently at scope and submit; a changed
 digest returns 409. Cached scope and submit identities do not repeat work. A
 settled-delivery retry requires its own persistent key. It reuses the same run and
@@ -83,13 +85,15 @@ fault scenario must be bound to a run; there is no public fault endpoint here.
 | Scope | Maximum |
 | --- | --- |
 | Question | 200 minor gross; 2,000 characters; JSON bodies 16 KiB |
-| Session / UTC day | 5 questions, 1,000 minor gross, one outstanding question (a new question replaces the visitor's own unstarted plan or chat reply, which still counts) |
-| IP / UTC day | 60 questions, 12,000 minor gross; 3 starts/minute |
+| Session / UTC day | 5 started research questions and 15 plans/chat replies, 1,000 minor gross, one outstanding question. Cancelled/abandoned plans use no question; Start counts once on its acceptance day (UTC). A new plan releases the previous unstarted plan's unused hold |
+| IP / UTC day | 60 admissions, 12,000 minor gross; 6 starts/minute |
 | Whole demo / UTC day | 300 admissions, 60,000 minor gross |
 | Whole demo / lifetime | 2,100 admissions, 420,000 minor gross |
 | Model USD | $0.05/question, $15/day, $105/lifetime |
 | Model tokens / question | Research input 60,000 and output 6,000; decision input 50,000 |
-| Queue | One active job, two waiting, 90-second wait, cancellable |
+| Queue | One active job, two waiting, 90-second wait, cancellable. Only a question's start queues; planning has its own lane (two plans at once, six waiting, 20-second wait, then 429 `busy`) and does not wait for the running question |
+| New sessions / address / hour | 120 (an IPv4 address, or an IPv6 /64; HMAC of it, kept one hour); a request that already carries a live cookie never counts. Over the cap: 429 `session_rate` |
+| Session table | 5,000. When full, idle sessions (no question ever) at least 10 minutes old are dropped, oldest first, 500 at a time; a session that asked is never dropped early. Still full: 429 `session_limit` |
 
 SQLite immediate transactions reserve the requested gross allowance and complete
 $0.05 model envelope before queueing. Provider transports reserve integer
@@ -101,6 +105,15 @@ principal only when all intents prove final settlement or non-settlement;
 uncertain money keeps the full hold. Outstanding holds count across midnight
 and restart. Question counts are not refunded. IP HMAC buckets expire after 24
 hours; unresolved global/session obligations remain held.
+
+**Planning while the demo is busy (H7).** `POST /api/scope` no longer waits for the running question (it took 9 to 21 s, or
+answered 429 `busy`, whenever another visitor's run held the demo). Planning is one model call that moves no money and
+runs inside its hold's model-dollar envelope, so the caps are unchanged; a small separate lane bounds how many plans run
+at once. Only a question's start (`POST /runs`) queues. `GET /api/demo/status` adds `wait.estimateSeconds` (and
+`estimateSeconds` on each of the visitor's own queue entries): how long until a new question would start, from the
+median of the last ten runs plus what is left of the running one, rounded up to 5 s and never below 10 s while a run is
+active. It is absent until a run has finished since the service started, because there is nothing to base a number on.
+A queued run's first event carries the same estimate.
 
 Restart stops interrupted research rather than silently replaying it. Existing
 payment, refund, cancellation and anchor journals still reconcile; a paused
@@ -128,6 +141,21 @@ defaults to dry-run and requires `--execute` to act. Writes use a
 `HOSTED_CONTROL_EXPIRES_AT` for an earlier control expiry. Resume refuses missing, malformed or expired control; no public route can
 resume the service. An explicit future `HOSTED_CONTROL_EXPIRES_AT` can renew
 control only while pausing, never silently during resume.
+
+**Links without a redeploy.** `video` and `proof` (the optional links `GET /api/demo/status` returns under `links`) are
+re-read on every status call from `links.json` beside the control file on the state disk, and win over `HOSTED_VIDEO_URL`:
+
+```
+node scripts/hosted-control.mjs links --project <id> --execute --video https://youtu.be/<id> --proof https://<url>
+node scripts/hosted-control.mjs links --project <id> --execute                  # show what is set
+node scripts/hosted-control.mjs links --project <id> --execute --clear video    # video | proof | all
+```
+
+Each value must be a plain https URL (a real host, at most 300 characters, no spaces or quotes); anything else is
+refused by the command and ignored if it reaches the file by hand. Without `--project` it edits the file next to
+`HOSTED_CONTROL_PATH`; without `--execute` the remote form only prints its `gcloud` line. The change shows on the
+visitor's next status poll; the running service and its start, stop and auto-resume are not touched. (The front's
+paused page cannot read this file, because it is served when the VM is down: see the paused-page note below.)
 
 `GET /api/demo/status` returns `state` (`ready`, `paused`, `busy`, `degraded`,
 `ended`), capabilities, remaining question/minor allowance, model/rail labels,
@@ -162,8 +190,9 @@ Locally: `npx playwright test --config tests/playwright/hosted.config.ts`
 
 `/livez` reports process liveness. `/startupz` requires writable DB, initialized
 recovery and reachable corpus registry. `/readyz` additionally requires current
-funding/ledger headroom, caps, provider preflight freshness, queue capacity,
-unpaused controls and an unexpired admission window. Paused initialization serves
+funding/ledger headroom, caps, provider preflight freshness (from the background
+check, at most 15 s old), unpaused controls and an unexpired admission window. A full
+queue is not a failure (200, `queue: "full"`). Paused initialization serves
 liveness and status but fails startup/readiness. Launch acceptance must still
 exercise two actual deployed cookie jars, proxy-header spoofing, a real Testnet
 purchase/refund/restart and read-only explorer verification before advertising a
@@ -195,7 +224,7 @@ https://ra-front-651013803640.asia-southeast1.run.app (see
 | Models | DeepSeek + OpenAI Decisions `gpt-6-luna`; lexical search; fixture fallback must be explicitly selected and labelled (11 Nov: `DECISION_PROVIDER=fixture` until the OpenAI key is rotated) |
 | Settlement | native XRP key-reveal, XRPL Testnet only, answer anchors on; pre-funded shared payer/writers |
 | Event | admissions end `2026-11-19T16:00:00Z` (20 Nov midnight SGT); teardown 20 Nov after recovery/archive checks |
-| Alerts | public `/ready` uptime check (front alias of the VM's `/readyz`) + readiness alert; about US$50 billing budget in the billing account's own currency (S$70 on the SGD account) at 50/90/100%; this alert is not a spending cap |
+| Alerts | public `/ready` uptime check (front alias of the VM's `/readyz`) + readiness alert (`ra-readyz-failed`); public `/ready/funds` check (alias of `/readyz/funds`) + `ra-payer-funds-low` alert, same channel, when the shared payer holds less than 30 XRP; about US$50 billing budget in the billing account's own currency (S$70 on the SGD account) at 50/90/100%; this alert is not a spending cap |
 
 The VM has an ephemeral external address for outbound package/registry/model/RPC
 access. No public inbound app or SSH firewall rule exists. The front has no
@@ -204,8 +233,19 @@ preserves session/CSRF/idempotency/SSE headers, discards Authorization and all
 unapproved internal headers, and selects the last Cloud Run supplied visitor
 address as exactly one X-Forwarded-For hop. VM nginx replaces rather than appends
 that hop; HG must trust **one** proxy hop. Access logs are off. Upstream retries
-are disabled to avoid replaying a state-changing request. SSE is unbuffered.
-An unreachable VM returns a static paused page with HTTP 503 and a recording link.
+are disabled to avoid replaying a state-changing request. SSE is unbuffered. Both proxies forward `Accept-Encoding`.
+The API gzips hosted live-run SSE when accepted, with a sync flush per frame; `HOSTED_SSE_GZIP=0` restores plain SSE.
+Hosted full snapshots are coalesced to one per second (plus the initial and immediate terminal snapshots); trace deltas
+still arrive immediately. The 256 KiB frame/queued-input bounds apply before compression. Local/desktop streams stay plain
+with their existing cadence. The front uses gzip level 5 for static text/JSON (HTML is included by nginx automatically),
+never nginx SSE compression. Its hashed `/assets/*` responses carry exactly one `public, max-age=31536000, immutable`
+header; HTML, API, proof and verify pages retain `no-store`.
+An unreachable VM returns a static paused page with HTTP 503 (`docker/hosted/paused.html`). It is the product's
+light theme and type, self-contained (the app's own files live on the VM), carries the "XRPL Testnet · no real value"
+label, and links the recorded walkthrough, the slide deck and the source. A demo video link appears when the front has
+one: export `HOSTED_VIDEO_URL` (a plain https URL) in the shell that runs `ops.mjs deploy`, which passes it to the Cloud
+Run front; nginx fills it into the page. The front is the only place that can serve this page while the VM is down, so
+this link, unlike the state-disk links above, needs a front redeploy (a Cloud Run revision; the VM is not touched).
 
 ## Gateway configuration (HG)
 
@@ -257,6 +297,28 @@ every deploy now sets the existing `ra-readyz` check back to 60 s. Evidence:
 [evidence/h6](evidence/h6/README.md).
 Re-run locally with `node --import tsx scripts/hosted-load.mjs`.
 
+H7 closed the three follow-ups H6 left ([evidence/h7](evidence/h7/README.md)):
+
+- **Session flood.** A client that never keeps a cookie minted a session per request, up
+  to the 5,000 ceiling, after which every new visitor was refused. A new session now needs
+  room under 120 per address per hour (an IPv6 client counts by its /64), counted with the
+  same daily-rotating HMAC as the question caps (no raw address is stored; the records are deleted after an hour). A
+  reload, a second tab or a room of judges behind one network address does not reach it.
+  Sessions that never asked a question expire after 2 hours, and a full table drops the
+  oldest of those before it refuses anyone. The money caps are untouched.
+- **Readiness off the request path.** The readiness probe (writer registry, payer balance,
+  Testnet ledger) runs on its own timer every 5 s and `/api/demo/status`, `/readyz`,
+  `/health` and the ask gate read its last answer from memory (`server/hosted/readiness.ts`).
+  **Staleness bound: 15 s.** An answer is used only while the check behind it started at most
+  15 s ago; cold startup answers not ready without waiting. In steady state that is 5 to 11 s (a check is cut off after 6 s and counted as not
+  ready). Timed-out probes do not overlap: if the underlying ledger call is still pending, readiness stays false until it settles and a fresh check succeeds. If the timer stops, answers turn into "not ready" after 15 s: it fails closed. Pause,
+  the admission window, the money caps and the spending guard are not read from this cache;
+  they are still read fresh at every authority boundary.
+- **Full queue is busy, not down.** `/readyz` answers 200 `{status:"busy",queue:"full"}`
+  when one question is running and two are waiting, so the `ra-readyz-failed` alert does
+  not email the owner for a busy demo. It still answers 503 for `paused`, `degraded` and
+  `ended`. Visitors see the same busy state and the same refusal as before.
+
 `PublisherClient` accepts only a
 numeric-loopback publisher origin, so in compose the API supervisor relays
 `127.0.0.1:8790` to `HOSTED_PUBLISHER_UPSTREAM` (`publisher:8790`). Startup
@@ -269,8 +331,10 @@ publisher quotes no escrow and every policy purchase is skipped.
   tests its nginx process, VM API tests its supervised child.
 - `/startupz`: HG confirms corpus, state and recovery initialization. A paused
   API is allowed only after HG safely initializes; missing HG returns 503.
-- `/readyz`: 200 only when HG can admit work: funded, headroom available,
-  providers/RPC fresh, origin correct, not paused/expired; otherwise 503.
+- `/readyz`: 200 when HG can admit work (state `ready`) or is merely busy (state `busy`,
+  including a full queue, which adds `queue: "full"`): funded, headroom available,
+  providers/RPC fresh (last background check at most 15 s old), origin correct, not
+  paused/expired. 503 for `paused`, `degraded` and `ended`.
 - `/api/demo/status`: bounded safe JSON with state, capabilities, own remaining
   allowance, actual model/rail labels and public links. No operator diagnostics.
 

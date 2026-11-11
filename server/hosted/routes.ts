@@ -6,19 +6,22 @@ import type { Plan } from '../../shared/contracts/index.js'
 import { isLlmConfigured } from '../agents/llm.js'
 import { scope, plan as planSearch, freezeRequirements, boundRequirements, type ScopeResult } from '../agents/scope.js'
 import { HostedLimits, LIMITS, digest, type Hold } from './limits.js'
-import { HostedQueue } from './queue.js'
+import { HostedQueue, HostedPlanLane } from './queue.js'
 import { hostedExecution } from './execution.js'
 import { HostedError, hostedControl, requireAdmissions } from './control.js'
 import type { Config } from '../config.js'
+import { readHostedLinks } from './links.js'
+import type { PayerFunds } from './readiness.js'
 export type DemoStatus = {
   state: 'ready' | 'paused' | 'busy' | 'degraded' | 'ended';
   capabilities: { ask: boolean; scope: boolean; history: boolean; receipts: boolean; pdf: false; settings: false; faultControls: false };
   questionCapMinor: number;
   remaining: { questions: number; minor: number }; labels: { models: string; rail: string };
-  links: { repo: string; deck: string; video: string; progress: string; replay: string };
-  csrfToken?: string; queue?: { runId: string; position: number | null; expiresAt: string }[]
-  /** Who a new question would wait for: how many are ahead of it, and whether the asker's own last run is among them. */
-  wait?: { ahead: number; own: boolean }
+  links: { repo: string; deck: string; video: string; progress: string; replay: string; proof?: string };
+  csrfToken?: string; queue?: { runId: string; position: number | null; expiresAt: string; estimateSeconds?: number }[]
+  /** Who a new question would wait for: how many are ahead of it, and whether the asker's own last run is among them.
+   * `estimateSeconds` (H7) is how long until it would start, from recent runs; absent when none has finished yet. */
+  wait?: { ahead: number; own: boolean; estimateSeconds?: number }
 }
 const REPO = 'https://github.com/Collaboration95/theFastandtheFungible', PAGES = 'https://collaboration95.github.io/theFastandtheFungible'
 /** The environment indicator's model words. A fixture decision model is a substitution (hard gate 5): it is named here,
@@ -60,26 +63,37 @@ const questionOf = (value: unknown) => {
   if (/-----BEGIN .*PRIVATE KEY|\b(?:sk-|ra_agent_)[A-Za-z0-9_-]{16,}|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(question)) throw new HostedError(400, 'private_input')
   return question
 }
-export function hostedRouter(context: ApiContext, config: Config, limits: HostedLimits, queue: HostedQueue, ready: () => Promise<boolean>, initialized: () => Promise<boolean>) {
+export function hostedRouter(context: ApiContext, config: Config, limits: HostedLimits, queue: HostedQueue, ready: () => Promise<boolean>, initialized: () => Promise<boolean>, payerFunds: () => PayerFunds = () => 'unknown') {
   const router = Router(), { store, loop } = context
+  const planning = new HostedPlanLane()
+  context.work.signal.addEventListener('abort', () => planning.close(), { once: true })
   const execute = <T>(hold: Hold, fn: () => T) => hostedExecution.run({ limits, holdId: hold.id, principal: hold.principal },fn)
   const ownHistory = (principal: string) => store.listPastRuns(Number.NaN,principal).filter(r => { const h = limits.forRun(r.runId); return h && h.created + 86400000 > limits.now() })
   const status = async (principal = ''): Promise<DemoStatus> => {
     const c = hostedControl(config), ended = Date.now() >= Date.parse(config.HOSTED_ADMISSIONS_UNTIL || '2026-11-19T16:00:00Z')
-    const remaining = limits.remaining(principal)
+    const remaining = limits.remaining(principal), links = readHostedLinks(config)
     const state = ended ? 'ended' : c.admissionsPaused || c.spendingPaused ? 'paused' : !(await ready()) || !remaining.questions || !remaining.minor ? 'degraded' : queue.busy ? 'busy' : 'ready'
-    return { state, questionCapMinor: limits.questionMinor, capabilities: { ask: (state === 'ready' || state === 'busy') && queue.canQueue, scope: state === 'ready', history: true, receipts: true, pdf: false, settings: false, faultControls: false }, remaining,
+    return { state, questionCapMinor: limits.questionMinor, capabilities: { ask: (state === 'ready' || state === 'busy') && queue.canQueue, scope: state === 'ready' || state === 'busy', history: true, receipts: true, pdf: false, settings: false, faultControls: false }, remaining,
       labels: { models: modelsLabel(isLlmConfigured(), !context.labels.decision.startsWith('fixture')), rail: context.payer ? 'Shared XRPL Testnet demo · no real value' : 'SIMULATED · no real value' },
-      links: { repo: REPO, deck: config.HOSTED_DECK_URL || `${REPO}/blob/main/docs/submission/ResearchAgent-SFF-deck.pdf`, video: config.HOSTED_VIDEO_URL || '', progress: config.HOSTED_PROGRESS_URL || `${PAGES}/progress/`, replay: config.HOSTED_REPLAY_URL || `${PAGES}/demo/` } }
+      // The operator's links file (state disk, no redeploy) wins over the environment; `proof` is optional and absent until set.
+      links: { repo: REPO, deck: config.HOSTED_DECK_URL || `${REPO}/blob/main/docs/submission/ResearchAgent-SFF-deck.pdf`, video: links.video || config.HOSTED_VIDEO_URL || '', progress: config.HOSTED_PROGRESS_URL || `${PAGES}/progress/`, replay: config.HOSTED_REPLAY_URL || `${PAGES}/demo/`, ...(links.proof ? { proof: links.proof } : {}) } }
   }
   router.get('/livez', (_req,res) => res.json({ status: 'ok' }))
   router.get('/startupz', async (_req,res) => { const ok=await initialized(); res.status(ok?200:503).json({status:ok?'ok':'paused'}) })
-  router.get('/readyz', async (_req,res) => { const s = await status(); res.status(['ready','busy'].includes(s.state) && queue.canQueue ? 200 : 503).json({ status: s.state }) })
+  // A full queue (one running, two waiting) is normal busy-ness: visitors see "busy" and are told to wait, and an uptime
+  // check that failed on it would page the owner for a healthy demo (H7). Only a state that cannot take work (paused,
+  // ended, degraded) answers 503; a full queue stays 200 with `queue: 'full'` so a reader can still tell.
+  router.get('/readyz', async (_req,res) => { const s = await status(); res.status(['ready','busy'].includes(s.state) ? 200 : 503).json({ status: s.state, ...(queue.canQueue ? {} : { queue: 'full' }) }) })
+  // The shared payer's balance against 30 XRP, for the owner's alert only (H7). It never changes what a visitor sees:
+  // readiness and the ask gate do not read it. 503 only for a reading below the line; no reading is 200 `unknown`.
+  router.get('/readyz/funds', (_req,res) => { const funds = payerFunds(); res.status(funds === 'low' ? 503 : 200).json({ funds }) })
   router.get(['/health','/api/health'], async (_req,res) => res.json({ status: (await status()).state, labels: context.labels, faults: false }))
   router.get('/api/demo/status', async (_req,res) => {
     const principal = res.locals.hostedSession.principal
     const own = ownHistory(principal).map(r => limits.forRun(r.runId)!).filter(h => queue.position(h.run_id!) !== null)
-    res.json({ ...await status(principal), csrfToken: res.locals.hostedSession.csrf, queue: own.map(h => ({ runId: h.run_id!, position: queue.position(h.run_id!), expiresAt: new Date(h.created+LIMITS.queueMs).toISOString() })), wait: { ahead: queue.depth, own: own.length > 0 } })
+    const seconds = (value: number | undefined) => value === undefined ? {} : { estimateSeconds: value }
+    const estimate = (position: number | null) => position === null ? {} : seconds(queue.estimateSeconds(position))
+    res.json({ ...await status(principal), csrfToken: res.locals.hostedSession.csrf, queue: own.map(h => ({ runId: h.run_id!, position: queue.position(h.run_id!), expiresAt: new Date(h.created+LIMITS.queueMs).toISOString(), ...estimate(queue.position(h.run_id!)) })), wait: { ahead: queue.depth, own: own.length > 0, ...(queue.depth ? seconds(queue.estimateSeconds()) : {}) } })
   })
   let writerCache: { at: number; value: Promise<unknown> } | undefined
   router.get('/api/writers/status',async (_req,res) => {
@@ -93,21 +107,29 @@ export function hostedRouter(context: ApiContext, config: Config, limits: Hosted
   router.post('/api/scope', async (req,res) => {
     const old = limits.existing(res.locals.hostedSession.principal,keyOf(req.get('Idempotency-Key')),'scope',req.body)
     if(old?.scope_result) return res.json(JSON.parse(old.scope_result))
-    if (queue.busy) throw new HostedError(429,'busy')
     if (!(await ready())) throw new HostedError(503,'demo_unavailable')
     const question = questionOf(req.body.question), key = keyOf(req.get('Idempotency-Key'))
     const hold = limits.reserve(res.locals.hostedSession.principal,key,question,res.locals.hostedIp,limits.questionMinor,'scope',req.body)
     if (hold.scope_result) return res.json(JSON.parse(hold.scope_result))
     if (hold.state !== 'draft') throw new HostedError(409,'scope_in_progress')
     requireAdmissions(config)
-    limits.update(hold.id,{state:'active'})
-    await new Promise<void>((resolve,reject) => {
-      queue.enqueue(hold.id,async () => {
-        let release: (()=>void) | undefined
-        try { release=context.work.acquire(); const result = await execute(hold,() => scopeWithPlanner(question,{ ...(req.body.clarify === 'never' ? {clarify:'never' as const}:{}),signal:context.work.signal })); limits.update(hold.id,{scope_result:JSON.stringify(result),state:'draft'}); res.json(result); resolve() }
-        catch(error) { reject(error) } finally { release?.(); limits.update(hold.id,{state:'draft'}) }
-      },()=>reject(new HostedError(503,'queue_expired')))
-    })
+    // H7: planning does not wait for the one running question (it took 9 to 21 s, or answered 429 `busy`, whenever another
+    // visitor's run held the demo). It is one model call that moves no money, inside this hold's model-dollar envelope; only
+    // a question's start queues. A small separate lane bounds how many plans run at once.
+    const job = (async () => {
+      limits.update(hold.id,{state:'active'})
+      try {
+        const result = await planning.run(() => {
+          requireAdmissions(config)
+          if (context.work.signal.aborted) throw new HostedError(503,'demo_unavailable')
+          return execute(hold,() => scopeWithPlanner(question,{ ...(req.body.clarify === 'never' ? {clarify:'never' as const}:{}),signal:context.work.signal }))
+        })
+        limits.update(hold.id,{scope_result:JSON.stringify(result)})
+        return result
+      } finally { limits.update(hold.id,{state:'draft'}) }
+    })()
+    context.trackWork?.(job)
+    res.json(await job)
   })
   router.post('/runs', async (req,res) => {
     limits.existing(res.locals.hostedSession.principal,keyOf(req.get('Idempotency-Key')),'submit',req.body)
@@ -144,7 +166,8 @@ export function hostedRouter(context: ApiContext, config: Config, limits: Hosted
         await loop.start(runId)
       }) } finally { limits.update(hold.id,{state:'done'}); limits.settle(hold.id) }
     }),expired)
-    store.appendEvent(runId,{type:'SNAPSHOT',label:'Your question is in the shared demo queue.',data:{position:queue.position(runId)}})
+    const position = queue.position(runId), wait = position === null ? undefined : queue.estimateSeconds(position)
+    store.appendEvent(runId,{type:'SNAPSHOT',label:`Your question is in the shared demo queue${wait ? ` (about ${wait} s until it starts)` : ''}.`,data:{position,...(wait ? { estimateSeconds: wait } : {})}})
     res.status(201).json(store.getRun(runId))
   })
   const retryJobs = new Map<string,Promise<void>>()

@@ -99,3 +99,18 @@ it('does not accept a GET for another identity and can resynchronize again', asy
   await vi.advanceTimersByTimeAsync(0)
   expect(onSnapshot).toHaveBeenCalledWith(run(3, 60, 0, 'DONE'))
 })
+
+it('retries the same durable GET after an SSE close plus HTTP 503, without starting or charging another run', async () => {
+  const final = run(5, 90, 0, 'DONE')
+  const transport = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ error: 'paused' }), { status: 503 })).mockResolvedValueOnce(json(final))
+  vi.stubGlobal('fetch', transport)
+  const { onSnapshot, onError } = start()
+  disconnect()
+  await vi.advanceTimersByTimeAsync(0)
+  expect(onError).toHaveBeenCalled()
+  await vi.advanceTimersByTimeAsync(5000)
+  expect(onSnapshot).toHaveBeenLastCalledWith(final)
+  expect(transport).toHaveBeenCalledTimes(2)
+  expect(transport.mock.calls.every(([path, init]) => path === '/runs/recovery' && init.method === 'GET')).toBe(true)
+  expect(Source.instance.close).toHaveBeenCalledTimes(1)
+})

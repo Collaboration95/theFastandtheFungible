@@ -89,6 +89,8 @@ if (action === 'teardown') {
   for (const name of [sa,frontSa]) remove(['iam','service-accounts','describe',name,...p],['iam','service-accounts','delete',name,...p,'--quiet'])
   if (m.uptime) remove(['monitoring','uptime','describe',m.uptime,...p],['monitoring','uptime','delete',m.uptime,...p,'--quiet'])
   if (m.alert) remove(['alpha','monitoring','policies','describe',m.alert,...p],['alpha','monitoring','policies','delete',m.alert,...p,'--quiet'])
+  if (m.fundsUptime) remove(['monitoring','uptime','describe',m.fundsUptime,...p],['monitoring','uptime','delete',m.fundsUptime,...p,'--quiet'])
+  if (m.fundsAlert) remove(['alpha','monitoring','policies','describe',m.fundsAlert,...p],['alpha','monitoring','policies','delete',m.fundsAlert,...p,'--quiet'])
   if(m.ownsNotificationChannel && m.notificationChannel) remove(['beta','monitoring','channels','describe',m.notificationChannel,...p],['beta','monitoring','channels','delete',m.notificationChannel,...p,'--quiet'])
   if (m.budget) remove(['billing','budgets','describe',m.budget,`--billing-account=${m.billingAccount}`,`--billing-project=${project}`],['billing','budgets','delete',m.budget,`--billing-account=${m.billingAccount}`,`--billing-project=${project}`,'--quiet'])
   console.log(JSON.stringify({project,finalSnapshot:snapshot,state:dry?'planned':'retained-snapshot-project-and-billing-link'}))
@@ -99,6 +101,10 @@ if (!/^[A-Fa-f0-9-]+$/.test(billing || '')) throw Error('--billing-account requi
 const sha = git(['rev-parse','--verify',`${options.sha || 'HEAD'}^{commit}`])
 if (options.origin && !/^https:\/\/[a-z0-9.-]+$/.test(options.origin)) throw Error('--origin must be an exact HTTPS origin')
 if (options['budget-amount'] && !/^\d{1,6}(?:\.\d{1,2})?[A-Z]{3}$/.test(options['budget-amount'])) throw Error('--budget-amount must look like 70SGD')
+// The front's paused page links the demo video when it has a URL (J5). The value lands in an nginx string and a comma-separated
+// gcloud flag, so it must be a plain https URL with none of: comma, quote, dollar, semicolon, backslash, space, angle bracket.
+const frontVideo = process.env.HOSTED_VIDEO_URL || ''
+if (frontVideo && !/^https:\/\/[A-Za-z0-9.-]+\.[A-Za-z]{2,}(?::\d{1,5})?(?:\/[A-Za-z0-9._~:/?#@!&()*+=%-]{0,250})?$/.test(frontVideo)) throw Error('HOSTED_VIDEO_URL must be a plain https URL (no comma, quote, dollar sign, semicolon or space)')
 let channel = options['notification-channel']
 const email=options['alert-email']
 if(channel && !/^projects\/[^/]+\/notificationChannels\/\d+$/.test(channel)) throw Error('Invalid notification channel')
@@ -251,7 +257,7 @@ try {
   ensure(['compute','instances','describe',vm,...p,`--zone=${zone}`],['compute','instances','create',vm,...p,`--zone=${zone}`,'--machine-type=e2-standard-2','--image-family=debian-12','--image-project=debian-cloud','--boot-disk-size=20GB',`--disk=name=${disk},device-name=${disk},auto-delete=no`,'--subnet=ra-egress',`--private-network-ip=10.77.0.10`,'--tags=ra-app',`--service-account=${sa}`,'--scopes=cloud-platform',`--metadata=${metadata},enable-oslogin=TRUE,block-project-ssh-keys=TRUE`,`--metadata-from-file=startup-script=${scratch}/docker/hosted/startup.sh,ra-bundle=${scratch}/bundle.b64`])
   gc(['compute','instances','add-metadata',vm,...p,`--zone=${zone}`,`--metadata=${metadata}`,`--metadata-from-file=startup-script=${scratch}/docker/hosted/startup.sh,ra-bundle=${scratch}/bundle.b64`])
   applyStartup(`${sha} ${origin}`)
-  gc(['run','deploy',service,...p,`--region=${region}`,`--image=${digests.front}`,`--service-account=${frontSa}`,'--network=ra-vpc','--subnet=ra-egress','--vpc-egress=private-ranges-only','--min=1','--max=2','--concurrency=32','--timeout=3600','--port=8080','--allow-unauthenticated','--set-env-vars=VM_UPSTREAM=10.77.0.10:8080','--startup-probe=httpGet.path=/startupz,httpGet.port=8080','--liveness-probe=httpGet.path=/livez,httpGet.port=8080','--quiet'])
+  gc(['run','deploy',service,...p,`--region=${region}`,`--image=${digests.front}`,`--service-account=${frontSa}`,'--network=ra-vpc','--subnet=ra-egress','--vpc-egress=private-ranges-only','--min=1','--max=2','--concurrency=32','--timeout=3600','--port=8080','--allow-unauthenticated',`--set-env-vars=VM_UPSTREAM=10.77.0.10:8080${frontVideo?`,HOSTED_VIDEO_URL=${frontVideo}`:''}`,'--startup-probe=httpGet.path=/startupz,httpGet.port=8080','--liveness-probe=httpGet.path=/livez,httpGet.port=8080','--quiet'])
   let url=dry?canonical:gc(['run','services','describe',service,...p,`--region=${region}`,'--format=value(status.url)'])
   if (!dry) {
     const urls=JSON.parse(gc(['run','services','describe',service,...p,`--region=${region}`,'--format=json(metadata.annotations)'])||'{}')?.metadata?.annotations?.['run.googleapis.com/urls']
@@ -276,9 +282,20 @@ try {
   if (!dry) writeFileSync(join(scratch,'alert.json'),JSON.stringify(policy))
   let alert=dry?'ALERT_ID':gc(['alpha','monitoring','policies','list',...p,'--filter=displayName="ra-readyz-failed"','--format=value(name)'])
   if (!alert || dry) alert=gc(['alpha','monitoring','policies','create',...p,`--policy-from-file=${scratch}/alert.json`,'--format=value(name)']) || 'ALERT_ID'
+  // H7 (J7): the shared payer below 30 XRP emails the owner through the same channel. The check reads /ready/funds, which
+  // answers 503 {"funds":"low"} only for a reading under the line. 503 is an accepted status and the content matcher is
+  // what fails the check, so a stopped or paused service (the paused page is also a 503) raises ra-readyz-failed only.
+  const fundsName='ra-payer-funds', fundsFlags=['--resource-type=uptime-url',`--resource-labels=host=${host},project_id=${project}`,'--protocol=https','--port=443','--path=/ready/funds','--period=1','--timeout=10','--status-codes=200,503','--matcher-type=not-contains-string','--matcher-content="funds":"low"']
+  let fundsUptime = dry ? 'PAYER_UPTIME_ID' : gc(['monitoring','uptime','list-configs',...p,`--filter=displayName="${fundsName}"`,'--format=value(name)'])
+  if (!fundsUptime) fundsUptime=gc(['monitoring','uptime','create',fundsName,...p,...fundsFlags,'--format=value(name)'])
+  if(dry) show(['monitoring','uptime','create',fundsName,...p,...fundsFlags,'--format=value(name)'])
+  const fundsPolicy={displayName:'ra-payer-funds-low',combiner:'OR',notificationChannels:[channel],conditions:[{displayName:'shared payer below 30 XRP',conditionThreshold:{filter:`metric.type="monitoring.googleapis.com/uptime_check/check_passed" AND resource.type="uptime_url" AND metric.label.check_id="${fundsUptime.split('/').at(-1)}"`,comparison:'COMPARISON_GT',thresholdValue:1,duration:'120s',aggregations:[{alignmentPeriod:'60s',perSeriesAligner:'ALIGN_NEXT_OLDER',crossSeriesReducer:'REDUCE_COUNT_FALSE',groupByFields:['resource.label.host']}]}}]}
+  if (!dry) writeFileSync(join(scratch,'funds-alert.json'),JSON.stringify(fundsPolicy))
+  let fundsAlert=dry?'PAYER_ALERT_ID':gc(['alpha','monitoring','policies','list',...p,'--filter=displayName="ra-payer-funds-low"','--format=value(name)'])
+  if (!fundsAlert || dry) fundsAlert=gc(['alpha','monitoring','policies','create',...p,`--policy-from-file=${scratch}/funds-alert.json`,'--format=value(name)']) || 'PAYER_ALERT_ID'
   let budget=dry?'':gc(['billing','budgets','list',`--billing-account=${billing}`,`--billing-project=${project}`,`--filter=displayName="ra-${project}"`,'--format=value(name)'])
   if (!budget) budget=gc(['billing','budgets','create',`--billing-account=${billing}`,`--billing-project=${project}`,`--display-name=ra-${project}`,`--budget-amount=${amount}`,`--filter-projects=projects/${number}`,'--threshold-rule=percent=0.5,basis=current-spend','--threshold-rule=percent=0.9,basis=current-spend','--threshold-rule=percent=1,basis=current-spend',`--notifications-rule-monitoring-notification-channels=${channel}`,'--format=value(name)']) || 'BUDGET_ID'
-  const m={...(existing||{}),project,notificationChannel:channel,ownsNotificationChannel:!options['notification-channel'],billingAccount:billing,sha,region,zone,vm,disk,service,url,digests,secrets:[...new Set([...(existing?.secrets||[]),...secretMap.map(([,s])=>s)])],uptime,alert,budget,budgetAmount:amount,pendingObligations:null,archiveVerified:false,teardownAt:'2026-11-20T00:00:00+08:00'}
+  const m={...(existing||{}),project,notificationChannel:channel,ownsNotificationChannel:!options['notification-channel'],billingAccount:billing,sha,region,zone,vm,disk,service,url,digests,secrets:[...new Set([...(existing?.secrets||[]),...secretMap.map(([,s])=>s)])],uptime,alert,fundsUptime,fundsAlert,budget,budgetAmount:amount,pendingObligations:null,archiveVerified:false,teardownAt:'2026-11-20T00:00:00+08:00'}
   if (!dry) writeFileSync(manifestPath,JSON.stringify(m,null,2)+'\n',{mode:0o600})
   console.log(JSON.stringify({project,sha,url,state:dry?'planned':'deployed-paused'}))
 } finally { if (!dry) rmSync(scratch,{recursive:true,force:true}) }

@@ -73,6 +73,7 @@ export function refusal(error: unknown): Refusal {
     case 'session_busy': return { kind: 'message', text: 'One question at a time. Your previous question is still running; ask again when it finishes.' }
     case 'allowance_exhausted': return { kind: 'state', text: 'You’ve used today’s questions on the shared demo.' }
     case 'paused': case 'spending_paused': case 'ended': case 'demo_unavailable': return { kind: 'state', text: '' }
+    case 'plan_limit': return { kind: 'message', text: 'You’ve made 15 plans today. Try again after 08:00 SGT; your remaining questions are unchanged.' }
     case 'start_rate': return { kind: 'message', text: 'Several questions started from your network in the last minute. Try again in a minute.' }
     case 'model_daily_cap': return { kind: 'message', text: 'The demo has reached today’s model allowance. New questions open again after 08:00 SGT.' }
     case 'model_lifetime_cap': return { kind: 'message', text: 'The demo’s model allowance for this event is used up. You can still view your receipts or watch the recorded walkthrough.' }

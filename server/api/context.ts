@@ -15,7 +15,9 @@ export type ApiContext = {
   reputation: Reputation; payer?: XrplPayer; labels: ModeLabels
   mcpPolicy: { maxMinor: number; dailyMinor: number }; publisherUrl: string
   launch: (runId: string, job: () => Promise<void>, release?: () => void) => Promise<void>
+  trackWork?: (job: Promise<unknown>) => void
   progress: (runId: string, label: string) => () => void
+  sseGzip?: boolean; onStreamOpen?: (runId: string) => void;
   streams: Map<string, Set<Response>>; onStreamEmpty?: (runId: string) => void; reportDir: string
   reportJobs: Map<string, Promise<{ format: 'PDF' | 'HTML'; path: string }>>
 }

@@ -1,0 +1,143 @@
+{
+  "kind": "local-hosted-load",
+  "at": "2026-11-11T14:38:34.708Z",
+  "source": "bd52beff55589f026e71cef3c73cf84984bc516e",
+  "readinessMode": "inline (pre-H7)",
+  "guard": "docker/hosted/start.mjs (this checkout)",
+  "visitors": 6,
+  "seconds": 120,
+  "uptimeEveryMs": 10000,
+  "readinessRefreshMs": "380,400,1310,520,370,570,1900,380,650,450",
+  "mode": "HOSTED=1 · fixture models · simulated rail · ephemeral ports",
+  "cloud": false,
+  "sourceFiles": {
+    "scripts/hosted-load.mjs": "9c095f08d1c9cc64f0d502218f905220f644b9db542fb2a2af52cc9b36859449",
+    "server/routes.ts": "5f32fe992a4d1e8ea8dab0f829d1502c34736c186b9d6cd145c688e095e9c970",
+    "server/hosted/routes.ts": "543189e5f6728710931233c42b0becc5daaff3eaec5b3e119e5578c5561d553b",
+    "server/hosted/limits.ts": "226ca6d3deb18ef513c0f59878f19707e3e6a9ac397f5ecaf07f1c3783cf4bb6",
+    "server/hosted/queue.ts": "42b87da27bf3a9d70ef4174b430bebd904691381043699ac157b3dd0a4ecee6f",
+    "server/hosted/readiness.ts": null
+  },
+  "measuredSeconds": 122.2,
+  "requests": 926,
+  "guardPaused": 0,
+  "guardPausedVisitor": 0,
+  "readyz": {
+    "checks": 12,
+    "ok": 12,
+    "guardPaused": 0,
+    "hgNotReady": {}
+  },
+  "hgPaused": 0,
+  "refused429": {
+    "busy": 24,
+    "queue_full": 10,
+    "allowance_exhausted": 24,
+    "start_rate": 318
+  },
+  "other": {},
+  "runs": {
+    "asked": 252,
+    "admitted": 70,
+    "finished": 70
+  },
+  "sessionsMinted": 18,
+  "eventLoopDelayMs": {
+    "p50": 11,
+    "p99": 16.2,
+    "max": 55.9
+  },
+  "readinessRefreshes": 19,
+  "routes": {
+    "GET /api/demo/status": {
+      "n": 258,
+      "p50": 4,
+      "p95": 1213,
+      "max": 1903,
+      "guardPaused": 0
+    },
+    "GET /api/runs": {
+      "n": 6,
+      "p50": 3,
+      "p95": 8,
+      "max": 8,
+      "guardPaused": 0
+    },
+    "GET /api/writers/status": {
+      "n": 6,
+      "p50": 17,
+      "p95": 21,
+      "max": 21,
+      "guardPaused": 0
+    },
+    "GET /readyz": {
+      "n": 12,
+      "p50": 5,
+      "p95": 1458,
+      "max": 1458,
+      "guardPaused": 0
+    },
+    "POST /api/scope": {
+      "n": 252,
+      "p50": 2,
+      "p95": 402,
+      "max": 1312,
+      "guardPaused": 0
+    },
+    "POST /runs": {
+      "n": 252,
+      "p50": 2,
+      "p95": 13,
+      "max": 25,
+      "guardPaused": 0
+    },
+    "GET /runs/:id/events": {
+      "n": 70,
+      "p50": 2,
+      "p95": 8,
+      "max": 13,
+      "guardPaused": 0
+    },
+    "GET /runs/:id": {
+      "n": 70,
+      "p50": 1,
+      "p95": 11,
+      "max": 15,
+      "guardPaused": 0
+    }
+  },
+  "guardPausedSamples": [],
+  "flood": {
+    "fromOneAddress": "203.0.113.77",
+    "requests": 5200,
+    "sessionsMinted": 4980,
+    "refused": {
+      "429 session_limit": 220
+    },
+    "seconds": 2.9,
+    "sessionTableAfter": 5000,
+    "sessionsAddedByFlood": 4980,
+    "nextRealVisitor": {
+      "http": 429,
+      "error": "session_limit",
+      "gotSession": false
+    }
+  },
+  "pausedControl": {
+    "status": {
+      "http": 429
+    },
+    "submit": {
+      "http": 429,
+      "error": "session_limit"
+    },
+    "scope": {
+      "http": 429,
+      "error": "session_limit"
+    },
+    "readyz": {
+      "http": 503,
+      "status": "paused"
+    }
+  }
+}

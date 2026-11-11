@@ -1,1 +1,47 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ResearchAgent · demo paused</title><style>body{font:18px system-ui;color:#23323d;background:#fafbfc;max-width:36rem;margin:15vh auto;padding:24px}a{color:#215faf}</style><h1>The shared demo is paused</h1><p>Please try again later, or watch the recorded walkthrough.</p><p>XRPL Testnet · no real value</p><a href="https://collaboration95.github.io/theFastandtheFungible/demo/">Watch recorded walkthrough</a></html>
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>ResearchAgent · demo paused</title>
+<!-- Shown by the front, with a 503, whenever the demo server is stopped or restarting. Self-contained on purpose: the app's own
+     files live on that server. Colours and type are the product's (src/tokens.css), light theme only. The video link stays hidden
+     until the front is given a video URL (HOSTED_VIDEO_URL): an empty href is hidden below, and nginx fills it in. -->
+<style>
+:root{--paper:#FBF8F2;--surface:#fff;--ink:#24211E;--muted:#655D55;--rule:#E8E2D8;--rule-strong:#8F8579;--warn:#8A5F17;--link:#215faf;--radius-md:10px;--radius-sm:6px;--f-ui:'Geist Variable',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--paper);color:var(--ink);font:15px/22px var(--f-ui);-webkit-font-smoothing:antialiased}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;height:48px;padding:0 16px;border-bottom:1px solid var(--rule);background:var(--surface)}
+.brand{display:flex;align-items:center;gap:9px;font-weight:600;font-size:15px;letter-spacing:-.015em}
+.brand svg{width:26px;height:26px}
+.env{padding:3px 10px;border:1px solid var(--rule-strong);border-radius:var(--radius-sm);font-size:12px;line-height:18px;color:var(--ink);white-space:nowrap}
+main{width:min(560px,100% - 32px);margin:12vh auto 48px}
+section{padding:18px 20px 18px 22px;border:1px solid var(--rule-strong);border-radius:var(--radius-md);background:var(--surface);box-shadow:inset 3px 0 0 var(--warn)}
+h1{margin:0 0 6px;font-size:20px;line-height:28px;font-weight:600;letter-spacing:-.01em}
+p{margin:0;font-size:14px;line-height:21px}
+.muted{margin-top:10px;color:var(--muted)}
+nav{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:16px;padding-top:14px;border-top:1px solid var(--rule);font-size:14px}
+a{color:var(--link);text-underline-offset:2px}
+a:hover{color:var(--ink)}
+a:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:2px}
+a[href=""]{display:none}
+@media (max-width:480px){main{margin-top:6vh}h1{font-size:18px;line-height:26px}.brand span{display:none}}
+</style>
+<header>
+  <div class="brand"><svg viewBox="0 0 24 24" role="img" aria-label="ResearchAgent"><rect width="24" height="24" rx="3" fill="#FBF8F2"/><path d="M9 4H4v16h5M15 4h5v16h-5M9 15l6-6" fill="none" stroke="#24211E" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/></svg><span>ResearchAgent</span></div>
+  <div class="env">XRPL Testnet · no real value</div>
+</header>
+<main>
+  <section role="status" aria-labelledby="t">
+    <h1 id="t">The shared demo is paused</h1>
+    <p>No new questions or purchases will start while it is paused.</p>
+    <p class="muted">This page appears when the demo server is stopped or restarting. Try again in a few minutes, or look around in the meantime.</p>
+    <nav aria-label="While you wait">
+      <a href="https://collaboration95.github.io/theFastandtheFungible/demo/" target="_blank" rel="noopener noreferrer">Watch the recorded walkthrough</a>
+      <a id="video" href="" target="_blank" rel="noopener noreferrer">Watch the demo video</a>
+      <a href="https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs/submission/ResearchAgent-SFF-deck.pdf" target="_blank" rel="noopener noreferrer">Slide deck</a>
+      <a href="https://github.com/Collaboration95/theFastandtheFungible" target="_blank" rel="noopener noreferrer">Source code</a>
+    </nav>
+  </section>
+</main>
+</html>
