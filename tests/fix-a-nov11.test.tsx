@@ -158,8 +158,8 @@ describe('S16 and S27 the hosted chip and footer', () => {
   it('shortens the one chip for a phone without renaming it', () => {
     expect(environment(status('SIMULATED · no real value')).short).toBe('Simulated · no real value')
     expect(environment(status('Shared XRPL Testnet demo · no real value')).short).toBe('Testnet demo · no real value')
-    expect(environment(status('SIMULATED · no real value', 'paused')).short).toBe('Simulated · paused')
-    expect(environment(status('Shared XRPL Testnet demo · no real value', 'paused')).short).toBe('Testnet demo · paused')
+    expect(environment(status('SIMULATED · no real value', 'paused')).short).toBe('Simulated · paused · no real value')
+    expect(environment(status('Shared XRPL Testnet demo · no real value', 'paused')).short).toBe('Testnet demo · paused · no real value')
   })
   it('sends "How to verify a receipt" to the README how-to, not the wire-format spec', () => {
     const { verify } = hostedLinks({ status: status('SIMULATED') })

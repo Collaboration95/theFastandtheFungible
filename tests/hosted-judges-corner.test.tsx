@@ -24,7 +24,7 @@ it('pins the recorded caption to the final answer and audited decision providers
   const decisions = bundle.audit.entries.filter((entry: { kind: string }) => entry.kind === 'decision')
   expect(decisions.length).toBeGreaterThan(0)
   expect(decisions.every((entry: { data: { provider: string } }) => entry.data.provider === 'fixture')).toBe(true)
-  expect(JUDGE_RUN.caption).toBe('Recorded on this sandbox, 11 Nov · XRPL Testnet · live answers, rule-based buying · team-authored writers · no real value')
+  expect(JUDGE_RUN.caption).toBe('Recorded on this demo, 11 Nov 2026 · XRPL Testnet · live answers, rule-based buying · team-authored writers · no real value')
 })
 
 const status = (patch: Partial<HostedDemoStatus> = {}): HostedDemoStatus => ({
@@ -72,7 +72,7 @@ describe('the strip', () => {
     expect(homeState(h)).toBe(expected)
     await showHome(h, expected)
     const strip = screen.getByRole('region', { name: 'Check our work without asking a question' })
-    expect(within(strip).getByRole('heading', { name: 'Verify a real run from this sandbox in your browser' })).toBeTruthy()
+    expect(within(strip).getByRole('heading', { name: 'Verify a real run from this demo in your browser' })).toBeTruthy()
     expect(within(strip).getByRole('heading', { name: 'See the key on the ledger' })).toBeTruthy()
     expect(within(strip).getByText('The Fulfillment field is the article key.')).toBeTruthy()
     expect(within(strip).getByRole('button', { name: 'Run the checks' })).toBeTruthy()

@@ -61,7 +61,7 @@ it('tells the key-reveal story in order: escrow → key → refund, then promise
   const html = renderToStaticMarkup(<PaymentRow run={run} intent={intent} onRetry={() => {}} onReceipt={() => {}} />)
   const at = (text: string) => { const index = html.indexOf(text); expect(index, text).toBeGreaterThan(-1); return index }
   expect(at('Payment locked in escrow')).toBeLessThan(at('Refund signed by the writer. This demo writer agrees to refund; a real writer could refuse.'))
-  expect(at('XRPL Testnet · key-reveal escrow · no real value')).toBeLessThan(at('The writer’s trust score drops.'))
+  expect(at('XRPL Testnet demo · no real value')).toBeLessThan(at('The writer’s trust score drops.'))
   expect(at('Download evidence')).toBeLessThan(at('ra-verification'))
 })
 

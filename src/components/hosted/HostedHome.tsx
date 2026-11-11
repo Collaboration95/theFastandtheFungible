@@ -45,7 +45,7 @@ export function HostedJudgesCorner({ hosted }: { hosted: Hosted }) {
     <section className="ra-hjc" aria-label="Check our work without asking a question">
     <p className="ra-hjc-label" aria-hidden="true">Check our work without asking a question</p>
     <ul className={proof ? 'ra-hjc-list' : 'ra-hjc-list is-two'}>
-      <li className="ra-hjc-verify">{icons.verify}{opened && <Suspense fallback={<p role="status">Loading recorded run checks…</p>}><VerifyInBrowser bundleUrl={JUDGE_RUN.bundleUrl} caption={JUDGE_RUN.caption} title="Verify a real run from this sandbox in your browser" /></Suspense>}</li>
+      <li className="ra-hjc-verify">{icons.verify}{opened && <Suspense fallback={<p role="status">Loading recorded run checks…</p>}><VerifyInBrowser bundleUrl={JUDGE_RUN.bundleUrl} caption={JUDGE_RUN.caption} title="Verify a real run from this demo in your browser" /></Suspense>}</li>
       <li>{icons.key}<div><h2>See the key on the ledger</h2><p>The Fulfillment field is the article key.</p><Out href={explorerTx(JUDGE_RUN.keyTx)}>Open the EscrowFinish</Out></div></li>
       {proof && <li>{icons.refuse}<div><h2>See it refuse to spend</h2><p>A question it declined to pay for, S$0.00 spent, anchored on the ledger.</p><Out href={proof}>Open the proof of refusal</Out></div></li>}
     </ul>
@@ -131,7 +131,7 @@ export function HostedFooter({ hosted }: { hosted: Hosted }) {
         <li><Out href={links.deck}>Pitch deck</Out></li>
         {links.video && <li><Out href={links.video}>Demo video</Out></li>}
         <li><Out href={links.progress}>Progress since SingHacks</Out></li>
-        <li><Out href={links.keyReveal}>Recorded walkthrough: writer no-show and refund</Out></li>
+        <li><Out href={links.keyReveal}>Recorded walkthrough: writer never reveals, money back</Out></li>
         <li><Out href={links.verify}>How to verify a receipt</Out></li>
       </ul></nav>
     </footer>

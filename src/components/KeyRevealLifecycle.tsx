@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import type { EscrowStatus } from '../../shared/contracts/escrow'
 import { shortHex, verifyKeyOnLedger, type KeyCheck } from '../verify/key-on-ledger'
 import Icon from './Icon'
+import { ENV } from '../../shared/presentation'
 import LedgerReceipt from './LedgerReceipt'
 import './key-check.css'
 
@@ -27,10 +28,10 @@ const MISMATCH: Record<Extract<KeyCheck, { status: 'mismatch' }>['why'], string>
 }
 /** What the browser found. A ✓ appears only for a match; every other state says what was (not) checked. */
 export function KeyCheckResult({ check, escrow, replay }: { check: KeyCheck; escrow: Pick<EscrowStatus, 'createHash' | 'finishHash'>; replay?: boolean }) {
-  const label = `XRPL Testnet · no real value${replay ? ' · fictional writer' : ''}`
-  const links = <p className="ra-note">{label}. <a href={`${EXPLORER}${escrow.finishHash}`} target="_blank" rel="noreferrer">EscrowFinish <Icon name="external" size={16} /></a> · <a href={`${EXPLORER}${escrow.createHash}`} target="_blank" rel="noreferrer">EscrowCreate <Icon name="external" size={16} /></a></p>
+  const label = ENV.testnet
+  const links = <p className="ra-note">{label}.{replay && <> Fictional writer.</>} <a href={`${EXPLORER}${escrow.finishHash}`} target="_blank" rel="noreferrer">EscrowFinish <Icon name="external" size={16} /></a> · <a href={`${EXPLORER}${escrow.createHash}`} target="_blank" rel="noreferrer">EscrowCreate <Icon name="external" size={16} /></a></p>
   if (check.status === 'match') return <div className="ra-key-check-out is-match">
-    <p className="ra-key-check-head"><KeyLock open /> <b>sha256(key) = lock ✓</b></p>
+    <p className="ra-key-check-head"><KeyLock open /> <b>sha256(key) = lock <Icon name="check" size={16} /></b></p>
     <p>Computed in this browser from XRPL Testnet{check.ledger ? ` ledger ${check.ledger}` : ''}{check.node ? `, read from ${check.node}` : ''}.</p>
     <dl className="ra-key-check-hex"><Hex label="Lock (Condition)" hex={check.lock} /><Hex label="Key (Fulfillment)" hex={check.key} /></dl>
     <p className="ra-note">The writer published the key on the public ledger, so anyone can repeat this. Full values are on the explorer.</p>
@@ -111,10 +112,10 @@ function Lifecycle({ escrow: e, testnet = false, replay = import.meta.env.MODE =
     </div>}
     {checkable && e.state === 'RELEASED' && <LedgerReceipt create={e.createHash!} finish={e.finishHash!} />}
     <details><summary>Technical details</summary>
-      <p>XRPL Testnet · key-reveal escrow · no real value</p>
+      <p>{ENV.testnet}</p><p>Key-reveal escrow</p>
       <p>CancelAfter: {e.cancelAfter}. EscrowFinish publishes the key{e.revealLedger ? ` in ledger ${e.revealLedger}` : ''}.</p>
-      {e.keyVerified === true && <p>sha256(K) = Condition ✓</p>}
-      {e.decryptVerified === true && <p>ciphertext decrypts ✓</p>}
+      {e.keyVerified === true && <p>sha256(K) = Condition <Icon name="check" size={16} /></p>}
+      {e.decryptVerified === true && <p>ciphertext decrypts <Icon name="check" size={16} /></p>}
     </details>
   </div>
 }

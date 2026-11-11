@@ -85,7 +85,7 @@ test('first visit: orientation, the visitor’s own question first, one environm
   // Footer links open the public pages.
   await page.locator('.ra-hwork > summary').click()
   const links = page.getByRole('navigation', { name: 'Project links' })
-  for (const name of ['Source code', 'Pitch deck', 'Progress since SingHacks', 'Recorded walkthrough: writer no-show and refund', 'How to verify a receipt']) await expect(links.getByRole('link', { name: new RegExp(name) })).toHaveAttribute('href', /^https:\/\//)
+  for (const name of ['Source code', 'Pitch deck', 'Progress since SingHacks', 'Recorded walkthrough: writer never reveals, money back', 'How to verify a receipt']) await expect(links.getByRole('link', { name: new RegExp(name) })).toHaveAttribute('href', /^https:\/\//)
   await expect(links.getByRole('link', { name: /Demo video/ })).toHaveCount(0)
   await expect(page.getByRole('navigation', { name: 'Questions' })).toContainText('Your questions appear here.')
   expect(await serious(page)).toEqual([])

@@ -49,7 +49,7 @@ export default function PaymentRow({ run, intent, onRetry, onReceipt }: { run: R
       <Verification run={run} intent={intent} />
     </details>}
     <p className="ra-payment-links">{[
-      testnet && typeof refundUrl === 'string' && refundUrl.startsWith('https://testnet.xrpl.org/') && <a key="refund" href={refundUrl} target="_blank" rel="noreferrer">Refund tx {shortHash(intent.refund?.txHash ?? '')} <Icon name="external" size={16} /></a>,
+      testnet && typeof refundUrl === 'string' && refundUrl.startsWith('https://testnet.xrpl.org/') && <a key="refund" title={intent.refund?.txHash} href={refundUrl} target="_blank" rel="noreferrer">Refund tx <span className="mono">{shortHash(intent.refund?.txHash ?? '')}</span> <Icon name="external" size={16} /></a>,
       testnet && intent.escrow?.mode !== 'key-reveal' && /^[A-Fa-f0-9]{64}$/.test(intent.txHash ?? '') && <a key="paid" href={`https://testnet.xrpl.org/transactions/${intent.txHash}`} target="_blank" rel="noreferrer">{refunded ? 'Payment transaction' : 'Transaction'} <Icon name="external" size={16} /></a>,
     ].filter(Boolean).flatMap((link, i) => i ? [' · ', link] : [link])}</p>
     {receipt && <button className="ra-link ra-receipt-link" onClick={() => onReceipt(receipt)}>Receipt <Icon name="right" size={16} /></button>}

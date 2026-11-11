@@ -108,7 +108,7 @@ test('LIVE_LEDGER: the recorded run re-checks against the public Testnet node wi
   const node = strip(page).getByText(/Ran in this browser, reading/)
   await expect(node).toContainText('s.altnet.rippletest.net')
   console.log(`JUDGES-CORNER NODE: ${await node.textContent()}`)
-  await expect(strip(page).getByText('Recorded on this sandbox, 11 Nov')).toBeVisible()
+  await expect(strip(page).getByText('Recorded on this demo, 11 Nov 2026')).toBeVisible()
   await page.screenshot({ path: evidencePath('judges-corner/verified-1280.png') })
   await page.setViewportSize({ width: 390, height: 844 })
   expect(await noOverflow(page)).toBe(true)

@@ -224,6 +224,18 @@ test('the app build cache includes the shared deploy bundle budget', () => {
   assert.ok(inputsFor('app-build', files, read).includes('scripts/bundle-budget.mjs'))
 })
 
+test('site-only presentation drift schedules the browser guard and invalidates its cached result', () => {
+  const file = 'site/brand/fonts.css', files = ['package.json', file]
+  let css = '@font-face{font-family:Geist;src:url(geist.woff2)}'
+  const read = path => Buffer.from(path === file ? css : '{}')
+  const step = makeSteps(classify([file])).find(step => step.id === 'browser-app')
+  assert.ok(step)
+  assert.ok(inputsFor(step.id, files, read).includes(file))
+  const before = stepKey(step, files, read, 'node22', 'v1').key
+  css = '@font-face{font-family:Arial;src:url(arial.woff2)}'
+  assert.notEqual(stepKey(step, files, read, 'node22', 'v1').key, before)
+})
+
 test('cache accepts successes only, --no-cache forces a miss, and same-tree commit IDs do not enter step keys', async () => fixture(async ({ scope, root, write, commit }) => {
   const before = snapshot(root, scope), file = join(root, 'cached.json')
   const entry = { schema: SCHEMA, key: 'abc', state: 'success', durationMs: 12, source: before }

@@ -54,8 +54,8 @@ export default function Ask({ onAsk, busy = false, settlement, above, universalM
   // composer, so there the hosted intro carries it instead.
   const hosted = useHosted()
   return <section className="ra-home" aria-label="Ask a research question">
-    {intro ?? <><AgentSprite animation="idle" still /><h1 className="ra-hero">Ask a question. <em>Give it a budget.</em></h1>
-    <p className="ra-home-description">Searches free sources first. Pays a writer only when it closes a gap, never beyond your budget.</p></>}
+    {intro ?? <><AgentSprite animation="idle" still /><h1 className="ra-hero">Research with a wallet.</h1>
+    <p className="ra-home-description">Free sources first. Pay writers for missing evidence, within your budget.</p></>}
     {browserDemo && <p className="ra-note">Recorded budget: S$2.00. The Kestrel–TSMC replay covers pricing &amp; margins.</p>}
     {above && <p className="ra-pending-question">{question}</p>}
     {above}

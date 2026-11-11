@@ -337,7 +337,7 @@ describe('v1.1 shell: sidebar, past runs and an empty Home (#166)', () => {
     try { localStorage.setItem('researchagent.october.active-run', paidStoryRun.runId) } catch { /* no storage */ }
     const calls = stubBrowser(() => {})
     render(<App />)
-    expect(screen.getByRole('heading', { name: /Ask a question/ })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Research with a wallet.' })).toBeTruthy()
     expect((screen.getByLabelText('Your question') as HTMLTextAreaElement).value).toBe('')
     expect(screen.getByRole('navigation', { name: 'Questions' })).toBeTruthy()
     expect(screen.queryByLabelText('Provider and simulation labels')).toBeNull()
