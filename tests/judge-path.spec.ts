@@ -6,7 +6,7 @@ import { spawn, type ChildProcess } from 'node:child_process'
 import { once } from 'node:events'
 import { mkdir, cp } from 'node:fs/promises'
 import AxeBuilder from '@axe-core/playwright'
-import recordingIndex from '../demo/recording-index.json'
+import recordingIndex from '../demo/recording-index.json' with { type: 'json' }
 
 const TAG = 'https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.1.1'
 const TABS = ['Key reveal + refund (start here)', 'Plain payment', 'Writer never reveals: money back', 'Simulated: decline', 'Simulated: buy', 'Simulated: refund'] as const
