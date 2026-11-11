@@ -6,12 +6,16 @@ import { ENV } from '../shared/presentation.js'
 import { buyingLabels } from '../shared/execution-labels.js'
 export type Drift = { rule: string; text: string }
 const canonical = new Set<string>([...Object.values(ENV).filter(value => typeof value === 'string'), ENV.replayShort(true), ENV.replayShort(false)])
+for (const buying of Object.keys(buyingLabels) as (keyof typeof buyingLabels)[]) for (const testnet of [true, false]) canonical.add(ENV.hostedConfigured(testnet, buying))
 const escapePattern = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 const environmentPatterns = [
-  ...[ENV.localTestnet('MODELS'), ENV.localSimulated('MODELS'), ...[true, false].map(testnet => ENV.hostedConfigured(testnet, 'fixture').replace(buyingLabels.fixture, 'MODELS'))].map(value => new RegExp(`^${escapePattern(value).replace('MODELS', '[^·]+')}$`)),
+  ...[ENV.localTestnet('MODELS'), ENV.localSimulated('MODELS')].map(value => new RegExp(`^${escapePattern(value).replace('MODELS', '[^·]+')}$`)),
   ...[true, false].map(testnet => new RegExp(`^${escapePattern(ENV.replay('DATE', testnet)).replace('DATE', '\\d{1,2} [A-Z][a-z]{2,3} \\d{4}')}$`)),
 ]
-for (const state of ['offline', 'paused', 'ended']) for (const short of [ENV.testnetShort, ENV.simulatedShort]) canonical.add(short.replace(' · no real value', ` · ${state} · no real value`))
+for (const state of ['offline', 'paused', 'ended']) for (const testnet of [true, false]) {
+  canonical.add((testnet ? ENV.testnetShort : ENV.simulatedShort).replace(' · no real value', ` · ${state} · no real value`))
+  canonical.add(ENV.hostedConfigured(testnet, 'fixture').replace(/ · [^·]+ · no real value$/, ` · ${state} · no real value`))
+}
 const canonicalEnvironment = (value: string) => canonical.has(value) || environmentPatterns.some(pattern => pattern.test(value))
 export function presentationDrift(code: string, file: string, headingClasses = new Set<string>()): Drift[] {
   const found: Drift[] = []

@@ -43,6 +43,7 @@ it('keeps one presentation contract across app, replay, proof and site', () => {
     const env = environment(status)
     expect(env.full).toMatch(/no real value$/); expect(env.short).toMatch(/no real value$/)
     expect(env.full).not.toContain('live answers')
+    expect(presentationDrift(`<p>${env.full}</p>`, 'valid.html').filter(v => v.rule === 'environment')).toEqual([])
     if (state === 'ready') { expect(env.full).toBe(ENV.hostedConfigured(testnet, 'fixture')); expect(env.tone).toBe(testnet ? 'live' : 'warn') }
     expect(environment(status, 'offline').full).toContain(state === 'ended' ? 'ended' : 'offline')
   }
@@ -57,6 +58,7 @@ it('rejects planted drift for every rule', () => {
     ['eyebrow', '.eyebrow{text-transform:uppercase}', 'broken.css'],
     ['environment', '<span>Testnet sandbox · no real value</span>', 'broken.html'],
     ['environment', '<span>Shared XRPL Testnet demo</span>', 'broken.html'],
+    ['environment', '<span>Shared XRPL Testnet demo · imaginary buying · no real value</span>', 'broken.html'],
     ['money', '<p>S$0.5</p>', 'broken.tsx'],
     ['money', 'const price = `S$${(minor/100).toFixed(2)}`', 'broken.ts'],
     ['hash', '<p>ABCDEF…1234</p>', 'broken.tsx'],
