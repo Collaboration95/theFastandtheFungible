@@ -76,7 +76,7 @@ describe('H9-13 a contents question leads with what the thing carries, not a cau
 
 describe('the x402 402 question is the first preset and RLUSD the second', () => {
   it('orders the hosted presets', () => {
-    expect(TESTNET_QUESTIONS.map(q => q.label)).toEqual(['x402 payment', 'RLUSD escrow', 'Account reserves'])
+    expect(TESTNET_QUESTIONS.map(q => q.label)).toEqual(['x402 payment', 'RLUSD escrow', 'How writers get paid'])
     expect(TESTNET_QUESTIONS[0].text).toBe(liveQuestion('A2').question)
     expect(TESTNET_QUESTIONS[1].text).toBe(RLUSD)
   })

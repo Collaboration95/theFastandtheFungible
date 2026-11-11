@@ -22,7 +22,11 @@ const GOLD = {
   C1: { right: ['product-writer-paid'], lead: /key/i },
   C4: { right: ['product-writer-earnings'], lead: /S\$0\.40|full price|40,000 drops|fee/i },
 }
-const gold = row => GOLD[row.id] ?? { right: [], none: true }
+// XRPL3 meant reserves in the recorded November 11 comparison. Score the new
+// preset by its question so re-summarising that historical evidence stays honest.
+const gold = row => row.id === 'XRPL3' && /How does the writer get paid/i.test(row.question ?? '')
+  ? { right: ['product-writer-paid'], lead: /publishing.*key on the XRP Ledger.*escrow/i }
+  : GOLD[row.id] ?? { right: [], none: true }
 const pct = (values, p) => { if (!values.length) return null; const s = [...values].sort((a, b) => a - b); return s[Math.min(s.length - 1, Math.ceil(p / 100 * s.length) - 1)] }
 const sec = ms => ms === null ? 'n/a' : `${(ms / 1000).toFixed(1)} s`
 const sgd = minor => `S$${(minor / 100).toFixed(2)}`

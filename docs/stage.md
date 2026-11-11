@@ -19,7 +19,7 @@ box for the video. This checks signatures, not playback or presentation duration
 An empty, unreadable or wrong-type file is NO-GO.
 `--json` emits the same report as JSON. `--deck <file.pdf>` overrides the deck.
 
-Prepare tabs in one dedicated browser profile: A, the finished x402 preset with
+Prepare tabs in one dedicated browser profile: A, the finished “How writers get paid” preset with
 its anchor; B, “Which XRPL validators are run by Singapore banks?”; C, B's
 published proof of refusal; D, A's EscrowFinish at the Fulfillment field; E,
 the replay; F, the local deck PDF. Preparing A and B uses two questions: the

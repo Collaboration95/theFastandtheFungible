@@ -17,7 +17,7 @@ export const DEMO_QUESTIONS = [
 export const TESTNET_QUESTIONS = [
   { id: 'XRPL2', label: 'x402 payment', text: 'What does an x402 402 response contain, and can my agent pay it with XRP on Testnet?' },
   { id: 'XRPL1', label: 'RLUSD escrow', text: 'Can an XRPL escrow hold RLUSD today, and what must the issuer enable before a buyer can lock it?' },
-  { id: 'XRPL3', label: 'Account reserves', text: 'How much XRP reserve does an agent wallet need, and how much does each open escrow or trust line add?' },
+  { id: 'XRPL3', label: 'How writers get paid', text: 'How does the writer get paid, and what stops the agent from reading the article and then refusing to pay?' },
 ] as const
 const FIXTURE_LABELS: Record<string, string> = { UC1: 'Bank of Japan decision', UC2: 'Kestrel–TSMC outlook', UC3: 'Malaysia packaging lead times', UC4: 'Penang plant power' }
 /** The three example questions for a rail: Testnet shows XRPL questions; simulated and recorded demos keep the fixture stories. */

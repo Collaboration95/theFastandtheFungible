@@ -256,7 +256,7 @@ describe('R8-A3 retrieval: keyword search gets the singular of a plural the glos
     expect(searchQuery(term)).toBe(expandProtocolQuery(term).replace(term, `${term} escrow issued token`))
   })
   it.each([
-    ['much each open escrow trust line add'], // preset XRPL3: already singular; no plural is ever added
+    ['much each open escrow trust line add'], // historical reserves preset: already singular; no plural is ever added
     ['RLUSD escrowed key reveal today'], // only plurals fold, never -ed
     ['HTTP headers x402 use XRPL'],
   ])('leaves a query with no glossary plural unchanged: %s', term => {
