@@ -11,8 +11,24 @@
         "id": "J01",
         "question": "How much does EscrowFinish with a fulfillment cost on XRPL Testnet?",
         "phase": "DONE",
-        "lead": [],
-        "conclusion": "According to the XRPL escrow documentation, the only supported crypto-condition type is PREIMAGE-SHA-256. An escrow with a condition is created with a corresponding condition and fulfillment. Anyone can finish such an escrow, but only by supplying the correct fulfillment; when the conditions are met the Escrow object is destroyed and the funds go to the recipient. According to the XRPL EscrowFinish reference, the Condition field is the previously supplied PREIMAGE-SHA-256 crypto-condition of the escrow, and the Fulfillment field is the PREIMAGE-SHA-256 crypto-condition fulfillment matching the escrow's Condition. An escrow that has a Condition cannot be executed without a matching Fulfillment.",
+        "lead": [
+          {
+            "text": "EscrowFinish with a fulfillment cost 423 drops in our observed XRPL Testnet conditional finish, more than a plain XRP Payment.",
+            "claim": {
+              "id": "evidence-[\"team-fees\",\"v3\",\"p1\"]",
+              "text": "EscrowFinish with a fulfillment cost 423 drops in our observed XRPL Testnet conditional finish, more than a plain XRP Payment. EscrowCreate used 12 drops, so the measured purchase overhead was 435 drops before a separate answer anchor. These are historical observations rather than a promise about future network load. A price displayed in SGD is an application accounting unit; it is not the network fee and it is not a market exchange rate.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "team-fees",
+                  "version": "v3",
+                  "spanId": "p1"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "EscrowFinish with a fulfillment cost 423 drops in our observed XRPL Testnet conditional finish, more than a plain XRP Payment. The XRPL fee formula scales as base_fee × (33 + fulfillment_bytes / 16) before multisign/load effects. Live create/cancel each cost 12 drops. A cancelled 60,000-drop principal is fully returned; its buyer still pays 24 drops in fees. - Synthetic corpus and extractive fixture answers in the proof are labelled; Testnet value transfer is real Testnet execution, with no real value. A failed signed passage promise can be challenged after EscrowFinish.",
         "buyAndCite": true,
         "answersIt": 0,
         "purchases": 1,
@@ -39,28 +55,13 @@
                 }
               ]
             }
-          },
-          {
-            "text": "The buyer then checks the key, authenticated encryption, exact delivered bytes and signed passage promises before exposing premium content to the agent.",
-            "claim": {
-              "id": "evidence-[\"product-key-reveal-trust\",\"v1\",\"p2\"]",
-              "text": "The writer encrypts the delivery and signs commitments to its identity, content, price and decryption key. The buyer locks funds under a PREIMAGE-SHA-256 condition. A successful EscrowFinish publishes the fulfillment containing that key while releasing the locked payment. The buyer then checks the key, authenticated encryption, exact delivered bytes and signed passage promises before exposing premium content to the agent.",
-              "stance": "UNCERTAIN",
-              "citations": [
-                {
-                  "resourceId": "product-key-reveal-trust",
-                  "version": "v1",
-                  "spanId": "p2"
-                }
-              ]
-            }
           }
         ],
-        "conclusion": "Key reveal delivers paid research by making the writer publish a decryption key through a validated EscrowFinish. The buyer then checks the key, authenticated encryption, exact delivered bytes and signed passage promises before exposing premium content to the agent. According to ResearchAgent documentation, key-reveal escrow makes payment and publication of the article key atomic, but a refund after a completed purchase still requires the writer to sign. The writer encrypts the delivery and signs commitments to its identity, content, price and decryption key. A successful EscrowFinish publishes the fulfillment containing that key while releasing the locked payment. The buyer receives encrypted delivery bytes first, but those bytes stay quarantined. The writer signs the escrow quote with its wallet key.",
+        "conclusion": "Key reveal delivers paid research by making the writer publish a decryption key through a validated EscrowFinish. The buyer receives encrypted delivery bytes first, but those bytes stay quarantined. Only after the engine verifies the successful finish, the key binding and the authenticated envelope can premium plaintext become accessible through a verified grant. The writer generates a fresh 32-byte key K and 12-byte IV per buyer and intent, and AES-256-GCM encrypts the delivery JSON (body, passages, salts and identity). The writer signs the escrow quote with its wallet key. A refund after successful key publication is a separate writer-signed Payment. Offline cryptographic checks can authenticate the signed manifest, exact passage hashes, delivered identity and key binding.",
         "buyAndCite": true,
         "answersIt": 0,
-        "purchases": 2,
-        "spentMinor": 80,
+        "purchases": 1,
+        "spentMinor": 40,
         "verificationOk": true,
         "violations": []
       },
@@ -273,22 +274,37 @@
         "phase": "DONE",
         "lead": [
           {
-            "text": "A refund after completed release requires a separate mechanism; do not assume cancellation can undo an already finished escrow.",
+            "text": "A writer-signed refund after EscrowFinish is a different operation.",
             "claim": {
-              "id": "evidence-[\"xrpl-escrow\",\"v1\",\"p3\"]",
-              "text": "For encrypted information sales, my recommendation is to bind the agreed ciphertext, condition and delivered passage commitments before paying. A revealed key may satisfy a cryptographic condition without establishing factual accuracy. Preserve that distinction in dispute handling. A refund after completed release requires a separate mechanism; do not assume cancellation can undo an already finished escrow.",
+              "id": "evidence-[\"team-recovery\",\"v3\",\"p4\"]",
+              "text": "A writer-signed refund after EscrowFinish is a different operation. Successful finish has already paid the writer and published the key. A subsequent quality challenge cannot reverse that transaction unilaterally. The writer may voluntarily sign a separate Payment returning money to the buyer. The demonstration uses a cooperative seller. Outside that fixture, repayment depends on the seller's consent and cannot be compelled by this protocol. The receipt must distinguish that cooperative refund from expiry cancellation, even when both leave the buyer with returned principal.",
               "stance": "UNCERTAIN",
               "citations": [
                 {
-                  "resourceId": "xrpl-escrow",
-                  "version": "v1",
-                  "spanId": "p3"
+                  "resourceId": "team-recovery",
+                  "version": "v3",
+                  "spanId": "p4"
+                }
+              ]
+            }
+          },
+          {
+            "text": "A timeout can mean unavailable history, an unvalidated finish, a writer outage or incomplete local reconciliation.",
+            "claim": {
+              "id": "evidence-[\"team-recovery\",\"v3\",\"p8\"]",
+              "text": "Operationally, keep failure states explicit. A timeout can mean unavailable history, an unvalidated finish, a writer outage or incomplete local reconciliation. None of those observations alone proves a refund happened. Show principal returned only after verified cancellation, refunded only after the separate refund settles, and pending while evidence is unresolved. The exact same labels should appear in live activity, receipts and replay so that a finance reviewer can reconcile them without guessing.",
+              "stance": "UNCERTAIN",
+              "citations": [
+                {
+                  "resourceId": "team-recovery",
+                  "version": "v3",
+                  "spanId": "p8"
                 }
               ]
             }
           }
         ],
-        "conclusion": "A refund after completed release requires a separate mechanism; do not assume cancellation can undo an already finished escrow. EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds.",
+        "conclusion": "A writer-signed refund after EscrowFinish is a different operation. A timeout can mean unavailable history, an unvalidated finish, a writer outage or incomplete local reconciliation. Writer no-show recovery starts with a durable purchase intent. The buyer has reserved budget and submitted an EscrowCreate, but the writer has not yet published a usable key. The principal is locked in an escrow object rather than transferred directly to the writer. EscrowCancel returns the original principal when the writer never completes delivery. Successful finish has already paid the writer and published the key. The writer may voluntarily sign a separate Payment returning money to the buyer. The writer can sign a promise and deliver content that breaks it.",
         "buyAndCite": true,
         "answersIt": 0,
         "purchases": 1,
@@ -419,11 +435,11 @@
             }
           }
         ],
-        "conclusion": "Verification of a cited answer begins with the exported receipt bundle rather than the displayed summary. A successful offline check proves internal consistency of these objects; it does not independently prove that the ledger accepted the transaction. Enable the verifier’s ledger option to query the recorded Testnet transaction hashes independently. It checks validated success, expected accounts, ledger information and relevant payment or escrow fields; anchor checks additionally compare the memo commitment with the exported audit head and answer. The cited text must occur in the delivered body. The answer can summarize the passage, but its citation must still resolve to the authenticated delivered bytes. To establish ledger finality, query the named Testnet transaction hashes and require successful validated results.",
+        "conclusion": "Verification of a cited answer begins with the exported receipt bundle rather than the displayed summary. A successful offline check proves internal consistency of these objects; it does not independently prove that the ledger accepted the transaction. The cited text must occur in the delivered body. The answer can summarize the passage, but its citation must still resolve to the authenticated delivered bytes. To establish ledger finality, query the named Testnet transaction hashes and require successful validated results. An answer anchor separately binds the recorded audit head to a ledger transaction. Identity Credentials answer a separate question. Published fulfillment keys are different: after settlement they are intentionally public and may be needed to verify the encrypted delivery.",
         "buyAndCite": true,
         "answersIt": 0,
-        "purchases": 2,
-        "spentMinor": 80,
+        "purchases": 1,
+        "spentMinor": 40,
         "verificationOk": true,
         "violations": []
       },

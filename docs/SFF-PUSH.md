@@ -12,7 +12,7 @@ PR or issue.
 
 - 11 Nov: R9-A makes the first click right on the hosted demo's live-planner path.
   - **RLUSD preset:** 1 article (S$0.40, was 3 for S$1.20), leading with AllowTrustLineLocking.
-  - **Other judge questions:** the fee question buys the drops note first and leads with "423 drops"; "Which XRPL validators are run by Singapore banks?" buys nothing; "writer never reveals the key" buys the no-show article.
+  - **Other judge questions:** the fee question buys the drops note first and leads with "423 drops"; "Which XRPL validators are run by Singapore banks?" buys nothing; "writer never reveals the key" buys only the no-show article and leads with EscrowCancel.
   - **Confirmed plan runs:** the hosted run now uses the plan the visitor confirmed in the 5 s modal and records it as a PLAN event (it re-planned in 8/8 round-9 runs).
   - **Presets:** the x402 402 question is now the first preset.
   - **Measurement:** the round-9 judges' recorded live plans replayed offline, plus a local hosted stack with the live planner. Development banks (fixture models, used data, not held out): no lost result, lead answers v3-dev 8 → 9, 0 negative purchases, UC1–UC3 unchanged. [Evidence](evidence/r9-a/README.md)
