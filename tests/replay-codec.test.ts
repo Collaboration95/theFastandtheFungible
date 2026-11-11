@@ -13,8 +13,10 @@ it('restores every field of all six audited recordings exactly', () => {
   }
 })
 it('restores independent copies and rejects ambiguous or invalid references', () => {
-  const original = { text: 'signed envelope'.repeat(30), amount: 40 }
-  const decoded = unpackRecording(packRecording([original, original])) as typeof original[]
+  const original = { text: 'signed envelope'.repeat(100), amount: 40 }
+  const packed = packRecording([original, original])
+  expect(packed).toContain('__recording_ref__')
+  const decoded = unpackRecording(packed) as typeof original[]
   decoded[0].amount = 0
   expect(decoded[1]).toEqual(original)
   expect(() => packRecording({ __recording_ref__: 0 })).toThrow('Reserved recording key')
