@@ -143,3 +143,25 @@ Only public `tx` reads were needed; no hosted question, money transfer or live m
 The plan confirmation association is local browser bookkeeping, not a server-signed proof. It uses the first event's
 server timestamp and a 60 s preceding window; a browser/server clock skew or a longer queue may hide the line.
 A confirmation on another device remains unknown. Nothing here changes spending authorization.
+
+## Second resume acceptance (11 Nov, 22:33–22:38 SGT)
+
+Reset to `origin/guru/key-ledger-whybought-1` (`9601de9a`) and reviewed both KEY commits against T1/T4.
+No further product code changes were needed. Fresh checks:
+
+- The three targeted files passed **45/45 tests** (16 ledger, 8 lifecycle, 21 why/plan), including incomplete
+  proofs, tampered keys, pending/not-found, unreachable nodes, the 90-character bound, refunds, zero buys,
+  matching/changed/old plans, confirmation binding and stale in-flight results.
+- Read-only real-node output: `real-check-second-resume.jsonl`. All three pairs matched on **s.altnet**:
+  hosted export ledger **22228567, 1724 ms**; refunded replay **22224890, 1332 ms**; kept replay
+  **22224896, 1240 ms**. No transaction was submitted, no hosted question was used, no live model was called.
+- Built the replay from this tree to scratch, served on an ephemeral loopback port, and repeated the real
+  browser check with **Enter at 1280 px** and **Space at 390 px**. Both showed the computed ledger match.
+  Page width was **1280/1280** and **390/390**, respectively; mobile spend dialog width **388 px**.
+  Visible refunded/kept why lines were **82/80 characters**. Testnet/no-real-value and fictional-writer labels remain.
+- Inspected fresh light-theme screenshots: `shots/second-resume-key-match-1280.png`,
+  `shots/second-resume-key-match-390.png`, and `shots/second-resume-refunded-390.png`.
+- No gate, test, threshold or acceptance criterion was loosened.
+
+The original and first-resume evidence above is retained with its original provenance. Gate receipts are stored
+outside the source tree in the shared Git directory and the PR records the final clean head and merged SHA.
