@@ -7,7 +7,7 @@ import { PublisherClient } from '../server/publisher-client.js'
 import { PurchaseManager } from '../server/purchases.js'
 import { Store } from '../server/store.js'
 import { RunLoop } from '../server/agents/loop.js'
-import { ABOUT, ABOUT_LABEL, fixturePlan, needsResearch, plan, scope } from '../server/agents/scope.js'
+import { ABOUT, ABOUT_LABEL, REDIRECT, REDIRECT_LABEL, fixturePlan, needsResearch, plan, scope } from '../server/agents/scope.js'
 import { fixtureRequirements, sanitizeRequirement, splitClauses, withIds } from '../server/agents/requirements.js'
 import { decide, FixtureDecisionProvider, REPEATS_PURCHASES } from '../server/agents/decision.js'
 import type { DecideInput, DecisionProvider } from '../server/agents/decision.js'
@@ -426,10 +426,13 @@ describe('H8-03 chat routing and the fixed product statement', () => {
     expect(await scope(question)).toMatchObject({ questions: [], chat: { reply: ABOUT }, label: ABOUT_LABEL })
   })
   it('replaces a chat reply that drifts into how ResearchAgent pays with the fixed statement', async () => {
-    live({ route: 'chat', reply: 'Sure. By the way, ResearchAgent lets a decision model buy articles for you.' })
-    expect(await scope('Can you help me write a haiku?')).toMatchObject({ chat: { reply: ABOUT }, label: ABOUT_LABEL })
+    live({ route: 'chat', reply: 'You are welcome. By the way, ResearchAgent lets a decision model buy articles for you.' })
+    expect(await scope('thanks!')).toMatchObject({ chat: { reply: ABOUT }, label: ABOUT_LABEL })
+    live({ route: 'chat', reply: 'You are welcome. Ask me about XRPL, x402 or agent payments.' })
+    expect(await scope('thanks!')).toMatchObject({ chat: { reply: expect.stringContaining('You are welcome') }, label: 'DeepSeek · deepseek-flash' })
+    // H9-11: a request outside research (a haiku) gets the one-line redirect, whatever the model wrote.
     live({ route: 'chat', reply: 'Leaves fall slowly / the ledger closes again / autumn settles in' })
-    expect(await scope('Can you help me write a haiku?')).toMatchObject({ chat: { reply: expect.stringContaining('ledger closes') }, label: 'DeepSeek · deepseek-flash' })
+    expect(await scope('Can you help me write a haiku?')).toMatchObject({ chat: { reply: REDIRECT }, label: REDIRECT_LABEL })
   })
   it('states hard gate 2 and key reveal exactly', () => {
     expect(ABOUT).toContain('A decision model only scores')

@@ -129,16 +129,29 @@ describe('H9-03: a forced writer fallback after a purchase says so', () => {
     }
   }
   const live = () => { vi.stubEnv('LLM_PROVIDER', 'groq'); vi.stubEnv('GROQ_API_KEY', 'mock'); vi.stubEnv('LLM_BASE_URL', '') }
-  it('judge V\'s C1: the bought article fails the topic guard, so the model is not asked; it says what was bought, with the reason', async () => {
+  // R9-C fixed the cause of judge V's C1 (the topic guard rejected the bought key-reveal article: "get paid" never matched
+  // "payment"), so the forced guard fallback is pinned with an article that really is off the question's topic.
+  it('a bought article off the question\'s topic fails the guard, so the model is not asked; it says what was bought, with the reason', async () => {
     live()
     const transport = vi.spyOn(globalThis, 'fetch').mockRejectedValue(Error('the model must not be asked'))
-    const { content, candidate } = paid('product-key-reveal-trust')
+    const { content, candidate } = paid('c5-xrpl-ticket-limit')
     const events: Record<string, unknown>[] = []
     const { answer } = await withModelUsage(usage => events.push(usage), () => writeAnswer({ question: 'How does the writer get paid, and what stops the agent from reading the article and then refusing to pay?', contents: [content], candidates: [candidate], version: 2 }))
     expect(transport).not.toHaveBeenCalled()
     expect(answer).toMatchObject({ claims: [], provider: 'fixture', conclusion: 'Bought 1 article; it gave no citable answer to this question.' })
     expect(answer.conclusion).not.toMatch(/nothing bought/i)
     expect(events).toEqual([{ fallback: true, reason: 'guard' }])
+  })
+  it('R9-C: judge V\'s C1 key-reveal article is on topic now, so the model is asked and the bought passage is cited', async () => {
+    live()
+    const transport = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('PRIVATE', { status: 401 }))
+    const { content, candidate } = paid('product-key-reveal-trust')
+    const events: Record<string, unknown>[] = []
+    const { answer } = await withModelUsage(usage => events.push(usage), () => writeAnswer({ question: 'How does the writer get paid, and what stops the agent from reading the article and then refusing to pay?', contents: [content], candidates: [candidate], version: 2 }))
+    expect(transport).toHaveBeenCalled()
+    expect(events).toEqual([{ fallback: true, reason: 'http' }])
+    expect(answer.claims.length).toBeGreaterThan(0)
+    expect(answer.conclusion).not.toMatch(/no citable answer/)
   })
   it('a provider error after a purchase is the "http" fallback, and the offline writer still cites the bought passage', async () => {
     live()

@@ -15,7 +15,7 @@ it('publishes sourced explainers through the ordinary signed delivery and public
  expect(publisher.verification?.status).toBe('unverified')
  expect(publisher.bio).toBe('team-authored explainer · sources cited · not an independent writer · Testnet')
  const articles = corpus.articles.filter(a => a.publisherSlug === publisher.slug)
- expect(articles).toHaveLength(179)
+ expect(articles).toHaveLength(182)
  const journal = new PublisherJournal(':memory:')
  try {
   const manifests = createManifests(journal), keys = simulatedKeys(publisher.slug)
@@ -104,6 +104,40 @@ it('keeps the C5 coverage additions answer-first, bounded, cited to primary docu
    if (url.hostname === 'github.com' && url.pathname.startsWith('/coinbase/')) expect(url.pathname).toMatch(/\/blob\/[a-f0-9]{40}\//)
   })
   // Plain reader text: no repository path, filename or engineering annotation (the paid-body lint, repeated here).
+  expect(article.body).not.toMatch(/\b(?:src|server|shared|publisher|packages|scripts|tests|eval|docs|data|desktop|mcp|sdk)\/[\w.:/-]*/i)
+  expect(article.body).not.toMatch(/\b[\w-]+\.(?:tsx?|jsx?|mjs|cjs|md|jsonl?|py|sql)\b/i)
+ }
+})
+
+// R9-C product explainers answer what judges ask about the product itself (round-9 mock judges B5, C1, C4): how it
+// decides what to buy, how a writer is paid, and what a writer earns. Every claim is sourced to commit-pinned project
+// documentation or xrpl.org; the paid body carries no repository path or filename.
+it('keeps the R9-C product explainers answer-first, bounded, cited to pinned sources and in the existing writer', async () => {
+ const pin = JSON.parse(readFileSync('docs/evidence/r9-c/corpus-golden.json', 'utf8')) as { additions: string[] }
+ const corpus = await loadWriterCorpus()
+ const articles = corpus.articles.filter(a => pin.additions.includes(a.articleId))
+ expect(articles.map(a => a.articleId).sort()).toEqual(['product-how-it-decides', 'product-writer-earnings', 'product-writer-paid'])
+ for (const article of articles) {
+  expect(article).toMatchObject({ publisherSlug: 'team-xrpl-explainers', writerSlug: 'team-xrpl-explainers', tier: 'PAID', priceMinor: 40, publishedAt: '2026-11-11' })
+  expect(countWords(article.body)).toBeGreaterThanOrEqual(150)
+  expect(countWords(article.body)).toBeLessThanOrEqual(300)
+  expect(article.passages).toHaveLength(4)
+  expect(article.body).toBe(article.passages.map(p => p.text).join('\n\n'))
+  expect(article.passages[0].text).toMatch(/^According to ResearchAgent documentation, /)
+  expect(article.passages[3].text).toContain('Author interpretation:')
+  expect(article.passages[3].text).toContain('Sources accessed 11 November 2026.')
+  for (const passage of article.passages) {
+   const citations = [...passage.text.matchAll(/\[(\d+)\]/g)].map(m => Number(m[1]))
+   expect(citations.length).toBeGreaterThan(0)
+   expect(citations.every(n => n >= 1 && n <= article.sources!.length)).toBe(true)
+  }
+  article.sources!.forEach((source, index) => {
+   const url = new URL(source.url)
+   expect(['github.com', 'xrpl.org']).toContain(url.hostname)
+   if (url.hostname === 'github.com') expect(url.pathname).toMatch(/^\/Collaboration95\/theFastandtheFungible\/blob\/[a-f0-9]{40}\//)
+   expect(source.accessedAt).toBe(article.publishedAt)
+   expect(article.body).toContain('[' + String(index + 1) + ']')
+  })
   expect(article.body).not.toMatch(/\b(?:src|server|shared|publisher|packages|scripts|tests|eval|docs|data|desktop|mcp|sdk)\/[\w.:/-]*/i)
   expect(article.body).not.toMatch(/\b[\w-]+\.(?:tsx?|jsx?|mjs|cjs|md|jsonl?|py|sql)\b/i)
  }

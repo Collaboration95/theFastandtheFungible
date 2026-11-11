@@ -129,11 +129,12 @@ describe('round-9 judge questions with the live planner\'s recorded plans (fixtu
   }
   it('the writer no-show question buys only the no-show article, whose title names the whole question (H9-05)', () => {
     // Round 9 bought the key-reveal trust explainer (run) or three articles (modal). Both wordings now buy one article.
-    // With the run wording its lead slot stays empty: topicMatches rejects "Whether a payment … is final or reversible"
-    // against that article (the product-question topicMatches issue handed to R9-C). The hosted run now uses the modal plan.
+    // R9-C: the run wording's lead slot is no longer empty. topicMatches had rejected "Whether a payment … is final or
+    // reversible" against that article because "final" made finality vocabulary the only gate (tests/r9c-product-questions.test.ts).
     expect(result('D4', 'modal').bought).toEqual(['product-escrow-no-show'])
     expect(result('D4', 'modal').lead[0]).toMatch(/EscrowCancel/)
     expect(result('D4', 'run').bought).toEqual(['product-escrow-no-show'])
+    expect(result('D4', 'run').lead[0]).toMatch(/cancellation/)
   })
   it('a planned run never lists, as still unanswered, the fact its lead answers (H9-10 on the loop path, R9-B open-gaps rule)', () => {
     // Round 9 listed the prompt-injection question itself under "Still unanswered" beside a lead that answers it; the

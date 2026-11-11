@@ -31,10 +31,20 @@ const REQUIREMENTS_RULE = 'Requirements are the facts the answer must establish,
 export const ABOUT = 'ResearchAgent is a research assistant with a wallet. It searches writers\' articles, answers from free sources first with citations, and can buy a paywalled article when a gap remains. A decision model only scores how useful each article would be; fixed policy code makes every payment, and only within the budget you set for the question, which is the only spending authority. With key reveal, the payment waits in an XRPL escrow and the writer is paid only by publishing the key that unlocks the article. Payments here run on the XRPL Testnet, with no real money.'
 /** The chat label for the fixed statement: no model wrote it (gate 5), and the chat view shows "About ResearchAgent". */
 export const ABOUT_LABEL = 'fixed · About ResearchAgent'
+/**
+ * H9-11: the one line for a question outside what ResearchAgent researches (a recipe, a race result, general knowledge,
+ * help with writing or code). It points back to the product instead of answering in full, so the demo never reads as a
+ * general chatbot. Fixed text, never model text, and labelled as fixed (gate 5).
+ */
+export const REDIRECT = 'I only research XRPL, x402 and agent payments, so I can’t help with that here. Try asking how a writer gets paid for an article.'
+/** The chat label for the redirect: the chat view shows "Off-topic". */
+export const REDIRECT_LABEL = 'fixed · Off-topic'
+/** A greeting, thanks, goodbye or acknowledgement on its own: the only chat a model may still answer in its own words. */
+const SMALL_TALK = /^\s*(?:(?:hi|hello|hey|yo|howdy|good (?:morning|afternoon|evening|day))(?:\s+there)?|thanks(?: a lot| so much)?|thank you(?: so much| very much)?|cheers|ty|bye|goodbye|see you|ok(?:ay)?|cool|great|nice|got it|sounds good)(?:[\s,!.:)]|\p{Extended_Pictographic})*$/iu
 /** Few-shot for the chat route: questions that need no research get a direct reply and never start a run. */
 export const CHAT_FEW_SHOT: { user: string; assistant: { route: 'chat'; reply: string } }[] = [
   { user: 'What are you?', assistant: { route: 'chat', reply: ABOUT } },
-  { user: 'How big is the Sun?', assistant: { route: 'chat', reply: "The Sun is about 1.39 million km across, roughly 109 times Earth's diameter. Its volume could hold about 1.3 million Earths, and it carries about 99.8% of the Solar System's mass." } },
+  { user: 'How big is the Sun?', assistant: { route: 'chat', reply: REDIRECT } },
   { user: 'thanks!', assistant: { route: 'chat', reply: "You're welcome. Ask me about XRPL, x402 or agent payments whenever you're ready." } },
 ]
 const TECHNICAL = /\b(?:XRPL|XRP|x402|RLUSD|Payment|PAYMENT-SIGNATURE|finality|prompt.injection|crypto.condition|spending controls)\b/i
@@ -55,7 +65,7 @@ export function needsResearch(question: string): boolean {
 const PRODUCT_MECHANICS = /\b(?:ResearchAgent|decision model|policy code|key[- ]reveal|spending rules?)\b|\bI (?:can |will |only |never |don't |do not )?(?:buy|pay|spend|purchase)\b|\b(?:my|your) (?:budget|wallet)\b/i
 const CHAT_RULE = `First pick the route. A research question asks about XRPL, x402, agent payments, companies, deals, markets, central banks, rates, bonds, prices, an economy, an industry, recent news or analysts' views: anything that needs current, sourced reporting. Use the research JSON for it.
 Technical questions about protocols, payments, XRPL, x402, security, cryptographic conditions and agent spending always need sourced research. So do questions about how ResearchAgent itself works: how it pays and decides, what its models may do, how writers are paid, key reveal, refunds and budgets.
-Other questions may be chat: a greeting or thanks, settled general knowledge (science, history, geography, definitions, maths), or help with writing or code. For a chat question return only {"route":"chat","reply":"..."}: answer directly and correctly like a helpful assistant, in plain text, at most 120 words, no headings, no citations, and never claim to have searched, read or bought anything. Never describe how ResearchAgent pays, buys or decides in a chat reply. When unsure, pick research.
+Other questions are chat: a greeting or thanks, or a question outside that research (general knowledge, recipes, sport, help with writing or code). For a chat question return only {"route":"chat","reply":"..."}. Answer a greeting or thanks in one short friendly line. For anything else, do not answer it: reply with exactly this line: "${REDIRECT}" Never claim to have searched, read or bought anything, and never describe how ResearchAgent pays, buys or decides in a chat reply. When unsure, pick research.
 Results, winners, scores, prices and news are never settled knowledge. "today" in the input is the current date: never say an event has not happened yet when its date is before today; say you can't check current events here.
 About you: ${ABOUT}`
 /** Shared by both prompts (H8-04): the user's own words may name the subject; an instruction to spend never may. */
@@ -174,8 +184,10 @@ export async function scope(question: string, options: { clarify?: 'never'; sign
       const output = await streamJson(SCOPE_PROMPT, { question, today: new Date().toISOString().slice(0, 10) }, undefined, 'scope', options.signal)
       const chat = z.object({ route: z.literal('chat'), reply: ChatReplySchema.shape.reply }).safeParse(output)
       if (chat.success && !needsResearch(question)) {
-        // A chat question is answered directly: no clarify questions, and the UI never starts a run from it. A reply that
-        // drifts into how ResearchAgent pays or decides becomes the fixed statement (H8-03).
+        // A chat question never starts a run. Only small talk keeps the model's own words; anything else outside research
+        // gets the fixed one-line redirect, however long or correct the model's answer was (H9-11).
+        if (!SMALL_TALK.test(question)) return { questions: [], plan: fixturePlan(question), chat: { reply: REDIRECT }, label: REDIRECT_LABEL }
+        // A small-talk reply that drifts into how ResearchAgent pays or decides becomes the fixed statement (H8-03).
         const fixed = PRODUCT_MECHANICS.test(chat.data.reply)
         return { questions: [], plan: fixturePlan(question), chat: { reply: fixed ? ABOUT : chat.data.reply }, label: fixed ? ABOUT_LABEL : liveLabel() }
       }
