@@ -1,3 +1,4 @@
+import { stripCitationMarkers } from '../../shared/finding-text.js'
 import { onTopic, questionTerms, summarizeAnswer } from '../../shared/answer-summary.js'
 import { sourceKey, sameSource } from '../../shared/source-identity.js'
 import { LEGACY_SOURCE_INSTRUCTION } from './untrusted.js'
@@ -323,6 +324,8 @@ async function composeAnswer(input: WriteAnswerInput): Promise<{ answer: Answer;
     } catch { /* Clearly labelled extractive fixture remains available on provider/validation failure. */ }
   }
   if (!answer.claims.length) answer = { ...answer, conclusion: input.candidates.length ? 'Matched articles supplied no citable answer · nothing bought' : 'No listed writer covers this yet · nothing bought' }
+  // Citations are bindings, not prose: drop "[1] [2]" markers a model leaves in claim text (MCP and SDK show it raw).
+  answer = { ...answer, claims: answer.claims.map(claim => ({ ...claim, text: stripCitationMarkers(claim.text) })) }
   answer = summarizeAnswer(input.question, answer, contents, input.candidates, input.requirements?.[0])
   return { answer: AnswerSchema.parse(answer), ...(input.previous ? { impact: compareAnswers(input.previous, answer, contents, priorContents(contents, input.candidates, input.previous)) } : {}) }
 }

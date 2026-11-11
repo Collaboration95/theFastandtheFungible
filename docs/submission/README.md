@@ -68,7 +68,7 @@ If the form has a free-text notes field, paste this (about 70 words):
 > Try it in your browser, nothing to install (13–19 Nov, shared XRPL Testnet
 > sandbox, no real value): https://ra-front-651013803640.asia-southeast1.run.app
 > · No clone, one line (Node ≥ 22.13):
-> `npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz try --testnet`
+> `npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-mcp-1.1.0.tgz try --testnet`
 > ends with six Testnet links and `RESULT PASS`. Recorded run:
 > https://collaboration95.github.io/theFastandtheFungible/demo/ · Live ledger
 > check: https://collaboration95.github.io/theFastandtheFungible/ledger/ ·
@@ -88,9 +88,9 @@ grep -rn '{{' docs/submission/ --include='*.md' --include='*.html'
 |---|---|---|---|
 | `{{VIDEO_URL}}` | the unlisted video link | owner, after recording | form, README links line (video slot comment); the deck reads `VIDEO_URL` in `scripts/facts.mjs` |
 
-Filled: the release (v1.0.2), the writer first-try time
+Filled: the release (v1.1.0), the writer first-try time
 (<!--f:writer_s-->33.9<!--/f--> s, J3 [#389](https://github.com/Collaboration95/theFastandtheFungible/pull/389)),
-the held-out result (<!--f:heldout_line-->v5 blind held-out: 16/20 bought and cited, 0/10 off-topic purchases (run once, 11 Nov; fixture decision model, team-authored writers, XRPL Testnet)<!--/f-->),
+the held-out result (<!--f:heldout_line-->v5 blind held-out: 16/20 bought and cited, 0/10 off-topic purchases (run once, 11 Nov, on XRPL Testnet: fixture research and decision models with answers written offline, team-authored writers)<!--/f-->),
 the hosted URL (above) and Q&A Q13, which now states the true filing count
 (<!--f:filed-->0<!--/f--> filed) and changes by itself once the owner files.
 The deck's registry line (<!--f:registry-->GitHub Releases; not yet on npm, PyPI or the MCP Registry<!--/f-->)
@@ -120,8 +120,9 @@ upstream count is `feedback_line`.
       [BUILDER-FEEDBACK](../BUILDER-FEEDBACK.md#top-7-ranked-findings).
 - [ ] **Owner:** check names and roles on slide 14 (from the git history) and
       the registered team name (A5 on #265).
-- [ ] **After the UI lane merges:** `node docs/submission/deck/export.mjs --refresh-shots`,
-      look at slide 10, commit the two images, `shots.json` and the PDF.
+- [x] Slide 10 and the README hero come from one live hosted XRPL key-reveal run
+      (`--refresh-shots`, 11 Nov); its receipts are committed in
+      [hosted-export-nov11](../evidence/hosted-export-nov11/README.md).
 
 ## Rebuild the deck
 
@@ -129,20 +130,24 @@ upstream count is `feedback_line`.
 ELECTRON_SKIP_BINARY_DOWNLOAD=1 npm ci    # fonts come from @fontsource-variable
 node scripts/facts.mjs                    # refill every number from facts.json
 node docs/submission/deck/export.mjs      # PDF here + PNGs in scratch/deck-png/ to look at
-node docs/submission/deck/export.mjs --refresh-shots   # also re-capture slide 10 from the current app
+node docs/submission/deck/export.mjs --refresh-shots   # also re-capture slide 10 + README hero from one hosted run
+node docs/submission/deck/export.mjs --replay-shots    # offline fallback: the same shots from the /demo/ replay
 ```
 
 The export refuses to replace the PDF if a fact marker is stale, if `{{`
 appears in the HTML, the rendered slides or the PDF text (checked with
 `pdftotext` from poppler), if an image is missing, if the PDF's page count
 differs from the slide count, or if any slide's content overflows its
-1920 × 1080 frame. `--refresh-shots` serves the `/demo/` replay build of the
-current app (`src/`) on an ephemeral loopback port, replays the recorded
-key-reveal Testnet run (`demo/traces/UC3-key-reveal.json`), blocks every
-outside request, and writes `deck/assets/ux-answer.png`, `ux-payment.png` (2×,
-light theme) and `shots.json` (commit, date, trace, viewport). The same pass writes the
-README hero, `docs/media/readme-answer.png` (1280 × 920 CSS px at 2×), so the README and
-slide 10 always show the same recording in the same app.
+1920 × 1080 frame. `--refresh-shots` runs `deck/hosted-shots.mjs`: one visitor
+question (an XRPL preset) on the live hosted demo, XRPL Testnet test funds within
+the demo's caps, no deployment change. It writes `deck/assets/ux-answer.png`,
+`ux-payment.png` (2×, light theme), the README hero `docs/media/readme-answer.png`
+(1440 CSS px wide at 2×), `shots.json` (labels, question, transactions) and the run's
+own exported `receipts.json`, so the README, slide 10 and the release acceptance all use
+the same hosted run. `--replay-shots` is the offline fallback: it serves the `/demo/`
+replay build of the current app on an ephemeral loopback port, replays the recorded
+key-reveal Testnet run (`demo/traces/UC3-key-reveal.json`, fictional writers) and
+blocks every outside request.
 
 The visual system follows [UX-DIRECTION §5](../design/UX-DIRECTION.md#5-visual-system):
 ink on paper, Geist only, mono for hashes and commands, sentence case. The

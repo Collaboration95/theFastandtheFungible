@@ -39,7 +39,7 @@ names where its footage came from.
 | `hosted-decline` | 3b | the hosted demo, a declined question and its proof of refusal |
 | `claude-mcp` | 4 | the real `claude` CLI with the real MCP server, Testnet faucet wallets |
 | `python-verify`, `ledger` | 5 | the released Python wheel; the public `/ledger/` page |
-| `try-testnet` | 6 | `npx … try --testnet` from the v1.0.2 release |
+| `try-testnet` | 6 | `npx … try --testnet` from the v1.1.0 release |
 | `builder-feedback` | 7 | `docs/BUILDER-FEEDBACK.md` on GitHub |
 
 Terminal scenes are real sessions captured screen by screen and drawn at 1080p. Output is not

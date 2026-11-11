@@ -159,7 +159,7 @@ database written by this version, coverage counts every receipt, signed
 payment and refund.
 
 **What the chain does not prove.** The chain itself is not signed. Since
-the current release (v1.0.2), each finished Testnet answer also writes its audit head into an XRPL
+v1.0.2, each finished Testnet answer also writes its audit head into an XRPL
 memo ([anchor-v1](receipt-spec.md#xrpl-anchor-v1)), which gives *that head* an
 external ledger timestamp; `verify:answer --ledger` checks it. `audit:verify`
 does not read anchors, simulated runs have none, and Testnet is reset

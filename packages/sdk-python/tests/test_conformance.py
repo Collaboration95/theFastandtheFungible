@@ -167,7 +167,8 @@ def test_cli_ledger_prints_testnet_line_and_skips_simulated():
         text=True,
     )
     assert result.returncode == 0
-    assert "SKIP audit anchor: simulated run (no ledger)" in result.stdout
+    assert "Skipped audit anchor: simulated run (no ledger)" in result.stdout
+    assert "\nSKIP " not in result.stdout
 
 
 def test_cli_compact_and_verbose():

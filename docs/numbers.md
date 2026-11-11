@@ -7,7 +7,7 @@ submission texts cannot disagree.
 
 ## Judge questions
 
-**<!--f:heldout_line-->v5 blind held-out: 16/20 bought and cited, 0/10 off-topic purchases (run once, 11 Nov; fixture decision model, team-authored writers, XRPL Testnet)<!--/f-->.**
+**<!--f:heldout_line-->v5 blind held-out: 16/20 bought and cited, 0/10 off-topic purchases (run once, 11 Nov, on XRPL Testnet: fixture research and decision models with answers written offline, team-authored writers)<!--/f-->.**
 The key fact leads the answer in <!--f:answers_it-->7/20<!--/f-->; <!--f:heldout_violations-->0<!--/f--> gate violations; all
 ten v4-negatives abstained. Run once on `main` `bdc30f97` against the packed MCP tgz
 (artifact SHA-256 `7fcdc665…`), blind banks v4 `0b770536…` and v4-negatives `d3c4738a…`,

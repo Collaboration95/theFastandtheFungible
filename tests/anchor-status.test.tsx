@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, expect, it, vi } from 'vitest'
+import { readFileSync } from 'node:fs'
 import { act, cleanup, render, screen } from '@testing-library/react'
 import { getRun } from '../src/api'
 import { anchorProgress } from '../shared/anchor-status.js'
@@ -19,6 +20,12 @@ it('exports a DONE abstention even without a validated purchased answer', () => 
  expect(screen.getByText('Export')).toBeTruthy()
  expect(screen.getByText('Download receipts.json')).toBeTruthy()
  expect(screen.getByText('Export report').hasAttribute('disabled')).toBe(true)
+})
+it('pins the Export verify hint to this release’s wheel (an older verifier fails newer hosted exports)', () => {
+ render(<ReportButton run={abstention()} onReport={vi.fn()} />)
+ const version = (JSON.parse(readFileSync('package.json', 'utf8')) as { version: string }).version
+ expect(screen.getByText(`pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v${version}/researchagent-${version}-py3-none-any.whl`)).toBeTruthy()
+ expect(screen.getByText('researchagent verify receipts.json --ledger')).toBeTruthy()
 })
 it('labels no purchase, fee and ledger together', () => {
  const run = abstention()

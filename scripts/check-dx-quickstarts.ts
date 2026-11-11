@@ -9,6 +9,9 @@ const exec = promisify(execFile)
 const scope = new ResourceScope()
 const root = scope.tempDir('dx-quickstarts-')
 const assets = resolve(process.argv[2] || 'dist/release')
+// Asset names follow the version being released (package.json), never a hard-coded tag.
+const version = (JSON.parse(readFileSync('package.json', 'utf8')) as { version: string }).version
+const wheelVersion = version.replace(/-rc\.(\d+)$/, 'rc$1')
 const code = (file: string, lang: string) => readFileSync(file, 'utf8').split('```' + lang + '\n')[1].split('```')[0]
 const testnetWriter = process.argv.includes('--testnet-writer')
 const writerState = testnetWriter ? scope.evidenceDir('dx-writer-', 'Fresh synthetic writer onboarding on XRPL Testnet; retain wallet state for reconciliation') : join(root, 'state')
@@ -16,7 +19,7 @@ const env = { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.en
 const run = async (cmd: string, args: string[], cwd: string) => (await exec(cmd, args, { cwd, env, timeout: 180000, maxBuffer: 8 * 1024 * 1024 })).stdout
 try {
   const appDir = join(root, 'app'); mkdirSync(appDir)
-  const child = scope.spawn('npx', ['-y', 'file:' + join(assets, 'researchagent-mcp-1.0.2.tgz'), 'app', '--port', '6400'], { cwd: appDir, env })
+  const child = scope.spawn('npx', ['-y', 'file:' + join(assets, `researchagent-mcp-${version}.tgz`), 'app', '--port', '6400'], { cwd: appDir, env })
   let output = ''; child.stdout!.on('data', chunk => { output += chunk }); child.stderr!.resume()
   await waitForOutput(child, /ResearchAgent ready:[^\n]+/, 60000)
   const baseUrl = output.match(/Engine baseUrl: (http:\/\/127\.0\.0\.1:\d+)/)?.[1] ?? output.match(/baseUrl: '(http:\/\/127\.0\.0\.1:\d+)'/)?.[1]
@@ -28,12 +31,12 @@ try {
     let result: string
     if (dir === 'ts') {
       await run('npm', ['init', '-y'], cwd)
-      await run('npm', ['i', join(assets, 'researchagent-sdk-1.0.2.tgz')], cwd)
+      await run('npm', ['i', join(assets, `researchagent-sdk-${version}.tgz`)], cwd)
       result = await run(process.execPath, [name, baseUrl, tokenFile], cwd)
     } else if (dir === 'py') {
       await run('python3', ['-m', 'venv', '.venv'], cwd)
       const python = join(cwd, '.venv/bin/python')
-      await run(python, ['-m', 'pip', 'install', '--no-cache-dir', join(assets, 'researchagent-1.0.2-py3-none-any.whl')], cwd)
+      await run(python, ['-m', 'pip', 'install', '--no-cache-dir', join(assets, `researchagent-${wheelVersion}-py3-none-any.whl`)], cwd)
       result = await run(python, [name, baseUrl, tokenFile], cwd)
       const cli = await run(python, ['-m','researchagent','verify','receipts.json','--json'], cwd)
       assert.equal(JSON.parse(cli).ok, true)
@@ -43,7 +46,7 @@ try {
     console.log(`PASS empty ${dir} consumer: documented ask + labelled receipts + offline verify`)
   }
   const writerDir = join(root, 'writer'); mkdirSync(writerDir)
-  const prefix = ['-y', 'file:' + join(assets, 'researchagent-mcp-1.0.2.tgz')]
+  const prefix = ['-y', 'file:' + join(assets, `researchagent-mcp-${version}.tgz`)]
   await run('npx', [...prefix, 'init', 'my-notes'], writerDir)
   const publisher = scope.spawn('npx', [...prefix, 'publish', './my-notes', ...(testnetWriter ? ['--testnet'] : ['--rail', 'simulated'])], { cwd: writerDir, env: { ...env, XDG_STATE_HOME: writerState } })
   publisher.stderr!.resume()

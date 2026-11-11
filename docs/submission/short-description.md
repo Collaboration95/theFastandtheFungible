@@ -30,7 +30,7 @@ and two independent receipt verifiers, TypeScript and Python.
 
 Try it in your browser at https://ra-front-651013803640.asia-southeast1.run.app (open
 13–19 Nov), or with no clone:
-`npx -y <release>/researchagent-mcp-1.0.2.tgz try --testnet`. It is also an MCP server
+`npx -y <release>/researchagent-mcp-1.1.0.tgz try --testnet`. It is also an MCP server
 for Claude Code and Codex.
 
 XRPL Testnet only, no real money. Demo writers are fictional.
@@ -86,5 +86,5 @@ Mainnet is disabled in code.
 | <!--f:transactions-->61<!--/f--> Testnet transactions | Rows on the ledger page, each re-checked live and read-only in the browser | [site/ledger/transactions.json](../../site/ledger/transactions.json) |
 | `try --testnet` | One cold run took <!--f:try_s-->84.2<!--/f--> s (empty npm cache, fresh faucet wallets, 7 Nov); <!--f:try_misses-->2 of 4<!--/f--> cold attempts overran the 90 s limit | [#387](https://github.com/Collaboration95/theFastandtheFungible/pull/387), [round4-j2](../evidence/round4-j2/README.md) |
 | "about <!--f:writer_s-->33.9<!--/f--> s" to a writer | Cold `init` plus `publish` to a validated Credential, generated test note, public faucet | [#389](https://github.com/Collaboration95/theFastandtheFungible/pull/389), [J3](../evidence/round4-j3/slim-onboarding.json) |
-| Held-out <!--f:heldout-->16/20<!--/f-->, off-topic <!--f:offtopic-->0/10<!--/f--> | <!--f:heldout_line-->v5 blind held-out: 16/20 bought and cited, 0/10 off-topic purchases (run once, 11 Nov; fixture decision model, team-authored writers, XRPL Testnet)<!--/f-->; the key fact leads in <!--f:answers_it-->7/20<!--/f-->; dev banks (tuned on) v1 <!--f:dev_v1-->16/20<!--/f-->, v3 <!--f:dev_v3-->7/20<!--/f--> | [evidence](../evidence/v4-heldout/README.md) |
+| Held-out <!--f:heldout-->16/20<!--/f-->, off-topic <!--f:offtopic-->0/10<!--/f--> | <!--f:heldout_line-->v5 blind held-out: 16/20 bought and cited, 0/10 off-topic purchases (run once, 11 Nov, on XRPL Testnet: fixture research and decision models with answers written offline, team-authored writers)<!--/f-->; the key fact leads in <!--f:answers_it-->7/20<!--/f-->; dev banks (tuned on) v1 <!--f:dev_v1-->16/20<!--/f-->, v3 <!--f:dev_v3-->7/20<!--/f--> | [evidence](../evidence/v4-heldout/README.md) |
 | Team-authored writer | team-authored · real content · not an independent writer · Testnet | [#390](https://github.com/Collaboration95/theFastandtheFungible/pull/390) |

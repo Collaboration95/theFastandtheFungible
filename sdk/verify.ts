@@ -24,7 +24,7 @@ export async function verifyAnswer(input: unknown, options: VerifyOptions = {}):
   if (input && typeof input === 'object' && 'verification' in input) { const exported = input as { verification: unknown; report?: unknown }; raw = exported.verification; exportedReport = exported.report }
   const parsed = ReceiptBundleSchema.safeParse(raw)
   if (!parsed.success) return { ok: false, checks: [{ check: 'bundle', status: 'FAIL', detail: `Invalid or legacy bundle at ${parsed.error.issues[0]?.path.join('.')}. Export receipts.json with this version.` }] }
-  checks.push({ check: 'writer credentials', status: 'SKIP', detail: 'Unsigned advisory identity; requires online check' })
+  checks.push({ check: 'writer credentials', status: 'SKIP', detail: 'the writer’s identity is self-declared; checking it needs an online lookup' })
   const b = parsed.data
   if (b.schemaVersion === 3) {
     add('contribution dispatch', !!b.identityVersion && !!b.contributions, 'v3 requires explicit identity semantics and structural contribution evidence')
@@ -34,7 +34,7 @@ export async function verifyAnswer(input: unknown, options: VerifyOptions = {}):
   } else add('legacy dispatch', !b.contributions && !b.identityVersion, 'v1/v2 retain original semantics; contribution extensions require v3')
   if ((b.identityVersion ?? b.schemaVersion) === 1) {
     if ([...b.sources, ...b.candidates, ...b.intents, ...b.grants, ...b.receipts, ...b.intents.flatMap(i => i.quote ?? []), ...b.proofs, ...b.answers.flatMap(a => a.claims.flatMap(c => c.citations))].some(s => s.source)) return { ok: false, checks: [{ check: 'version', status: 'FAIL', detail: 'v1 cannot carry routing identities' }] }
-    checks.push({ check: 'historical origin', status: 'SKIP', detail: 'v1 origin unresolved; original singleton semantics' })
+    checks.push({ check: 'historical origin', status: 'SKIP', detail: 'not needed for this receipt format (one origin per article)' })
   } else {
     add('source binding', [...b.sources, ...b.candidates, ...b.intents, ...b.grants, ...b.receipts, ...b.intents.flatMap(i => i.quote ?? []), ...b.proofs, ...b.answers.flatMap(a => a.claims.flatMap(c => c.citations))].every(s => !!s.source && sourceBinding(s)), 'v2 references require complete matching identity')
     for (const i of b.intents) {
@@ -68,7 +68,7 @@ export async function verifyAnswer(input: unknown, options: VerifyOptions = {}):
       add('audit anchor', chainOk && !reason, reason ?? (chainOk ? `Validated XRPL Testnet ledger ${b.ledgerAnchor.ledgerIndex}` : 'Audit head mismatch'))
       }
     } catch (e) { add('audit anchor', false, e instanceof Error ? e.message : 'Ledger unavailable') }
-  } else checks.push({ check: 'audit anchor', status: 'SKIP', detail: b.label.includes('SIMULATED') ? 'not anchored (simulated); requires online check' : 'requires online check (--ledger); other runs are opaque commitments' })
+  } else checks.push({ check: 'audit anchor', status: 'SKIP', detail: b.label.includes('SIMULATED') ? 'simulated run, nothing on a ledger' : 'offline; add --ledger to look it up on XRPL Testnet (read-only)' })
   for (const e of entries.filter(e => e.kind === 'ESCROW_FINISH' && e.data.proofOk === false)) {
     add(`key-reveal-proof ${e.intentId}`, entries.some(r => r.kind === 'refund' && r.intentId === e.intentId && r.data.originalTxHash === e.data.txHash && b.payments.some(p => p.intentId === e.intentId && p.refundTxHash === r.data.txHash)), 'Failed proof requires a bound refund; validation requires --ledger')
   }
@@ -169,7 +169,7 @@ export async function verifyAnswer(input: unknown, options: VerifyOptions = {}):
       for (const c of found) checks.push({ check: `testnet ${c.kind} ${c.intentId}`, status: c.status === 'ok' || c.status === 'refunded' ? 'PASS' : c.status === 'skipped' ? 'SKIP' : 'FAIL', detail: c.detail })
       add('testnet coverage', b.payments.every(p => p.label === XRPL_LABEL), 'All payments must be real Testnet for full on-ledger verification; SIMULATED is not ledger proof')
     } catch { add('testnet', false, 'Read-only Testnet lookup unavailable') } finally { await owned?.close() }
-  } else checks.push({ check: 'testnet', status: 'SKIP', detail: options.onlineLedger ? 'simulated run (no ledger)' : 'Payments/refunds NOT checked on ledger; add --ledger (read-only, no keys)' })
+  } else checks.push({ check: 'testnet', status: 'SKIP', detail: options.onlineLedger ? 'simulated run (no ledger)' : 'payments and refunds are checked on the ledger only with --ledger (read-only, no keys)' })
   return { ok: checks.every(c => c.status !== 'FAIL'), runId: b.runId, checks }
 }
 
@@ -178,10 +178,11 @@ export function verificationText(result: VerificationResult): string {
   const lines = [`VERIFY ${result.runId ?? 'report'}`]
   for (const prefix of groups) {
     const checks = result.checks.filter(c => c.check.startsWith(prefix))
-    if (checks.length) lines.push(`${checks.some(c => c.status === 'FAIL') ? 'FAIL' : checks.every(c => c.status === 'SKIP') ? 'SKIP' : 'PASS'} ${prefix === 'testnet ' ? `testnet ${checks.filter(c => c.status === 'PASS').length}/${checks.length} (read-only, s.altnet)` : `${prefix.trim().toUpperCase().padEnd(10)} ${checks.filter(c => c.status === 'PASS').length}/${checks.length}`}`)
+    if (checks.length) lines.push(`${checks.some(c => c.status === 'FAIL') ? 'FAIL' : checks.every(c => c.status === 'SKIP') ? 'Skipped' : 'PASS'} ${prefix === 'testnet ' ? `testnet ${checks.filter(c => c.status === 'PASS').length}/${checks.length} (read-only, s.altnet)` : `${prefix.trim().toUpperCase().padEnd(10)} ${checks.filter(c => c.status === 'PASS').length}/${checks.length}`}`)
   }
-  for (const c of result.checks.filter(c => c.status !== 'PASS' || c.check === 'audit anchor')) lines.push(`${c.status.padEnd(4)} ${c.check}: ${c.detail}`)
-  if (result.checks.some(c => c.status === 'SKIP' && ['writer credentials', 'historical origin'].includes(c.check))) lines.push('Identity/origin SKIPs are limits on attribution, separate from payment and passage checks. PASS does not verify a writer identity.')
+  // Plain words for people: a skipped check is not a failure. JSON keeps the contract status (`SKIP`).
+  for (const c of result.checks.filter(c => c.status !== 'PASS' || c.check === 'audit anchor')) lines.push(`${c.status === 'SKIP' ? 'Skipped' : c.status} ${c.check}: ${c.detail}`)
+  if (result.checks.some(c => c.status === 'SKIP' && ['writer credentials', 'historical origin'].includes(c.check))) lines.push('Skipped is not failed. PASS does not prove who a writer is.')
   lines.push(`RESULT ${result.ok ? 'PASS' : 'FAIL'}`)
   return lines.join('\n')
 }

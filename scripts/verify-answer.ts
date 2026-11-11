@@ -6,7 +6,7 @@ import { verifyAnswer, verificationText } from '../sdk/verify.js'
 
 try {
   const { values, positionals } = parseArgs({ allowPositionals: true, options: { ledger: { type: 'boolean', default: false }, testnet: { type: 'boolean', default: false }, 'expect-head': { type: 'string' }, json: { type: 'boolean', default: false } } })
-  if (positionals.length !== 1) throw new Error('Usage: npm run verify:answer -- <report.pdf|report.json|receipts.json> [--ledger] [--testnet] [--expect-head HASH] [--json]')
+  if (positionals.length !== 1) throw new Error('Usage: verify <receipts.json|report.json|report.pdf> [--ledger] [--testnet] [--expect-head HASH] [--json]')
   const bytes = readFileSync(positionals[0])
   let input: unknown
   if (bytes.subarray(0, 5).toString() === '%PDF-') {

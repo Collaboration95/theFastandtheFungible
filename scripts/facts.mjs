@@ -154,7 +154,7 @@ export function build() {
   const copy = {
     feedback_line: `${v('ranked')} ranked findings with runnable repros · ${v('findings')} numbered findings (B01–B${v('findings')}) · ${v('submissions')} submissions on ${v('submitted_on')} · ${v('drafts')} upstream drafts, ${v('filed')} filed`,
     progress_line: `${v('prs')} pull requests merged since ${v('since')} (${counted}) · ${v('releases')} releases · ${v('transactions')} Testnet transactions you can re-check`,
-    heldout_line: `${bank} blind held-out: ${v('heldout')} bought and cited, ${v('offtopic')} off-topic purchases (run once, ${v('heldout_on')}; fixture decision model, team-authored writers, XRPL Testnet)`,
+    heldout_line: `${bank} blind held-out: ${v('heldout')} bought and cited, ${v('offtopic')} off-topic purchases (run once, ${v('heldout_on')}, on XRPL Testnet: fixture research and decision models with answers written offline, team-authored writers)`,
     singhacks_then: 'At SingHacks a language model proposed each purchase and a person approved every quote before payment; payment was a fixture by default, with optional Testnet settlement.',
     hosted: 'Shared XRPL Testnet sandbox · no real value · open 13–19 Nov',
     // Same line as `node scripts/install-snippets.mjs --tag <release> --try` (tests/deck.test.ts checks it).

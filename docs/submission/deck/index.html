@@ -352,15 +352,17 @@ td.was { color: var(--muted); }
   <h1>Don’t trust our agent. Verify it, against the ledger.</h1>
   <div class="cols" style="grid-template-columns:1fr 1fr;gap:64px;margin-top:44px">
     <div>
-      <div class="term" style="font-size:19px" data-evidence="docs/evidence/round4-j2/python-verifier.txt">
-        <div class="dim"># the Python verifier: standard library only, no Node</div>
-        <div><span class="p">$</span> researchagent verify UC3.receipts.json --ledger</div>
-        <div class="ok">PASS checks: 57 PASS, 0 FAIL, 2 SKIP</div>
-        <div class="ok">PASS audit anchor: Validated XRPL Testnet ledger 22057921</div>
-        <div class="ok">PASS testnet 12/12 (read-only, s.altnet)</div>
+      <div class="term" style="font-size:18px" data-evidence="docs/evidence/hosted-export-nov11/verify-python-main.txt">
+        <div class="dim"># Python, no Node: a receipt the live sandbox exported</div>
+        <div><span class="p">$</span> pip install …/v1.1.0/researchagent-1.1.0-py3-none-any.whl</div>
+        <div><span class="p">$</span> researchagent verify receipts.json --ledger</div>
+        <div class="ok">PASS checks: 46 passed, 0 failed, 2 skipped</div>
+        <div class="ok">PASS audit anchor: Validated XRPL Testnet ledger 22228575</div>
+        <div class="ok">PASS testnet 11/11 (read-only, s.altnet)</div>
+        <div class="dim">Skipped is not failed. PASS does not prove who a writer is.</div>
         <div class="ok">RESULT PASS</div>
       </div>
-      <p class="cap" style="font-size:23px;margin-top:22px">Any receipt the app exports can be checked the same way, by anyone, offline or against the ledger.</p>
+      <p class="cap" style="font-size:23px;margin-top:22px">Any receipt the app or the live sandbox exports can be checked the same way, by anyone, offline or against the ledger, with release v1.1.0 or later.</p>
     </div>
     <ul class="points" style="margin-top:4px">
       <li><b>Two independent verifiers</b>, TypeScript and Python, agree on all <!--f:vectors-->224<!--/f--> shared vectors: <!--f:vectors_golden-->19<!--/f--> must pass and <!--f:vectors_tampered-->205<!--/f--> tampered ones must fail.</li>
@@ -371,7 +373,7 @@ td.was { color: var(--muted); }
       <li><b>Prompt injection can’t spend:</b> model inputs are untrusted, and only policy code can buy.</li>
     </ul>
   </div>
-  <div class="src"><span>Output: docs/evidence/round4-j2/python-verifier.txt on docs/evidence/lane-b3/UC3.receipts.json · tests/fixtures/receipt-conformance/ · the /ledger/ page</span><span class="n"></span></div>
+  <div class="src"><span>Output: docs/evidence/hosted-export-nov11/ (a hosted-demo export, 11 Nov) · tests/fixtures/receipt-conformance/ · the /ledger/ page</span><span class="n"></span></div>
   <aside class="notes">
     <p><b>Criteria:</b> Technical depth (20%): testing, security and safeguards. Reachability: the verifier is a separate install in another language.</p>
     <p><b>Say:</b> Don’t trust us, verify it. Two independent verifiers, one in Python with no Node, re-check every receipt against the ledger. Our ledger page re-checks every historical Testnet transaction live.</p>
@@ -390,7 +392,7 @@ td.was { color: var(--muted); }
     <div class="card"><h3>Writers in one command</h3><p><code>publish ./notes --testnet</code>: faucet wallet, XRPL Credential, key-reveal escrow.</p><div class="num"><!--f:writer_s-->33.9<!--/f--> s from <code>init</code> to a validated Credential</div></div>
     <div class="card"><h3>Hire the agent over x402</h3><p>Another agent pays ResearchAgent; it buys, pays every cited writer a royalty and returns the change.</p><div class="num">Recorded on Testnet, 3 Nov</div></div>
   </div>
-  <p class="honest" style="margin-top:30px"><b>Does it buy the right thing?</b> <!--f:heldout_line-->v5 blind held-out: 16/20 bought and cited, 0/10 off-topic purchases (run once, 11 Nov; fixture decision model, team-authored writers, XRPL Testnet)<!--/f-->. The key fact leads <!--f:answers_it-->7/20<!--/f--> answers. Packages: <!--f:registry-->GitHub Releases; not yet on npm, PyPI or the MCP Registry<!--/f-->.</p>
+  <p class="honest" style="margin-top:30px"><b>Does it buy the right thing?</b> <!--f:heldout_line-->v5 blind held-out: 16/20 bought and cited, 0/10 off-topic purchases (run once, 11 Nov, on XRPL Testnet: fixture research and decision models with answers written offline, team-authored writers)<!--/f-->. The key fact leads <!--f:answers_it-->7/20<!--/f--> answers. Packages: <!--f:registry-->GitHub Releases; not yet on npm, PyPI or the MCP Registry<!--/f-->.</p>
   <div class="src"><span>docs/install.md · docs/evidence/round4-j2/ (timings) · round4-j3/slim-onboarding.json · hire-274.md · v5-heldout/README.md</span><span class="n"></span></div>
   <aside class="notes">
     <p><b>Criteria:</b> Reachability (25%): interoperability (MCP, x402 hire), developer access (SDKs, one-command writers), scale of audience (people and agents).</p>
@@ -426,18 +428,18 @@ td.was { color: var(--muted); }
   <h1>The money is the hero, and every label tells the truth</h1>
   <div class="shots">
     <figure style="margin:0">
-      <img class="shot main" src="assets/ux-answer.png" alt="The ResearchAgent app after a recorded XRPL Testnet run: the answer leads with its key fact, and the payment card shows S$0.40 net of a S$2.00 budget, one article refunded by its writer and its escrow steps">
-      <figcaption class="cap"><b>One environment indicator</b> in the header · <b>each payment step</b> links to its transaction · <b>a refund says why</b></figcaption>
+      <img class="shot main" src="assets/ux-answer.png" alt="The hosted demo after an XRPL Testnet run on an x402 question: the answer leads with the PAYMENT-REQUIRED and PAYMENT-SIGNATURE headers, and the payment card shows S$0.80 net of a S$2.00 budget for two articles, each paid by key reveal, with the answer anchored on XRPL">
+      <figcaption class="cap"><b>One environment indicator</b> in the header · <b>the answer leads</b> · <b>each payment step</b> links to its transaction</figcaption>
     </figure>
     <figure style="margin:0">
-      <img class="shot zoom" src="assets/ux-payment.png" alt="A payment row: The Fab Floor, paid by key reveal, with its four steps: payment locked in escrow, writer released the key, key matches the escrow lock, article unlocked">
-      <figcaption class="cap">The kept article: paid by key reveal.</figcaption>
+      <img class="shot zoom" src="assets/ux-payment.png" alt="A payment row: the team-authored article 'What does an x402 402 Payment Required response contain?', paid by key reveal, with its four steps: payment locked in escrow, writer released the key, key matches the escrow lock, article unlocked">
+      <figcaption class="cap">One bought article: paid by key reveal.</figcaption>
     </figure>
   </div>
-  <div class="src"><span>The current app replaying the XRPL Testnet run recorded on 11 Nov (docs/evidence/replay-nov11/) · fixture models, fictional writers · captured by export.mjs --refresh-shots</span><span class="n"></span></div>
+  <div class="src"><span>One live run on the hosted demo, 11 Nov (docs/evidence/hosted-export-nov11/) · XRPL Testnet · live answers, rule-based buying, team-authored writers · captured by hosted-shots.mjs, unedited</span><span class="n"></span></div>
   <aside class="notes">
     <p><b>Criteria:</b> UX and design (10%): how agent actions, payments and on-chain transactions are communicated. The rubric asks for exactly this card.</p>
-    <p><b>Say:</b> The answer leads with its key fact. The payment card is the hero: net spend against budget, each escrow step with its transaction, the key check, and a refund that says why and who signed it. One environment indicator, not a stamp on every row.</p>
+    <p><b>Say:</b> The answer leads with its key fact. The payment card is the hero: net spend against budget, each escrow step with its transaction, and the key check. When a promise breaks, the refund says why and who signed it; the replay shows one. One environment indicator, not a stamp on every row.</p>
   </aside>
 </section>
 

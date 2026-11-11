@@ -31,14 +31,14 @@ install. The recorded run works any time. Or run the whole money path yourself, 
 no account (Node ≥ 22.13):
 
 ```sh
-REL=https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2
-npx -y $REL/researchagent-mcp-1.0.2.tgz try --testnet
+REL=https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0
+npx -y $REL/researchagent-mcp-1.1.0.tgz try --testnet
 ```
 
 <p align="center">
-  <img src="docs/media/readme-answer.png" width="900" alt="A finished answer next to its payment card: paid for 2 articles, 1 refunded, net cost S$0.40 of a S$2.00 budget. One article broke its promise and was refunded by its writer; the other was paid when its writer released the article key on the ledger, the key matched the escrow lock and the article unlocked. The answer is anchored on XRPL Testnet.">
+  <img src="docs/media/readme-answer.png" width="900" alt="The hosted demo after an XRPL Testnet run. Question: what HTTP headers does x402 use on XRPL, and how does the server know the payment actually settled? The lead finding: an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. The payment card shows a net cost of S$0.80 of a S$2.00 budget for two articles, each paid by key reveal: payment locked in escrow, writer released the key, key matches the escrow lock, article unlocked. The answer is anchored on XRPL Testnet.">
 </p>
-<p align="center"><sub>A run recorded on XRPL Testnet on 11 Nov 2026, replayed in the current app · fixture models · fictional writers · no real value · <a href="docs/evidence/replay-nov11/README.md">its six transactions</a></sub></p>
+<p align="center"><sub>The live sandbox, 11 Nov 2026 · XRPL Testnet · live answers, rule-based buying · team-authored writers · no real value · <a href="docs/evidence/hosted-export-nov11/README.md">its five transactions and receipts</a></sub></p>
 
 ## What it does
 
@@ -80,19 +80,18 @@ Give Claude Code a research wallet on XRPL Testnet. The caps live in the environ
 calling model cannot raise them:
 
 ```sh
-claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz --testnet
+claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-mcp-1.1.0.tgz --testnet
 ```
 
 Or call it from code:
 
 ```sh
-npm i https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-sdk-1.0.2.tgz
-pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-1.0.2-py3-none-any.whl
+npm i https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-sdk-1.1.0.tgz
+pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-1.1.0-py3-none-any.whl
 ```
 
 - **Agent hires agent.** Another agent pays ResearchAgent over x402, and cited writers get
-  royalties. In source today (`make try-hire` from a clone); `try --testnet --hire` ships in the
-  next release · [how](docs/hire.md).
+  royalties: append `--hire` to the `try --testnet` line · [how](docs/hire.md).
 - **Writers.** A Markdown folder becomes a payable Testnet writer with an XRPL Credential in two
   commands · [publishing](docs/publishing.md).
 - **Everything else:** Codex and Claude Desktop, TEST-SGD escrow, the zero-clone web app, the Mac
@@ -116,11 +115,14 @@ Re-check the whole run with Python and no Node (read-only lookups on s.altnet), 
 `pip install` above:
 
 ```sh
-curl -LO https://raw.githubusercontent.com/Collaboration95/theFastandtheFungible/v1.0.2/docs/evidence/lane-b3/UC3.receipts.json
+curl -LO https://raw.githubusercontent.com/Collaboration95/theFastandtheFungible/v1.1.0/docs/evidence/lane-b3/UC3.receipts.json
 researchagent verify UC3.receipts.json --ledger
 ```
 
-It ends with `RESULT PASS`. The [ledger page](https://collaboration95.github.io/theFastandtheFungible/ledger/)
+It ends with `RESULT PASS`. The same command checks the `receipts.json` you export from any run
+in the [live sandbox](https://ra-front-651013803640.asia-southeast1.run.app) (use v1.1.0 or later;
+v1.0.2 cannot recompute the newer answer commitment). Without Python:
+`npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-mcp-1.1.0.tgz verify receipts.json --ledger`. The [ledger page](https://collaboration95.github.io/theFastandtheFungible/ledger/)
 re-validates all <!--f:transactions-->61<!--/f--> recorded Testnet transactions from your browser.
 TypeScript and Python verifiers, written separately, agree on all <!--f:vectors-->224<!--/f-->
 shared conformance cases ([receipt format](docs/receipt-spec.md)).
@@ -131,7 +133,7 @@ shared conformance cases ([receipt format](docs/receipt-spec.md)).
 
 | What we measured | Result | Scope and date |
 |---|---|---|
-| Blind held-out judge questions (<!--f:heldout_bank-->v5<!--/f-->) | <!--f:heldout-->16/20<!--/f--> bought and cited; <!--f:offtopic-->0/10<!--/f--> off-topic purchases; <!--f:heldout_violations-->0<!--/f--> gate violations | run once on <!--f:heldout_on-->11 Nov<!--/f-->; fixture decision model, team-authored writers, XRPL Testnet |
+| Blind held-out judge questions (<!--f:heldout_bank-->v5<!--/f-->) | <!--f:heldout-->16/20<!--/f--> bought and cited; <!--f:offtopic-->0/10<!--/f--> off-topic purchases; <!--f:heldout_violations-->0<!--/f--> gate violations | run once on <!--f:heldout_on-->11 Nov<!--/f--> on XRPL Testnet; fixture research and decision models, answers written offline (the hosted demo writes live with DeepSeek); team-authored writers |
 | One line to a verified purchase | <!--f:try_s-->84.2<!--/f--> s cold; <!--f:try_misses-->2 of 4<!--/f--> cold runs overran 90 s | one Mac, empty npm cache, 7 Nov |
 | Network fees per key-reveal purchase | <!--f:fee_drops-->435<!--/f--> drops | XRPL Testnet, measured |
 | Progress since SingHacks | <!--f:prs-->248<!--/f--> PRs merged since <!--f:since-->21 Sep<!--/f-->; <!--f:releases-->13<!--/f--> releases | counted at <!--f:sha-->329b64f7<!--/f--> on <!--f:as_of-->11 Nov 2026<!--/f--> |

@@ -47,6 +47,7 @@ it('stdio search → policy buy → cited answer; cap, daily cap, retry and rest
     expect(run.labels.settlement).toContain('SIMULATED')
     expect(run.purchases.some((p: { verified: boolean }) => p.verified)).toBe(true)
     expect(run.citations.length).toBeGreaterThan(0)
+    for (const claim of run.answer?.claims ?? []) expect(claim.text).not.toMatch(/\[\d+\]/)
     const store = new Store(join(dir, 'app.db'))
     const snapshot = store.getRun(run.run_id)
     for (const citation of run.citations) {

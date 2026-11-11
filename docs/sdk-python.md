@@ -1,9 +1,9 @@
 # Python SDK
 
-[Release v1.0.2](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.0.2): release · not yet on npm/PyPI/MCP Registry. Install without cloning.
+[Release v1.1.0](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.1.0): release · not yet on npm/PyPI/MCP Registry. Install without cloning.
 
 ```sh
-pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-1.0.2-py3-none-any.whl
+pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-1.1.0-py3-none-any.whl
 ```
 
 
@@ -25,7 +25,7 @@ $env:MCP_MAX_BUDGET_MINOR="200"; $env:MCP_DAILY_CAP_MINOR="500"
 Then, in the same terminal on any platform:
 
 ```sh
-npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz app --port 6400
+npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-mcp-1.1.0.tgz app --port 6400
 ```
 
 Keep it running. This uses fixture models, fictional writers and SIMULATED payments (no real value). Caps authorize up to S$2 per ask and S$5 gross per UTC day. For XRPL Testnet append `--testnet`; for TEST-SGD (stand-in for RLUSD, no real value) also append `--iou`. Cold IOU setup can take about two minutes. Use another port if 6400 is busy.
@@ -36,14 +36,14 @@ Terminal 2, create an isolated environment:
 
 ```sh
 python3 -m venv .venv
-.venv/bin/python -m pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-1.0.2-py3-none-any.whl
+.venv/bin/python -m pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-1.1.0-py3-none-any.whl
 ```
 
 Windows PowerShell equivalent:
 
 ```powershell
 py -3 -m venv .venv
-.venv/Scripts/python.exe -m pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-1.0.2-py3-none-any.whl
+.venv/Scripts/python.exe -m pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-1.1.0-py3-none-any.whl
 ```
 
 Save this as `ask.py`:
@@ -68,7 +68,7 @@ if not verified['ok']:
 
 Run `.venv/bin/python ask.py "ENGINE_URL" "TOKEN_FILE"` (PowerShell: `.venv/Scripts/python.exe ask.py "ENGINE_URL" "TOKEN_FILE"`), replacing both quoted values with the app output.
 
-Success means an answer with mode labels/citations, a local `receipts.json`, and verification `ok: true` (Python: `True`). Verification above is offline. For read-only Testnet settlement **and anchor** checks use TS `{ onlineLedger: true }` or Python `python -m researchagent verify receipts.json --ledger` with the installed interpreter. Simulated evidence has no ledger proof; SKIP preserves that boundary. Reuse the same idempotency key after an uncertain response; read the retained run rather than buying again.
+Success means an answer with mode labels/citations, a local `receipts.json`, and verification `ok: true` (Python: `True`). Verification above is offline. For read-only Testnet settlement **and anchor** checks use TS `{ onlineLedger: true }` or Python `python -m researchagent verify receipts.json --ledger` with the installed interpreter. Simulated evidence has no ledger proof, so those checks print as skipped, never as passed. Reuse the same idempotency key after an uncertain response; read the retained run rather than buying again.
 <!-- END generated:sdk-quickstart -->
 
 The wheel has no runtime dependencies. Checkout-only `examples/python/` files require a clone; they are not installed into the consumer folder. Client(base_url, token) uses bearer authentication and refuses redirects. Never put tokens in URLs.
@@ -187,7 +187,7 @@ then Clio, with no wallet or backend. The Python API is `verify(bundle, ledger=T
 `--ledger` checks the anchor *and* every payment, refund and escrow event, and prints
 `PASS testnet N/N (read-only, s.altnet)`; `--testnet` alone checks the payments.
 `audit anchor` becomes PASS for validated matching anchor-v1 evidence, or FAIL with a
-reason; a simulated export prints `SKIP audit anchor: simulated run (no ledger)`.
+reason; a simulated export prints `Skipped audit anchor: simulated run (no ledger)`.
 A key reveal whose article broke its promises passes (`key-reveal-proof`) only with a
 validated writer refund. Without the flag, ledger checks remain SKIP (requires online
 check); offline fixture behavior is unchanged. Each endpoint has a five-second deadline

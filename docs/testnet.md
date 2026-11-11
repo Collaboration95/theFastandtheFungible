@@ -63,10 +63,10 @@ only create/finish/refund/re-buy hashes and first-create timing under
 selects a fresh wallet cache. The acceptance script deletes its private scratch.
 Funding, hire ingress, royalties, change and cooperative refunds stay Payments.
 
-## Zero-clone Testnet MCP (v1.0.2)
+## Zero-clone Testnet MCP (v1.1.0)
 
 ```sh
-claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz --testnet
+claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-mcp-1.1.0.tgz --testnet
 ```
 
 Release · not yet on npm/PyPI/MCP Registry. Alternatively use the
@@ -88,16 +88,16 @@ prints the line for a tag. No clone, no `.env`, no hosted service: the tgz boots
   stdio with a fresh npm cache, restarts to prove wallet reuse and cap enforcement, and checks each hash on s.altnet.
   Default CI never calls the faucet. Evidence: [round3-a](evidence/round3-a/README.md).
 
-## Zero-clone Testnet app (v1.0.2)
+## Zero-clone Testnet app (v1.1.0)
 
 ```sh
-npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.0.2/researchagent-mcp-1.0.2.tgz app --testnet     # or without --testnet for the labelled SIMULATED rail
+npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-mcp-1.1.0.tgz app --testnet     # or without --testnet for the labelled SIMULATED rail
 ```
 
 Release · not yet on npm/PyPI/MCP Registry. Only Node ≥22.13 is needed: the tgz carries the engine,
-the fixture corpus and the built web UI (3.43 MiB total for the published v1.0.2 tgz). It boots the same engine as the MCP
+the fixture corpus and the built web UI (about 3.4 MiB packed; v1.0.2 was 3.43 MiB). It boots the same engine as the MCP
 bin, with the same faucet wallets from `$XDG_STATE_HOME/researchagent/testnet/` (shared with `--testnet` MCP; the app's own
-database lives in `testnet/app/`), serves the UI on `127.0.0.1` (ephemeral port, or `--port N`) and prints its connection details (source-build layout below; published v1.0.2 embeds them in an abbreviated SDK expression):
+database lives in `testnet/app/`), serves the UI on `127.0.0.1` (ephemeral port, or `--port N`) and prints its connection details (source-build layout below; published v1.1.0 embeds them in an abbreviated SDK expression):
 
 ```text
 ResearchAgent ready: http://127.0.0.1:N · fixture models · XRPL TESTNET · no real value
@@ -113,7 +113,7 @@ ResearchAgent ready: http://127.0.0.1:N · fixture models · XRPL TESTNET · no 
   the app adds a wallet-wide **daily cap of S$5.00 in Testnet mode** (S$20 default on the SIMULATED rail; set
   `WALLET_DAILY_CAP_MINOR` to change it).
 - **No `.env`.** The app never reads one; models and writers are fixtures. Key reveal and anchoring are on.
-- **SDK.** Use the [complete two-terminal quickstart](sdk.md#start-engine--connect--ask--verify) for caps, platform variants, token-file reading, ask and verification. The engine URL is different from the UI URL. The published v1.0.2 abbreviated SDK expression is not a standalone program; its Testnet-only verification line is inappropriate for simulated exports and does not check the answer anchor. Use default offline verify for simulated runs, or SDK `{ onlineLedger: true }` / Python `--ledger` for read-only settlement **and** anchor checks.
+- **SDK.** Use the [complete two-terminal quickstart](sdk.md#start-engine--connect--ask--verify) for caps, platform variants, token-file reading, ask and verification. The engine URL is different from the UI URL. The published v1.1.0 abbreviated SDK expression is not a standalone program; its Testnet-only verification line is inappropriate for simulated exports and does not check the answer anchor. Use default offline verify for simulated runs, or SDK `{ onlineLedger: true }` / Python `--ledger` for read-only settlement **and** anchor checks.
 - **Fallback.** A faucet or network failure starts the app on the SIMULATED rail and the ready line says why
   (`SIMULATED fallback · faucet_unavailable | validation_timeout | wallet_cache_unavailable | network_unavailable · no ledger
   transactions`); the UI labels every figure SIMULATED.
@@ -160,6 +160,6 @@ directory. Operator caps still apply; the command does not change MCP's zero
 budget default for other entry points. No-purchase runs skip the anchor fee.
 The portable stdio bundle does not load the web UI. Browser tooling is omitted;
 report export uses the existing HTML fallback when Chromium is unavailable.
-Release URLs point at v1.0.2.
+Release URLs point at v1.1.0.
 
 Cold TEST-SGD setup can take about two minutes before the first tool response. For Codex set `tool_timeout_sec = 180` (startup timeout is separate); see [per-client timeout guidance](mcp.md#cold-testnet-calls-and-client-timeouts).

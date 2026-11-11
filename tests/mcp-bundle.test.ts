@@ -17,6 +17,10 @@ it('ships a validated extension that lists tools and clamps user-config caps ove
   execFileSync(process.execPath, [join(dir, 'mcp/extension.mjs'), 'init', starter], { stdio: 'pipe' })
   expect(readdirSync(starter)).toEqual(['1-capacity.md', '2-allocation.md'])
   for (const file of readdirSync(starter)) expect(readFileSync(join(starter, file), 'utf8')).toBe(readFileSync(join('examples/writer-starter', file), 'utf8'))
+  // The shipped `verify` subcommand is the packed TS verifier: it accepts a real hosted-demo export (anchor binding included).
+  const verified = JSON.parse(execFileSync(process.execPath, [join(dir, 'mcp/extension.mjs'), 'verify', resolve('docs/evidence/hosted-export-nov11/receipts.json'), '--json'], { encoding: 'utf8' }))
+  expect(verified.ok).toBe(true)
+  expect(verified.checks.find((c: { check: string }) => c.check === 'anchor binding')?.status).toBe('PASS')
   const manifest = JSON.parse(readFileSync(join(dir, 'manifest.json'), 'utf8'))
   const schema = JSON.parse(readFileSync('node_modules/@anthropic-ai/mcpb/dist/mcpb-manifest-v0.3.schema.json', 'utf8'))
   const ajv = new Ajv({ strict: false, validateFormats: false })

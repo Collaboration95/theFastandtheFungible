@@ -1,4 +1,5 @@
 import { declineSummary } from '../shared/decline.js'
+import { stripCitationMarkers } from '../shared/finding-text.js'
 import { RunSnapshotSchema } from '../shared/contracts/run.js'
 import pkg from '../package.json' with { type: 'json' }
 import { ResearchAgentError } from '../sdk/index.js'
@@ -29,7 +30,9 @@ export function createMcpServer(endpoint: string | Endpoint | Promise<Endpoint>,
     try { await ready; const data = await action(); return result(labels.length ? { ...data, startupLabels: labels } : data) }
     catch (error) { if (error instanceof ResearchAgentError) return { ...result(errorEnvelope(error.code, error.status ?? 503, error.runId)), isError: true }; return { ...result({ error: 'ResearchAgent command failed. Check backend availability, arguments and idempotency key. No automatic retry of a new purchase.', labels: ['mode unavailable; no evidence returned'] }), isError: true } }
   }
-  const withLedger = async (data: Awaited<ReturnType<typeof client.getRun>>) => {
+  const withLedger = async (raw: Awaited<ReturnType<typeof client.getRun>>) => {
+    // Agents read claim text verbatim: citations are the bindings, so "[1] [2]" markers (older runs) are dropped here.
+    let data = raw.answer ? { ...raw, answer: { ...raw.answer, claims: raw.answer.claims.map(c => ({ ...c, text: stripCitationMarkers(c.text) })), ...(raw.answer.lead ? { lead: raw.answer.lead.map(l => ({ ...l, text: stripCitationMarkers(l.text), claim: { ...l.claim, text: stripCitationMarkers(l.claim.text) } })) } : {}) } } : raw
     if (data.phase === 'DONE' && !data.answer?.claims.length && !data.purchases.length) {
       const response = await fetch(new URL(`/api/mcp/runs/${data.run_id}`, apiUrl), { headers: token ? { Authorization: `Bearer ${token}` } : {}, redirect: 'error', signal: AbortSignal.timeout(15_000) })
       if (response.ok) {

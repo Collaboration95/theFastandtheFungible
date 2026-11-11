@@ -141,7 +141,7 @@ it('CLI verifies the recorded JSON and PDF offline, rejects the exact citation t
     ])
     for (const result of [json, pdf]) {
       expect(result.status, result.stderr + result.stdout).toBe(0)
-      expect(result.stdout).toContain('Payments/refunds NOT checked on ledger')
+      expect(result.stdout).toContain('payments and refunds are checked on the ledger only with --ledger')
     }
     expect(bad.status).toBe(1)
     expect(bad.stdout).toContain('fab-floor-kestrel-penang-lead-times@v1#p1: Exact citation passage missing or hash mismatch')

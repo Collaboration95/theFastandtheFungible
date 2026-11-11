@@ -30,6 +30,7 @@ export function admitLocalRelease({ manifest, receipt, gate, acceptance, sha, tr
   // Validate consumers directly instead of supplying invented hosted job results.
   validateConsumers(manifest, receipt, sha)
   if (!receipt.verifiers?.typescript?.pass || !receipt.verifiers?.python?.pass || receipt.verifiers?.receiptSha256 !== sha256(resolve(root, 'accepted-receipt.json'))) throw Error('Missing accepted receipt verifiers')
+  validateHostedExports(manifest, receipt)
   const acceptedReceipt = { ...receipt }; delete acceptedReceipt.manifestFile
   if (JSON.stringify(acceptance.artifacts) !== JSON.stringify(manifest.artifacts) || JSON.stringify(acceptance.consumers) !== JSON.stringify(acceptedReceipt)) throw Error('Acceptance artifacts or consumer receipt changed')
   for (const a of manifest.artifacts) if (a.version !== (['wheel','sdist'].includes(a.kind) ? version.replace(/-rc\.(\d+)$/, 'rc$1') : version)) throw Error('Artifact version mismatch: ' + a.kind)
@@ -46,5 +47,17 @@ export function validateConsumers(manifest, receipt, sha) {
     const r = receipt.consumers.find(r => r.kind === kind)
     const a = manifest.artifacts.find(a => a.kind === (kind === 'app' ? 'mcp-tgz' : kind))
     if (!r || r.sha256 !== a.sha256 || r.citations < 1 || r.receipts !== 1 || r.intents !== 1 || !r.idempotent || !r.capPreserved) throw Error('Missing accepted consumer: ' + kind)
+  }
+}
+// H8-02: hosted-demo exports (fresh HOSTED=1 fixtures and the committed real Testnet export) verified by the packed
+// wheel and the packed TS CLI, with anchor binding checked on every anchored export.
+export const hostedExportKinds = ['fixture-purchase', 'fixture-anchored-decline', 'testnet-hosted']
+export function validateHostedExports(manifest, receipt) {
+  const hosted = receipt.verifiers?.hosted, hash = kind => manifest.artifacts.find(a => a.kind === kind)?.sha256
+  if (!hosted || hosted.wheelSha256 !== hash('wheel') || hosted.typescriptSha256 !== hash('mcp-tgz')) throw Error('Hosted exports must be verified by the packed wheel and TS CLI')
+  for (const kind of hostedExportKinds) {
+    const rows = (hosted.exports ?? []).filter(r => r.kind === kind)
+    if (rows.length !== 1 || !rows[0].python?.pass || !rows[0].typescript?.pass || !/^[a-f0-9]{64}$/.test(rows[0].sha256 ?? '')) throw Error('Hosted export not verified: ' + kind)
+    if (kind !== 'fixture-purchase' && rows[0].anchorBinding !== 'PASS') throw Error('Hosted export anchor binding not checked: ' + kind)
   }
 }

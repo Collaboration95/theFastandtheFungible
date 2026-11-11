@@ -1,6 +1,6 @@
 # v5 held-out measurement (11 Nov 2026)
 
-Fixture decision model · team-authored writers · XRPL Testnet with faucet funds. No real money.
+Fixture research and decision models (answers written offline) · team-authored writers · XRPL Testnet with faucet funds. No real money.
 
 ## What was run
 

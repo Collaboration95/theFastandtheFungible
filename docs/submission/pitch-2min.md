@@ -113,7 +113,7 @@ Never cut the "Testnet" line on slide 1.
   `docs/evidence/round4-j2/`. It is not in the script any more: the live
   sandbox is the first thing judges use.
 - **"<!--f:heldout_n-->sixteen<!--/f--> of <!--f:heldout_N-->twenty<!--/f-->"**:
-  <!--f:heldout_line-->v5 blind held-out: 16/20 bought and cited, 0/10 off-topic purchases (run once, 11 Nov; fixture decision model, team-authored writers, XRPL Testnet)<!--/f-->.
+  <!--f:heldout_line-->v5 blind held-out: 16/20 bought and cited, 0/10 off-topic purchases (run once, 11 Nov, on XRPL Testnet: fixture research and decision models with answers written offline, team-authored writers)<!--/f-->.
   The key fact leads the answer in <!--f:answers_it-->7/20<!--/f-->; 0 gate
   violations. Say that the development sets are separate (v1
   <!--f:dev_v1-->16/20<!--/f-->), because we tuned on them. Do not say "fifteen

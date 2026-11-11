@@ -10,7 +10,7 @@ function backend(status = 200) {
   vi.stubGlobal('fetch', vi.fn(async (path: string, init?: RequestInit) => {
     calls.push({ path, init })
     const code = init?.method === 'POST' ? status : 200
-    const body = path === '/api/settings' ? { values, csrf: 'synthetic-csrf', keys: { DEEPSEEK_API_KEY: '••••••••' }, version: '1.0.2' }
+    const body = path === '/api/settings' ? { values, csrf: 'synthetic-csrf', keys: { DEEPSEEK_API_KEY: '••••••••' }, version: '1.1.0' }
       : path === '/api/ledger' ? { rail: 'xrpl-testnet', wallets: [{ role: 'buyer', address: 'synthetic-address', balanceDrops: null }, { name: 'Synthetic publisher', address: 'synthetic-funded', balanceDrops: '1000000' }, { address: 'synthetic-unnamed', balanceDrops: null }] }
       : path === '/api/writers/status' ? { publishers: [{ name: 'Synthetic writer', credential: { status: 'unverified' } }, { name: 'No credential writer' }] } : { saved: true }
     return { ok: code < 400, status: code, json: async () => body }
