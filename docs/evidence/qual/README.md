@@ -2,6 +2,8 @@
 
 Development regression evidence only. Fixture decisions, keyword search and simulated payments; the preset acceptance uses live DeepSeek planning and writing on a local `HOSTED=1` stack. No public hosted questions or ledger writes.
 
+Preset acceptance stubs the local hosted-readiness callback healthy; HG and deployed-edge readiness are outside this evidence.
+
 The inherited lead, gap and ranking fixes are completed with product word-form scoring, complete escrow comparison/submitter sentences, source-order leads and pinned tests. New team-authored explainers cover channels versus escrow and accepting x402 XRP payments. Preset text is unchanged.
 
 `ledger-readonly.json` rechecks both networks: server_info reserves, RLUSD issuer flags and TokenEscrow status. `read-ledger.mjs` is read-only. The corpus pin records the intended four rewrites and two additions; historical pins remain unchanged.

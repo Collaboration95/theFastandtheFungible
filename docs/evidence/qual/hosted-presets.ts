@@ -1,5 +1,6 @@
 // Local HOSTED=1 acceptance: live DeepSeek planning/writing, fixture decisions,
 // signed team content and SIMULATED settlement. No public hosted questions.
+// Hosted readiness is stubbed healthy locally; this does not qualify HG or the deployed edge.
 import { config } from 'dotenv'
 import { once } from 'node:events'
 import { request } from 'node:http'

@@ -3,6 +3,8 @@
 Before = main `bd52beff` (v1.1.1). After = QUAL final-sprint implementation.
 Local `HOSTED=1`, ephemeral ports, live DeepSeek planning/writing, fixture decisions, keyword search and **SIMULATED settlement**. No public hosted questions, no ledger writes. Two fresh visitor sessions, three presets each. No limits raised. The first attempted six-question session was refused at the sixth scope with HTTP 429; the preserved partial attempt is in QUAL's acceptance notes. Runs and receipts retain their labels.
 
+The local hosted-readiness callback is stubbed healthy. These runs exercise local admission and answer generation; they do not qualify HG or a deployed edge.
+
 | Preset | Before buys / S$ | After buys / S$ | Before first lead | After first lead | After counter |
 | --- | --- | --- | --- | --- | --- |
 | XRPL2 | 1 / 0.40, 1 / 0.40 | 1 / 0.40, 1 / 0.40 | an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. | an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. | 2/2, 3/3 |
