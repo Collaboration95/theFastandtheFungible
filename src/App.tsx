@@ -536,7 +536,7 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
         {model.budgetBlocked && <p className="ra-note">Budget too small for eligible sources. Raise the budget on a new question.</p>}
         {model.phase === 'stopped' && !hosted && <p role="status">{model.stopMessage}</p>}
         {!browserDemo && finished && <VerifyInBrowser run={shown} />}
-        {!browserDemo && finished && <LedgerCheck question={shown.question} />}
+        {!browserDemo && finished && <LedgerCheck key={shown.runId} question={shown.question} />}
         {shown.receipts.length > 0 && <details className="ra-decision-details"><summary>Why this article</summary><DecisionPanel run={shown} fold={!why && (finished || shown.intents.some(isPaid))} onWhy={() => setWhy(true)} /></details>}
       </aside>
 
