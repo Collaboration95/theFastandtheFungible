@@ -72,6 +72,15 @@ it.each(['each option', 'either option', 'neither option', 'its response'])('str
   expect(leadFinding('What does an x402 402 response contain?', [claim], [content])).toEqual([])
 })
 it.each([
+  'What is the maximum number of tickets one XRPL account can hold at the same time?',
+  'How many tickets can each XRPL account hold?',
+  'What is the ticket limit per XRPL account?',
+])('a self-contained universal answers the limit: %s', question => {
+  const { content, claim } = doc('According to the XRPL documentation, each account cannot have more than 250 Tickets in the ledger at a time.')
+  content.title = 'XRPL Ticket limit'
+  expect(leadFinding(question, [claim], [content])[0]?.text).toContain('250 Tickets')
+})
+it.each([
   "What's the difference between EscrowFinish and EscrowCancel, and who can submit each one?",
   'How do EscrowFinish and EscrowCancel differ, and who may submit them?',
   'Compare EscrowFinish and EscrowCancel: who can submit each transaction?',

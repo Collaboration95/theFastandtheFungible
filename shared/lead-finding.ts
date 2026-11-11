@@ -187,6 +187,14 @@ const FRAGMENT_START = /^(?:and|but|or|so|nor|yet|which|while|whereas|although|t
 /** A sentence that only makes sense after the one before it ("They are not a determination…") cannot open an answer.
  * P1: nor can "Each option names scheme, network, amount…" or "Either/Neither …", whose subject was introduced earlier. */
 const POINTS_BACK = /^(?:They|These|Those|Such|Both|He|She|Their|It|This|Its|Each|Either|Neither)\b/i
+/** "Each account" is a self-contained universal when the question names accounts; "Each option" still needs its options. */
+const pointsBack = (text: string, asked: ReadonlySet<string>) => {
+  if (!POINTS_BACK.test(text)) return false
+  const subject = text.match(/^each\s+([a-z][\w-]*)\b/i)?.[1]
+  if (!subject || /^(?:option|one|item|choice|thing)s?$/i.test(subject)) return true
+  const terms = stems(subject)
+  return !terms.length || terms.some(term => !asked.has(term))
+}
 const skip = (text: string, claim: Claim, ci: number, si: number): RankedSentence => ({ text, claim, score: 0, ci, si, named: false, cover: 0, weighted: 0, shared: false, tail: false, onTopic: false })
 
 /** Every eligible answer sentence of the validated claims, best first. Exported so
@@ -232,6 +240,11 @@ export function rankLeadSentences(question: string, claims: Claim[], delivered?:
   const pool = claims.flatMap(claim => answerExtracts(claim.text).map(text => ({ text, source: claim.citations.map(ref => ref.resourceId).join('|'), tokens: new Set(stems(text)) })))
   const idf = (term: string) => Math.log(1 + (pool.length + 1) / (0.5 + pool.filter(item => item.tokens.has(term)).length))
   const stemmed = stems(question)
+  const questionWords = new Set(stemmed), backReferences = new Map<string, boolean>()
+  const pointsToContext = (text: string) => {
+    if (!backReferences.has(text)) backReferences.set(text, pointsBack(text, questionWords))
+    return backReferences.get(text)!
+  }
   const idfTotal = stemmed.reduce((sum, term) => sum + idf(term), 0) || 1
   const templateSources = new Map<string, Set<string>>()
   for (const item of pool) templateSources.set(item.text, (templateSources.get(item.text) ?? new Set()).add(item.source))
@@ -254,7 +267,7 @@ export function rankLeadSentences(question: string, claims: Claim[], delivered?:
     const lower = text.toLowerCase(), tokens = words(text)
     if (answerBoilerplate(text)) return skip(text, claim, ci, si)
     // A clause that continues an earlier sentence ("which reveals the secret", "and the writer…") is not an answer on its own.
-    if (FRAGMENT_START.test(text) || POINTS_BACK.test(text)) return skip(text, claim, ci, si)
+    if (FRAGMENT_START.test(text) || pointsToContext(text)) return skip(text, claim, ci, si)
     // A path match may start only where a word starts: the leftmost match is the same, and one long token
     // (an untrusted 47,000-character passage) is scanned once instead of once per character (3.9 s → ms).
     if (/^(?:This (?:article|note|guide|source)\b|This is a team-authored|This team-authored|The implementation record|For a reader assessing|For an? .*integration|I recommend|Test missing|This is an integration recommendation|Reproduction requires|The four .*entries|Some .*examples use different headers|See\b|Code:|Sources?:)|(?<![\w-])(?:[\w-]+\/)+[\w.-]+\.(?:ts|md|tsx)\b/i.test(text)) return skip(text, claim, ci, si)
