@@ -75,6 +75,22 @@ describe('sha256(key) = lock from recorded transactions', () => {
     expect(await verifyKeyOnLedger(hashes(s), { endpoints: NODES, ledgerFor: only(s.c.ledger) })).toMatchObject({ status: 'mismatch', why: 'failed' })
   })
 
+  it('incomplete ledger evidence never receives a match', async () => {
+    const s = scenario(); await s.ready
+    const create = (await s.c.ledger.request({ command: 'tx', transaction: s.create.hash })).result
+    const finish = (await s.c.ledger.request({ command: 'tx', transaction: s.finish.hash })).result
+    for (const [which, field] of [['create', 'Account'], ['create', 'Sequence'], ['finish', 'Owner'], ['finish', 'OfferSequence'], ['finish', 'Condition']] as const) {
+      const c = structuredClone(create), f = structuredClone(finish)
+      delete ((which === 'create' ? c : f).tx_json as Record<string, unknown>)[field]
+      expect(await compareKey(c, f), `${which}.${field}`).toEqual({ status: 'unreadable' })
+    }
+    for (const which of ['create', 'finish']) for (const field of ['meta', 'ledger_index']) {
+      const c = structuredClone(create), f = structuredClone(finish)
+      delete (which === 'create' ? c : f)[field]
+      expect(await compareKey(c, f), `${which}.${field}`).toEqual({ status: 'unreadable' })
+    }
+  })
+
   it('a transaction in the wrong place is not a key check', async () => {
     const s = scenario(); await s.ready
     expect(await verifyKeyOnLedger({ create: s.finish.hash, finish: s.create.hash }, { endpoints: NODES, ledgerFor: only(s.c.ledger) })).toMatchObject({ status: 'mismatch', why: 'escrow' })

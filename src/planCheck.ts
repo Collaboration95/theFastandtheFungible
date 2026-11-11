@@ -7,18 +7,18 @@ import type { Plan, RunSnapshot } from '../shared/contracts'
  * What is compared is the searches (the steps the card lists and lets you edit). The requested facts are derived again
  * by the server whenever the searches are edited, so they are not part of what was confirmed.
  */
-export type ConfirmedPlan = { subqueries: string[]; at: number }
+export type ConfirmedPlan = { subqueries: string[]; at: number; runId?: string }
 export type PlanCheck = { ok: true; text: string } | { ok: false; text: string }
 
 const STORE = 'ra-confirmed-plans', KEEP = 8
 /** A run is matched to the confirmation made just before it was created: not later than this, not earlier than that. */
-const AFTER_MS = 10_000, BEFORE_MS = 60_000
+const BEFORE_MS = 60_000
 let memory: ConfirmedPlan[] = []
 
 const readStored = (): ConfirmedPlan[] => {
   try {
     const parsed: unknown = JSON.parse(sessionStorage.getItem(STORE) ?? '[]')
-    return Array.isArray(parsed) ? parsed.filter((item): item is ConfirmedPlan => Array.isArray(item?.subqueries) && item.subqueries.every((q: unknown) => typeof q === 'string') && Number.isFinite(item.at)) : []
+    return Array.isArray(parsed) ? parsed.filter((item): item is ConfirmedPlan => item !== null && typeof item === 'object' && Array.isArray(item.subqueries) && item.subqueries.every((q: unknown) => typeof q === 'string') && Number.isFinite(item.at)) : []
   } catch { return [] }
 }
 const entries = () => { const seen = new Set<number>(); return [...readStored(), ...memory].filter(item => !seen.has(item.at) && seen.add(item.at)) }
@@ -35,7 +35,18 @@ const timeOf = (run: Pick<RunSnapshot, 'events'>) => run.events.map(event => Dat
 export function confirmedPlanFor(run: Pick<RunSnapshot, 'events'>): ConfirmedPlan | undefined {
   const created = timeOf(run)
   if (!Number.isFinite(created)) return undefined
-  return entries().filter(item => item.at <= created + AFTER_MS && item.at >= created - BEFORE_MS).sort((a, b) => b.at - a.at)[0]
+  const runId = run.events[0]?.runId
+  if (!runId) return undefined
+  const stored = entries()
+  const bound = stored.find(item => item.runId === runId)
+  if (bound) return bound
+  // Never let a later confirmation rewrite an earlier run, or reuse a confirmation for another run.
+  const confirmed = stored.filter(item => !item.runId && item.at <= created && item.at >= created - BEFORE_MS).sort((a, b) => b.at - a.at)[0]
+  if (!confirmed) return undefined
+  confirmed.runId = runId
+  memory = stored
+  try { sessionStorage.setItem(STORE, JSON.stringify(memory)) } catch { /* the in-memory binding still holds */ }
+  return confirmed
 }
 
 const normal = (query: string) => query.trim().replace(/\s+/g, ' ').toLowerCase()
@@ -52,12 +63,16 @@ export function ranSearches(run: Pick<RunSnapshot, 'events'>): string[] | undefi
  * A match gives the ✓. A difference gives one plain sentence saying what changed and never the ✓. With no PLAN event
  * (an old snapshot) or no confirmation to compare, nothing is claimed and nothing is shown.
  */
-export function planCheck(run: Pick<RunSnapshot, 'events'>, confirmed: Pick<ConfirmedPlan, 'subqueries'> | undefined = confirmedPlanFor(run)): PlanCheck | undefined {
+export function planCheck(run: Pick<RunSnapshot, 'events'>, confirmed?: Pick<ConfirmedPlan, 'subqueries'>): PlanCheck | undefined {
   const ran = ranSearches(run)
-  if (!ran || !confirmed?.subqueries.length) return undefined
+  if (!ran) return undefined
+  confirmed ??= confirmedPlanFor(run)
+  if (!confirmed?.subqueries.length) return undefined
   const asked = new Map(confirmed.subqueries.map(query => [normal(query), query])), did = new Map(ran.map(query => [normal(query), query]))
   const added = [...did].filter(([key]) => !asked.has(key)).map(([, query]) => query), removed = [...asked].filter(([key]) => !did.has(key)).map(([, query]) => query)
-  if (!added.length && !removed.length) return { ok: true, text: 'Ran the plan you confirmed ✓' }
+  const sorted = (queries: string[]) => queries.map(normal).sort()
+  if (JSON.stringify(sorted(confirmed.subqueries)) === JSON.stringify(sorted(ran))) return { ok: true, text: 'Ran the plan you confirmed ✓' }
+  if (!added.length && !removed.length) return { ok: false, text: 'The run changed how many times it searched the terms you confirmed.' }
   // A clarifying answer is planned again on the server (the card showed the plan from before the answer): say so.
   const why = run.events.some(event => event.type === 'CLARIFY') ? ' Your answer to the clarifying question was used to plan again.' : ''
   if (added.length && removed.length) return { ok: false, text: `The run searched for ${quoted(added)} instead of ${quoted(removed)}, which you confirmed.${why}` }

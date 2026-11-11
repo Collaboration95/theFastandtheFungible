@@ -57,14 +57,19 @@ export function KeyCheckResult({ check, escrow, replay }: { check: KeyCheck; esc
   </div>
 }
 
-export default function KeyRevealLifecycle({ escrow: e, testnet = false, replay = import.meta.env.MODE === 'browser-demo', verify = verifyKeyOnLedger }: {
+type LifecycleProps = {
   escrow: EscrowStatus
-  /** The run settled on XRPL Testnet, so its hashes exist on the public ledger. A simulated run has nothing to look up. */
+  /** Only XRPL Testnet runs have public transactions to check. */
   testnet?: boolean
   /** The recorded replay: the writer is fictional. */
   replay?: boolean
   verify?: typeof verifyKeyOnLedger
-}) {
+}
+export default function KeyRevealLifecycle(props: LifecycleProps) {
+  // A proof belongs to these hashes only. A changed payment remounts the check, including any in-flight lookup.
+  return <Lifecycle key={`${props.testnet}:${props.escrow.createHash}:${props.escrow.finishHash}`} {...props} />
+}
+function Lifecycle({ escrow: e, testnet = false, replay = import.meta.env.MODE === 'browser-demo', verify = verifyKeyOnLedger }: LifecycleProps) {
   const [now, setNow] = useState(Date.now)
   const [check, setCheck] = useState<KeyCheck | 'checking'>()
   const id = useId(), alive = useRef(true)

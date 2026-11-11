@@ -15,7 +15,9 @@ export function decisionFor(run: Pick<RunSnapshot, 'decisions'>, intent: Purchas
     if (row) return { round, row }
   }
   // Older snapshots carry no selection: the last round that would have bought it.
-  for (const round of [...run.decisions].reverse()) { const row = rows(round)[0]; if (row) return { round, row } }
+  for (const round of [...run.decisions].reverse()) {
+    if (round.selectedSourceKey || round.selectedResourceId) continue
+    const row = rows(round)[0]; if (row) return { round, row } }
   return undefined
 }
 

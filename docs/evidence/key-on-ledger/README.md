@@ -65,8 +65,8 @@ untouched** ("Why this article" stays).
   and so shows no line; a purchase that never settled, was cancelled or has no decision record shows no line.
 - **Plan check** (`src/planCheck.ts`, shown in Show work → Trace): `PlanSheet` records the plan the visitor confirmed
   (an edited plan counts as the one confirmed), and Show work compares its searches with the `PLAN` event the run
-  recorded (R9-A, #473), matching the run to the confirmation made just before it began (10 s after to 60 s before its
-  first event; session storage keeps it across a reload of the tab).
+  recorded (R9-A, #473), matching the run to the confirmation made just before it began (up to 60 s before its
+  first event; never after it, and never reused for another run; session storage keeps the run binding across a reload of the tab).
   - searches equal (order and case ignored): **Ran the plan you confirmed ✓**;
   - different: one plain sentence, never a ✓: *The run added "…" to the searches you confirmed.* / *left out "…"* /
     *searched for "…" instead of "…", which you confirmed.*, and, when a clarifying answer was given, *Your answer to the
@@ -108,3 +108,38 @@ The local fixture runs are a `make run OFFSET=137` stack (fixture models, SIMULA
 - The verifier chunk (`browser-*.js`, 163 kB gzip, shared with "Verify on XRPL") is fetched on the first press. A
   standalone socket for one lookup would avoid that but would duplicate the node list the CSP and the verifier share.
 - A confirmation made on another device is not known here, so Show work shows no plan check for it.
+
+## Resumed acceptance review (11 Nov, 17:30–17:40 SGT)
+
+Reviewed predecessor `d0e3ade1` against every T1/T4 acceptance item, rebased on current main, then tightened four cases:
+
+- Missing transaction result metadata, ledger index, owner, sequence or finish Condition now gives **unreadable**, never a match. Both validated transactions must explicitly report `tesSUCCESS`.
+- A key check belongs only to its two transaction hashes. Changing the payment remounts the check; an old in-flight result cannot appear under new explorer links.
+- A payment's legacy reason fallback skips rounds that explicitly selected a different source.
+- A confirmation must precede the run, binds once to its run ID, and cannot be overwritten by a later confirmation or reused for another run. Repeated search terms count; malformed session storage is ignored.
+
+Fresh evidence (the earlier evidence above remains the predecessor's):
+
+| Acceptance | Result |
+| --- | --- |
+| Tampered key / different lock / other escrow / failed transaction | Mismatch; result region has no tick |
+| `txnNotFound` / not yet validated | Pending, never failed |
+| No node | “Couldn’t reach a public XRPL node” |
+| Why ≤90 characters; refund suffix; zero buys | Pass, including 48 fact/budget/refund combinations |
+| Matching / changed / old plan | Tick / plain sentence without tick / no line |
+| Regression suite | 45 passed: 16 ledger, 8 lifecycle, 21 why/plan tests |
+| Required hosted pair, read-only s.altnet | Match, ledger 22228567, 1401 ms |
+| Replay AlphaLeak / Fab Floor, read-only s.altnet | Both match, ledgers 22224890 / 22224896, 1287 / 1254 ms |
+| Keyboard in shared browser | Enter (desktop) and Space (mobile) each ran the real ledger check |
+| Horizontal width | Desktop 1280/1280; mobile 390/390; mobile spend dialog 388/388 |
+| Rendered why lengths | 82 (refunded), 80 (kept), below 90 |
+
+Fresh real-node output: `real-check-resume.jsonl`. New light-theme screenshots:
+`shots/resume-key-match-1280.png`, `shots/resume-key-match-390.png`, `shots/resume-refunded-390.png`.
+The screenshots were inspected in the shared browser; the Testnet/no-real-value and replay fictional-writer labels remain.
+The single lock transition and its reduced-motion override are unchanged from the predecessor.
+Only public `tx` reads were needed; no hosted question, money transfer or live model call.
+
+The plan confirmation association is local browser bookkeeping, not a server-signed proof. It uses the first event's
+server timestamp and a 60 s preceding window; a browser/server clock skew or a longer queue may hide the line.
+A confirmation on another device remains unknown. Nothing here changes spending authorization.

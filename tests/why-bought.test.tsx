@@ -66,6 +66,13 @@ describe('the why line on each payment', () => {
     expect(decisionFor(run, run.intents.find(intent => intent.status === 'REFUNDED')!)?.round.round).toBe(1)
   })
 
+  it('does not borrow the reason from a round that selected a different article', () => {
+    const run = oneBuy()
+    run.decisions[0].selectedResourceId = 'another-article'
+    run.decisions[0].selectedSourceKey = 'another-writer:another-article'
+    expect(whyBought(run, run.intents[0])).toBeUndefined()
+  })
+
   it('never exceeds 90 characters, whatever the fact, the budget or the refund', () => {
     const gaps = ['', 'x', 'No accessible evidence on grid energisation.', 'What fields an x402 402 response contains', `The XRPL network fee for the transactions in one key-reveal purchase, in drops or XRP ${'and more '.repeat(30)}`, 'Superlongwordwithoutanyspaces'.repeat(12)]
     for (const gap of gaps) for (const budget of [0, 50, 200, 100000]) for (const refund of [false, true]) {
@@ -193,13 +200,35 @@ describe('the plan check in Show work', () => {
 
   it('only a confirmation made just before the run began is used', () => {
     const t = Date.parse('2026-11-11T10:00:00.000Z')
-    const at = (ms: number) => ({ events: [{ id: 1, runId: 'r', type: 'SNAPSHOT', label: '', at: new Date(t + ms).toISOString() }] })
+    const at = (ms: number) => ({ events: [{ id: 1, runId: `r-${ms}`, type: 'SNAPSHOT', label: '', at: new Date(t + ms).toISOString() }] })
     rememberConfirmedPlan({ subqueries: ['older'] }, t - 120_000)
     rememberConfirmedPlan({ subqueries: ['just before'] }, t - 800)
     rememberConfirmedPlan({ subqueries: ['much later'] }, t + 60_000)
     expect(confirmedPlanFor(at(0))?.subqueries).toEqual(['just before'])
     expect(confirmedPlanFor(at(5 * 60_000))).toBeUndefined() // a run started later by something else (an agent, another tab)
     expect(confirmedPlanFor({ events: [] })).toBeUndefined()
+  })
+
+  it('does not use a future confirmation or reuse one for another run', () => {
+    const t = Date.now()
+    const run = (id: string) => ({ events: [{ id: 1, runId: id, type: 'PLAN', label: '', at: new Date(t).toISOString() }] })
+    rememberConfirmedPlan({ subqueries: searches }, t + 1)
+    expect(confirmedPlanFor(run('before'))).toBeUndefined()
+    rememberConfirmedPlan({ subqueries: searches }, t - 1)
+    expect(confirmedPlanFor(run('first'))?.subqueries).toEqual(searches)
+    expect(confirmedPlanFor(run('second'))).toBeUndefined()
+    rememberConfirmedPlan({ subqueries: ['later confirmation'] }, t)
+    expect(confirmedPlanFor(run('first'))?.subqueries).toEqual(searches)
+  })
+
+  it('a changed search count is a mismatch even when the terms are unchanged', () => {
+    expect(planCheck(planEvent(ucRuns.UC2, [...searches, searches[0]]), { subqueries: searches }))
+      .toEqual({ ok: false, text: 'The run changed how many times it searched the terms you confirmed.' })
+  })
+
+  it('ignores malformed session storage instead of breaking Show work', () => {
+    sessionStorage.setItem('ra-confirmed-plans', '[null, 7, {"subqueries":[1],"at":2}]')
+    expect(confirmedPlanFor(planEvent(ucRuns.UC2, searches))).toBeUndefined()
   })
 
   it('survives a reload of the tab through session storage', async () => {

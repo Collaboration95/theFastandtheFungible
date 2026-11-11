@@ -38,13 +38,13 @@ async function sha256Hex(hex: string): Promise<string> {
   return [...new Uint8Array(await subtle.digest('SHA-256', bytes))].map(byte => byte.toString(16).padStart(2, '0')).join('').toUpperCase()
 }
 
-type Seen = { tx: Record<string, unknown>; validated: boolean; ledger?: number; success: boolean; node?: string }
+type Seen = { tx: Record<string, unknown>; validated: boolean; ledger?: number; success?: boolean; node?: string }
 /** `tx` answers either flat (API v1) or with `tx_json` (v2); both are read the same way. */
 function parse(result: Record<string, unknown>, node?: string): Seen {
   const tx = (result.tx_json && typeof result.tx_json === 'object' ? result.tx_json : result) as Record<string, unknown>
   const meta = result.meta && typeof result.meta === 'object' ? result.meta as Record<string, unknown> : undefined
   const index = Number(result.ledger_index ?? result.inLedger)
-  return { tx, validated: result.validated === true, ledger: Number.isInteger(index) && index > 0 ? index : undefined, success: !meta || meta.TransactionResult === 'tesSUCCESS', node }
+  return { tx, validated: result.validated === true, ledger: Number.isInteger(index) && index > 0 ? index : undefined, success: typeof meta?.TransactionResult === 'string' ? meta.TransactionResult === 'tesSUCCESS' : undefined, node }
 }
 
 /**
@@ -58,10 +58,13 @@ async function decide(create: Seen, finish: Seen): Promise<KeyCheck> {
   const at = { ledger: finish.ledger, node: finish.node }
   if (!create.validated || !finish.validated) return { status: 'pending', why: 'not-validated' }
   if (create.tx.TransactionType !== 'EscrowCreate' || finish.tx.TransactionType !== 'EscrowFinish') return { status: 'mismatch', why: 'escrow', ...at }
+  if (create.success === undefined || finish.success === undefined || !create.ledger || !finish.ledger) return { status: 'unreadable' }
   if (!create.success || !finish.success) return { status: 'mismatch', why: 'failed', ...at }
   // The finish names the escrow it releases by its owner and the sequence of the create.
-  if ((finish.tx.Owner !== undefined && create.tx.Account !== undefined && finish.tx.Owner !== create.tx.Account) ||
-      (finish.tx.OfferSequence !== undefined && create.tx.Sequence !== undefined && finish.tx.OfferSequence !== create.tx.Sequence)) return { status: 'mismatch', why: 'escrow', ...at }
+  if (typeof create.tx.Account !== 'string' || !create.tx.Account || typeof finish.tx.Owner !== 'string' ||
+      !Number.isSafeInteger(create.tx.Sequence) || !Number.isSafeInteger(finish.tx.OfferSequence) ||
+      typeof finish.tx.Condition !== 'string') return { status: 'unreadable' }
+  if (finish.tx.Owner !== create.tx.Account || finish.tx.OfferSequence !== create.tx.Sequence) return { status: 'mismatch', why: 'escrow', ...at }
   const lock = typeof create.tx.Condition === 'string' ? CONDITION.exec(create.tx.Condition)?.[1] : undefined
   const key = typeof finish.tx.Fulfillment === 'string' ? FULFILLMENT.exec(finish.tx.Fulfillment)?.[1] : undefined
   if (!lock || !key) return { status: 'unreadable' }

@@ -101,3 +101,14 @@ it('a check that throws reads as unreachable, never as a result', async () => {
   expect(screen.getByRole('status').textContent).toContain('Couldn’t reach a public XRPL node')
   expect(screen.getByRole('status').textContent).not.toContain('✓')
 })
+
+it('a previous payment’s result cannot appear under changed transaction hashes', async () => {
+  let release: (check: KeyCheck) => void = () => {}
+  const verify = vi.fn(() => new Promise<KeyCheck>(resolve => { release = resolve }))
+  const view = render(createElement(KeyRevealLifecycle, { escrow: released, testnet: true, verify }))
+  fireEvent.click(screen.getByRole('button', { name: /Check the key yourself/ }))
+  view.rerender(createElement(KeyRevealLifecycle, { escrow: { ...released, finishHash: 'C'.repeat(64) }, testnet: true, verify }))
+  await act(async () => release(match))
+  expect(screen.queryByText('sha256(key) = lock ✓')).toBeNull()
+  expect(screen.getByRole('button', { name: /Check the key yourself/ })).toBeTruthy()
+})
