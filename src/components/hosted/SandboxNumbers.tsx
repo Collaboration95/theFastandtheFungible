@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { SandboxStats } from '../../../server/hosted/stats'
-import { minorText } from '../../hosted'
+import { money } from '../../../shared/presentation.js'
 import './sandbox-numbers.css'
 
 const fmt = (value: number | null, unit = '') => value === null ? '—' : `${value.toLocaleString('en-US', { maximumFractionDigits: 1 })}${unit}`
@@ -19,7 +19,7 @@ function Numbers() {
   const metrics = [
     ['Questions',fmt(stats.questions)], ['Purchase runs',fmt(stats.purchaseRuns)], ['Purchases settled',fmt(stats.purchasesSettled)], ['Refunds',fmt(stats.refunds)],
     ['Anchored',`${stats.anchored}/${stats.questions}`], ['Start → Done · median',fmt(stats.timing.medianMs === null ? null : stats.timing.medianMs/1000,' s')],
-    ['Start → Done · p90',fmt(stats.timing.p90Ms === null ? null : stats.timing.p90Ms/1000,' s')], ['Spend per purchase run · median',stats.medianSpendMinor === null ? '—' : minorText(stats.medianSpendMinor)],
+    ['Start → Done · p90',fmt(stats.timing.p90Ms === null ? null : stats.timing.p90Ms/1000,' s')], ['Spend per purchase run · median',stats.medianSpendMinor === null ? '—' : money(stats.medianSpendMinor)],
     ['Model US$ per question · median',stats.medianModelUsd === null ? '—' : `US$${stats.medianModelUsd.toFixed(4)}`],
   ]
   const audits = [
