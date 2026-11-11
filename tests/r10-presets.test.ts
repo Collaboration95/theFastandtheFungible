@@ -22,6 +22,17 @@ it.each(['Which transaction creates Tickets and which transaction cancels offers
   expect(lead[0]?.text).toBe('OfferCancel cancels offers for an account.')
 })
 
+it.each([
+  'What does an x402 402 response contain, and can my agent pay it with XRP on Testnet?',
+  'What does an x402 response contain; can my agent pay with XRP on Testnet?',
+  'Which payment terms does an x402 response contain, and can an agent pay with XRP on Testnet?',
+])('a frozen fact repeating the first clause keeps the contents first: %s', question => {
+  const { content, claim } = doc('An agent can pay a 402 in XRP on Testnet, network xrpl:1. An HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client authorizes payment and retries with PAYMENT-SIGNATURE.')
+  const lead = leadFinding(question, [claim], [content], question.split(/[,;]\s*/)[0])
+  expect(lead[0]?.text).toContain('PAYMENT-REQUIRED')
+  expect(lead[1]?.text).toContain('XRP on Testnet')
+})
+
 describe('QUAL: recorded live preset plans', () => {
   let results: LiveShapedResult[]
   beforeAll(async () => { vi.stubEnv('SEARCH_EMBEDDINGS', 'off'); results = await runLiveShaped(plans) }, 120_000)
