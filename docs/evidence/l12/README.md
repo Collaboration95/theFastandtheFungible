@@ -26,10 +26,12 @@ critical axe violations. `before-checks.json` and `after-checks.json` record
 overflow and serious/critical axe violations for each surface. Chrome is the bottom of the stacked
 site header and replay banner (the app controls share the site header).
 
-Hosted-home screenshots include JC’s judges’ corner (`0f7a2c25`); replay and
-receipt screenshots also include KEY’s merged work (`d06b13f1`). The replay retains variable Geist Mono in a
-smaller character subset with the full-font fallback. A keyboard skip link
-focuses the recorded run without adding header height.
+After captures include the integrated judges’ corner, key checks, writer
+credentials, FIN header and accessibility work. Each `sourceHead` in
+`after-checks.json` pins its exact source. The replay uses subsets of the same
+variable Geist UI and Mono fonts, retaining all weights, outlines and metrics
+with full-font fallback. A keyboard skip link focuses the recorded run without
+adding header height.
 
 The unit regression checks the committed hosted receipt (40,000 drops) renders
 S$0.40 and 0.04 XRP (40,000 drops), with no ledger amount for simulated receipts.
