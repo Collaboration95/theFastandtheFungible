@@ -7,6 +7,7 @@ import { EVENT_LABELS, FALLBACK_LABELS, REASON_LABELS, eventPresentation, search
 import { IntentStatusSchema, RunPhaseSchema, STOP_REASONS, TRACE_EVENT_TYPES, type TraceEvent } from '../shared/contracts'
 import type { FactCover } from '../shared/contracts/manifest'
 import Activity from '../src/components/Activity'
+import Wire from '../src/components/Wire'
 import ShowWork from '../src/components/ShowWork'
 import Verification from '../src/components/Verification'
 import { ucRuns } from '../src/fixtures/run'
@@ -43,6 +44,15 @@ for (const code of Object.keys(REASON_LABELS)) it(`renders reason ${code} in pla
   const { container } = render(<Activity run={runWith(event('TRACE', code))} />)
   expect(container.textContent).not.toContain(code)
   expect(container.textContent).not.toMatch(/\b\w+_\w+\b/)
+})
+
+it('expands the status codes shown in Wire as well as Trace', () => {
+  for (const status of ['NOT_FOUND', 'SETTLED', 'DELIVERY_PENDING', 'DELIVERY_FAILED', 'VERIFIED']) {
+    const { container, unmount } = render(<Wire run={runWith(event('PURCHASE', status, { status }))} />)
+    expect(container.textContent).toContain(REASON_LABELS[status])
+    expect(container.textContent).not.toContain(status)
+    unmount()
+  }
 })
 
 it('covers every purchase status and stop reason', () => {

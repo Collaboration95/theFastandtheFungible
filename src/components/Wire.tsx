@@ -3,6 +3,8 @@ import { whenSGT } from '../../shared/presentation'
 import type { ReactNode } from 'react'
 import Icon from './Icon'
 
+import { traceLabel } from '../../shared/trace-labels.js'
+
 // Never dump event.data: it can contain a delivery token, headers, or paid body.
 function safeFields(data: Record<string, unknown>, prefix = '', depth = 0): [string, ReactNode][] {
   const result: [string, ReactNode][] = []
@@ -28,7 +30,7 @@ function safeFields(data: Record<string, unknown>, prefix = '', depth = 0): [str
     } else if (key === 'currency' && value === 'SGD') {
       result.push([name, 'SGD'])
     } else if (key === 'status' && typeof value === 'string' && /^(NOT_FOUND|SETTLED|DELIVERY_PENDING|DELIVERY_FAILED|VERIFIED)$/.test(value)) {
-      result.push([name, value])
+      result.push([name, traceLabel(value)])
     }
   }
   return result

@@ -26,7 +26,7 @@ export const FALLBACK_LABELS: Record<string, string> = {
 export const REASON_LABELS: Record<string, string> = {
   ...EVENT_LABELS,
   DECIDED: 'Purchase chosen', QUOTED: 'Price received', RESERVED: 'Budget reserved', SUBMITTING: 'Payment being confirmed',
-  SETTLED: 'Payment settled', DELIVERY_PENDING: 'Waiting for the article', VERIFIED: 'Article verified', SKIPPED: 'Skipped',
+  NOT_FOUND: 'Not found', SETTLED: 'Payment settled', DELIVERY_PENDING: 'Waiting for the article', VERIFIED: 'Article verified', SKIPPED: 'Skipped',
   FAILED_NOT_SETTLED: 'Payment failed before settlement', DELIVERY_FAILED: 'Article delivery failed', CLAIM_FAILED: 'A promised detail failed its check',
   CHALLENGED: 'Refund requested', REFUNDED: 'Refunded', CHALLENGE_REJECTED: 'Refund request rejected', CHALLENGE_REFUSED: 'Refund refused or timed out',
   complete: 'All requested facts answered', 'no-eligible-purchase': 'No source worth buying for the remaining facts',
