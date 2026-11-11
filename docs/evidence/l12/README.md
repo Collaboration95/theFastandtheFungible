@@ -41,8 +41,8 @@ money and hash examples; recorded source prose and unit fixtures are excluded.
 The guard permits ordinary query-text clipping and KEY’s existing exact
 uppercase 8…8 key-material expression; a changed length fails. Its helper
 consolidation is routed below. Account addresses retain the separate 6…4 rule. Wire timestamps and owner
-wallet balances use the same shared helpers. The 390 px Wire panel has no
-overflow or serious/critical axe violations.
+wallet balances use the same shared helpers. Accessibility and overflow claims
+refer to the twelve refreshed surface/viewport checks in `after-checks.json`.
 
 The merged ledger card and reserve-release summary also use the exact-drop XRP
 helper. Reserves retain up to six decimals, including a one-drop reserve and
