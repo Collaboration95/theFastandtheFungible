@@ -49,7 +49,7 @@ await engine.close()
 // the packed TS CLI, `researchagent-mcp verify`), offline. Fresh HOSTED=1 fixture exports (one purchase; one decline
 // carrying a synthetic stand-in anchor so "anchor binding" runs) plus the committed real Testnet export from the
 // hosted demo. Release fails if any of them does not verify.
-const hostedDir = join(dir, 'hosted-exports')
+const hostedDir = join(dir, 'hosted-exports'), hostedStart = performance.now()
 execFileSync(process.execPath, ['--import', 'tsx', resolve('scripts/hosted-export-fixture.ts'), hostedDir], { env: process.env, stdio: ['ignore', 'inherit', 'inherit'], timeout: 120_000 })
 const hostedExports = [
   { kind: 'fixture-purchase', file: join(hostedDir, 'hosted-purchase.receipts.json') },
@@ -70,7 +70,7 @@ const hostedRows = hostedExports.map(({ kind, file: path, anchor }) => {
   if (anchor) assert(binding(python) === 'PASS' && binding(typescript) === 'PASS', `anchor binding not checked on the ${kind} hosted export`)
   return { kind, sha256: sha256(path), ...(anchor ? { anchor } : {}), anchorBinding: binding(python), python: { pass: true }, typescript: { pass: true } }
 })
-results.push({ timing: 'hosted exports', exports: hostedRows.length })
+results.push({ timing: 'hosted exports (packed wheel + TS CLI)', exports: hostedRows.length, seconds: (performance.now() - hostedStart) / 1000 })
 const bundle = join(dir,'bundle'); execFileSync('unzip',['-q',file('mcpb'),'-d',bundle])
 for (const kind of ['mcpb', 'mcp-tgz']) {
 const started = performance.now()
