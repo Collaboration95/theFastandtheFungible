@@ -53,6 +53,11 @@ for (const width of [1280, 390]) test(`lazy summary inside Spend at ${width}`, a
   const violations = (await new AxeBuilder({ page }).analyze()).violations.filter(v => ['serious', 'critical'].includes(v.impact ?? ''))
   expect(violations).toEqual([])
   await gates.scrollIntoViewIfNeeded()
+  await page.evaluate(async () => {
+    await document.fonts.ready
+    await Promise.all(document.getAnimations().filter(a => a.effect?.getComputedTiming().iterations !== Infinity).map(a => a.finished.catch(() => {})))
+  })
+  if (width === 1280) await page.evaluate(() => window.scrollTo(0, 0))
   await page.screenshot({ path: evidencePath(`p5-gates/run-${width}.png`), fullPage: true })
   writeFileSync(evidencePath(`p5-gates/metrics-${width}.json`), JSON.stringify({ width, homeBoxes: 3, runBoxes: width === 390 ? 1 : 2, seriousCritical: violations.length, overflow, initialJsGzip: initialJsGzip().reduce((sum, c) => sum + c.gzip, 0) }, null, 2) + '\n')
 })
