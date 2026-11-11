@@ -8,6 +8,8 @@ import { purchaseState } from '../runState'
 import { saveReceipts } from '../download'
 import PendingTime from './PendingTime'
 import Verification from './Verification'
+import { whyBought } from '../whyBought'
+import './key-check.css'
 
 export default function PaymentRow({ run, intent, onRetry, onReceipt }: { run: RunSnapshot; intent: PurchaseIntent; onRetry: (id: string) => void; onReceipt: (receipt: Receipt) => void }) {
   const money = (minor: number) => compactAssetMoney(minor, intent.quote?.payment?.asset)
@@ -15,6 +17,7 @@ export default function PaymentRow({ run, intent, onRetry, onReceipt }: { run: R
   const refunded = intent.status === 'REFUNDED', testnet = run.labels.settlement.startsWith('XRPL')
   const receipt = run.receipts.find(r => r.intentId === intent.intentId)
   const status = refunded ? `${REFUND_LABEL.refunded} ${money(intent.refund?.amountMinor ?? 0)}` : intent.status === 'CHALLENGE_REFUSED' ? `${REFUND_LABEL.refused} · writer declined` : intent.status === 'CHALLENGE_REJECTED' ? `${REFUND_LABEL.refused} · request did not pass verification` : intent.status === 'CHALLENGED' ? `${REFUND_LABEL.pending} · awaiting confirmation` : intent.escrow?.mode === 'key-reveal' ? keyRevealLabel(intent.escrow) : state.ok ? 'Verified' : state.failed ? `Paid ${money(intent.amountMinor)} but the article didn’t arrive. Retrying won’t charge you again.` : state.notSettled ? 'Not settled · nothing charged' : state.quarantined ? 'Promise check failed' : state.level >= 3 ? 'Paid · checking' : state.level === 2 ? 'Paying…' : `Quoted ${money(intent.amountMinor)}`
+  const why = whyBought(run, intent)
   const refundEvent = run.events.find(e => e.type === 'REFUND' && e.data?.intentId === intent.intentId)
   const refundUrl = refundEvent?.data?.explorerUrl
   const start = run.events.find(e => e.type === 'BUY' && e.data?.intentId === intent.intentId)?.at
@@ -23,12 +26,13 @@ export default function PaymentRow({ run, intent, onRetry, onReceipt }: { run: R
     <div className="ra-payment-heading"><b><Icon name={refunded ? 'refund' : state.ok ? 'check' : state.failed ? 'close' : 'circle'} size={16} /> {source?.publisher.split(' · ')[0] ?? intent.resourceId}</b><span>{money(intent.amountMinor)}</span></div>
     {source?.publisher.includes(' · ') && <details className="ra-writer-details"><summary>Writer details</summary><p>{source.publisher}</p></details>}
     <p className="ra-payment-title">{source?.title ?? intent.resourceId}</p>
+    {why && <p className="ra-why-line">{why}</p>}
     {intent.purchaseKind && <p>{intent.purchaseKind}</p>}
     {testnet && intent.quote?.payment?.asset && intent.quote.payment?.asset !== 'XRP' && <p>{settlementAssetLabel(intent.quote.payment?.asset)}</p>}
     <p style={intent.escrow?.mode === 'key-reveal' ? { overflowWrap: 'anywhere' } : undefined} key={intent.status} className={`ra-payment-status${intent.escrow?.mode === 'key-reveal' && !refunded ? ' ra-key-line' : ''}${state.ok ? ' is-ok' : state.failed || state.quarantined && !refunded ? ' is-bad' : ''}`}>{status}{refunded && <span className="ra-refund-rail"> · {testnet ? settlementAssetLabel(intent.quote?.payment?.asset) : 'simulated'}</span>}{elapsed !== undefined && state.ok && ` · ${elapsed.toFixed(1)} s`}</p>
     {state.phase === 'submitted' && <PendingTime since={state.pendingSince} />}
     {state.failed && <button className="ra-btn ra-btn-go" onClick={() => onRetry(intent.intentId)}>Retry delivery</button>}
-    {intent.escrow?.mode === 'key-reveal' && <KeyRevealLifecycle escrow={intent.escrow} />}
+    {intent.escrow?.mode === 'key-reveal' && <KeyRevealLifecycle escrow={intent.escrow} testnet={testnet} />}
     {/* Escrow → key first, then the writer-signed refund it led to; promise checks follow. */}
     {intent.escrow?.mode === 'key-reveal' && intent.refund && <div className="ra-refund-detail"><p>Refund signed by the writer. This demo writer agrees to refund; a real writer could refuse.</p><p>The writer’s trust score drops.</p><button className="ra-link" onClick={() => { void saveReceipts(run.runId, 'fraud-proof.json', b => (b.fraudProofs as { intentId: string }[] | undefined)?.find(p => p.intentId === intent.intentId)) }}>Download evidence</button></div>}
     <Verification run={run} intent={intent} />
