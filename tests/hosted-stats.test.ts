@@ -10,6 +10,7 @@ import { HostedLimits } from '../server/hosted/limits.js'
 import { aggregateSandbox, sandboxStatsRouter, SCOREBOARD_LABEL } from '../server/hosted/stats.js'
 import { resources } from './helpers/resource-scope.js'
 import { seedSandbox } from './helpers/sandbox-seed.js'
+import { sourceKey } from '../shared/source-identity.js'
 import express from 'express'
 const closers: (() => unknown)[] = []
 afterEach(async () => { for (const close of closers.splice(0).reverse()) await close(); vi.restoreAllMocks(); vi.unstubAllEnvs() })
@@ -152,4 +153,21 @@ it('does not mistake a purchase observation without any BUY trace for policy aut
   const store=seeded()
   store.hostedState(db => db.prepare(`DELETE FROM events WHERE run_id='synthetic-0' AND json_extract(json,'$.type')='BUY'`).run())
   expect(aggregateSandbox(store).audit.buyWithoutPolicy).toBe(1)
+})
+
+it('binds policy authority to the selected writer even when article IDs and versions collide', () => {
+  const store=seeded()
+  const source={schemaVersion:1 as const,origin:'https://writer-a.invalid',sellerKey:'synthetic-seller-a',profileId:'synthetic',resourceId:'article',version:'1'}
+  const select=(chosen:typeof source) => store.hostedState(db => {
+    const row=db.prepare("SELECT json FROM decisions WHERE run_id='synthetic-0'").get()!
+    const decision=JSON.parse(String(row.json))
+    decision.rows[0].candidate={...decision.rows[0].candidate,profileId:chosen.profileId,source:chosen}
+    decision.selectedSourceKey=sourceKey(decision.rows[0].candidate)
+    db.prepare("UPDATE decisions SET json=? WHERE run_id='synthetic-0'").run(JSON.stringify(decision))
+  })
+  store.hostedState(db => db.prepare("UPDATE intents SET json=json_set(json,'$.source',json(?)) WHERE id='intent-0'").run(JSON.stringify(source)))
+  select(source)
+  expect(aggregateSandbox(store).audit.buyWithoutPolicy).toBe(0)
+  select({...source,origin:'https://writer-b.invalid',sellerKey:'synthetic-seller-b',profileId:'other-writer'})
+  expect(aggregateSandbox(store).audit).toMatchObject({buyWithoutPolicy:1,readBeforeGrant:0,overBudget:0,duplicateIntent:0,receiptWithoutIntent:0,unanchored:0})
 })
