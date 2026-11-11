@@ -18,13 +18,13 @@ export default function DecisionTable({ run }: { run: RunSnapshot }) {
     <h2>Decision table</h2>
     <p>Public previews → model probabilities → policy verdicts. Only code purchases.</p>
     <div className="ra-policy"><p>value = gap material × addresses gap × P(original) × (0.5 + 0.25 × credibility)</p><p>Buy the highest value/S$ that clears the threshold, source cap and remaining budget.</p><details><summary>Full policy formula</summary><pre>{`value(c) = gapMaterial × addressesGap(c) × P(original)(c) × (0.5 + 0.25 × credibility(c))
-eligible(c) = value(c) ≥ BUY_THRESHOLD
+eligible(c) = value(c) ≥ buy threshold
               ∧ price(c) ≤ perSourceCap
               ∧ price(c) ≤ budget − spent − reserved
               ∧ c not bought already ∧ c.derivedFrom ∉ {read or bought sources}
 buy = argmax over eligible of value(c) / price(c); none → STOP`}</pre>
     </details></div>
-    {run.budgetMinor === 0 && <p>Free-only run: “would buy” is a counterfactual, with no BUY or spending authorized.</p>}
+    {run.budgetMinor === 0 && <p>Free-only run: “would buy” is a counterfactual, with no purchase or spending authorized.</p>}
     {run.decisions.length === 0 && <p>Waiting for candidate scores. No purchase is initiated by this table.</p>}
     {run.decisions.map((round, index) => <details open={index === 0} key={round.round} aria-label={`Decision round ${round.round}`}>
       <summary>Round {round.round} · {decisionLabel(round)}</summary>

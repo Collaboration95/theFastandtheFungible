@@ -130,11 +130,12 @@ describe('clarify chips and the 5 s plan card (#150)', () => {
 })
 
 describe('sources: writers, publishers, search mode, trust (#151)', () => {
-  it('shows SKIP_LOW_TRUST on AlphaLeak in the UC3 fixture, in plain words on the surface', () => {
+  it('explains the low-trust skip on AlphaLeak in the UC3 fixture in plain words', () => {
     const table = renderToStaticMarkup(<DecisionTable run={uc3Run} />)
     const round2 = table.slice(table.indexOf('Decision round 2'))
     const leak = round2.slice(round2.indexOf('week by week'), round2.indexOf('</tr>', round2.indexOf('week by week')))
-    expect(leak).toContain('SKIP_LOW_TRUST')
+    expect(leak).toContain('Writer trust too low')
+    expect(leak).not.toContain('SKIP_LOW_TRUST')
     expect(leak).toContain('AlphaLeak failed a proof check (honesty 0.40, under 0.50)')
     const panel = renderToStaticMarkup(<DecisionPanel run={uc3Run} />)
     expect(panel).toContain('Refunded')
