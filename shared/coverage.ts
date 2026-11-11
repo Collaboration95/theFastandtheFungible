@@ -1,6 +1,5 @@
 // The requested-facts checklist (#208, #209), shared by the answer card and the report so both say the same thing.
 import { RunCheckpointSchema, STOP_LABELS, type CoverageStatus, type RunSnapshot, type StopReason } from './contracts/index.js'
-import { openGapsAfterLead } from './open-gaps.js'
 
 /** Reader-facing status words: no code vocabulary. */
 export const FACT_STATUS: Record<CoverageStatus, string> = { supported: 'Answered', partial: 'Partly answered', missing: 'Not found', conflicting: 'Sources disagree', unknown: "Couldn't check" }
@@ -12,13 +11,11 @@ export function factsSummary(run: Pick<RunSnapshot, 'checkpoint' | 'answers' | '
   if (!checkpoint.success || !checkpoint.data.requirements?.length) return undefined
   const coverage = checkpoint.data.coverage?.find(c => c.answerVersion === version)
   if (!coverage) return undefined
-  // P1: a fact the lead's cited sentences answer counts as answered, by the rule that keeps it out of "Still unanswered", so
-  // the counter never says "0 of 3 answered" beside a lead that answers. The coverage judge's own record is unchanged.
-  const lead = run.answers.find(a => a.version === version)?.lead ?? []
-  const leadAnswers = (text: string) => Boolean(run.question && lead.length && !openGapsAfterLead(run.question, { lead, openGaps: [{ text: text.replace(/\s*&\s*/g, ' and ') }] }).length)
+  // The stored judgment is also the trace and spending-loop judgment. Reconcile evidence in that judgment, never
+  // promote a fact only in the display: that used to show completion beside an unchanged missing-fact trace.
   const facts = checkpoint.data.requirements.map(r => {
     const status = coverage.entries.find(e => e.requirementId === r.id)?.status ?? 'unknown' as CoverageStatus
-    return { id: r.id, text: r.text, status: status !== 'supported' && status !== 'conflicting' && leadAnswers(r.text) ? 'supported' as CoverageStatus : status }
+    return { id: r.id, text: r.text, status }
   })
   const answered = facts.filter(f => f.status === 'supported').length
   const followUp = checkpoint.data.followUp

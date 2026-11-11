@@ -131,7 +131,7 @@ const GENERIC = new Set(['xrpl', 'xrp', 'ledger', 'payment', 'transaction', 'acc
  * transaction type creates or modifies a permissioned domain?") is left to R8-A2's per-purchase rule: a title naming
  * its subject (PermissionedDomainDelete, the DID explainer) is not yet the member it asks for. Public titles only.
  */
-const ASKS_FOR_NAME = /\bwhich\b|\b(?:transaction|field|flag|type|amendment|setting|header|scheme)s?\b/i
+const ASKS_FOR_NAME = /\bwhich\b|\b(?:transaction|field|flag|type|amendment|setting|header|scheme)s?\b|\b(?:contain|include|challenge)\w*\b/i
 export function titlesNameQuestion(question: string, titles: string[]): boolean {
   if (!titles.length || ASKS_FOR_NAME.test(question)) return false
   // A leading acronym is split as identifierWords does (AMMVote → amm, vote); topicWords alone keeps "ammvote".
@@ -251,6 +251,10 @@ function purchaseTopicMatches(input: Pick<DecideInput, 'question' | 'gap' | 'req
   if (input.requirement && isProtocolQuery(`${input.question} ${input.gap}`)) {
     if (isProtocolQuery(input.question) && !namesEntityAndSubject(input.question, candidate)) return false
     const own = `${candidate.title} ${candidate.facets.join(' ')}`
+    // A planner-added network qualifier cannot veto evidence about the user's own specific subject. Keep this
+    // purchase-only: broadening the publisher's network filter crowded requested references out of bounded search.
+    if (/\b(?:XRPL|XRP|x402)\b/i.test(input.gap) && !/\b(?:XRPL|XRP|x402)\b/i.test(input.question)
+      && subjectFamilies(input.question).length && topicMatches(input.question, own)) return true
     // A requested fact that names only a qualifier ("can my agent pay it with XRP on Testnet") keeps the question's
     // subject: a Testnet server list does not answer a question about paying an x402 response (H8-01).
     return topicMatches(input.gap, own) && (subjectFamilies(input.gap).length > 0 || !subjectFamilies(input.question).length || topicMatches(input.question, own))
@@ -462,6 +466,8 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
   // order (#204), never alphabetical and never the claimed relevance. Only BUY rows are ordered: nothing here can
   // make an ineligible article eligible.
   const titled = (row: DecisionRound['rows'][number]) => titledWithQuestion(input.question, row.candidate) || namesWholeQuestion(input, row.candidate) ? 1 : 0
+  // The current frozen fact is more precise than a broad question mentioning several protocol subjects.
+  const factTitle = (row: DecisionRound['rows'][number]) => input.requirement && isProtocolQuery(input.question) && titleMatches(input.gap, row.candidate.title) ? 1 : 0
   // H9-06: a "how much" question first prefers a title naming what it measures (fee, cost, reserve, price), more so with
   // the answer's unit (XRP drops, SGD): "EscrowFinish fulfillment fees: XRP drops and SGD prices" before the key-reveal
   // delivery note for "How much does one key-reveal purchase cost in XRPL network fees?".
@@ -474,8 +480,9 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
   // (PermissionedDomainSet before PermissionedDomainDelete for "creates or modifies"; EscrowFinish and EscrowCancel before
   // EscrowCreate for "release or return").
   // A question asking for a field, flag or type ("Which EscrowCreate field…") is not ranked by its verbs.
-  const asksTransaction = isProtocolQuery(input.question) && clausesAskTransaction(input.question)
-  const member = (row: DecisionRound['rows'][number]) => asksTransaction ? memberRank(input.question, row.candidate.title) : 0
+  const transactionFact = input.requirement ? input.gap : input.question
+  const asksTransaction = isProtocolQuery(input.question) && clausesAskTransaction(transactionFact)
+  const member = (row: DecisionRound['rows'][number]) => asksTransaction ? memberRank(transactionFact, row.candidate.title) : 0
   // QUAL: then the article that is also on the topic of more of the run's other open facts, so one purchase can answer
   // several: "What spending controls … constrain the ResearchAgent language model" is the prompt-injection explainer's
   // topic too, so it is bought for "Whether the language model … can initiate spending" before the decision explainer, and
@@ -487,7 +494,7 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
     if (!facts.has(row)) facts.set(row, input.otherFacts.filter(fact => purchaseTopicMatches({ question: input.question, gap: fact, requirement: true }, row.candidate)).length)
     return facts.get(row)!
   }
-  const selected = rows.filter(row => row.verdict === 'BUY').sort((a, b) => titled(b) - titled(a) || measure(b) - measure(a) || subject(b) - subject(a) || member(b) - member(a) || entityPrecision(input.question, b.candidate, candidates) - entityPrecision(input.question, a.candidate, candidates) || otherFacts(b) - otherFacts(a) || b.valuePerDollar - a.valuePerDollar || compareTieBreak(input.question, { id: a.candidate.source ? sourceKey(a.candidate) : a.candidate.resourceId, version: a.candidate.version }, { id: b.candidate.source ? sourceKey(b.candidate) : b.candidate.resourceId, version: b.candidate.version }))[0]
+  const selected = rows.filter(row => row.verdict === 'BUY').sort((a, b) => measure(b) - measure(a) || factTitle(b) - factTitle(a) || titled(b) - titled(a) || subject(b) - subject(a) || member(b) - member(a) || entityPrecision(input.question, b.candidate, candidates) - entityPrecision(input.question, a.candidate, candidates) || otherFacts(b) - otherFacts(a) || b.valuePerDollar - a.valuePerDollar || compareTieBreak(input.question, { id: a.candidate.source ? sourceKey(a.candidate) : a.candidate.resourceId, version: a.candidate.version }, { id: b.candidate.source ? sourceKey(b.candidate) : b.candidate.resourceId, version: b.candidate.version }))[0]
   if (selected && !selected.probe && titled(selected)) selected.reason += ' Prefers the article whose title matches the question.'
   else if (selected && !selected.probe && measure(selected)) selected.reason += ' Prefers the title naming the amount asked for.'
   else if (selected && !selected.probe && entityPrecision(input.question, selected.candidate, candidates) > 0) selected.reason += ' Prefers the title or topics naming the requested entity; then value per dollar.'

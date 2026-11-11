@@ -1,4 +1,5 @@
-import { topicMatches, topicWords } from '../../shared/relevance.js'
+import { actionGroups, identifierFamily, identifiersIn, subjectFamilies, topicMatches, topicWords } from '../../shared/relevance.js'
+import { askedKind } from '../../shared/answer-entity.js'
 import { searchText } from '../../publisher/search-text.js'
 import { INSTRUCTION, quotedText } from './untrusted.js'
 import { spendingInstruction } from './spending-guard.js'
@@ -8,6 +9,7 @@ import { spendingInstruction } from './spending-guard.js'
 import { createHash } from 'node:crypto'
 import type { CoverageStatus, Requirement } from '../../shared/contracts/index.js'
 import { CLAIM_KINDS } from '../../shared/manifest.js'
+import { factSupportBoundary, leadSupportsFact } from '../../shared/open-gaps.js'
 
 export const MAX_REQUIREMENTS = 5
 /** The four judged statuses, in the pinned option order the coverage questions use. */
@@ -125,13 +127,28 @@ export function fixtureSupports(requirement: Pick<Requirement, 'text'>, passage:
     const margin = /\bmargins?\b[^.!?]{0,160}\d+(?:\.\d+)?\s*(?:%|percent)/i.test(passage)
     return price && margin && entityPhrases(requirement.text).every(e => searchText(passage).toLowerCase().includes(e.toLowerCase()))
   }
+  if (!factSupportBoundary(requirement.text, passage)) return false
+  // A spending-control explanation needs the actual authority boundary, not a topical safety mention. Names newly
+  // introduced by a planner still need their own evidence; this cannot establish a network-specific safeguard.
+  if (/\b(?:prompt.inject\w*|(?:malicious|untrusted)\b[^.!?]{0,40}\binstructions)\b/i.test(requirement.text)
+    && /\b(?:stop|prevent\w*|controls?)\b/i.test(requirement.text)
+    && (requirement.text.match(/\b(?:XRPL|XRP|x402)\b/gi) ?? []).every(name => new RegExp(`\\b${name}\\b`, 'i').test(passage))
+    && /\bbudget\b[^.!?]{0,35}\bonly authorization\b/i.test(passage)
+    && /\bpolicy code\b[^.!?]{0,30}\bbuys\b/i.test(passage)
+    && /\blanguage model cannot sign\b/i.test(passage)) return true
+  // A named family member answers a simple transaction-name fact even when the passage does not repeat a network
+  // qualifier. Compound facts ("and what acceptance does") still need their additional explanation.
+  if (askedKind(requirement.text) === 'transaction' && actionGroups(requirement.text).length
+    && !/\b(?:and|plus)\s+(?:what|how|who|why)\b/i.test(requirement.text)
+    && subjectFamilies(requirement.text).some(family => identifiersIn(passage).some(name => identifierFamily(name) === family[0]))) return true
   const canonical = (text: string) => new Set([...contentWords(text)].map(w => w.replace(/^(?:pricing|prices?)$/, 'pric').replace(/^margins?$/, 'marg')))
   const need = canonical(requirement.text)
   const own = canonical(passage)
   const namedType = /\b(?:transaction|field|flag|header|scheme|permission|setting|type)\b/i.test(requirement.text)
   const identifier = /\b[A-Za-z]+[A-Z][A-Za-z]+\b|\b[A-Z]+(?:-[A-Z0-9]+)+\b/.test(passage)
-  const capability = /^(?:can|is|are|does|do|will)\b/i.test(requirement.text) && /\b(?:blocked until|requires?|enables?|supports?|can|cannot)\b/i.test(passage) && !/^.*cannot be inferred[^.]*$/i.test(passage)
+  const capability = /^(?:whether|can|is|are|does|do|will)\b/i.test(requirement.text) && /\b(?:blocked until|requires?|enables?|supports?|can|cannot|must)\b/i.test(passage) && !/^.*cannot be inferred[^.]*$/i.test(passage)
   if (capability && topicMatches(requirement.text, passage)) return true
+  if (topicMatches(requirement.text, passage) && leadSupportsFact('', requirement.text, passage)) return true
   return (/\d/.test(passage) || namedType && identifier) && topicMatches(requirement.text, passage) && need.size > 0 && [...need].filter(w => own.has(w)).length / need.size >= 0.5
 }
 /** Fixture coverage: supported when one passage establishes the requirement, otherwise missing. Never partial or conflicting. */

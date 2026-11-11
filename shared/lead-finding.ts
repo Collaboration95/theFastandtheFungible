@@ -46,7 +46,12 @@ const firstFactOf = (question: string, firstRequirement?: string) => {
   const firstClause = clausesOf(question)[0] ?? question
   if (/^(?:which|what)\b.*\b(?:contain|include|carr(?:y|ies))s?\b/i.test(firstClause)) return firstClause
   // A generated entity-basics row is coverage bookkeeping, not a requested fact.
-  const requested = firstRequirement && !/^Basic facts on\b/i.test(firstRequirement) ? firstRequirement : undefined
+  let requested = firstRequirement && !/^Basic facts on\b/i.test(firstRequirement) ? firstRequirement : undefined
+  // A planner can introduce a narrower protocol name into a general question. That bookkeeping must not veto a
+  // direct answer to the user's question (for example spending controls merely because the fact adds a network).
+  const queryVocabulary = new Set(words(expandProtocolQuery(question)))
+  const plannedNames = requested?.match(/\b(?:[A-Z]{2,}[A-Z0-9]*|[A-Z][a-z]+(?:[A-Z][a-z]+)+|[a-z]+\d+[a-z]*)\b/g) ?? []
+  if (plannedNames.some(name => !words(name).every(word => queryVocabulary.has(word)))) requested = undefined
   return (requested ?? question.split(/[,;?]\s*(?:and\s+)?(?=what|which|how|when|why)/i)[0]).replace(/^.*?[.!]\s+(?=(?:what|which|how|when|why|is|can)\b)/i, '')
 }
 /** A which/what question may be answered by a sentence of the asked shape or one that
@@ -96,6 +101,13 @@ export function leadFinding(question: string, claims: Claim[], delivered?: Conte
     const partial = rankLeadSentences(question, claims, delivered, firstRequirement, candidates, { relaxed: true, partial: true })
     first = partial.find(item => answersPart(item) && clausesOf(question).some(clause => answersClause(question, clause, item.text)))
     if (first) ranked = partial
+  }
+  if (!first && firstRequirement) {
+    // A generated first fact can frame a different aspect (for example finality rather than non-delivery). If it
+    // vetoed every lead, try the user's own question with the same strict eligibility rules, without that framing.
+    const direct = rankLeadSentences(question, claims, delivered, undefined, candidates)
+    first = direct.find(item => item.onTopic && !LACKS.test(item.text))
+    if (first) ranked = direct
   }
   if (!first && disclaimer) { first = disclaimer; ranked = strict }
   if (!first) return []
@@ -188,6 +200,8 @@ const FRAGMENT_START = /^(?:and|but|or|so|nor|yet|which|while|whereas|although|t
 const POINTS_BACK = /^(?:They|These|Those|Such|Both|He|She|Their|It|This|Its|Each|Either|Neither)\b/i
 /** "Each account" is a self-contained universal when the question names accounts; "Each option" still needs its options. */
 const pointsBack = (text: string, asked: ReadonlySet<string>) => {
+  // A demonstrative object also needs its antecedent: "cannot change those limits" is not a useful opening alone.
+  if (/\bthose\s+[a-z][\w-]*\b/i.test(text)) return true
   if (!POINTS_BACK.test(text)) return false
   const subject = text.match(/^each\s+([a-z][\w-]*)\b/i)?.[1]
   if (!subject || /^(?:option|one|item|choice|thing)s?$/i.test(subject)) return true
@@ -210,6 +224,7 @@ export function rankLeadSentences(question: string, claims: Claim[], delivered?:
   const primary = words(firstFact)
   const eventTerms = /^when\b/i.test(firstFact) ? primary.filter(term => /(?:ed|held|born|began|begun|took)$/.test(term)) : []
   const causal = /^why\b/i.test(firstFact)
+  const preventive = /\b(?:prevent|stop|constrain|limit)\w*\b/i.test(firstFact)
   // QUAL: live planners word the facts of a "how much" question as "The base XRP reserve amount an agent wallet must hold" or
   // "Current XRPL base account reserve, with figures", and of a yes/no question as "Whether an XRPL escrow can hold RLUSD
   // today": the same asks as "How much…?" and "Can…?".
@@ -232,7 +247,8 @@ export function rankLeadSentences(question: string, claims: Claim[], delivered?:
   const topicFact = options.relaxed ? clausesOf(firstFact)[0] ?? firstFact : firstFact
   const entityPatterns = entities.filter(name => !qualifierWords.has(name)).map(name => new RegExp(`\\b${name}\\b`, 'i'))
   const named = firstRequirement?.match(/\b[A-Z][a-z]+(?:[A-Z][a-z]+)+\b/g) ?? []
-  const asked = askedKind(firstFact)
+  // "What prevents malicious article instructions…" asks for an explanation, not a numbered Article.
+  const asked = /^what\s+(?:prevents|stops)\b/i.test(firstFact) ? undefined : askedKind(firstFact)
   // Pool statistics: how common each question term is among the candidate sentences
   // (rarer terms say more about which sentence answers), and which sentences are the
   // same template repeated in several articles (shared boilerplate, not an answer).
@@ -295,6 +311,8 @@ export function rankLeadSentences(question: string, claims: Claim[], delivered?:
       if (/\b(?:because|requires?|increases?|adds?|counts?|reserves?|locks?|locked|set aside|held|increment|so that)\b/i.test(text)) score += 20
       if (/\b(?:separate|unrelated|caveat|not.*(?:fee|cost))\b/i.test(text)) score -= 18
     }
+    // A prevention question leads with the constraint that blocks the action, ahead of surrounding process detail.
+    if (preventive && /\b(?:cannot|only|enforces?|blocked|prohibits?)\b/i.test(text)) score += 12
     if (/\b(?:cannot be inferred|not evidence of|does not establish)\b/i.test(text)) score -= 20
     if (capability && identifier && /\b(?:until|unless|before|requires?|enables?|permission)\b/i.test(text)) score += 20
     if (capability && /\b(?:can|cannot|must|requires?|enables?|enabled|supports?|allows?|does not|is not)\b/i.test(text)) score += 12

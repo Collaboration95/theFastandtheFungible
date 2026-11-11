@@ -1,13 +1,17 @@
 // Local HOSTED=1 acceptance: live DeepSeek planning/writing, fixture decisions,
 // signed team content and SIMULATED settlement. No public hosted questions.
 // Hosted readiness is stubbed healthy locally; this does not qualify HG or the deployed edge.
-import { config } from 'dotenv'
+import { parse } from 'dotenv'
 import { once } from 'node:events'
 import { request } from 'node:http'
-import { mkdtempSync, writeFileSync, rmSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-config({ path: '.env', quiet: true })
+const envFile = process.env.QUAL_ENV_FILE ?? '.env'
+if (existsSync(envFile)) {
+ const privateEnv = parse(readFileSync(envFile))
+ for (const key of ['DEEPSEEK_API_KEY', 'LLM_API_KEY']) if (!process.env[key] && privateEnv[key]) process.env[key] = privateEnv[key]
+}
 const dir = mkdtempSync(join(tmpdir(), 'qual-hosted-'))
 Object.assign(process.env, {
  HOSTED: '1', HOSTED_ORIGIN: 'https://demo.example', HOSTED_TRUSTED_PROXY: '127.0.0.2', HOSTED_IP_HMAC_KEY: 'qual-local-only'.padEnd(40, 'x'), HOSTED_CONTROL_PATH: join(dir, 'control.json'),
@@ -20,6 +24,8 @@ const { createPublisherApp } = await import('../../../publisher/routes.js')
 const { createApiApp } = await import('../../../server/routes.js')
 const { TESTNET_QUESTIONS } = await import('../../../shared/contracts/examples.js')
 const { factsSummary } = await import('../../../shared/coverage.js')
+const questions: { id: string; text: string }[] = process.argv[3] ? JSON.parse(readFileSync(process.argv[3], 'utf8')) : TESTNET_QUESTIONS
+const repetitions = Number(process.argv[4] ?? 2)
 const publisher = createPublisherApp({ journal: ':memory:', rail: 'simulated', env: {} })
 await publisher.locals.ready; await publisher.locals.writersReady
 const pub = publisher.listen(0, '127.0.0.1'); await once(pub, 'listening')
@@ -33,10 +39,13 @@ const wire = (path: string, method = 'GET', headers: Record<string,string> = {},
 })
 const results = []
 try {
- for (let repetition=1;repetition<=2;repetition++) {
+ for (let repetition=1;repetition<=repetitions;repetition++) {
  const status=await wire('/api/demo/status')
  const visitor={Cookie:status.headers['set-cookie']![0].split(';')[0],Origin:'https://demo.example','X-CSRF-Token':status.data.csrfToken}
- for (const q of TESTNET_QUESTIONS) {
+ for (let qi=0;qi<questions.length;qi++) {
+  const q=questions[qi]
+  // At most three asks per visitor, preserving session authority for custom question lists too.
+  if(qi && qi%3===0){const next=await wire('/api/demo/status');Object.assign(visitor,{Cookie:next.headers['set-cookie']![0].split(';')[0],'X-CSRF-Token':next.data.csrfToken})}
   // Preserve the local IP rate limit, including scope admission, rather than raising it.
   if(results.length) await new Promise(r=>setTimeout(r,22000))
   const start=performance.now(),key=`qual-${q.id}-${repetition}`,headers={...visitor,'Idempotency-Key':key}
@@ -56,7 +65,8 @@ try {
   const run=api.store!.getRun(runId),answer=run.answers.at(-1)
   if(results.length===0){const exported=await wire(`/runs/${runId}/receipts.json`,'GET',visitor);writeFileSync(process.argv[2].replace(/\.json$/,'.receipts.json'),JSON.stringify(exported.data,null,2)+'\n')}
   const row={id:q.id,repetition,question:q.text,phase:run.phase,planMs,askMs:performance.now()-start,scopeLabel:scoped.data.label,plan:run.checkpoint.plan,requirements:run.checkpoint.requirements,labels:run.labels,bought:run.intents.filter(i=>['VERIFIED','REFUNDED'].includes(i.status)).map(i=>i.resourceId),spentMinor:run.spentMinor,lead:answer?.lead?.map(l=>l.text),conclusion:answer?.conclusion,openGaps:answer?.openGaps,facts:factsSummary(run),fallbacks:run.events.filter(e=>e.type==='MODEL_FALLBACK').map(e=>e.data)}
-  results.push(row);writeFileSync(process.argv[2],JSON.stringify(results,null,2)+'\n');console.log(q.id,repetition,row.phase,row.bought.join(','),row.spentMinor,Math.round(row.askMs))
+  const proof={answer,coverage:run.checkpoint.coverage,evidence:run.contents.flatMap(c=>c.spans.filter(s=>answer?.claims.some(cl=>cl.citations.some(ref=>ref.resourceId===c.resourceId&&ref.version===c.version&&ref.spanId===s.id))).map(s=>({resourceId:c.resourceId,version:c.version,spanId:s.id,text:s.text})))}
+  results.push({...row,...(process.argv[3]?proof:{})});writeFileSync(process.argv[2],JSON.stringify(results,null,2)+'\n');console.log(q.id,repetition,row.phase,row.bought.join(','),row.spentMinor,Math.round(row.askMs))
  }
  }
 } finally {

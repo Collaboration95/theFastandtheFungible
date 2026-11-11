@@ -1,5 +1,8 @@
 import { questionTerms } from './answer-summary.js'
 import type { Answer, Gap } from './contracts/index.js'
+import { actionGroups, identifierFamily, identifiersIn, memberOf, subjectFamilies } from './relevance.js'
+import { answerBoilerplate, sentences } from './lead-finding.js'
+import { answerNames, askedKind } from './answer-entity.js'
 
 /** Words that frame a gap ("Identify the…", "Explain whether… needs", "the … amount") but name no fact. A quantity word is
  * answered by the figure the QUANTITY rule requires, not by repeating the word. */
@@ -18,6 +21,58 @@ const FOLD = new Map([...['pay', 'pays', 'paid', 'paying', 'payment', 'payments'
 const folded = (word: string) => FOLD.get(word) ?? stem(word)
 /** "XRP Ledger" is XRPL; with `split`, CamelCase names count whole and by their words (EscrowFinish → escrowfinish, escrow, finish). */
 const termsOf = (text: string, split: boolean) => questionTerms(`${text} ${split ? text.replace(/([a-z0-9])([A-Z])/g, '$1 $2') : ''}`.replace(/\bXRP Ledger\b/gi, split ? 'XRPL' : '$&'))
+
+/** Necessary semantic checks before word overlap can establish a requested fact. These only reject unsupported facts. */
+const supportChecks = new Map<string, boolean>()
+export function factSupportBoundary(fact: string, passage: string): boolean {
+  const key = JSON.stringify([fact, passage])
+  if (supportChecks.has(key)) return supportChecks.get(key)!
+  const check = () => {
+    // A source's unrelated figure or access date cannot establish a requested date.
+    if ((fact.match(/\b20\d{2}\b/g) ?? []).some(year => !passage.includes(year))) return false
+    // A request for how a fee is set, or who votes on it, asks for a mechanism or actor, not its numeric amount.
+    const explanatory = (/^(?:how\b(?!\s+(?:much|many|long))|who\b)/i.test(fact) || /\b(?:mechanism|method|policy)\b/i.test(fact)) && !/\b(?:amounts?|numbers?|figures?)\b/i.test(fact)
+    if (QUANTITY.test(fact) && !explanatory && !/\b\d[\d,.]*\s*(?:%|(?:XRP|drops?|days?|hours?|minutes?|seconds?|weeks?|months?|years?|SGD|USD|bp|tickets?|objects?)\b)/i.test(passage)) return false
+    const kind = askedKind(fact)
+    const groups = kind === 'transaction' ? actionGroups(fact) : []
+    if (groups.length) {
+      const families = subjectFamilies(fact)
+      const names = sentences(passage).filter(text => !answerBoilerplate(text)).flatMap(identifiersIn)
+        .filter(id => !families.length || families.some(family => identifierFamily(id) === family[0]))
+      const members = new Set(names.map(memberOf))
+      if (!groups.every(group => group.some(member => members.has(member)))) return false
+    }
+    if (/\b(?:who|submitters?|eligible accounts?|which accounts?)\b/i.test(fact) && /\bsubmit\w*\b/i.test(fact)
+      && !/\b(?:anyone|any account|(?:the )?(?:owner|sender|buyer|writer|destination|subject|issuer))\b[^.!?]{0,90}\b(?:may|can|must|allowed to)\s+submit\b|\bsubmitted by\s+(?:any|the|an?)\b/i.test(passage)) return false
+    if (/\bvot(?:e|es|ing)\b/i.test(fact) && !sentences(passage).some(text => !answerBoilerplate(text) && /\bvot(?:e|es|ing)\b/i.test(text) && !/\b(?:neither|no|not|without)\b[^.!?]{0,80}\bvot/i.test(text))) return false
+    if (/\bcredentials?\b/i.test(fact) && /\bcontains?\b/i.test(fact)
+      && ![/\bissuer\b/i, /\bsubject\b/i, /\b(?:type|CredentialType)\b/i].every(pattern => pattern.test(passage))) return false
+    // A status observation made on a date is not an activation date.
+    if (/\b(?:activation date|when\b[^.!?]{0,60}\b(?:activated|enabled|launched))\b/i.test(fact)
+      && !sentences(passage).some(text => /\b(?:activated|activation|enabled|launched)\b[^.!?]{0,45}\b(?:on|since)\b[^.!?]{0,30}\b20\d{2}\b/i.test(text) && !/\b(?:not|never)\b/i.test(text) && !answerBoilerplate(text))) return false
+    if (/\bcredentials?\b/i.test(fact) && /\b(?:prove\w*|attest\w*|means?|meaning)\b/i.test(fact)
+      && !/\bcredentials?\b[^.!?]{0,70}\b(?:attests?|records?|represents?)\b|\bissuer'?s?\s+(?:attestation|assertion)\b/i.test(passage)) return false
+    if (kind && ['flag', 'header', 'standard', 'code', 'field'].includes(kind) && !answerNames(kind, passage, '').length) return false
+    return true
+  }
+  const result = check()
+  if (key.length <= 16_384) { if (supportChecks.size >= 256) supportChecks.delete(supportChecks.keys().next().value!); supportChecks.set(key, result) }
+  return result
+}
+
+/** Word-form reconciliation for a single fact, after its semantic checks. No title or other requirement supplies evidence. */
+export function leadSupportsFact(question: string, factText: string, leadText: string): boolean {
+  if (!factSupportBoundary(factText, leadText)) return false
+  const own = new Set(termsOf(leadText, true).map(folded))
+  const asked = new Set(questionTerms(question).map(folded))
+  const named = IDENTIFIER.test(leadText)
+  const fact = [...new Set(questionTerms(factText.replace(/\bXRP Ledger\b/gi, 'XRPL')).filter(word => !PLANNER_FRAME.has(word) && !(named && KIND.has(word))).map(folded))]
+  if (!fact.length) return false
+  const matched = fact.filter(word => own.has(word)).length
+  const inQuestion = fact.filter(word => asked.has(word)).length
+  const restates = inQuestion / fact.length >= 0.8 && inQuestion / Math.max(1, asked.size) >= 0.6
+  return restates || matched === fact.length || fact.length >= 5 && matched >= 3 && matched / fact.length >= 0.5
+}
 
 /**
  * H9-10: "Still unanswered" never lists what the answer's lead already answers. Open gaps are recomputed against the lead
@@ -45,6 +100,7 @@ export function openGapsAfterLead(question: string, answer: Pick<Answer, 'lead' 
   const asked = new Set(questionTerms(question).map(term))
   const named = loose && IDENTIFIER.test(leadText)
   return answer.openGaps.filter(gap => {
+    if (loose && !factSupportBoundary(gap.text, leadText)) return true
     if (QUANTITY.test(gap.text) && !/\d/.test(leadText)) return true
     const fact = [...new Set(questionTerms(loose ? gap.text.replace(/\bXRP Ledger\b/gi, 'XRPL') : gap.text).filter(word => !frame.has(word) && !(named && KIND.has(word))).map(term))]
     if (!fact.length) return true

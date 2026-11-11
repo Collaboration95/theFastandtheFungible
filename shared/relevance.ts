@@ -23,7 +23,7 @@ export const PROTOCOL_GLOSSARY = [
   ['checks', 'CheckCreate', 'CheckCash', 'capped payment', 'cashes'],
   ['payment channel', 'payment channels', 'micropayments', 'PaymentChannelCreate', 'PaymentChannelFund', 'PaymentChannelClaim'],
   ['travel rule', 'fatf', 'vasps', 'originator and beneficiary information'],
-  ['key reveal', 'keyreveal', 'key delivery', 'reveal key', 'ciphertext', 'encryption key'],
+  ['key reveal', 'keyreveal', 'key delivery', 'reveal key', 'ciphertext', 'encryption key', 'decryption key', 'never reveals', 'key not delivered', 'non-delivery of the key'],
   // C5 (11 Nov): vocabulary for the sourced explainers added in the same change. Names only; it never adds evidence.
   ['crypto-condition', 'crypto condition', 'conditional escrow', 'PREIMAGE-SHA-256', 'preimage', 'fulfillment', 'hash lock', 'hash locked'],
   ['TicketCreate', 'TicketSequence', 'ticket limit', 'xrpl tickets'],
@@ -67,7 +67,9 @@ const memoByText = <T>(compute: (text: string) => T, { entries = 512, maxLength 
   }
 }
 const matchingGroups = memoByText((query: string) => {
-  const normalized = phraseText(query)
+  // Safety vocabulary with an intervening source adjective still names prompt injection. This changes vocabulary,
+  // not the original words or their overlap denominator ("malicious document instructions", for example).
+  const normalized = phraseText(query.replace(/\b(?:malicious|untrusted)\s+(?:\w+\s+){0,2}(?:instructions|content)\b/gi, 'prompt injection'))
   return Object.freeze(PROTOCOL_GLOSSARY.filter(group => (group[0] !== 'did' || /\bDID(?:Set|Delete)?\b/.test(query) || /decentralized identifier/i.test(query)) && group.some(p => phraseIn(normalized, p))))
 })
 /** topicWords of a query-side text, shared and frozen; topicWords itself still returns a fresh array. */
@@ -256,7 +258,7 @@ export function titleMatches(question: string, title: string): boolean {
  * Finish and Cancel, never Create. Verb stems map to the last word of a transaction name (EscrowFinish → finish).
  */
 const ACTION_MEMBERS: readonly [RegExp, readonly string[]][] = [
-  [/\b(?:creat|establish|register)\w*/gi, ['create', 'set']],
+  [/\b(?:creat|establish|register)\w*|\bissu(?:e|es|ed|ing)\b/gi, ['create', 'set']],
   [/\b(?:modif|updat|chang|edit|configur|publish)\w*/gi, ['set']],
   [/\b(?:delet|remov|destroy)\w*/gi, ['delete']],
   [/\b(?:releas|finish)\w*/gi, ['finish']],

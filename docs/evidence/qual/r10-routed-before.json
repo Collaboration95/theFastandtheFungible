@@ -1,0 +1,1362 @@
+[
+  {
+    "id": "reserves",
+    "repetition": 1,
+    "question": "How much XRP reserve does an agent wallet need, and how much does each open escrow or trust line add?",
+    "phase": "DONE",
+    "planMs": 1720.4507909999998,
+    "askMs": 4039.1652499999996,
+    "scopeLabel": "DeepSeek \u00b7 deepseek-flash",
+    "plan": {
+      "restatement": "The XRP reserve an agent wallet needs on the XRP Ledger and how much each open escrow or trust line adds.",
+      "subqueries": [
+        "XRP Ledger base reserve requirement account",
+        "XRP Ledger owner reserve per object escrow trust line",
+        "XRPL reserve escrow trust line cost"
+      ]
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "Current XRP Ledger base account reserve and owner reserve per object, with figures"
+      },
+      {
+        "id": "r2",
+        "text": "How much an open escrow adds to an agent wallet's XRP reserve"
+      },
+      {
+        "id": "r3",
+        "text": "How much an open trust line adds to an agent wallet's XRP reserve"
+      }
+    ],
+    "labels": {
+      "research": "DeepSeek \u00b7 deepseek-flash",
+      "decision": "fixture \u00b7 metadata-fixture",
+      "publisher": "local",
+      "settlement": "SIMULATED SGD \u00b7 no real funds",
+      "search": "keyword only (embeddings unavailable)",
+      "plan": "DeepSeek \u00b7 deepseek-flash"
+    },
+    "bought": [
+      "xrpl-reserves"
+    ],
+    "spentMinor": 40,
+    "lead": [
+      "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings."
+    ],
+    "conclusion": "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings. The reserve is held separately from the money the wallet intends to send. Base reserve supports the account's existence; owner reserve constrains ledger objects. Removing an object can release its reserve requirement. Treating every XRP in a balance as transferable would therefore confuse several distinct accounting concepts. Reserves are not payments to validators, and the documentation permits reserved XRP to pay transaction costs.",
+    "openGaps": [],
+    "facts": {
+      "answered": 3,
+      "total": 3,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "Current XRP Ledger base account reserve and owner reserve per object, with figures",
+          "status": "supported"
+        },
+        {
+          "id": "r2",
+          "text": "How much an open escrow adds to an agent wallet's XRP reserve",
+          "status": "supported"
+        },
+        {
+          "id": "r3",
+          "text": "How much an open trust line adds to an agent wallet's XRP reserve",
+          "status": "supported"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "complete",
+      "line": "3 of 3 answered",
+      "judge": "fixture \u00b7 metadata-fixture"
+    },
+    "fallbacks": [
+      {
+        "fallback": true,
+        "reason": "guard"
+      }
+    ],
+    "answer": {
+      "lead": [
+        {
+          "text": "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings.",
+          "claim": {
+            "id": "claim-1",
+            "text": "Current Mainnet settings require a 1 XRP base reserve plus 0.2 XRP owner reserve per owned object (escrow, offer, trust line).",
+            "stance": "SUPPORTS",
+            "citations": [
+              {
+                "resourceId": "xrpl-reserves",
+                "version": "v2",
+                "spanId": "p1"
+              }
+            ]
+          }
+        }
+      ],
+      "conclusion": "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings. The reserve is held separately from the money the wallet intends to send. Base reserve supports the account's existence; owner reserve constrains ledger objects. Removing an object can release its reserve requirement. Treating every XRP in a balance as transferable would therefore confuse several distinct accounting concepts. Reserves are not payments to validators, and the documentation permits reserved XRP to pay transaction costs.",
+      "claims": [
+        {
+          "id": "claim-1",
+          "text": "Current Mainnet settings require a 1 XRP base reserve plus 0.2 XRP owner reserve per owned object (escrow, offer, trust line).",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-reserves",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-2",
+          "text": "An open escrow adds 0.2 XRP to the owner reserve requirement.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-reserves",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-3",
+          "text": "An open trust line adds 0.2 XRP to the owner reserve requirement.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-reserves",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-4",
+          "text": "Reserve figures are a dated reference, not a permanent constant, since validators can change them via fee voting and other networks may differ.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-reserves",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-5",
+          "text": "Removing an object can release its reserve requirement, and reserved XRP can still pay transaction costs.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-reserves",
+              "version": "v2",
+              "spanId": "p2"
+            }
+          ]
+        }
+      ],
+      "openGaps": [],
+      "version": 2,
+      "provider": "deepseek",
+      "model": "deepseek-flash"
+    },
+    "coverage": [
+      {
+        "answerVersion": 1,
+        "judge": "fixture \u00b7 metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r2",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r3",
+            "status": "missing"
+          }
+        ]
+      },
+      {
+        "answerVersion": 2,
+        "judge": "fixture \u00b7 metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "supported",
+            "claimIds": [
+              "claim-1",
+              "claim-2",
+              "claim-3",
+              "claim-4",
+              "claim-5"
+            ]
+          },
+          {
+            "requirementId": "r2",
+            "status": "supported",
+            "claimIds": [
+              "claim-1",
+              "claim-2",
+              "claim-3",
+              "claim-4"
+            ]
+          },
+          {
+            "requirementId": "r3",
+            "status": "supported",
+            "claimIds": [
+              "claim-1",
+              "claim-2",
+              "claim-3",
+              "claim-4"
+            ]
+          }
+        ]
+      }
+    ],
+    "evidence": [
+      {
+        "resourceId": "xrpl-reserves",
+        "version": "v2",
+        "spanId": "p1",
+        "text": "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings. Other networks can differ, and validators can change these figures through fee voting, so they are a dated reference, not a permanent application constant. The reserve is held separately from the money the wallet intends to send. [1] According to the XRPL documentation, validators can change reserves through fee voting. [1]"
+      },
+      {
+        "resourceId": "xrpl-reserves",
+        "version": "v2",
+        "spanId": "p2",
+        "text": "Base reserve supports the account's existence; owner reserve constrains ledger objects. Escrows, offers and signer lists can affect the latter. Removing an object can release its reserve requirement. Reserves are not payments to validators, and the documentation permits reserved XRP to pay transaction costs. Treating every XRP in a balance as transferable would therefore confuse several distinct accounting concepts. [1]"
+      }
+    ]
+  },
+  {
+    "id": "credentials",
+    "repetition": 1,
+    "question": "What does an XRPL Credential prove, and which transactions create and accept one?",
+    "phase": "DONE",
+    "planMs": 1347.974792000001,
+    "askMs": 3162.186125,
+    "scopeLabel": "DeepSeek \u00b7 deepseek-flash",
+    "plan": {
+      "restatement": "What an XRPL Credential proves and which transactions create and accept one.",
+      "subqueries": [
+        "XRPL Credential ledger object what it proves",
+        "XRPL CredentialCreate CredentialAccept transactions",
+        "XRPL credentials documentation"
+      ]
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "What an XRPL Credential proves and what it contains"
+      },
+      {
+        "id": "r2",
+        "text": "Which XRPL transaction creates a Credential"
+      },
+      {
+        "id": "r3",
+        "text": "Which XRPL transaction accepts a Credential and what acceptance does"
+      }
+    ],
+    "labels": {
+      "research": "DeepSeek \u00b7 deepseek-flash",
+      "decision": "fixture \u00b7 metadata-fixture",
+      "publisher": "local",
+      "settlement": "SIMULATED SGD \u00b7 no real funds",
+      "search": "keyword only (embeddings unavailable)",
+      "plan": "DeepSeek \u00b7 deepseek-flash"
+    },
+    "bought": [
+      "xrpl-tx-credentialaccept"
+    ],
+    "spentMinor": 40,
+    "lead": [
+      "CredentialAccept records the subject account's acceptance of a credential issued to it.",
+      "The issuer, subject and CredentialType identify the credential being accepted."
+    ],
+    "conclusion": "CredentialAccept records the subject account's acceptance of a credential issued to it. The issuer, subject and CredentialType identify the credential being accepted. An expired or deleted credential cannot establish a current permission merely because it once appeared in history.",
+    "openGaps": [],
+    "facts": {
+      "answered": 3,
+      "total": 3,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "What an XRPL Credential proves and what it contains",
+          "status": "supported"
+        },
+        {
+          "id": "r2",
+          "text": "Which XRPL transaction creates a Credential",
+          "status": "supported"
+        },
+        {
+          "id": "r3",
+          "text": "Which XRPL transaction accepts a Credential and what acceptance does",
+          "status": "supported"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "complete",
+      "line": "3 of 3 answered",
+      "judge": "fixture \u00b7 metadata-fixture"
+    },
+    "fallbacks": [],
+    "answer": {
+      "lead": [
+        {
+          "text": "CredentialAccept records the subject account's acceptance of a credential issued to it.",
+          "claim": {
+            "id": "claim-1",
+            "text": "CredentialAccept records the subject account's acceptance of a credential issued to it.",
+            "stance": "SUPPORTS",
+            "citations": [
+              {
+                "resourceId": "xrpl-tx-credentialaccept",
+                "version": "v1",
+                "spanId": "p1"
+              }
+            ]
+          }
+        },
+        {
+          "text": "The issuer, subject and CredentialType identify the credential being accepted.",
+          "claim": {
+            "id": "claim-2",
+            "text": "The issuer, subject and CredentialType identify the credential being accepted; creation by an issuer alone is not acceptance by the subject.",
+            "stance": "SUPPORTS",
+            "citations": [
+              {
+                "resourceId": "xrpl-tx-credentialaccept",
+                "version": "v1",
+                "spanId": "p2"
+              }
+            ]
+          }
+        }
+      ],
+      "conclusion": "CredentialAccept records the subject account's acceptance of a credential issued to it. The issuer, subject and CredentialType identify the credential being accepted. An expired or deleted credential cannot establish a current permission merely because it once appeared in history.",
+      "claims": [
+        {
+          "id": "claim-1",
+          "text": "CredentialAccept records the subject account's acceptance of a credential issued to it.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-credentialaccept",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-2",
+          "text": "The issuer, subject and CredentialType identify the credential being accepted; creation by an issuer alone is not acceptance by the subject.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-credentialaccept",
+              "version": "v1",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "claim-3",
+          "text": "An expired or deleted credential cannot establish a current permission merely because it once appeared in history, and acceptance does not guarantee that every statement by the subject is true.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-credentialaccept",
+              "version": "v1",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "claim-4",
+          "text": "A submitted transaction or documentation example does not establish a successful validated result.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "xrpl-tx-credentialaccept",
+              "version": "v1",
+              "spanId": "p3"
+            }
+          ]
+        }
+      ],
+      "openGaps": [],
+      "version": 2,
+      "provider": "deepseek",
+      "model": "deepseek-flash"
+    },
+    "coverage": [
+      {
+        "answerVersion": 1,
+        "judge": "fixture \u00b7 metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r2",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r3",
+            "status": "missing"
+          }
+        ]
+      },
+      {
+        "answerVersion": 2,
+        "judge": "fixture \u00b7 metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "supported",
+            "claimIds": [
+              "claim-1"
+            ]
+          },
+          {
+            "requirementId": "r2",
+            "status": "supported",
+            "claimIds": [
+              "claim-1",
+              "claim-4"
+            ]
+          },
+          {
+            "requirementId": "r3",
+            "status": "supported",
+            "claimIds": [
+              "claim-1"
+            ]
+          }
+        ]
+      }
+    ],
+    "evidence": [
+      {
+        "resourceId": "xrpl-tx-credentialaccept",
+        "version": "v1",
+        "spanId": "p1",
+        "text": "According to XRPL documentation, CredentialAccept records the subject account's acceptance of a credential issued to it. [1]"
+      },
+      {
+        "resourceId": "xrpl-tx-credentialaccept",
+        "version": "v1",
+        "spanId": "p2",
+        "text": "The issuer, subject and CredentialType identify the credential being accepted. Creation by an issuer alone is not acceptance by the subject. An expired or deleted credential cannot establish a current permission merely because it once appeared in history. Acceptance concerns the attestation's lifecycle, not a guarantee that every statement by the subject is true. [1]"
+      },
+      {
+        "resourceId": "xrpl-tx-credentialaccept",
+        "version": "v1",
+        "spanId": "p3",
+        "text": "The CredentialAccept reference defines the operation-specific fields alongside the shared XRPL transaction fields. Account identifies the submitting account; signing authority, transaction cost and sequence handling still have to satisfy the ledger rules. A submitted transaction or an example in documentation does not establish a successful validated result. Where an amendment is required, confirm it is enabled on the intended network before relying on the feature. [1][2]"
+      }
+    ]
+  },
+  {
+    "id": "x402",
+    "repetition": 1,
+    "question": "What does an x402 402 response contain, and can my agent pay it with XRP on Testnet?",
+    "phase": "DONE",
+    "planMs": 1386.8957080000037,
+    "askMs": 3971.529792000001,
+    "scopeLabel": "DeepSeek \u00b7 deepseek-flash",
+    "plan": {
+      "restatement": "What an x402 402 Payment Required response contains and whether an agent can pay it with XRP on Testnet.",
+      "subqueries": [
+        "x402 402 Payment Required response fields",
+        "x402 payment requirements XRP XRPL",
+        "x402 XRPL Testnet XRP payment support"
+      ]
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "What an x402 402 Payment Required response contains, including payment requirement fields"
+      },
+      {
+        "id": "r2",
+        "text": "Whether x402 supports paying with XRP on the XRPL Testnet"
+      }
+    ],
+    "labels": {
+      "research": "DeepSeek \u00b7 deepseek-flash",
+      "decision": "fixture \u00b7 metadata-fixture",
+      "publisher": "local",
+      "settlement": "SIMULATED SGD \u00b7 no real funds",
+      "search": "keyword only (embeddings unavailable)",
+      "plan": "DeepSeek \u00b7 deepseek-flash"
+    },
+    "bought": [
+      "product-x402-response"
+    ],
+    "spentMinor": 40,
+    "lead": [
+      "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
+      "An agent can pay a 402 in XRP on Testnet, network xrpl:1."
+    ],
+    "conclusion": "An HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. An agent can pay a 402 in XRP on Testnet, network xrpl:1. The XRPL exact scheme quotes a native XRP Payment in integer drops, and ResearchAgent's writers accept exactly that. A successful HTTP response can include PAYMENT-RESPONSE with settlement details.",
+    "openGaps": [],
+    "facts": {
+      "answered": 2,
+      "total": 2,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "What an x402 402 Payment Required response contains, including payment requirement fields",
+          "status": "supported"
+        },
+        {
+          "id": "r2",
+          "text": "Whether x402 supports paying with XRP on the XRPL Testnet",
+          "status": "supported"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "complete",
+      "line": "2 of 2 answered",
+      "judge": "fixture \u00b7 metadata-fixture"
+    },
+    "fallbacks": [],
+    "answer": {
+      "lead": [
+        {
+          "text": "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
+          "claim": {
+            "id": "claim-1",
+            "text": "An HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
+            "stance": "SUPPORTS",
+            "citations": [
+              {
+                "resourceId": "product-x402-response",
+                "version": "v2",
+                "spanId": "p1"
+              }
+            ]
+          }
+        },
+        {
+          "text": "An agent can pay a 402 in XRP on Testnet, network xrpl:1.",
+          "claim": {
+            "id": "claim-1",
+            "text": "An HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
+            "stance": "SUPPORTS",
+            "citations": [
+              {
+                "resourceId": "product-x402-response",
+                "version": "v2",
+                "spanId": "p1"
+              }
+            ]
+          }
+        }
+      ],
+      "conclusion": "An HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. An agent can pay a 402 in XRP on Testnet, network xrpl:1. The XRPL exact scheme quotes a native XRP Payment in integer drops, and ResearchAgent's writers accept exactly that. A successful HTTP response can include PAYMENT-RESPONSE with settlement details.",
+      "claims": [
+        {
+          "id": "claim-1",
+          "text": "An HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "product-x402-response",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-2",
+          "text": "The header carries base64-encoded JSON with x402Version 2, resource, and accepts; each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds, with extra for scheme-specific details.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "product-x402-response",
+              "version": "v2",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "claim-3",
+          "text": "An optional error explains the refusal, and extensions can advertise additional capabilities.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "product-x402-response",
+              "version": "v2",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "claim-4",
+          "text": "An agent can pay a 402 in XRP on Testnet, network xrpl:1; the XRPL exact scheme quotes a native XRP Payment in integer drops.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "product-x402-response",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-5",
+          "text": "The retry carries the selected accepted requirements and a scheme-specific payment payload; a successful response can include PAYMENT-RESPONSE with settlement details.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "product-x402-response",
+              "version": "v2",
+              "spanId": "p3"
+            }
+          ]
+        },
+        {
+          "id": "claim-6",
+          "text": "Network and asset support must agree across the client, server and facilitator, and a valid signature does not establish that a transaction completed.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "product-x402-response",
+              "version": "v2",
+              "spanId": "p3"
+            }
+          ]
+        }
+      ],
+      "openGaps": [],
+      "version": 2,
+      "provider": "deepseek",
+      "model": "deepseek-flash"
+    },
+    "coverage": [
+      {
+        "answerVersion": 1,
+        "judge": "fixture \u00b7 metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r2",
+            "status": "missing"
+          }
+        ]
+      },
+      {
+        "answerVersion": 2,
+        "judge": "fixture \u00b7 metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "supported",
+            "claimIds": [
+              "claim-1",
+              "claim-4"
+            ]
+          },
+          {
+            "requirementId": "r2",
+            "status": "supported",
+            "claimIds": [
+              "claim-1",
+              "claim-4"
+            ]
+          }
+        ]
+      }
+    ],
+    "evidence": [
+      {
+        "resourceId": "product-x402-response",
+        "version": "v2",
+        "spanId": "p1",
+        "text": "According to the X402 v2 specification, an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. An agent can pay a 402 in XRP on Testnet, network xrpl:1. The XRPL exact scheme quotes a native XRP Payment in integer drops, and ResearchAgent's writers accept exactly that. [1] [2] [3] [4]"
+      },
+      {
+        "resourceId": "product-x402-response",
+        "version": "v2",
+        "spanId": "p2",
+        "text": "The header carries base64-encoded JSON: x402Version is 2, resource identifies the protected URL, and accepts lists payment options. Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details. An optional error explains the refusal, and extensions can advertise additional capabilities. Base64 is an encoding, not encryption or proof that the seller is trustworthy. [1] [2]"
+      },
+      {
+        "resourceId": "product-x402-response",
+        "version": "v2",
+        "spanId": "p3",
+        "text": "The retry carries the selected accepted requirements and a scheme-specific payment payload. A successful HTTP response can include PAYMENT-RESPONSE with settlement details. Verification and settlement are distinct steps: a syntactically valid signature does not establish that a transaction completed. Network and asset support must agree across the client, server and facilitator. [1] [2]"
+      }
+    ]
+  },
+  {
+    "id": "injection",
+    "repetition": 1,
+    "question": "How can I stop a prompt-injected AI agent from draining its wallet?",
+    "phase": "DONE",
+    "planMs": 1351.5257500000007,
+    "askMs": 3568.8856659999874,
+    "scopeLabel": "DeepSeek \u00b7 deepseek-flash",
+    "plan": {
+      "restatement": "How to prevent a prompt-injected AI agent from draining its wallet.",
+      "subqueries": [
+        "prevent prompt injection AI agent wallet draining",
+        "AI agent spending limits policy controls prompt injection",
+        "x402 agent payment security prompt injection safeguards"
+      ]
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "Safeguards specific to x402 or XRPL agent payments against prompt-injected spending"
+      }
+    ],
+    "labels": {
+      "research": "DeepSeek \u00b7 deepseek-flash",
+      "decision": "fixture \u00b7 metadata-fixture",
+      "publisher": "local",
+      "settlement": "SIMULATED SGD \u00b7 no real funds",
+      "search": "keyword only (embeddings unavailable)",
+      "plan": "DeepSeek \u00b7 deepseek-flash"
+    },
+    "bought": [
+      "product-prompt-injection"
+    ],
+    "spentMinor": 40,
+    "lead": [],
+    "conclusion": "According to ResearchAgent security documentation, prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments. Policy enforces the admitted budget, source limit, wallet daily authority and one charge per intent. Untrusted article text cannot change those limits, choose signing keys or turn a research instruction into additional wallet authority.",
+    "openGaps": [
+      {
+        "text": "Safeguards specific to x402 or XRPL agent payments against prompt-injected spending"
+      }
+    ],
+    "facts": {
+      "answered": 0,
+      "total": 1,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "Safeguards specific to x402 or XRPL agent payments against prompt-injected spending",
+          "status": "missing"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "no-eligible-purchase",
+      "line": "0 of 1 answered \u00b7 no source worth buying for the rest",
+      "judge": "fixture \u00b7 metadata-fixture"
+    },
+    "fallbacks": [],
+    "answer": {
+      "lead": [],
+      "conclusion": "According to ResearchAgent security documentation, prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments. Policy enforces the admitted budget, source limit, wallet daily authority and one charge per intent. Untrusted article text cannot change those limits, choose signing keys or turn a research instruction into additional wallet authority.",
+      "claims": [
+        {
+          "id": "claim-1",
+          "text": "Prompt injection cannot raise spending authorization; the user budget is the sole authorization, and deterministic policy code performs purchases while the language model cannot sign payments.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "product-prompt-injection",
+              "version": "v1",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-2",
+          "text": "Recommendations pass through independent spending checks enforcing the admitted budget, source limit, wallet daily authority and one charge per intent; untrusted text cannot change limits, choose signing keys or add wallet authority.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "product-prompt-injection",
+              "version": "v1",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "claim-3",
+          "text": "A malicious passage may still influence which evidence looks attractive within the existing allowance; keep budgets small, review receipts and use the operator pause control, which blocks new reservations while submitted payments still need reconciliation.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "product-prompt-injection",
+              "version": "v1",
+              "spanId": "p4"
+            }
+          ]
+        }
+      ],
+      "openGaps": [
+        {
+          "text": "Safeguards specific to x402 or XRPL agent payments against prompt-injected spending"
+        }
+      ],
+      "version": 2,
+      "provider": "deepseek",
+      "model": "deepseek-flash"
+    },
+    "coverage": [
+      {
+        "answerVersion": 1,
+        "judge": "fixture \u00b7 metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "missing"
+          }
+        ]
+      },
+      {
+        "answerVersion": 2,
+        "judge": "fixture \u00b7 metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "missing"
+          }
+        ]
+      }
+    ],
+    "evidence": [
+      {
+        "resourceId": "product-prompt-injection",
+        "version": "v1",
+        "spanId": "p1",
+        "text": "According to ResearchAgent security documentation, prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments. [1] [2]"
+      },
+      {
+        "resourceId": "product-prompt-injection",
+        "version": "v1",
+        "spanId": "p2",
+        "text": "The decision model can recommend whether evidence is useful, but recommendations pass through independent spending checks. Policy enforces the admitted budget, source limit, wallet daily authority and one charge per intent. Untrusted article text cannot change those limits, choose signing keys or turn a research instruction into additional wallet authority. The plan confirmation precedes spending; there is no separate approval for each article. [1] [2]"
+      },
+      {
+        "resourceId": "product-prompt-injection",
+        "version": "v1",
+        "spanId": "p4",
+        "text": "Author interpretation: a malicious passage might still influence which evidence looks attractive within the existing allowance. Keep budgets small, review receipts and use the operator pause control when suspicious activity appears. Pause blocks new reservations while already submitted payments still require reconciliation. The guarantee is bounded payment authority, not immunity to all misleading content. Sources accessed 10 November 2026. [2] [3]"
+      }
+    ]
+  },
+  {
+    "id": "submitters",
+    "repetition": 1,
+    "question": "What's the difference between EscrowFinish and EscrowCancel, and who can submit each one?",
+    "phase": "DONE",
+    "planMs": 1132.074207999991,
+    "askMs": 2973.015041999999,
+    "scopeLabel": "DeepSeek \u00b7 deepseek-flash",
+    "plan": {
+      "restatement": "How XRPL EscrowFinish and EscrowCancel differ and who is authorized to submit each.",
+      "subqueries": [
+        "XRPL EscrowFinish EscrowCancel difference who can submit",
+        "XRPL escrow transaction types EscrowFinish EscrowCancel authorization"
+      ]
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "What EscrowFinish does and who can submit it on the XRPL"
+      },
+      {
+        "id": "r2",
+        "text": "What EscrowCancel does and who can submit it on the XRPL"
+      },
+      {
+        "id": "r3",
+        "text": "How EscrowFinish and EscrowCancel differ in effect and authorization"
+      }
+    ],
+    "labels": {
+      "research": "DeepSeek \u00b7 deepseek-flash",
+      "decision": "fixture \u00b7 metadata-fixture",
+      "publisher": "local",
+      "settlement": "SIMULATED SGD \u00b7 no real funds",
+      "search": "keyword only (embeddings unavailable)",
+      "plan": "DeepSeek \u00b7 deepseek-flash"
+    },
+    "bought": [
+      "xrpl-escrow"
+    ],
+    "spentMinor": 40,
+    "lead": [
+      "EscrowFinish releases escrowed funds when its requirements are satisfied; EscrowCancel returns expired escrowed funds to the sender.",
+      "Any account may submit EscrowFinish or EscrowCancel; funds go only to the destination or back to the owner."
+    ],
+    "conclusion": "EscrowFinish releases escrowed funds when its requirements are satisfied; EscrowCancel returns expired escrowed funds to the sender. Any account may submit EscrowFinish or EscrowCancel; funds go only to the destination or back to the owner. Expiration alone does not submit that cancellation transaction.",
+    "openGaps": [
+      {
+        "text": "How EscrowFinish and EscrowCancel differ in effect and authorization"
+      }
+    ],
+    "facts": {
+      "answered": 2,
+      "total": 3,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "What EscrowFinish does and who can submit it on the XRPL",
+          "status": "supported"
+        },
+        {
+          "id": "r2",
+          "text": "What EscrowCancel does and who can submit it on the XRPL",
+          "status": "supported"
+        },
+        {
+          "id": "r3",
+          "text": "How EscrowFinish and EscrowCancel differ in effect and authorization",
+          "status": "missing"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "no-eligible-purchase",
+      "line": "2 of 3 answered \u00b7 no source worth buying for the rest",
+      "judge": "fixture \u00b7 metadata-fixture"
+    },
+    "fallbacks": [],
+    "answer": {
+      "lead": [
+        {
+          "text": "EscrowFinish releases escrowed funds when its requirements are satisfied; EscrowCancel returns expired escrowed funds to the sender.",
+          "claim": {
+            "id": "claim-1",
+            "text": "EscrowFinish releases escrowed funds when its requirements are satisfied.",
+            "stance": "SUPPORTS",
+            "citations": [
+              {
+                "resourceId": "xrpl-escrow",
+                "version": "v2",
+                "spanId": "p1"
+              }
+            ]
+          }
+        },
+        {
+          "text": "Any account may submit EscrowFinish or EscrowCancel; funds go only to the destination or back to the owner.",
+          "claim": {
+            "id": "claim-1",
+            "text": "EscrowFinish releases escrowed funds when its requirements are satisfied.",
+            "stance": "SUPPORTS",
+            "citations": [
+              {
+                "resourceId": "xrpl-escrow",
+                "version": "v2",
+                "spanId": "p1"
+              }
+            ]
+          }
+        }
+      ],
+      "conclusion": "EscrowFinish releases escrowed funds when its requirements are satisfied; EscrowCancel returns expired escrowed funds to the sender. Any account may submit EscrowFinish or EscrowCancel; funds go only to the destination or back to the owner. Expiration alone does not submit that cancellation transaction.",
+      "claims": [
+        {
+          "id": "claim-1",
+          "text": "EscrowFinish releases escrowed funds when its requirements are satisfied.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-escrow",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-2",
+          "text": "EscrowCancel returns expired escrowed funds to the sender.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-escrow",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-3",
+          "text": "Any account may submit EscrowFinish or EscrowCancel; funds go only to the destination or back to the owner.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-escrow",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        },
+        {
+          "id": "claim-4",
+          "text": "The difference in effect is release to the destination versus return to the owner, and authorization is the same since any account may submit either.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-escrow",
+              "version": "v2",
+              "spanId": "p1"
+            }
+          ]
+        }
+      ],
+      "openGaps": [
+        {
+          "text": "How EscrowFinish and EscrowCancel differ in effect and authorization"
+        }
+      ],
+      "version": 2,
+      "provider": "deepseek",
+      "model": "deepseek-flash"
+    },
+    "coverage": [
+      {
+        "answerVersion": 1,
+        "judge": "fixture \u00b7 metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r2",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r3",
+            "status": "missing"
+          }
+        ]
+      },
+      {
+        "answerVersion": 2,
+        "judge": "fixture \u00b7 metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "supported",
+            "claimIds": [
+              "claim-1",
+              "claim-2",
+              "claim-3",
+              "claim-4"
+            ]
+          },
+          {
+            "requirementId": "r2",
+            "status": "supported",
+            "claimIds": [
+              "claim-1",
+              "claim-2",
+              "claim-3",
+              "claim-4"
+            ]
+          },
+          {
+            "requirementId": "r3",
+            "status": "missing"
+          }
+        ]
+      }
+    ],
+    "evidence": [
+      {
+        "resourceId": "xrpl-escrow",
+        "version": "v2",
+        "spanId": "p1",
+        "text": "XRPL escrow locks funds until its time or cryptographic conditions permit release; it does not judge whether purchased prose is useful or true. EscrowFinish releases escrowed funds when its requirements are satisfied; EscrowCancel returns expired escrowed funds to the sender. Any account may submit EscrowFinish or EscrowCancel; funds go only to the destination or back to the owner. EscrowCreate establishes the obligation. Expiration alone does not submit that cancellation transaction. [1] [2] [3] According to the XRPL documentation, a cancellation returns funds to the escrow owner. [3]"
+      }
+    ]
+  },
+  {
+    "id": "no-show",
+    "repetition": 1,
+    "question": "If my agent pays for an article and the writer never reveals the key, what happens to my money?",
+    "phase": "DONE",
+    "planMs": 2656.630958000009,
+    "askMs": 4821.6905000000115,
+    "scopeLabel": "DeepSeek \u00b7 deepseek-flash",
+    "plan": {
+      "restatement": "If an agent pays for an article and the writer never reveals the key, the question is what happens to the money.",
+      "subqueries": [
+        "agent pays for article writer never reveals key what happens to money",
+        "payment for article key not delivered refund or dispute",
+        "agent payment finality when seller fails to deliver key"
+      ]
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "Whether a payment made by an agent for an article is final once sent or can be reversed"
+      },
+      {
+        "id": "r2",
+        "text": "What recourse exists if the writer never reveals the key after payment"
+      },
+      {
+        "id": "r3",
+        "text": "Whether payment finality or spending controls limit recovery of the money"
+      },
+      {
+        "id": "r4",
+        "text": "What the agent's payment terms say about non-delivery of the key"
+      }
+    ],
+    "labels": {
+      "research": "DeepSeek \u00b7 deepseek-flash",
+      "decision": "fixture \u00b7 metadata-fixture",
+      "publisher": "local",
+      "settlement": "SIMULATED SGD \u00b7 no real funds",
+      "search": "keyword only (embeddings unavailable)",
+      "plan": "DeepSeek \u00b7 deepseek-flash"
+    },
+    "bought": [
+      "product-payment-finality",
+      "product-writer-paid"
+    ],
+    "spentMinor": 80,
+    "lead": [
+      "The ledger checks the key, not the article's quality: if a revealed article breaks a signed promise, the refund is a payment the writer must sign, and that writer's trust score drops."
+    ],
+    "conclusion": "The ledger checks the key, not the article's quality: if a revealed article breaks a signed promise, the refund is a payment the writer must sign, and that writer's trust score drops. Before any money moves, the writer encrypts the article with a fresh key for that buyer and signs the price, a hash of the key and hashes of the content. To claim the money, the writer submits EscrowFinish with the fulfillment, which is the key. That one validated transaction releases the payment to the writer and makes the key public, so payment and delivery are a single event. Until the key is revealed, the buyer holds only ciphertext it cannot open.",
+    "openGaps": [
+      {
+        "text": "Whether a payment made by an agent for an article is final once sent or can be reversed"
+      },
+      {
+        "text": "Whether payment finality or spending controls limit recovery of the money"
+      }
+    ],
+    "facts": {
+      "answered": 2,
+      "total": 4,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "Whether a payment made by an agent for an article is final once sent or can be reversed",
+          "status": "missing"
+        },
+        {
+          "id": "r2",
+          "text": "What recourse exists if the writer never reveals the key after payment",
+          "status": "supported"
+        },
+        {
+          "id": "r3",
+          "text": "Whether payment finality or spending controls limit recovery of the money",
+          "status": "missing"
+        },
+        {
+          "id": "r4",
+          "text": "What the agent's payment terms say about non-delivery of the key",
+          "status": "supported"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "round-limit",
+      "line": "2 of 4 answered \u00b7 three-round limit reached",
+      "judge": "fixture \u00b7 metadata-fixture"
+    },
+    "fallbacks": [
+      {
+        "fallback": true,
+        "reason": "guard"
+      },
+      {
+        "fallback": true,
+        "reason": "guard"
+      }
+    ],
+    "answer": {
+      "lead": [
+        {
+          "text": "The ledger checks the key, not the article's quality: if a revealed article breaks a signed promise, the refund is a payment the writer must sign, and that writer's trust score drops.",
+          "claim": {
+            "id": "claim-1",
+            "text": "If the writer never publishes the key, the writer is never paid; after CancelAfter, policy code submits EscrowCancel and the locked funds return to the buyer.",
+            "stance": "SUPPORTS",
+            "citations": [
+              {
+                "resourceId": "product-writer-paid",
+                "version": "v1",
+                "spanId": "p4"
+              }
+            ]
+          }
+        }
+      ],
+      "conclusion": "The ledger checks the key, not the article's quality: if a revealed article breaks a signed promise, the refund is a payment the writer must sign, and that writer's trust score drops. Before any money moves, the writer encrypts the article with a fresh key for that buyer and signs the price, a hash of the key and hashes of the content. To claim the money, the writer submits EscrowFinish with the fulfillment, which is the key. That one validated transaction releases the payment to the writer and makes the key public, so payment and delivery are a single event. Until the key is revealed, the buyer holds only ciphertext it cannot open.",
+      "claims": [
+        {
+          "id": "claim-1",
+          "text": "If the writer never publishes the key, the writer is never paid; after CancelAfter, policy code submits EscrowCancel and the locked funds return to the buyer.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "product-writer-paid",
+              "version": "v1",
+              "spanId": "p4"
+            }
+          ]
+        },
+        {
+          "id": "claim-2",
+          "text": "Payment is not final once sent: the price is locked in an XRPL escrow with a PREIMAGE-SHA-256 condition and a CancelAfter deadline before money moves.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "product-writer-paid",
+              "version": "v1",
+              "spanId": "p2"
+            }
+          ]
+        },
+        {
+          "id": "claim-3",
+          "text": "Recourse for non-reveal is the escrow deadline: the funds return to the buyer via EscrowCancel rather than being released to the writer.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "product-writer-paid",
+              "version": "v1",
+              "spanId": "p4"
+            }
+          ]
+        },
+        {
+          "id": "claim-4",
+          "text": "Payment and delivery are a single event: EscrowFinish with the key releases payment and makes the key public.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "product-writer-paid",
+              "version": "v1",
+              "spanId": "p3"
+            }
+          ]
+        }
+      ],
+      "openGaps": [
+        {
+          "text": "Whether a payment made by an agent for an article is final once sent or can be reversed"
+        },
+        {
+          "text": "Whether payment finality or spending controls limit recovery of the money"
+        }
+      ],
+      "version": 3,
+      "provider": "deepseek",
+      "model": "deepseek-flash"
+    },
+    "coverage": [
+      {
+        "answerVersion": 1,
+        "judge": "fixture \u00b7 metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r2",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r3",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r4",
+            "status": "missing"
+          }
+        ]
+      },
+      {
+        "answerVersion": 2,
+        "judge": "fixture \u00b7 metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r2",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r3",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r4",
+            "status": "missing"
+          }
+        ]
+      },
+      {
+        "answerVersion": 3,
+        "judge": "fixture \u00b7 metadata-fixture",
+        "entries": [
+          {
+            "requirementId": "r1",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r2",
+            "status": "supported",
+            "claimIds": [
+              "claim-1",
+              "claim-3"
+            ]
+          },
+          {
+            "requirementId": "r3",
+            "status": "missing"
+          },
+          {
+            "requirementId": "r4",
+            "status": "supported",
+            "claimIds": [
+              "claim-4"
+            ]
+          }
+        ]
+      }
+    ],
+    "evidence": [
+      {
+        "resourceId": "product-writer-paid",
+        "version": "v1",
+        "spanId": "p2",
+        "text": "Before any money moves, the writer encrypts the article with a fresh key for that buyer and signs the price, a hash of the key and hashes of the content. The buyer's policy code then locks the price in an XRPL escrow with a PREIMAGE-SHA-256 condition and a CancelAfter deadline. Until the key is revealed, the buyer holds only ciphertext it cannot open. [1] [3]"
+      },
+      {
+        "resourceId": "product-writer-paid",
+        "version": "v1",
+        "spanId": "p3",
+        "text": "To claim the money, the writer submits EscrowFinish with the fulfillment, which is the key. That one validated transaction releases the payment to the writer and makes the key public, so payment and delivery are a single event. The buyer then decrypts the article and checks every signed promise before the agent may read it. [1] [3]"
+      },
+      {
+        "resourceId": "product-writer-paid",
+        "version": "v1",
+        "spanId": "p4",
+        "text": "Author interpretation: if the writer never publishes the key, the writer is never paid. After CancelAfter, policy code submits EscrowCancel and the locked funds return to the buyer. The ledger checks the key, not the article's quality: if a revealed article breaks a signed promise, the refund is a payment the writer must sign, and that writer's trust score drops. Sources accessed 11 November 2026. [1] [3]"
+      }
+    ]
+  }
+]

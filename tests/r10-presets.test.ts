@@ -107,11 +107,11 @@ it.each([
   expect(openGapsAfterLead('How does the writer get paid?', { ...a, openGaps: [{ text: 'The current XRP account reserve amount' }] })).toHaveLength(1)
   expect(openGapsAfterLead('How does the writer get paid?', { ...a, lead: [] })).toHaveLength(1)
 })
-it('the display shares the gap rule, preserves conflicts and leaves the coverage record intact', () => {
+it('the display preserves the stored coverage judgment, including conflicts', () => {
   const { claim } = doc('The base reserve is 1 XRP and each escrow adds 0.2 XRP of owner reserve.')
   const run = { question: 'How much XRP reserve is needed?', spentMinor: 40, decisions: [], answers: [{ ...answerWith(claim.text), lead: [{ text: claim.text, claim }] }], checkpoint: { requirements: [{ id: 'r1', text: 'The base XRP reserve amount' }, { id: 'r2', text: 'The base XRP reserve amount' }], coverage: [{ answerVersion: 1, judge: 'fixture', entries: [{ requirementId: 'r1', status: 'missing' as const, claimIds: [] }, { requirementId: 'r2', status: 'conflicting' as const, claimIds: [] }] }] } }
   const before = JSON.stringify(run.checkpoint)
-  expect(factsSummary(run)?.facts.map(f => f.status)).toEqual(['supported', 'conflicting'])
+  expect(factsSummary(run)?.facts.map(f => f.status)).toEqual(['missing', 'conflicting'])
   expect(JSON.stringify(run.checkpoint)).toBe(before)
 })
 it('capitalisation leaves protocol identifiers intact and places the answer before its caution', () => {
