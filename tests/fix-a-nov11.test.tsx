@@ -104,7 +104,8 @@ describe('S9 writers: the publication is the title', () => {
     const { container } = render(<WriterEarnings />)
     await waitFor(() => expect(container.querySelectorAll('.ra-writer-card').length).toBe(2))
     const [first, second] = [...container.querySelectorAll('.ra-writer-card')]
-    expect(first.querySelector('h2')?.textContent).toBe('NotFinancialTimes ↗')
+    expect(first.querySelector('h2')?.textContent?.trim()).toBe('NotFinancialTimes')
+    expect(first.querySelector('h2 svg[aria-hidden="true"]')).toBeTruthy()
     expect(first.querySelector('.ra-writer-by')?.textContent).toBe('by Priya Nair')
     expect(first.querySelectorAll('.ra-badge').length).toBe(1)
     expect(first.querySelector('.ra-badge')?.textContent).toBe('Fictional · unverified')
@@ -120,7 +121,7 @@ describe('S9 writers: the publication is the title', () => {
     await waitFor(() => expect(container.querySelector('.ra-writer-card')).toBeTruthy())
     // The page's own h1 is "Writers"; the cards are h2s under it (no skipped level, no second "Writers" heading).
     expect(container.querySelector('h3')).toBeNull()
-    expect([...container.querySelectorAll('h2')].map(node => node.textContent)).toEqual(['NotFinancialTimes ↗'])
+    expect([...container.querySelectorAll('h2')].map(node => node.textContent?.trim())).toEqual(['NotFinancialTimes'])
   })
 })
 
