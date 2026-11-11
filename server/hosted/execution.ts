@@ -14,9 +14,13 @@ export function meteredFetch(transport: (url: string, init: RequestInit) => Prom
     // Bytes upper-bound input tokens; output ceiling is an operator-qualified provider bound.
     const output = provider === 'research' ? payload.max_tokens ?? 3000 : provider === 'embedding' ? 0 : Number(c.HOSTED_DECISION_OUTPUT_TOKENS || 8192)
     if (provider === 'decision' && body) {
-      // Enforce the reserved output ceiling at the provider, including its own reasoning tokens.
-      body = JSON.stringify({ ...payload, ...(new URL(url).hostname === 'api.openai.com' ? { max_output_tokens: output } : { max_tokens: output }) })
-      init = { ...init, body }
+      // Enforce the reserved output ceiling at the provider, including its own reasoning tokens, where it has one.
+      // OpenAI Decisions (/v1/decisions) has none and refuses any unknown field with HTTP 400 ("Unknown parameter:
+      // 'max_output_tokens'"), which failed every hosted gpt-6-luna round (LIVE-DEC, 11 Nov). It answers with
+      // probabilities (0 output tokens observed), so its request goes as built and the reservation below stays the bound.
+      const target = new URL(url)
+      const ceiling = target.hostname !== 'api.openai.com' ? { max_tokens: output } : /\/decisions\/?$/.test(target.pathname) ? undefined : { max_output_tokens: output }
+      if (ceiling) { body = JSON.stringify({ ...payload, ...ceiling }); init = { ...init, body } }
     }
     const input = Buffer.byteLength(body) + 1024
     const prefix = provider.toUpperCase()
