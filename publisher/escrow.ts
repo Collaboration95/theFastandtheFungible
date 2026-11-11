@@ -3,7 +3,7 @@ import { ledgerInvoiceId } from '../shared/x402.js'
 import { escrowAsset } from '../server/escrow-asset.js'
 import { canonicalJson } from '../shared/manifest.js'
 import { encryptDelivery } from '../shared/key-reveal.js'
-import { XrplPayer } from '../server/xrpl.js'
+import { XrplPayer, BeforeSignError, type DryRun } from '../server/xrpl.js'
 import { fulfillmentFor } from '../shared/escrow.js'
 import { Wallet, decode, hashes } from 'xrpl'
 import { randomUUID } from 'node:crypto'
@@ -69,7 +69,7 @@ export async function lockEscrow(blob: string, invoice: string, articleId: strin
 }
 
 /** Writer alone holds K. Persist the exact finish blob before any network submission. */
-const reveals = new WeakMap<PublisherJournal, Map<string, Promise<{finishHash: string}>>>()
+const reveals = new WeakMap<PublisherJournal, Map<string, Promise<{finishHash: string; dryRun?: DryRun}>>>()
 export function revealEscrow(quote: EscrowQuote, createBlob: string, keys: PublisherKeys, ledger: Ledger, journal: PublisherJournal) {
   let active = reveals.get(journal)
   if (!active) { active = new Map(); reveals.set(journal, active) }
@@ -100,12 +100,14 @@ async function revealOnce(quote: EscrowQuote, createBlob: string, keys: Publishe
     await lockEscrow(createBlob, invoice, quote.terms.articleId, quote.terms.version, ledger, journal)
     const sent = await payer.escrow({ TransactionType: 'EscrowFinish', Owner: quote.terms.payer, OfferSequence: Number(decode(createBlob).Sequence), Condition: quote.terms.condition, Fulfillment: fulfillmentFor(privateState.secret) }, 0,
       s => journal.saveKeyReveal(invoice, { ...privateState, finish: s })!,
-      s => ledger.request({ command: 'submit', tx_blob: s.txBlob }))
+      s => ledger.request({ command: 'submit', tx_blob: s.txBlob }),
+      async () => { if (await ledgerTime(ledger) + 30 >= quote.terms.cancelAfter) throw new BeforeSignError('Writer reveal window closed; key was not signed') },
+      undefined, { lastLedgerOffset: 5, requireDryRunSuccess: true })
     finish = sent.submission
     await sent.sent
   } else {
     const found = await lookupTx(ledger, finish.txHash)
     if (found.state !== 'validated') await ledger.request({ command: 'submit', tx_blob: finish.txBlob })
   }
-  return { finishHash: finish.txHash }
+  return { finishHash: finish.txHash, ...(finish.dryRun ? { dryRun: finish.dryRun } : {}) }
 }
