@@ -24,9 +24,12 @@
 /* Home: orientation, the visitor's question, then examples and links. */
 .ra-home-wrap.is-hosted { padding-top: 56px; }
 .ra-hhero { margin-bottom: 12px; font-size: 32px; line-height: 38px; }
-.ra-hlede { max-width: 640px; margin: 0 auto 24px; font-size: 15px; line-height: 22px; text-wrap: pretty; }
-.ra-hsteps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; width: min(820px, 100%); margin: 0 0 24px; padding: 0; list-style: none; }
-.ra-hsteps li { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border: 1px solid var(--rule); border-radius: var(--radius-md); background: var(--surface); }
+.ra-hpromise { margin: 0 0 10px; font-size: 20px; line-height: 26px; font-weight: 500; text-wrap: balance; }
+.ra-hprovenance { margin: 0 0 18px; color: var(--muted); font-size: 12px; line-height: 17px; }
+.ra-hlede { max-width: 640px; margin: 0 auto 8px; font-size: 15px; line-height: 22px; text-wrap: pretty; }
+.ra-hsteps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; width: min(820px, 100%); margin: 0 0 24px; padding: 0; list-style: none; border: 1px solid var(--rule); border-radius: var(--radius-md); background: var(--surface); }
+.ra-hsteps li { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; }
+.ra-hsteps li + li { border-left: 1px solid var(--rule); }
 .ra-hsteps svg { flex: none; width: 20px; height: 20px; fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 .ra-hsteps b { display: block; font-size: 13px; line-height: 18px; font-weight: 600; }
 .ra-hsteps small { display: block; font-size: 12px; line-height: 17px; color: var(--muted); }
@@ -102,10 +105,10 @@
   .ra-env-note dl { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ra-home-wrap.is-hosted { padding-top: 32px; }
   .ra-hhero { font-size: 26px; line-height: 32px; }
-  .ra-hlede { margin-bottom: 18px; font-size: 14px; line-height: 21px; }
+  .ra-hlede { margin-bottom: 8px; font-size: 14px; line-height: 21px; }
   .ra-hsteps { grid-template-columns: minmax(0, 1fr); gap: 0; margin-bottom: 20px; border: 1px solid var(--rule); border-radius: var(--radius-md); background: var(--surface); }
   .ra-hsteps li { border: 0; border-radius: 0; background: none; padding: 10px 12px; }
-  .ra-hsteps li + li { border-top: 1px solid var(--rule); }
+  .ra-hsteps li + li { border-left: 0; border-top: 1px solid var(--rule); }
   .ra-hwait { flex-wrap: wrap; }
   .ra-hwait .ra-btn, .ra-hqueue .ra-btn, .ra-hv .ra-btn, .ra-nav-clear .ra-btn { min-height: 44px; }
   .ra-hfoot { margin-top: 28px; }

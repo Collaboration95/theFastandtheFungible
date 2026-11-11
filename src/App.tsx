@@ -11,10 +11,8 @@ import { environmentSeen, markEnvironmentSeen } from './environment'
 import { environmentLabel } from '../shared/presentation'
 import { runSettled } from '../shared/anchor-status'
 import HostedEnv from './components/hosted/HostedEnv'
-import { HostedComposerNote, HostedFooter, HostedIntro, HostedWaiting } from './components/hosted/HostedHome'
+import { HostedComposerNote, HostedIntro, HostedWaiting } from './components/hosted/HostedHome'
 import HostedRunNotice from './components/hosted/HostedRunNotice'
-import VerifyInBrowser from './components/hosted/VerifyInBrowser'
-import LedgerCheck from './components/LedgerCheckEntry'
 import Notice from './components/Notice'
 import Ask from './components/Ask'
 import AgentSprite from './components/AgentSprite'
@@ -503,7 +501,6 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
             placeholder={settlement.startsWith('XRPL') ? 'Ask about XRPL payments, escrow, x402 or agent wallets…' : undefined} examplesLabel="Questions that answer well today" />
         : <Ask onAsk={sendAsk} busy={healthError || sending || !!pending || (!!shown && !finished)} above={pendingCard} settlement={settlement} universalMinor={!browserDemo && universal ? universalMinor : undefined} onSettings={openSettings} draft={draft} onDraft={setDraft} picked={picked} onPick={setPicked}
             note={envNote && !recording ? <EnvNote labels={health.labels} onDone={() => setEnvNote(false)} /> : undefined} />}
-      {hosted && <HostedFooter hosted={hosted} />}
     </main>
     {overlays}
   </Layout>)
@@ -537,8 +534,6 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
         <SpendPanel run={shown} onRetry={id => void retry(id)} onReceipt={setReceipt} />
         {model.budgetBlocked && <p className="ra-note">Budget too small for eligible sources. Raise the budget on a new question.</p>}
         {model.phase === 'stopped' && !hosted && <p role="status">{model.stopMessage}</p>}
-        {!browserDemo && finished && <VerifyInBrowser run={shown} />}
-        {!browserDemo && finished && <LedgerCheck key={shown.runId} question={shown.question} />}
         {shown.receipts.length > 0 && <details className="ra-decision-details"><summary>Why this article</summary><DecisionPanel run={shown} fold={!why && (finished || shown.intents.some(isPaid))} onWhy={() => setWhy(true)} /></details>}
       </aside>
 

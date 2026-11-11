@@ -96,7 +96,7 @@ function Lifecycle({ escrow: e, testnet = false, replay = import.meta.env.MODE =
     <ol>
       {e.createHash && <li>{e.state === 'PREPARED' ? 'Locking payment in escrow · awaiting confirmation' : 'Payment locked in escrow'} <Tx hash={e.createHash} /></li>}
       {e.finishHash && <li>Writer released the key <Tx hash={e.finishHash} /></li>}
-      {e.keyVerified === true && <li>Key matches the escrow lock <Icon name="check" size={16} /></li>}
+      {e.keyVerified === true && <li>Recorded check: key matches the escrow lock <Icon name="check" size={16} /></li>}
       {e.decryptVerified === true && <li>Article unlocked <Icon name="check" size={16} /></li>}
       {e.decryptVerified === false && <li>The article couldn’t be unlocked. It won’t be used.</li>}
       {pending && <li>{remaining > 0 ? `Auto-refund available in ${remaining} s if the writer doesn’t release the key` : 'Waiting for the ledger to return your funds'}<small>Funds return only after the ledger confirms cancellation.</small></li>}
@@ -106,7 +106,7 @@ function Lifecycle({ escrow: e, testnet = false, replay = import.meta.env.MODE =
       {!settled && <button type="button" className="ra-btn ra-key-check-btn" onClick={() => void run()} disabled={check === 'checking'} aria-describedby={check ? undefined : `${id}-note`}>
         <KeyLock />{check === 'checking' ? 'Checking the ledger…' : check ? 'Check again' : 'Check the key yourself'}
       </button>}
-      {!check && <small id={`${id}-note`} className="ra-key-check-hint">Recomputes the lock in your browser from the public XRPL Testnet ledger, not from our server.</small>}
+      {!check && <small id={`${id}-note`} className="ra-key-check-hint">Browser key check has not run. Recompute the lock from the public XRPL Testnet ledger.</small>}
       <div role="status" aria-live="polite">{typeof check === 'object' && <KeyCheckResult check={check} escrow={e} replay={replay} />}</div>
     </div>}
     {checkable && e.state === 'RELEASED' && <LedgerReceipt create={e.createHash!} finish={e.finishHash!} />}

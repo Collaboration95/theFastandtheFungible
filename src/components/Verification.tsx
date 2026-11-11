@@ -9,8 +9,8 @@ export default function Verification({ run, intent }: { run: RunSnapshot; intent
   const proof = run.events.filter(e => e.type === 'PROOF' && e.data?.intentId === intent.intentId).at(-1)
   const failed = intent.status === 'REFUNDED' || ['CLAIM_FAILED', 'CHALLENGED', 'CHALLENGE_REJECTED', 'CHALLENGE_REFUSED'].includes(intent.status)
   const checked = !!proof || intent.status === 'VERIFIED' || failed
-  const [open, setOpen] = useState(checked)
-  useEffect(() => { if (!checked) return; const show = setTimeout(() => setOpen(true), 0);  return () => { clearTimeout(show) } }, [checked, failed])
+  const [open, setOpen] = useState(failed)
+  useEffect(() => { if (!failed) return; const show = setTimeout(() => setOpen(true), 0);  return () => { clearTimeout(show) } }, [checked, failed])
   if (!checked) return null
   const claims = candidateOf(run, intent)?.manifest?.claims ?? []
   const failures = proof?.data?.failedClaimIds as string[] | undefined

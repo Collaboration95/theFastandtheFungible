@@ -19,23 +19,22 @@ test.skip(!admissionsOpen, 'The hosted demo’s admission window has closed.')
 const strip = (page: Page) => page.getByRole('region', { name: 'Check our work without asking a question' })
 
 for (const [name, width, height] of [['desktop', 1280, 800], ['phone', 390, 844]] as const) {
-  test(`${name}: the strip sits under the composer and above the examples, the builders’ row below them, nothing overflows, axe is clean`, async ({ browser }) => {
+  test(`${name}: the shared disclosure follows examples and contains the builders’ row, nothing overflows, axe is clean`, async ({ browser }) => {
     const context = await browser.newContext({ ignoreHTTPSErrors: true, viewport: { width, height } })
     const page = await context.newPage()
     await page.goto('/')
     await expect(page.getByRole('heading', { level: 1, name: 'Research with a wallet.' })).toBeVisible()
-    await expect(strip(page)).toBeVisible()
+    await expect(page.locator('.ra-hwork')).toBeVisible()
     await expect(page.getByText('It buys only to fill a gap')).toBeVisible()
-    // The visitor's own question comes first; the strip sits under the composer and above the examples.
-    const boxes = async (locator: ReturnType<Page['locator']>) => (await locator.boundingBox())!
-    const composer = await boxes(page.getByRole('textbox', { name: 'Your question' })), corner = await boxes(strip(page)), examples = await boxes(page.getByRole('group', { name: 'Demo questions' }))
-    expect(corner.y).toBeGreaterThan(composer.y + composer.height - 1)
-    expect(corner.y + corner.height).toBeLessThanOrEqual(examples.y + 1)
-    // Desktop: three items in one row. Phone: stacked.
-    const items = strip(page).locator(':scope > ul > li')
-    expect(await items.count()).toBe(2)
-    const rects = await items.evaluateAll(nodes => nodes.map(node => { const r = node.getBoundingClientRect(); return { x: r.x, y: r.y, w: r.width } }))
-    if (width > 780) expect(Math.abs(rects[0].y - rects[1].y)).toBeLessThan(2); else expect(rects[1].y).toBeGreaterThan(rects[0].y)
+    const composer = (await page.getByRole('textbox', { name: 'Your question' }).boundingBox())!
+    const examples = (await page.getByRole('group', { name: 'Demo questions' }).boundingBox())!
+    const disclosure = page.locator('.ra-hwork')
+    expect((await disclosure.boundingBox())!.y).toBeGreaterThan(examples.y + examples.height - 1)
+    expect(examples.y).toBeGreaterThan(composer.y)
+    await expect(disclosure).not.toHaveAttribute('open', '')
+    await disclosure.locator(':scope > summary').focus()
+    await page.keyboard.press('Enter')
+    await expect(strip(page)).toBeVisible()
     expect(await noOverflow(page)).toBe(true)
     expect(await serious(page)).toEqual([])
     await page.screenshot({ path: evidencePath(`judges-corner/home-${width}.png`), fullPage: true })
@@ -60,6 +59,7 @@ test('it works with the sandbox busy, paused or ended: the recorded run is serve
     const page = await context.newPage()
     await statusAs(page, status => ({ ...status, state, capabilities: { ...(status.capabilities as object), ask: false } }))
     await page.goto('/')
+    await page.locator('.ra-hwork > summary').click()
     await expect(strip(page)).toBeVisible()
     await expect(strip(page).getByRole('button', { name: 'Run the checks' })).toBeEnabled()
     const served = await page.request.get('/judge/hosted-run-nov11.receipts.json')
@@ -82,6 +82,7 @@ test('using the strip costs no question: no run, scope or admission request is m
   calls.length = 0 // whatever the app loaded on arrival is not what the strip does
   // The verifier's public-node lookups and the explorer are outside the app; keep this test off the network.
   await page.route(/rippletest\.net/, route => route.abort())
+  await page.locator('.ra-hwork > summary').click()
   await strip(page).getByRole('button', { name: 'Run the checks' }).click()
   await expect(strip(page).locator('.ra-hv-head, [role=alert]').first()).toBeVisible({ timeout: 30000 })
   await expect(page.getByText('5 of 5 questions left today · test funds only')).toBeVisible()
@@ -96,6 +97,7 @@ test('LIVE_LEDGER: the recorded run re-checks against the public Testnet node wi
   const context = await browser.newContext({ ignoreHTTPSErrors: true, viewport: { width: 1280, height: 800 } })
   const page = await context.newPage()
   await page.goto('/')
+  await page.locator('.ra-hwork > summary').click()
   await strip(page).getByRole('button', { name: 'Run the checks' }).click()
   const head = strip(page).locator('.ra-hv-head')
   await expect(head).toBeVisible({ timeout: 60000 })
