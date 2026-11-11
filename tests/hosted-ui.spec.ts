@@ -417,3 +417,32 @@ test('A11Y an unreachable XRPL node reports infrastructure failure without a che
   expect(await page.evaluate(() => document.activeElement !== document.body)).toBe(true)
   await context.close()
 })
+
+
+test('A11Y a failed speculative checker download can recover without asking another question', async ({ browser }) => {
+  const { context, page } = await visitor(browser)
+  let loads = 0, admissions = 0
+  page.on('request', request => { if (request.method() === 'POST' && /\/(?:api\/scope|runs)$/.test(new URL(request.url()).pathname)) admissions++ })
+  await page.route('**/assets/browser-*.js', route => { loads++; return route.fulfill({ status: 503, contentType: 'text/javascript', headers: { 'Cache-Control': 'no-store' }, body: 'unavailable' }) })
+  await page.goto('/')
+  await page.getByRole('group', { name: 'Demo questions' }).getByRole('button', { name: /^Kestrel–TSMC/ }).click()
+  await page.getByRole('button', { name: /^Ask/ }).click()
+  const chip = page.getByRole('button', { name: 'pricing & margins' }), start = page.getByRole('button', { name: 'Start now' })
+  await expect(chip.or(start).first()).toBeVisible(); if (await chip.isVisible()) await chip.click(); await start.click()
+  await expect(page).toHaveTitle(/Answer ready/, { timeout: 60000 })
+  await expect.poll(() => loads).toBeGreaterThan(0)
+  await page.unroute('**/assets/browser-*.js')
+  const verify = page.locator('.ra-hv')
+  await verify.getByRole('button', { name: 'Run the checks' }).click()
+  await expect(verify.getByRole('alert')).toContainText('The checker couldn’t load')
+  await expect(verify.locator('.is-ok, .is-pass')).toHaveCount(0)
+  const reload = verify.getByRole('button', { name: 'Reload and try again' })
+  await expect(reload).toBeFocused()
+  const before = admissions
+  await Promise.all([page.waitForEvent('load'), reload.click()])
+  await expect(page).toHaveTitle(/Answer ready/, { timeout: 30000 })
+  await page.locator('.ra-hv').getByRole('button', { name: 'Run the checks' }).click()
+  await expect(page.locator('.ra-hv').getByRole('status')).toContainText(/passed/, { timeout: 30000 })
+  expect(admissions).toBe(before)
+  await context.close()
+})

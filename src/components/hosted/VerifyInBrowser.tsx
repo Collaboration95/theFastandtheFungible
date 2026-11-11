@@ -1,6 +1,6 @@
 import Icon from '../Icon'
 import { useEffect, useId, useRef, useState } from 'react'
-import { verificationError, verificationNetworkFailure } from '../../verify-network'
+import { verificationError, verificationNeedsReload, verificationNetworkFailure } from '../../verify-network'
 import type { RunSnapshot } from '../../../shared/contracts'
 import type { BrowserVerification } from '../../verify/browser'
 
@@ -12,7 +12,7 @@ const simulatedTitle: Record<string, string> = { ledger: 'Payments on a public l
  * Given `bundleUrl` (a committed, recorded receipts.json) instead of a `run`, it re-checks that recorded run, shows the `caption`
  * under the result, and needs no admission and no live run; the Judges' corner uses it. Without them it behaves as it always did. */
 export default function VerifyInBrowser({ run, bundleUrl, caption, title }: { run?: RunSnapshot; bundleUrl?: string; caption?: string; title?: string }) {
-  const [state, setState] = useState<{ step: 'idle' | 'fetch' | 'check' | 'done' | 'error'; result?: BrowserVerification; error?: string }>({ step: 'idle' })
+  const [state, setState] = useState<{ step: 'idle' | 'fetch' | 'check' | 'done' | 'error'; result?: BrowserVerification; error?: string; reload?: boolean }>({ step: 'idle' })
   const headingId = useId()
   const heading = useRef<HTMLHeadingElement>(null)
   useEffect(() => {
@@ -40,7 +40,7 @@ export default function VerifyInBrowser({ run, bundleUrl, caption, title }: { ru
       if (unavailable) throw unavailable
       setState({ step: 'done', result })
     } catch (error) {
-      setState({ step: 'error', error: verificationError(error, navigator.onLine) })
+      setState({ step: 'error', error: verificationError(error, navigator.onLine), reload: verificationNeedsReload(error) })
     }
   }
   const result = state.result
@@ -52,7 +52,7 @@ export default function VerifyInBrowser({ run, bundleUrl, caption, title }: { ru
     {state.step === 'idle' && <><p>{recorded ? 'Re-checks the recorded run’s signatures, hashes and every payment, from a public XRPL Testnet node, right here.' : <>Re-check this run’s receipts here: writer signatures, passage hashes and the audit log{testnet ? ', then every payment on a public XRPL Testnet node' : ''}. The result doesn’t rely on our server.</>}</p>
       <button type="button" className="ra-btn" onClick={() => void start()}>Run the checks</button></>}
     {(state.step === 'fetch' || state.step === 'check') && <p role="status" className="ra-hv-busy"><span className="ra-spin" aria-hidden="true" />{state.step === 'fetch' ? 'Downloading receipts.json…' : testnet ? 'Checking signatures and reading XRPL Testnet…' : 'Checking signatures and hashes…'}</p>}
-    {state.step === 'error' && <><p role="alert" className="ra-err">{state.error} Nothing was changed.</p><button type="button" className="ra-btn" onClick={() => void start()}>Try again</button></>}
+    {state.step === 'error' && <><p role="alert" className="ra-err">{state.error} Nothing was changed.</p><button type="button" className="ra-btn" onClick={() => state.reload ? window.location.reload() : void start()}>{state.reload ? 'Reload and try again' : 'Try again'}</button></>}
     {result && <div>
       <p role="status" tabIndex={-1} className={`ra-hv-head ${result.ok ? 'is-ok' : 'is-bad'}`}>{result.ok ? skipped ? `${passed} passed · ${skipped} not checked` : `All ${passed} checks passed` : `${failed} of ${result.checks.length} checks failed`}{result.ok && !testnet && <small> · ledger checks skipped: simulated payments</small>}</p>
       <ul className="ra-hv-groups">{result.groups.map(group => <li key={group.id} className={`is-${group.status.toLowerCase()}`}>

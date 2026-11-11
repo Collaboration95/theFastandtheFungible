@@ -8,7 +8,7 @@ import { act, cleanup, render, screen } from '@testing-library/react'
 import { detectHosted, type HostedDemoStatus } from '../src/api'
 import Connecting from '../src/components/Connecting'
 import App from '../src/App'
-import { verificationError, verificationNetworkFailure } from '../src/verify-network'
+import { verificationError, verificationNeedsReload, verificationNetworkFailure } from '../src/verify-network'
 import { warmVerifier } from '../src/warm-verifier'
 import type { BrowserVerification } from '../src/verify/browser'
 
@@ -66,6 +66,8 @@ it('separates offline, unreachable ledger, receipt failure and genuine failed ch
   expect(verificationError(new TypeError('fetch'), false)).toMatch(/^You're offline: the checker couldn't load/)
   expect(verificationError(new Error('Ledger timeout'), true)).toMatch(/^Couldn't reach a public XRPL node/)
   expect(verificationError(new TypeError('Failed to fetch dynamically imported module'), true)).toContain('The checker couldn’t load')
+  expect(verificationNeedsReload(new TypeError('Failed to fetch dynamically imported module'))).toBe(true)
+  expect(verificationNeedsReload(new Error('Ledger timeout'))).toBe(false)
   expect(verificationError(new Error('receipts'), true)).toContain('receipts could not be downloaded')
   const result = (detail: string): BrowserVerification => ({ ok: false, checks: [{ check: 'testnet', status: 'FAIL', detail }], groups: [], endpoint: '', testnet: true, at: '' })
   expect(verificationNetworkFailure(result('Read-only Testnet lookup unavailable'))).toBeInstanceOf(Error)
