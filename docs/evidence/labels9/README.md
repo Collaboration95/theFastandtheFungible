@@ -28,6 +28,9 @@ Reproduce: serve the repository with Vite on an allocated local port, open
 on the dialog. The fixture uses real components and production styles. Automated
 rendering and catalogue checks: `npx vitest run tests/trace-labels.test.tsx`.
 
+Wire, Policy and Ledger are loaded when opened; Trace remains synchronous. The existing
+entry-bundle budget is unchanged. The tab-loading regression tests await the real views.
+
 Persisted server codes, event text, manifests, receipts and verifiers are unchanged.
 The Models tab retains the recorded provider identities and fixture disclosures.
 Keyword-only status does not distinguish disabled embeddings from a failed call,

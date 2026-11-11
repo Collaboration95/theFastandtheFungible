@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { EVENT_LABELS, FALLBACK_LABELS, REASON_LABELS, eventPresentation, searchLabel } from '../shared/trace-labels'
@@ -75,6 +75,25 @@ it('uses the same mapping for ledger step labels', () => {
   expect(container.querySelector('.ra-ledger-steps')?.textContent).toContain('Waiting for the article')
   expect(container.textContent).not.toContain('DELIVERY_PENDING')
   expect(container.textContent).toContain('XRPL Testnet')
+})
+
+it('loads the detail tabs on request and renders mapped policy and wire labels', async () => {
+  render(<ShowWork run={ucRuns.UC2} onClose={() => {}} />)
+  expect(screen.queryByRole('table')).toBeNull()
+  fireEvent.click(screen.getByRole('tab', { name: 'Policy' }))
+  await waitFor(() => expect(document.querySelector('tbody')).toBeTruthy())
+  expect(document.querySelector('tbody')?.textContent).not.toMatch(/SKIP_[A-Z_]+/)
+  fireEvent.click(screen.getByRole('tab', { name: 'Wire' }))
+  await waitFor(() => expect(screen.getByRole('heading', { name: 'Wire · HTTP exchange' })).toBeTruthy())
+  expect(screen.getByRole('tabpanel').textContent).not.toMatch(/DELIVERY_PENDING|DELIVERY_FAILED|FAILED_NOT_SETTLED/)
+})
+
+it('loads the Testnet ledger view when requested', async () => {
+  const run = structuredClone(ucRuns.UC2)
+  run.labels.settlement = XRPL_LABEL
+  render(<ShowWork run={run} onClose={() => {}} />)
+  fireEvent.click(screen.getByRole('tab', { name: 'Ledger' }))
+  await waitFor(() => expect(screen.getByRole('heading', { name: 'Ledger · XRPL Testnet' })).toBeTruthy())
 })
 
 it('covers every purchase status and stop reason', () => {
