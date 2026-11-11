@@ -4,8 +4,10 @@
 `fixture · metadata-fixture`), keyword search, fictional writers (AlphaLeak, The Fab
 Floor), isolated faucet wallets. Not a quality or latency benchmark.
 
-This is the run behind the default `/demo/` replay ("Key reveal (start here)"), the README
-hero (`docs/media/readme-answer.png`) and deck slide 10. It replaces the 7 Nov recording
+This is the run behind the default `/demo/` replay ("Key reveal (start here)"). It was also
+the README hero and deck slide 10 until 11 Nov, when both moved to a live hosted-demo run
+([hosted-export-nov11](../hosted-export-nov11/README.md)); `export.mjs --replay-shots` still
+captures this replay as the offline fallback. It replaces the 7 Nov recording
 (`docs/evidence/round4-j1/replays/key-reveal/`, kept unchanged as history), so the first
 answer a judge opens is produced by the current engine and shown in the current app.
 

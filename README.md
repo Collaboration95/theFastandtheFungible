@@ -36,9 +36,9 @@ npx -y $REL/researchagent-mcp-1.1.0.tgz try --testnet
 ```
 
 <p align="center">
-  <img src="docs/media/readme-answer.png" width="900" alt="A finished answer next to its payment card: paid for 2 articles, 1 refunded, net cost S$0.40 of a S$2.00 budget. One article broke its promise and was refunded by its writer; the other was paid when its writer released the article key on the ledger, the key matched the escrow lock and the article unlocked. The answer is anchored on XRPL Testnet.">
+  <img src="docs/media/readme-answer.png" width="900" alt="The hosted demo after an XRPL Testnet run. Question: what HTTP headers does x402 use on XRPL, and how does the server know the payment actually settled? The lead finding: an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. The payment card shows a net cost of S$0.80 of a S$2.00 budget for two articles, each paid by key reveal: payment locked in escrow, writer released the key, key matches the escrow lock, article unlocked. The answer is anchored on XRPL Testnet.">
 </p>
-<p align="center"><sub>A run recorded on XRPL Testnet on 11 Nov 2026, replayed in the current app · fixture models · fictional writers · no real value · <a href="docs/evidence/replay-nov11/README.md">its six transactions</a></sub></p>
+<p align="center"><sub>The live sandbox, 11 Nov 2026 · XRPL Testnet · live answers, rule-based buying · team-authored writers · no real value · <a href="docs/evidence/hosted-export-nov11/README.md">its five transactions and receipts</a></sub></p>
 
 ## What it does
 

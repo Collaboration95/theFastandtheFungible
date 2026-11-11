@@ -3,11 +3,11 @@
   "ledgerAnchor": {
     "version": "anchor-v1",
     "network": "xrpl:1",
-    "txHash": "B21FF52DF6D555D06D9C42B1654848438A424EFE6992D417F8BDE885B540720F",
+    "txHash": "5CAFF213CC8ADC0EC8BCA1FE17AB08280A65823BBD3A886DABDCC1CEC8DE6491",
     "account": "rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1",
-    "head": "9d3062ebcb22d170d966686b3f32fe90e314a6d4f554e1dc552cb6f4abd04cb7",
-    "runIdHash": "6e6ba4b67b68995ea2e683624d5d4d10972eab7e635da3ce2031da5dbc07dc6b",
-    "ledgerIndex": 22227996,
+    "head": "d694f27688ffb81c0bc53319dedaa1287b711f1a192d129f668038524bac2d48",
+    "runIdHash": "c8589662dd638b8321f898f27644b5f9a0925d78b4e382af2c858b236ee50e3e",
+    "ledgerIndex": 22228575,
     "feeDrops": "12"
   },
   "schemaVersion": 3,
@@ -17,7 +17,7 @@
     "semanticStatus": "not independently verified",
     "purchases": [
       {
-        "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:1:product-x402-response:v1",
+        "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:1:product-x402-response:v1",
         "sourceKey": "product-x402-response@v1",
         "status": "VERIFIED",
         "grossMinor": 40,
@@ -35,40 +35,51 @@
             "spanId": "p1",
             "passage": "According to the X402 v2 specification, an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. [1] [2]",
             "manifestRoot": "1aced00680aa043e25658e7600d3aee5150f01a1e337a33e8c21f17ff218f190",
-            "grantIntentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:1:product-x402-response:v1",
+            "grantIntentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:1:product-x402-response:v1",
             "retained": false
           },
           {
             "answerVersion": 2,
             "claimId": "claim-2",
-            "claim": "PAYMENT-REQUIRED carries base64-encoded JSON with x402Version, resource and accepts options naming scheme, network, amount, asset, payTo and maxTimeoutSeconds.",
-            "citation": "[\"product-x402-response@v1\",\"p2\"]",
-            "spanId": "p2",
-            "passage": "The header carries base64-encoded JSON: x402Version is 2, resource identifies the protected URL, and accepts lists payment options. Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details. An optional error explains the refusal, and extensions can advertise additional capabilities. Base64 is an encoding, not encryption or proof that the seller is trustworthy. [1] [2]",
-            "manifestRoot": "1aced00680aa043e25658e7600d3aee5150f01a1e337a33e8c21f17ff218f190",
-            "grantIntentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:1:product-x402-response:v1",
-            "retained": false
-          },
-          {
-            "answerVersion": 2,
-            "claimId": "claim-3",
             "claim": "A successful HTTP response can include PAYMENT-RESPONSE with settlement details.",
             "citation": "[\"product-x402-response@v1\",\"p3\"]",
             "spanId": "p3",
             "passage": "The retry carries the selected accepted requirements and a scheme-specific payment payload. A successful HTTP response can include PAYMENT-RESPONSE with settlement details. Verification and settlement are distinct steps: a syntactically valid signature does not establish that a transaction completed. Network and asset support must agree across the client, server and facilitator. [1] [2]",
             "manifestRoot": "1aced00680aa043e25658e7600d3aee5150f01a1e337a33e8c21f17ff218f190",
-            "grantIntentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:1:product-x402-response:v1",
+            "grantIntentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:1:product-x402-response:v1",
             "retained": false
           },
           {
             "answerVersion": 2,
-            "claimId": "claim-4",
+            "claimId": "claim-3",
             "claim": "Verification and settlement are distinct steps; a syntactically valid signature does not establish that a transaction completed.",
             "citation": "[\"product-x402-response@v1\",\"p3\"]",
             "spanId": "p3",
             "passage": "The retry carries the selected accepted requirements and a scheme-specific payment payload. A successful HTTP response can include PAYMENT-RESPONSE with settlement details. Verification and settlement are distinct steps: a syntactically valid signature does not establish that a transaction completed. Network and asset support must agree across the client, server and facilitator. [1] [2]",
             "manifestRoot": "1aced00680aa043e25658e7600d3aee5150f01a1e337a33e8c21f17ff218f190",
-            "grantIntentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:1:product-x402-response:v1",
+            "grantIntentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:1:product-x402-response:v1",
+            "retained": false
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "claim-4",
+            "claim": "Network and asset support must agree across the client, server and facilitator.",
+            "citation": "[\"product-x402-response@v1\",\"p3\"]",
+            "spanId": "p3",
+            "passage": "The retry carries the selected accepted requirements and a scheme-specific payment payload. A successful HTTP response can include PAYMENT-RESPONSE with settlement details. Verification and settlement are distinct steps: a syntactically valid signature does not establish that a transaction completed. Network and asset support must agree across the client, server and facilitator. [1] [2]",
+            "manifestRoot": "1aced00680aa043e25658e7600d3aee5150f01a1e337a33e8c21f17ff218f190",
+            "grantIntentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:1:product-x402-response:v1",
+            "retained": false
+          },
+          {
+            "answerVersion": 2,
+            "claimId": "lead-[null,\"product-x402-response\",\"v1\",\"p2\"]",
+            "claim": "The header carries base64-encoded JSON: x402Version is 2, resource identifies the protected URL, and accepts lists payment options. Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details. An optional error explains the refusal, and extensions can advertise additional capabilities. Base64 is an encoding, not encryption or proof that the seller is trustworthy. [1] [2]",
+            "citation": "[\"product-x402-response@v1\",\"p2\"]",
+            "spanId": "p2",
+            "passage": "The header carries base64-encoded JSON: x402Version is 2, resource identifies the protected URL, and accepts lists payment options. Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details. An optional error explains the refusal, and extensions can advertise additional capabilities. Base64 is an encoding, not encryption or proof that the seller is trustworthy. [1] [2]",
+            "manifestRoot": "1aced00680aa043e25658e7600d3aee5150f01a1e337a33e8c21f17ff218f190",
+            "grantIntentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:1:product-x402-response:v1",
             "retained": false
           },
           {
@@ -79,8 +90,8 @@
             "spanId": "p1",
             "passage": "According to the X402 v2 specification, an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. [1] [2]",
             "manifestRoot": "1aced00680aa043e25658e7600d3aee5150f01a1e337a33e8c21f17ff218f190",
-            "grantIntentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:1:product-x402-response:v1",
-            "retained": false
+            "grantIntentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:1:product-x402-response:v1",
+            "retained": true
           },
           {
             "answerVersion": 3,
@@ -90,8 +101,8 @@
             "spanId": "p3",
             "passage": "The retry carries the selected accepted requirements and a scheme-specific payment payload. A successful HTTP response can include PAYMENT-RESPONSE with settlement details. Verification and settlement are distinct steps: a syntactically valid signature does not establish that a transaction completed. Network and asset support must agree across the client, server and facilitator. [1] [2]",
             "manifestRoot": "1aced00680aa043e25658e7600d3aee5150f01a1e337a33e8c21f17ff218f190",
-            "grantIntentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:1:product-x402-response:v1",
-            "retained": false
+            "grantIntentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:1:product-x402-response:v1",
+            "retained": true
           },
           {
             "answerVersion": 3,
@@ -101,92 +112,13 @@
             "spanId": "p3",
             "passage": "The retry carries the selected accepted requirements and a scheme-specific payment payload. A successful HTTP response can include PAYMENT-RESPONSE with settlement details. Verification and settlement are distinct steps: a syntactically valid signature does not establish that a transaction completed. Network and asset support must agree across the client, server and facilitator. [1] [2]",
             "manifestRoot": "1aced00680aa043e25658e7600d3aee5150f01a1e337a33e8c21f17ff218f190",
-            "grantIntentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:1:product-x402-response:v1",
-            "retained": false
-          },
-          {
-            "answerVersion": 4,
-            "claimId": "claim-3",
-            "claim": "Verification and settlement are distinct steps: a syntactically valid signature does not establish that a transaction completed.",
-            "citation": "[\"product-x402-response@v1\",\"p3\"]",
-            "spanId": "p3",
-            "passage": "The retry carries the selected accepted requirements and a scheme-specific payment payload. A successful HTTP response can include PAYMENT-RESPONSE with settlement details. Verification and settlement are distinct steps: a syntactically valid signature does not establish that a transaction completed. Network and asset support must agree across the client, server and facilitator. [1] [2]",
-            "manifestRoot": "1aced00680aa043e25658e7600d3aee5150f01a1e337a33e8c21f17ff218f190",
-            "grantIntentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:1:product-x402-response:v1",
-            "retained": true
-          },
-          {
-            "answerVersion": 4,
-            "claimId": "lead-[null,\"product-x402-response\",\"v1\",\"p1\"]",
-            "claim": "According to the X402 v2 specification, an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. [1] [2]",
-            "citation": "[\"product-x402-response@v1\",\"p1\"]",
-            "spanId": "p1",
-            "passage": "According to the X402 v2 specification, an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. [1] [2]",
-            "manifestRoot": "1aced00680aa043e25658e7600d3aee5150f01a1e337a33e8c21f17ff218f190",
-            "grantIntentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:1:product-x402-response:v1",
+            "grantIntentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:1:product-x402-response:v1",
             "retained": true
           }
         ]
       },
       {
-        "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:2:team-x402:v3",
-        "sourceKey": "team-x402@v3",
-        "status": "VERIFIED",
-        "grossMinor": 40,
-        "refundMinor": 0,
-        "netMinor": 40,
-        "refundStatus": "none",
-        "assessment": "not assessed",
-        "structuralUse": "cited",
-        "links": [
-          {
-            "answerVersion": 3,
-            "claimId": "claim-1",
-            "claim": "The x402 headers are PAYMENT-REQUIRED (challenge), PAYMENT-SIGNATURE (buyer payment proof), and PAYMENT-RESPONSE (settlement information).",
-            "citation": "[\"team-x402@v3\",\"p1\"]",
-            "spanId": "p1",
-            "passage": "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information. The x402 buyer first requests a resource and receives payment requirements rather than premium content. The exact resource, version, seller wallet, network and amount must remain bound throughout negotiation. A model can assess usefulness but cannot initiate payment. Deterministic policy checks the authorized budget and reserves exposure before signing or submitting a purchase.",
-            "manifestRoot": "fd535a7f84fa83f0d6b25d9705ea203154076a9db7db5fe71f38fcf238d8fd86",
-            "grantIntentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:2:team-x402:v3",
-            "retained": false
-          },
-          {
-            "answerVersion": 3,
-            "claimId": "claim-5",
-            "claim": "Some XRPL and older x402 examples use different headers, so the facilitator and SDK versions should be pinned and the actual challenge/retry exchange captured in an integration test.",
-            "citation": "[\"team-x402@v3\",\"p3\"]",
-            "spanId": "p3",
-            "passage": "Some XRPL and older x402 examples use different headers. Do not combine them from memory. Pin the facilitator and SDK versions, capture the actual challenge and retry exchange in an integration test, and record the version in the technical receipt.",
-            "manifestRoot": "fd535a7f84fa83f0d6b25d9705ea203154076a9db7db5fe71f38fcf238d8fd86",
-            "grantIntentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:2:team-x402:v3",
-            "retained": false
-          },
-          {
-            "answerVersion": 4,
-            "claimId": "claim-1",
-            "claim": "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information.",
-            "citation": "[\"team-x402@v3\",\"p1\"]",
-            "spanId": "p1",
-            "passage": "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information. The x402 buyer first requests a resource and receives payment requirements rather than premium content. The exact resource, version, seller wallet, network and amount must remain bound throughout negotiation. A model can assess usefulness but cannot initiate payment. Deterministic policy checks the authorized budget and reserves exposure before signing or submitting a purchase.",
-            "manifestRoot": "fd535a7f84fa83f0d6b25d9705ea203154076a9db7db5fe71f38fcf238d8fd86",
-            "grantIntentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:2:team-x402:v3",
-            "retained": true
-          },
-          {
-            "answerVersion": 4,
-            "claimId": "claim-5",
-            "claim": "Some XRPL and older x402 examples use different headers, and the guidance is not to combine them from memory but to pin facilitator and SDK versions and capture the actual challenge and retry exchange in an integration test.",
-            "citation": "[\"team-x402@v3\",\"p3\"]",
-            "spanId": "p3",
-            "passage": "Some XRPL and older x402 examples use different headers. Do not combine them from memory. Pin the facilitator and SDK versions, capture the actual challenge and retry exchange in an integration test, and record the version in the technical receipt.",
-            "manifestRoot": "fd535a7f84fa83f0d6b25d9705ea203154076a9db7db5fe71f38fcf238d8fd86",
-            "grantIntentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:2:team-x402:v3",
-            "retained": true
-          }
-        ]
-      },
-      {
-        "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:3:xrpl-x402:v1",
+        "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:3:xrpl-x402:v1",
         "sourceKey": "xrpl-x402@v1",
         "status": "VERIFIED",
         "grossMinor": 40,
@@ -197,25 +129,36 @@
         "structuralUse": "cited",
         "links": [
           {
-            "answerVersion": 4,
-            "claimId": "claim-2",
-            "claim": "The v2 specification defines payment requirements, a client payment payload and settlement responses, with facilitator interfaces for verification and settlement; its HTTP transport uses PAYMENT-REQUIRED for requirements and PAYMENT-SIGNATURE for authorization.",
+            "answerVersion": 3,
+            "claimId": "claim-1",
+            "claim": "x402's HTTP transport uses PAYMENT-REQUIRED for requirements and PAYMENT-SIGNATURE for authorization.",
             "citation": "[\"xrpl-x402@v1\",\"p2\"]",
             "spanId": "p2",
             "passage": "The v2 specification defines payment requirements, a client payment payload and settlement responses, with facilitator interfaces for verification and settlement. Its HTTP transport uses PAYMENT-REQUIRED for requirements and PAYMENT-SIGNATURE for authorization. Scheme and network support must match the requested payment; the protocol's extensibility is not universal implementation compatibility. [1] [2]",
             "manifestRoot": "1c8376d17bcc9151f2b8cdc08ca34aadd0faea6b2e7193fd13f03a473d3951fd",
-            "grantIntentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:3:xrpl-x402:v1",
+            "grantIntentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:3:xrpl-x402:v1",
             "retained": true
           },
           {
-            "answerVersion": 4,
-            "claimId": "claim-4",
-            "claim": "For an XRPL integration, the recommendation is to reconcile the ledger transaction and actual delivery before declaring settlement successful, and to keep premium access conditional on the application's verified delivery boundary rather than on an untrusted payment header.",
+            "answerVersion": 3,
+            "claimId": "claim-5",
+            "claim": "For XRPL, reconcile the ledger transaction and actual delivery before declaring settlement successful.",
             "citation": "[\"xrpl-x402@v1\",\"p3\"]",
             "spanId": "p3",
             "passage": "For an XRPL integration, I recommend documenting the exact supported scheme, network identifier, asset encoding and proof-validation rules. Reconcile the ledger transaction and actual delivery before declaring settlement successful. The partial-payment reference is relevant because requested amounts alone cannot safely establish received value. Keep premium access conditional on the application's verified delivery boundary rather than on an untrusted payment header. [1] [2]",
             "manifestRoot": "1c8376d17bcc9151f2b8cdc08ca34aadd0faea6b2e7193fd13f03a473d3951fd",
-            "grantIntentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:3:xrpl-x402:v1",
+            "grantIntentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:3:xrpl-x402:v1",
+            "retained": true
+          },
+          {
+            "answerVersion": 3,
+            "claimId": "lead-[null,\"xrpl-x402\",\"v1\",\"p1\"]",
+            "claim": "x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required. Its specification separates transport representation from payment schemes and network-specific logic. Receiving a 402 response alone does not prove that a client can pay with an arbitrary asset on an arbitrary ledger. [1] [2]",
+            "citation": "[\"xrpl-x402@v1\",\"p1\"]",
+            "spanId": "p1",
+            "passage": "x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required. Its specification separates transport representation from payment schemes and network-specific logic. Receiving a 402 response alone does not prove that a client can pay with an arbitrary asset on an arbitrary ledger. [1] [2]",
+            "manifestRoot": "1c8376d17bcc9151f2b8cdc08ca34aadd0faea6b2e7193fd13f03a473d3951fd",
+            "grantIntentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:3:xrpl-x402:v1",
             "retained": true
           }
         ]
@@ -225,14 +168,18 @@
   "requirements": [
     {
       "id": "r1",
-      "text": "Identify the HTTP headers x402 uses on XRPL, including any payment-related request and response headers."
+      "text": "List the HTTP headers x402 uses on XRPL, including the payment-signature header and any payment-required response header."
     },
     {
       "id": "r2",
-      "text": "Explain how the x402 server on XRPL determines that a payment actually settled, including any verification or finality step."
+      "text": "Explain how the x402 server on XRPL verifies that a payment settled, including the settlement or finality check used."
+    },
+    {
+      "id": "r3",
+      "text": "State whether x402 on XRPL relies on on-ledger settlement confirmation or a facilitator response to establish payment finality."
     }
   ],
-  "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
+  "runId": "953af12e-c87c-4c83-85f6-e172ad372bfe",
   "label": "XRPL TESTNET · no real value; DeepSeek · deepseek-flash; writer identity unverified; team-authored explainer · sources cited · not an independent writer · Testnet; team-authored · real content · not an independent writer · Testnet",
   "answers": [
     {
@@ -241,10 +188,13 @@
       "claims": [],
       "openGaps": [
         {
-          "text": "Identify the HTTP headers x402 uses on XRPL, including any payment-related request and response headers."
+          "text": "List the HTTP headers x402 uses on XRPL, including the payment-signature header and any payment-required response header."
         },
         {
-          "text": "Explain how the x402 server on XRPL determines that a payment actually settled, including any verification or finality step."
+          "text": "Explain how the x402 server on XRPL verifies that a payment settled, including the settlement or finality check used."
+        },
+        {
+          "text": "State whether x402 on XRPL relies on on-ledger settlement confirmation or a facilitator response to establish payment finality."
         }
       ],
       "version": 1,
@@ -271,9 +221,9 @@
         {
           "text": "Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details.",
           "claim": {
-            "id": "claim-2",
-            "text": "PAYMENT-REQUIRED carries base64-encoded JSON with x402Version, resource and accepts options naming scheme, network, amount, asset, payTo and maxTimeoutSeconds.",
-            "stance": "SUPPORTS",
+            "id": "lead-[null,\"product-x402-response\",\"v1\",\"p2\"]",
+            "text": "The header carries base64-encoded JSON: x402Version is 2, resource identifies the protected URL, and accepts lists payment options. Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details. An optional error explains the refusal, and extensions can advertise additional capabilities. Base64 is an encoding, not encryption or proof that the seller is trustworthy. [1] [2]",
+            "stance": "UNCERTAIN",
             "citations": [
               {
                 "resourceId": "product-x402-response",
@@ -300,18 +250,6 @@
         },
         {
           "id": "claim-2",
-          "text": "PAYMENT-REQUIRED carries base64-encoded JSON with x402Version, resource and accepts options naming scheme, network, amount, asset, payTo and maxTimeoutSeconds.",
-          "stance": "SUPPORTS",
-          "citations": [
-            {
-              "resourceId": "product-x402-response",
-              "version": "v1",
-              "spanId": "p2"
-            }
-          ]
-        },
-        {
-          "id": "claim-3",
           "text": "A successful HTTP response can include PAYMENT-RESPONSE with settlement details.",
           "stance": "SUPPORTS",
           "citations": [
@@ -323,7 +261,7 @@
           ]
         },
         {
-          "id": "claim-4",
+          "id": "claim-3",
           "text": "Verification and settlement are distinct steps; a syntactically valid signature does not establish that a transaction completed.",
           "stance": "SUPPORTS",
           "citations": [
@@ -333,14 +271,38 @@
               "spanId": "p3"
             }
           ]
+        },
+        {
+          "id": "claim-4",
+          "text": "Network and asset support must agree across the client, server and facilitator.",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "product-x402-response",
+              "version": "v1",
+              "spanId": "p3"
+            }
+          ]
+        },
+        {
+          "id": "lead-[null,\"product-x402-response\",\"v1\",\"p2\"]",
+          "text": "The header carries base64-encoded JSON: x402Version is 2, resource identifies the protected URL, and accepts lists payment options. Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details. An optional error explains the refusal, and extensions can advertise additional capabilities. Base64 is an encoding, not encryption or proof that the seller is trustworthy. [1] [2]",
+          "stance": "UNCERTAIN",
+          "citations": [
+            {
+              "resourceId": "product-x402-response",
+              "version": "v1",
+              "spanId": "p2"
+            }
+          ]
         }
       ],
       "openGaps": [
         {
-          "text": "Identify the HTTP headers x402 uses on XRPL, including any payment-related request and response headers."
+          "text": "Explain how the x402 server on XRPL verifies that a payment settled, including the settlement or finality check used."
         },
         {
-          "text": "Explain how the x402 server on XRPL determines that a payment actually settled, including any verification or finality step."
+          "text": "State whether x402 on XRPL relies on on-ledger settlement confirmation or a facilitator response to establish payment finality."
         }
       ],
       "version": 2,
@@ -349,21 +311,6 @@
     },
     {
       "lead": [
-        {
-          "text": "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information.",
-          "claim": {
-            "id": "claim-1",
-            "text": "The x402 headers are PAYMENT-REQUIRED (challenge), PAYMENT-SIGNATURE (buyer payment proof), and PAYMENT-RESPONSE (settlement information).",
-            "stance": "SUPPORTS",
-            "citations": [
-              {
-                "resourceId": "team-x402",
-                "version": "v3",
-                "spanId": "p1"
-              }
-            ]
-          }
-        },
         {
           "text": "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
           "claim": {
@@ -378,19 +325,34 @@
               }
             ]
           }
+        },
+        {
+          "text": "x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required.",
+          "claim": {
+            "id": "lead-[null,\"xrpl-x402\",\"v1\",\"p1\"]",
+            "text": "x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required. Its specification separates transport representation from payment schemes and network-specific logic. Receiving a 402 response alone does not prove that a client can pay with an arbitrary asset on an arbitrary ledger. [1] [2]",
+            "stance": "UNCERTAIN",
+            "citations": [
+              {
+                "resourceId": "xrpl-x402",
+                "version": "v1",
+                "spanId": "p1"
+              }
+            ]
+          }
         }
       ],
-      "conclusion": "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information. an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. The retry carries the selected accepted requirements and a scheme-specific payment payload. A successful HTTP response can include PAYMENT-RESPONSE with settlement details. Network and asset support must agree across the client, server and facilitator. The x402 buyer first requests a resource and receives payment requirements rather than premium content. A model can assess usefulness but cannot initiate payment. Some XRPL and older x402 examples use different headers.",
+      "conclusion": "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required. The retry carries the selected accepted requirements and a scheme-specific payment payload. A successful HTTP response can include PAYMENT-RESPONSE with settlement details. Network and asset support must agree across the client, server and facilitator. Its specification separates transport representation from payment schemes and network-specific logic. The v2 specification defines payment requirements, a client payment payload and settlement responses, with facilitator interfaces for verification and settlement. Its HTTP transport uses PAYMENT-REQUIRED for requirements and PAYMENT-SIGNATURE for authorization.",
       "claims": [
         {
           "id": "claim-1",
-          "text": "The x402 headers are PAYMENT-REQUIRED (challenge), PAYMENT-SIGNATURE (buyer payment proof), and PAYMENT-RESPONSE (settlement information).",
+          "text": "x402's HTTP transport uses PAYMENT-REQUIRED for requirements and PAYMENT-SIGNATURE for authorization.",
           "stance": "SUPPORTS",
           "citations": [
             {
-              "resourceId": "team-x402",
-              "version": "v3",
-              "spanId": "p1"
+              "resourceId": "xrpl-x402",
+              "version": "v1",
+              "spanId": "p2"
             }
           ]
         },
@@ -432,146 +394,38 @@
         },
         {
           "id": "claim-5",
-          "text": "Some XRPL and older x402 examples use different headers, so the facilitator and SDK versions should be pinned and the actual challenge/retry exchange captured in an integration test.",
+          "text": "For XRPL, reconcile the ledger transaction and actual delivery before declaring settlement successful.",
+          "stance": "SUPPORTS",
+          "citations": [
+            {
+              "resourceId": "xrpl-x402",
+              "version": "v1",
+              "spanId": "p3"
+            }
+          ]
+        },
+        {
+          "id": "lead-[null,\"xrpl-x402\",\"v1\",\"p1\"]",
+          "text": "x402 standardizes payment messages and flows for protected resources, while HTTP 402 is a transport signal that payment is required. Its specification separates transport representation from payment schemes and network-specific logic. Receiving a 402 response alone does not prove that a client can pay with an arbitrary asset on an arbitrary ledger. [1] [2]",
           "stance": "UNCERTAIN",
           "citations": [
             {
-              "resourceId": "team-x402",
-              "version": "v3",
-              "spanId": "p3"
+              "resourceId": "xrpl-x402",
+              "version": "v1",
+              "spanId": "p1"
             }
           ]
         }
       ],
       "openGaps": [
         {
-          "text": "Identify the HTTP headers x402 uses on XRPL, including any payment-related request and response headers."
+          "text": "Explain how the x402 server on XRPL verifies that a payment settled, including the settlement or finality check used."
         },
         {
-          "text": "Explain how the x402 server on XRPL determines that a payment actually settled, including any verification or finality step."
+          "text": "State whether x402 on XRPL relies on on-ledger settlement confirmation or a facilitator response to establish payment finality."
         }
       ],
       "version": 3,
-      "provider": "deepseek",
-      "model": "deepseek-flash"
-    },
-    {
-      "lead": [
-        {
-          "text": "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information.",
-          "claim": {
-            "id": "claim-1",
-            "text": "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information.",
-            "stance": "SUPPORTS",
-            "citations": [
-              {
-                "resourceId": "team-x402",
-                "version": "v3",
-                "spanId": "p1"
-              }
-            ]
-          }
-        },
-        {
-          "text": "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
-          "claim": {
-            "id": "lead-[null,\"product-x402-response\",\"v1\",\"p1\"]",
-            "text": "According to the X402 v2 specification, an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. [1] [2]",
-            "stance": "UNCERTAIN",
-            "citations": [
-              {
-                "resourceId": "product-x402-response",
-                "version": "v1",
-                "spanId": "p1"
-              }
-            ]
-          }
-        }
-      ],
-      "conclusion": "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information. an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. The retry carries the selected accepted requirements and a scheme-specific payment payload. A successful HTTP response can include PAYMENT-RESPONSE with settlement details. Network and asset support must agree across the client, server and facilitator. The x402 buyer first requests a resource and receives payment requirements rather than premium content. A model can assess usefulness but cannot initiate payment. Some XRPL and older x402 examples use different headers. Its HTTP transport uses PAYMENT-REQUIRED for requirements and PAYMENT-SIGNATURE for authorization.",
-      "claims": [
-        {
-          "id": "claim-1",
-          "text": "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information.",
-          "stance": "SUPPORTS",
-          "citations": [
-            {
-              "resourceId": "team-x402",
-              "version": "v3",
-              "spanId": "p1"
-            }
-          ]
-        },
-        {
-          "id": "claim-2",
-          "text": "The v2 specification defines payment requirements, a client payment payload and settlement responses, with facilitator interfaces for verification and settlement; its HTTP transport uses PAYMENT-REQUIRED for requirements and PAYMENT-SIGNATURE for authorization.",
-          "stance": "SUPPORTS",
-          "citations": [
-            {
-              "resourceId": "xrpl-x402",
-              "version": "v1",
-              "spanId": "p2"
-            }
-          ]
-        },
-        {
-          "id": "claim-3",
-          "text": "Verification and settlement are distinct steps: a syntactically valid signature does not establish that a transaction completed.",
-          "stance": "SUPPORTS",
-          "citations": [
-            {
-              "resourceId": "product-x402-response",
-              "version": "v1",
-              "spanId": "p3"
-            }
-          ]
-        },
-        {
-          "id": "claim-4",
-          "text": "For an XRPL integration, the recommendation is to reconcile the ledger transaction and actual delivery before declaring settlement successful, and to keep premium access conditional on the application's verified delivery boundary rather than on an untrusted payment header.",
-          "stance": "SUPPORTS",
-          "citations": [
-            {
-              "resourceId": "xrpl-x402",
-              "version": "v1",
-              "spanId": "p3"
-            }
-          ]
-        },
-        {
-          "id": "claim-5",
-          "text": "Some XRPL and older x402 examples use different headers, and the guidance is not to combine them from memory but to pin facilitator and SDK versions and capture the actual challenge and retry exchange in an integration test.",
-          "stance": "CHALLENGES",
-          "citations": [
-            {
-              "resourceId": "team-x402",
-              "version": "v3",
-              "spanId": "p3"
-            }
-          ]
-        },
-        {
-          "id": "lead-[null,\"product-x402-response\",\"v1\",\"p1\"]",
-          "text": "According to the X402 v2 specification, an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. [1] [2]",
-          "stance": "UNCERTAIN",
-          "citations": [
-            {
-              "resourceId": "product-x402-response",
-              "version": "v1",
-              "spanId": "p1"
-            }
-          ]
-        }
-      ],
-      "openGaps": [
-        {
-          "text": "Identify the HTTP headers x402 uses on XRPL, including any payment-related request and response headers."
-        },
-        {
-          "text": "Explain how the x402 server on XRPL determines that a payment actually settled, including any verification or finality step."
-        }
-      ],
-      "version": 4,
       "provider": "deepseek",
       "model": "deepseek-flash"
     }
@@ -600,44 +454,6 @@
         {
           "id": "p4",
           "text": "Author interpretation: validate the advertised resource, payee, exact amount, network and expiry before authorizing a retry. Preserve the original payment identity after a timeout instead of approving a new payment blindly. The core protocol deliberately leaves client budget management to the application. A 402 challenge is an offer to pay; it does not itself authorize spending. Sources accessed 10 November 2026. [1] [2]"
-        }
-      ]
-    },
-    {
-      "profileId": "team-builder-notes",
-      "resourceId": "team-x402",
-      "version": "v3",
-      "title": "x402 payment headers and delivery failure modes: budgets and one charge per intent",
-      "publisher": "ResearchAgent builders (team-authored)",
-      "body": "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information. The x402 buyer first requests a resource and receives payment requirements rather than premium content. The exact resource, version, seller wallet, network and amount must remain bound throughout negotiation. A model can assess usefulness but cannot initiate payment. Deterministic policy checks the authorized budget and reserves exposure before signing or submitting a purchase.\n\nEach writer serves its own payment challenge and receives the buyer's Testnet payment. The buyer checks the named writer, article version, network and exact amount before authorizing the purchase. A valid payment for another article or another recipient does not unlock this delivery. Testnet funds have no real value.\n\nSome XRPL and older x402 examples use different headers. Do not combine them from memory. Pin the facilitator and SDK versions, capture the actual challenge and retry exchange in an integration test, and record the version in the technical receipt.\n\nRelevant CAIP-2 network identifiers are xrpl:0 for Mainnet, xrpl:1 for Testnet, and xrpl:2 for Devnet. The first live proof should use XRP on Testnet. One XRP equals one million drops; quote amounts must use exact integer drop strings.\n\nThe escrow purchase binds the buyer, writer, article version, amount, condition and deadline in signed terms. The writer checks the validated create and escrow object before providing the encrypted delivery. Locked funds are not completed settlement. Premium plaintext stays inaccessible until a verified grant follows successful release and authenticated delivery. Cancellation is distinct from a post-sale refund.\n\nA restarted buyer reconciles the original purchase before submitting another payment. A timeout cannot authorize a second principal charge. If a finish might already have reached the ledger, recovery checks that outcome before cancellation. Missing transaction history alone does not prove that principal returned. Expiry permits a cancellation transaction; it does not automatically return funds.\n\nLocked principal remains reserved against the budget until its terminal outcome is proven. A successful release counts as spending; a validated cancellation records returned principal and the cancellation hash. A refund does not restore gross spending authority. Wallet balance checks must also allow for reserves and transaction fees, separately from the quoted article price.",
-      "spans": [
-        {
-          "id": "p1",
-          "text": "The x402 headers are PAYMENT-REQUIRED, which carries the challenge; PAYMENT-SIGNATURE carries the buyer payment proof; PAYMENT-RESPONSE carries settlement information. The x402 buyer first requests a resource and receives payment requirements rather than premium content. The exact resource, version, seller wallet, network and amount must remain bound throughout negotiation. A model can assess usefulness but cannot initiate payment. Deterministic policy checks the authorized budget and reserves exposure before signing or submitting a purchase."
-        },
-        {
-          "id": "p2",
-          "text": "Each writer serves its own payment challenge and receives the buyer's Testnet payment. The buyer checks the named writer, article version, network and exact amount before authorizing the purchase. A valid payment for another article or another recipient does not unlock this delivery. Testnet funds have no real value."
-        },
-        {
-          "id": "p3",
-          "text": "Some XRPL and older x402 examples use different headers. Do not combine them from memory. Pin the facilitator and SDK versions, capture the actual challenge and retry exchange in an integration test, and record the version in the technical receipt."
-        },
-        {
-          "id": "p4",
-          "text": "Relevant CAIP-2 network identifiers are xrpl:0 for Mainnet, xrpl:1 for Testnet, and xrpl:2 for Devnet. The first live proof should use XRP on Testnet. One XRP equals one million drops; quote amounts must use exact integer drop strings."
-        },
-        {
-          "id": "p5",
-          "text": "The escrow purchase binds the buyer, writer, article version, amount, condition and deadline in signed terms. The writer checks the validated create and escrow object before providing the encrypted delivery. Locked funds are not completed settlement. Premium plaintext stays inaccessible until a verified grant follows successful release and authenticated delivery. Cancellation is distinct from a post-sale refund."
-        },
-        {
-          "id": "p6",
-          "text": "A restarted buyer reconciles the original purchase before submitting another payment. A timeout cannot authorize a second principal charge. If a finish might already have reached the ledger, recovery checks that outcome before cancellation. Missing transaction history alone does not prove that principal returned. Expiry permits a cancellation transaction; it does not automatically return funds."
-        },
-        {
-          "id": "p7",
-          "text": "Locked principal remains reserved against the budget until its terminal outcome is proven. A successful release counts as spending; a validated cancellation records returned principal and the cancellation hash. A refund does not restore gross spending authority. Wallet balance checks must also allow for reserves and transaction fees, separately from the quoted article price."
         }
       ]
     },
@@ -754,7 +570,7 @@
       "publisherSlug": "team-xrpl-explainers",
       "writerSlug": "team-xrpl-explainers",
       "url": "/w/team-xrpl-explainers/articles/product-x402-response",
-      "relevance": 0.8515081691628991,
+      "relevance": 0.8516079554579348,
       "manifest": {
         "schemaVersion": 2,
         "publisherSlug": "team-xrpl-explainers",
@@ -783,8 +599,8 @@
         ],
         "wordCount": 209,
         "publishedAt": "2026-11-10",
-        "relevance": 0.8515081691628991,
-        "sig": "1B4708B3F1365D8D4FDC2E0F39FA6C7105883921BA2C610D2B043836529D17BD0C473B07FA7D06014C5F92411835A06AF0FD0DE15498A7D193C89224AFDD300B"
+        "relevance": 0.8516079554579348,
+        "sig": "66C3CAF1F07E4AADA5C49E46B9A0CACBF2FF0C9B7248D0C57A4D900E7D212207D44EDBE66D9A1A93E9EE0DA558ED82F4781A57DDD9CA35CE0342FFB0458AEB00"
       }
     },
     {
@@ -817,7 +633,7 @@
       "publisherSlug": "team-xrpl-explainers",
       "writerSlug": "team-xrpl-explainers",
       "url": "/w/team-xrpl-explainers/articles/xrpl-x402",
-      "relevance": 0.8227850451562957,
+      "relevance": 0.8243078082240405,
       "manifest": {
         "schemaVersion": 2,
         "publisherSlug": "team-xrpl-explainers",
@@ -836,8 +652,8 @@
         "claims": [],
         "wordCount": 235,
         "publishedAt": "2026-11-07",
-        "relevance": 0.8227850451562957,
-        "sig": "04BBA6A74BA9FD28E8A3F1BDED5FE6ACEE8E37622C7B199CF99EFD9A94A41087ECB45768FDF63D2D52FDBB346968B410292D69565DCD0F7424155CAA61C0A60F"
+        "relevance": 0.8243078082240405,
+        "sig": "AD7F12CF7191B2FDB54FC550429AAA0E9CD4EA0D7AA0297D8B3684A93475DE7EE51D52019BA51A99D6DA73EA2BC456084BE0E41E75C048261B2AADB7647BEA09"
       }
     },
     {
@@ -938,7 +754,7 @@
       "publisherSlug": "team-xrpl-explainers",
       "writerSlug": "team-xrpl-explainers",
       "url": "/w/team-xrpl-explainers/articles/product-payment-finality",
-      "relevance": 0.8642779020034855,
+      "relevance": 0.8650511280841361,
       "manifest": {
         "schemaVersion": 2,
         "publisherSlug": "team-xrpl-explainers",
@@ -967,64 +783,8 @@
         ],
         "wordCount": 223,
         "publishedAt": "2026-11-10",
-        "relevance": 0.8642779020034855,
-        "sig": "9069B88088C2AE6921A3432E655AB5D1E89E1D6FE77867C1BC1A7825C2871A5B77A0196CD5775DC882A89042D7D58857BF4ABBF1F8E1413CCD0704489EA3D500"
-      }
-    },
-    {
-      "profileId": "team-builder-notes",
-      "resourceId": "team-credentials",
-      "version": "v3",
-      "title": "XRPL Credentials: writer trust, article accuracy and identity evidence",
-      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
-      "preview": "How XRPL Credentials change writer identity checks without proving an article accurate or boosting trust scores.",
-      "price": {
-        "amountMinor": 40,
-        "currency": "SGD"
-      },
-      "wallet": "rnFqpNSS2rcDoFe72cwneSzwZAhoxqduqr",
-      "family": "team-credentials",
-      "facets": [
-        "Writer Credentials",
-        " trust and refund responsibility",
-        "credentials",
-        "XRPL",
-        "Testnet"
-      ],
-      "authority": 1,
-      "tier": "PAID",
-      "license": {
-        "kind": "AUTHOR SUPPLIED",
-        "attribution": "ResearchAgent builders (team-authored)"
-      },
-      "publisherSlug": "team-builder-notes",
-      "writerSlug": "team-builder-notes",
-      "url": "/w/team-builder-notes/articles/team-credentials",
-      "relevance": 0.4965106174173444,
-      "manifest": {
-        "schemaVersion": 2,
-        "publisherSlug": "team-builder-notes",
-        "articleId": "team-credentials",
-        "version": "v3",
-        "wallet": "rnFqpNSS2rcDoFe72cwneSzwZAhoxqduqr",
-        "pubKey": "ED5EA38164A729E57EAA5DD3517CBA40740243DD2CDD10FBE871C705470393521F",
-        "priceMinor": 40,
-        "leaves": [
-          "4c94fbb233398ada95455293b086e98a2b6b80e4d8625790d26cd9fca87a57ca",
-          "deb4a980e6a4162cd3f5ee32da1f33faf3e93afe597c082f1b528f6c95dda9dc",
-          "5cb7e94032b1703a249017c1964216f01b8c55c76b006f01adea8d93b1f313b1",
-          "26bdfef576cfa57bc64c46234f0d9d33682df8810d072d04f873b94cdce66473",
-          "9cd5ddf193a5efaf95a54c2dffe82f87a648e6ce4d87eec37db17d9495baf6ce",
-          "eadaa91ab22373a4b81388c8e405ee21deceffa4d3a431ffa436e8f008772da2",
-          "c793668fe7ab9d40e23fe980a2d68f7527eae63dbea82be5fa4f2a8491d89ba3",
-          "e9d5a3926785735add15997f61631e9c9a16e85ccac5ff187e8fd8e27f85b4fb"
-        ],
-        "root": "759cb023d482d4f4b4dcb8eacab7feadcb2537793759e949256cd553577b4c96",
-        "claims": [],
-        "wordCount": 520,
-        "publishedAt": "2026-11-07",
-        "relevance": 0.4965106174173444,
-        "sig": "FE45E3EFC35A360B53746C391DBEBB7D348BE9B7BF3568FE09358645E6631FC3EE44B6784CD048573365FC7DACB4963045C08200A9EC5637525956B0C88A5A01"
+        "relevance": 0.8650511280841361,
+        "sig": "A269A41B46C5A0E4EA869A5CB65051A84965B3FCBF0320C41C6D92A62E43E18654AC18F2848F0EE29B1F3DA7C9C18DBDAF46106A4F65FFFAFDA1B3B4A9C55D08"
       }
     },
     {
@@ -1079,6 +839,62 @@
         "publishedAt": "2026-11-07",
         "relevance": 0.5335138595082601,
         "sig": "533985C6BF0B97028B6BCFAF264D420B26C57B7DEC5CC52C9636CCC33124B61C28D290FF8823B2B09FEC35BBECD8614A8BC8D2B96C77732B914E6DE47DFCC107"
+      }
+    },
+    {
+      "profileId": "team-builder-notes",
+      "resourceId": "team-credentials",
+      "version": "v3",
+      "title": "XRPL Credentials: writer trust, article accuracy and identity evidence",
+      "publisher": "ResearchAgent builders (team-authored) · team-authored · real content · not an independent writer · Testnet",
+      "preview": "How XRPL Credentials change writer identity checks without proving an article accurate or boosting trust scores.",
+      "price": {
+        "amountMinor": 40,
+        "currency": "SGD"
+      },
+      "wallet": "rnFqpNSS2rcDoFe72cwneSzwZAhoxqduqr",
+      "family": "team-credentials",
+      "facets": [
+        "Writer Credentials",
+        " trust and refund responsibility",
+        "credentials",
+        "XRPL",
+        "Testnet"
+      ],
+      "authority": 1,
+      "tier": "PAID",
+      "license": {
+        "kind": "AUTHOR SUPPLIED",
+        "attribution": "ResearchAgent builders (team-authored)"
+      },
+      "publisherSlug": "team-builder-notes",
+      "writerSlug": "team-builder-notes",
+      "url": "/w/team-builder-notes/articles/team-credentials",
+      "relevance": 0.5001473460683702,
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "team-builder-notes",
+        "articleId": "team-credentials",
+        "version": "v3",
+        "wallet": "rnFqpNSS2rcDoFe72cwneSzwZAhoxqduqr",
+        "pubKey": "ED5EA38164A729E57EAA5DD3517CBA40740243DD2CDD10FBE871C705470393521F",
+        "priceMinor": 40,
+        "leaves": [
+          "4c94fbb233398ada95455293b086e98a2b6b80e4d8625790d26cd9fca87a57ca",
+          "deb4a980e6a4162cd3f5ee32da1f33faf3e93afe597c082f1b528f6c95dda9dc",
+          "5cb7e94032b1703a249017c1964216f01b8c55c76b006f01adea8d93b1f313b1",
+          "26bdfef576cfa57bc64c46234f0d9d33682df8810d072d04f873b94cdce66473",
+          "9cd5ddf193a5efaf95a54c2dffe82f87a648e6ce4d87eec37db17d9495baf6ce",
+          "eadaa91ab22373a4b81388c8e405ee21deceffa4d3a431ffa436e8f008772da2",
+          "c793668fe7ab9d40e23fe980a2d68f7527eae63dbea82be5fa4f2a8491d89ba3",
+          "e9d5a3926785735add15997f61631e9c9a16e85ccac5ff187e8fd8e27f85b4fb"
+        ],
+        "root": "759cb023d482d4f4b4dcb8eacab7feadcb2537793759e949256cd553577b4c96",
+        "claims": [],
+        "wordCount": 520,
+        "publishedAt": "2026-11-07",
+        "relevance": 0.5001473460683702,
+        "sig": "1DBF01629182152DC9ECC92FC4BEB996D55E36F858D9668DDE853DC24CBE27376D7DBBC7A7BBED9E75AE2EE761DD0883808DB65F78D77DC7CB37423BE067FA07"
       }
     },
     {
@@ -1165,7 +981,7 @@
       "publisherSlug": "team-xrpl-explainers",
       "writerSlug": "team-xrpl-explainers",
       "url": "/w/team-xrpl-explainers/articles/c5-xrpl-destination-tag",
-      "relevance": 0.6917996454102286,
+      "relevance": 0.6694158440248142,
       "manifest": {
         "schemaVersion": 2,
         "publisherSlug": "team-xrpl-explainers",
@@ -1194,8 +1010,8 @@
         ],
         "wordCount": 207,
         "publishedAt": "2026-11-11",
-        "relevance": 0.6917996454102286,
-        "sig": "CE07F2E26D565A0637E042F6589D72E11E7BF13A77C3FF650574C92CC840947FFE416E602919302C259E9D53CF7D82916263609705982073CA8E2E6BD1F54D07"
+        "relevance": 0.6694158440248142,
+        "sig": "6FEC6C2EEA45760FE4E65485CDF861AABF07CEBCE3E169551CDE2737B7C2C257397847CBF0AE1469452FBDF074AC3D1854A911475CCCAEB56FA62072AD5C0904"
       }
     },
     {
@@ -1303,7 +1119,7 @@
       "publisherSlug": "team-xrpl-explainers",
       "writerSlug": "team-xrpl-explainers",
       "url": "/w/team-xrpl-explainers/articles/product-x402-xrpl-settlement",
-      "relevance": 0.6332038583479378,
+      "relevance": 0.6268493279921359,
       "manifest": {
         "schemaVersion": 2,
         "publisherSlug": "team-xrpl-explainers",
@@ -1332,8 +1148,8 @@
         ],
         "wordCount": 210,
         "publishedAt": "2026-11-10",
-        "relevance": 0.6332038583479378,
-        "sig": "44D74B0DCFA309617DAB1ED1854244599D9256C78669910A845B68168F4A3B9B9B5EF46EAA39AFDCE5B0D4739D43165F1B7007FAC249F55A7DE51B890DA0AD03"
+        "relevance": 0.6268493279921359,
+        "sig": "711A213F20D3C15C7D402A9142F9FE24105BCF53EB1026FEB4BBBE6F46BBBD63701F37E17A5CD17FE0D8CCD6F13E04C0F63D21669EA5AD80D1C226F5EE687C0D"
       }
     },
     {
@@ -1366,7 +1182,7 @@
       "publisherSlug": "team-xrpl-explainers",
       "writerSlug": "team-xrpl-explainers",
       "url": "/w/team-xrpl-explainers/articles/product-ai-starter-kit",
-      "relevance": 0.5817174111739208,
+      "relevance": 0.5955787231765328,
       "manifest": {
         "schemaVersion": 2,
         "publisherSlug": "team-xrpl-explainers",
@@ -1395,8 +1211,8 @@
         ],
         "wordCount": 216,
         "publishedAt": "2026-11-10",
-        "relevance": 0.5817174111739208,
-        "sig": "240E65E9650BB43D6FD3FDAF2469BA59111034530728AA76BCBF5E863B7C97CA52B5CD1052668097383EB823C278042C1744C5EE514FCA3A09DCD1F9E95DE708"
+        "relevance": 0.5955787231765328,
+        "sig": "80D02D5AE304FED8F2818094DE71E04B00AC314A09A8F8E607E4D845D4DF78F58D8A4640461AB61FC3A5F3A981E2C95F8EF1E9F9D6EBCF719623B74D0CB2E40A"
       }
     }
   ],
@@ -1407,37 +1223,37 @@
         "policy": "escrow-policy-v1",
         "state": "RELEASED",
         "mode": "key-reveal",
-        "revealLedger": 22227982,
+        "revealLedger": 22228567,
         "owner": "rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1",
-        "cancelAfter": 847668611,
-        "createSequence": 22220352,
-        "createHash": "4570340072416670F5B17C471FFA4CC1D3225AEFAC9198F611F68B1F9BA769AD",
+        "cancelAfter": 847670531,
+        "createSequence": 22220356,
+        "createHash": "B6FDBD229FEBDFAE041C4A21FE115449E3396AE7E9A422D391C0F7B4100028E5",
         "keyVerified": true,
         "decryptVerified": true,
-        "finishHash": "01BFB0095C3F294A0951C1B50DE03C63EB2A0E246DCE02D9281E43CBA19340CB",
+        "finishHash": "4CCB4E56137D738847E853535B068329562AD490DA4D9F5551CEC2EB1AC70638",
         "proofOk": true
       },
-      "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:1:product-x402-response:v1",
-      "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
+      "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:1:product-x402-response:v1",
+      "runId": "953af12e-c87c-4c83-85f6-e172ad372bfe",
       "profileId": "team-xrpl-explainers",
       "resourceId": "product-x402-response",
       "version": "v1",
       "amountMinor": 40,
       "status": "VERIFIED",
-      "createdAt": "2026-11-10T23:28:13.286Z",
-      "submittingAt": "2026-11-10T23:28:13.310Z",
-      "settledAt": "2026-11-10T23:28:25.043Z",
+      "createdAt": "2026-11-11T00:00:12.328Z",
+      "submittingAt": "2026-11-11T00:00:12.339Z",
+      "settledAt": "2026-11-11T00:00:25.449Z",
       "quote": {
         "profileId": "team-xrpl-explainers",
         "resourceId": "product-x402-response",
         "version": "v1",
-        "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
-        "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:1:product-x402-response:v1",
-        "quoteId": "{\"amount\":\"40000\",\"articleId\":\"product-x402-response\",\"asset\":\"XRP\",\"cancelAfter\":847668611,\"condition\":\"A025802046989916C95DF0F27FA5797BC106C78778CEA9F3C70FA1C65353AAD78C388DC7810120\",\"intentId\":\"3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:1:product-x402-response:v1\",\"keyReveal\":{\"ciphertextHash\":\"d20093e2e8a16b0bdfc035819a84b6045c41189598e8411ee4b52f97324c9df2\",\"iv\":\"48114DB1E5086EA10C27E2AC\",\"plaintextHash\":\"7ec9168305c5b8bf1a916893027076463e8cdfa90be832502d3aba555770a5be\",\"tag\":\"16E982E5E96DFEC22AB7972ECAE2FAE6\"},\"manifestRoot\":\"1aced00680aa043e25658e7600d3aee5150f01a1e337a33e8c21f17ff218f190\",\"network\":\"xrpl:1\",\"payTo\":\"r9hkhUEsqcUBAhzp5dfVbPeX37UE6dEQ8c\",\"payer\":\"rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1\",\"publisherSlug\":\"team-xrpl-explainers\",\"quoteId\":\"01de810c-30c7-4e17-8881-e800d10074c8\",\"scheme\":\"escrow-v1\",\"version\":\"v1\"}",
-        "quoteHash": "E7614EEFA2E9999E40731B4607AC52AC9DAE6E49458BD03BFDE227F2FCE371A0",
+        "runId": "953af12e-c87c-4c83-85f6-e172ad372bfe",
+        "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:1:product-x402-response:v1",
+        "quoteId": "{\"amount\":\"40000\",\"articleId\":\"product-x402-response\",\"asset\":\"XRP\",\"cancelAfter\":847670531,\"condition\":\"A0258020E4FD995AB816AC4C6EF73F775B1AD291A6DA5E937A1881FB9FC7F5E298D341B2810120\",\"intentId\":\"953af12e-c87c-4c83-85f6-e172ad372bfe:1:product-x402-response:v1\",\"keyReveal\":{\"ciphertextHash\":\"21f1ec9b282b79e373b472d585b13f7645d779628dc1e2af2be03222752ac3b7\",\"iv\":\"D2931518B9475C6D811FBB6C\",\"plaintextHash\":\"7ec9168305c5b8bf1a916893027076463e8cdfa90be832502d3aba555770a5be\",\"tag\":\"DB07EE94653ABC816E6E32991B7FD651\"},\"manifestRoot\":\"1aced00680aa043e25658e7600d3aee5150f01a1e337a33e8c21f17ff218f190\",\"network\":\"xrpl:1\",\"payTo\":\"r9hkhUEsqcUBAhzp5dfVbPeX37UE6dEQ8c\",\"payer\":\"rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1\",\"publisherSlug\":\"team-xrpl-explainers\",\"quoteId\":\"10b172ca-a94d-4298-a106-e5e4b50f81a6\",\"scheme\":\"escrow-v1\",\"version\":\"v1\"}",
+        "quoteHash": "F336B8DE6E64B7151BEE802E57E40B383BE8D5186043394917FABFDCF04DFDCA",
         "amountMinor": 40,
         "currency": "SGD",
-        "expiresAt": "2026-11-10T23:29:13.269Z",
+        "expiresAt": "2026-11-11T00:01:12.324Z",
         "contentDigest": "1aced00680aa043e25658e7600d3aee5150f01a1e337a33e8c21f17ff218f190",
         "payment": {
           "rail": "xrpl-testnet",
@@ -1445,12 +1261,12 @@
           "asset": "XRP",
           "payTo": "r9hkhUEsqcUBAhzp5dfVbPeX37UE6dEQ8c",
           "amountDrops": "40000",
-          "invoiceId": "E7614EEFA2E9999E40731B4607AC52AC9DAE6E49458BD03BFDE227F2FCE371A0"
+          "invoiceId": "F336B8DE6E64B7151BEE802E57E40B383BE8D5186043394917FABFDCF04DFDCA"
         }
       },
       "paidPath": "/w/team-xrpl-explainers/articles/product-x402-response",
-      "receiptId": "escrow-01BFB0095C3F294A0951C1B50DE03C63EB2A0E246DCE02D9281E43CBA19340CB",
-      "txHash": "01BFB0095C3F294A0951C1B50DE03C63EB2A0E246DCE02D9281E43CBA19340CB",
+      "receiptId": "escrow-4CCB4E56137D738847E853535B068329562AD490DA4D9F5551CEC2EB1AC70638",
+      "txHash": "4CCB4E56137D738847E853535B068329562AD490DA4D9F5551CEC2EB1AC70638",
       "failedClaimIds": []
     },
     {
@@ -1459,89 +1275,37 @@
         "policy": "escrow-policy-v1",
         "state": "RELEASED",
         "mode": "key-reveal",
-        "revealLedger": 22227988,
+        "revealLedger": 22228572,
         "owner": "rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1",
-        "cancelAfter": 847668622,
-        "createSequence": 22220353,
-        "createHash": "01EFF7B6D3F16B676C280930D67F44ABF25AB90992D159135B8B63C9BF6C2E44",
+        "cancelAfter": 847670550,
+        "createSequence": 22220357,
+        "createHash": "E61FD9D098B200DD99F53DB4C3F024ED44CAF44B7ED2435B4918E224244A156A",
         "keyVerified": true,
         "decryptVerified": true,
-        "finishHash": "9235C2CAECF7F49DE5F42EDE343ADD9378D155E42E2782EB72B050AB4320C22E",
+        "finishHash": "78F5BF157C2B9792A92D865713E80EB8F2827364825D017F178F71810042C1B6",
         "proofOk": true
       },
-      "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:2:team-x402:v3",
-      "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
-      "profileId": "team-builder-notes",
-      "resourceId": "team-x402",
-      "version": "v3",
-      "amountMinor": 40,
-      "status": "VERIFIED",
-      "createdAt": "2026-11-10T23:28:27.433Z",
-      "submittingAt": "2026-11-10T23:28:27.458Z",
-      "settledAt": "2026-11-10T23:28:42.662Z",
-      "quote": {
-        "profileId": "team-builder-notes",
-        "resourceId": "team-x402",
-        "version": "v3",
-        "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
-        "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:2:team-x402:v3",
-        "quoteId": "{\"amount\":\"40000\",\"articleId\":\"team-x402\",\"asset\":\"XRP\",\"cancelAfter\":847668622,\"condition\":\"A025802076227B5A91F634DCF34929A7804F431A421F827490AE91C864D75328FDC622F8810120\",\"intentId\":\"3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:2:team-x402:v3\",\"keyReveal\":{\"ciphertextHash\":\"a85a390397ceffaad23a9992f2d85bd8871489ccd09301a8545ebd6d720d5157\",\"iv\":\"051842140D56B2F909A6EC34\",\"plaintextHash\":\"fa541bafbd329fa10de4f5b64326f0735d766adcde3a2194469086def804b82c\",\"tag\":\"17D11E955BFFFBB01C93B8EA3BB8B984\"},\"manifestRoot\":\"fd535a7f84fa83f0d6b25d9705ea203154076a9db7db5fe71f38fcf238d8fd86\",\"network\":\"xrpl:1\",\"payTo\":\"rnFqpNSS2rcDoFe72cwneSzwZAhoxqduqr\",\"payer\":\"rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1\",\"publisherSlug\":\"team-builder-notes\",\"quoteId\":\"dd1b8b3f-ca21-4ec7-b51b-10aec6a02927\",\"scheme\":\"escrow-v1\",\"version\":\"v3\"}",
-        "quoteHash": "ECF38A0E9133773C244AE9454F7912668B799FFD965D9B21BCCEC5A955915A8F",
-        "amountMinor": 40,
-        "currency": "SGD",
-        "expiresAt": "2026-11-10T23:29:27.415Z",
-        "contentDigest": "fd535a7f84fa83f0d6b25d9705ea203154076a9db7db5fe71f38fcf238d8fd86",
-        "payment": {
-          "rail": "xrpl-testnet",
-          "network": "xrpl:1",
-          "asset": "XRP",
-          "payTo": "rnFqpNSS2rcDoFe72cwneSzwZAhoxqduqr",
-          "amountDrops": "40000",
-          "invoiceId": "ECF38A0E9133773C244AE9454F7912668B799FFD965D9B21BCCEC5A955915A8F"
-        }
-      },
-      "paidPath": "/w/team-builder-notes/articles/team-x402",
-      "receiptId": "escrow-9235C2CAECF7F49DE5F42EDE343ADD9378D155E42E2782EB72B050AB4320C22E",
-      "txHash": "9235C2CAECF7F49DE5F42EDE343ADD9378D155E42E2782EB72B050AB4320C22E",
-      "failedClaimIds": []
-    },
-    {
-      "escrow": {
-        "scheme": "escrow-v1",
-        "policy": "escrow-policy-v1",
-        "state": "RELEASED",
-        "mode": "key-reveal",
-        "revealLedger": 22227993,
-        "owner": "rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1",
-        "cancelAfter": 847668641,
-        "createSequence": 22220354,
-        "createHash": "7AE9DEB6C0A5C1BFAC8E1778B46130AD18D514869328547593D9E810AB857952",
-        "keyVerified": true,
-        "decryptVerified": true,
-        "finishHash": "2C82AFF633D9296AC116FD4FAB4CAEA0106544ED6C73A29DA960991827E34C48",
-        "proofOk": true
-      },
-      "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:3:xrpl-x402:v1",
-      "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
+      "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:3:xrpl-x402:v1",
+      "runId": "953af12e-c87c-4c83-85f6-e172ad372bfe",
       "profileId": "team-xrpl-explainers",
       "resourceId": "xrpl-x402",
       "version": "v1",
       "amountMinor": 40,
       "status": "VERIFIED",
-      "createdAt": "2026-11-10T23:28:45.494Z",
-      "submittingAt": "2026-11-10T23:28:45.518Z",
-      "settledAt": "2026-11-10T23:28:59.488Z",
+      "createdAt": "2026-11-11T00:00:30.029Z",
+      "submittingAt": "2026-11-11T00:00:30.040Z",
+      "settledAt": "2026-11-11T00:00:42.533Z",
       "quote": {
         "profileId": "team-xrpl-explainers",
         "resourceId": "xrpl-x402",
         "version": "v1",
-        "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
-        "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:3:xrpl-x402:v1",
-        "quoteId": "{\"amount\":\"40000\",\"articleId\":\"xrpl-x402\",\"asset\":\"XRP\",\"cancelAfter\":847668641,\"condition\":\"A0258020AB0616DEECF30FF3686F1A5EAEFCF67FE18CA0A7CD95D536ECDF5732E551CF20810120\",\"intentId\":\"3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:3:xrpl-x402:v1\",\"keyReveal\":{\"ciphertextHash\":\"6d909ff35341ed6067047ddc4c8590882fba530aa790f50855eac09dfd5109d7\",\"iv\":\"878033580AED932AE508DF46\",\"plaintextHash\":\"b30ba033cb16246f0e2638a2bad0ea2a7b465bb14750a811d995914b6d530789\",\"tag\":\"C3BA7896574E23C5A883C7DB0E75949F\"},\"manifestRoot\":\"1c8376d17bcc9151f2b8cdc08ca34aadd0faea6b2e7193fd13f03a473d3951fd\",\"network\":\"xrpl:1\",\"payTo\":\"r9hkhUEsqcUBAhzp5dfVbPeX37UE6dEQ8c\",\"payer\":\"rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1\",\"publisherSlug\":\"team-xrpl-explainers\",\"quoteId\":\"de5f1d2b-fc6d-4332-a288-df88497233c4\",\"scheme\":\"escrow-v1\",\"version\":\"v1\"}",
-        "quoteHash": "1EDC31AA282D6E08E420DBF06DFF61DEBD3CCCD6885188A209F544396B3F589A",
+        "runId": "953af12e-c87c-4c83-85f6-e172ad372bfe",
+        "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:3:xrpl-x402:v1",
+        "quoteId": "{\"amount\":\"40000\",\"articleId\":\"xrpl-x402\",\"asset\":\"XRP\",\"cancelAfter\":847670550,\"condition\":\"A02580208A397559D731A890B5E371929CB1F102E3AE8278CF846CDD1CBE9EF48E27D788810120\",\"intentId\":\"953af12e-c87c-4c83-85f6-e172ad372bfe:3:xrpl-x402:v1\",\"keyReveal\":{\"ciphertextHash\":\"c68e351d1bd85e4e4e4dc55643edbe7c180178381cf3034e43a113b1e59cec32\",\"iv\":\"E2A67A93AF6EAF0A51EAD592\",\"plaintextHash\":\"b30ba033cb16246f0e2638a2bad0ea2a7b465bb14750a811d995914b6d530789\",\"tag\":\"F56D817E7277070927C25175F5752728\"},\"manifestRoot\":\"1c8376d17bcc9151f2b8cdc08ca34aadd0faea6b2e7193fd13f03a473d3951fd\",\"network\":\"xrpl:1\",\"payTo\":\"r9hkhUEsqcUBAhzp5dfVbPeX37UE6dEQ8c\",\"payer\":\"rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1\",\"publisherSlug\":\"team-xrpl-explainers\",\"quoteId\":\"dd959100-a11d-4607-b2e6-f2df7427125c\",\"scheme\":\"escrow-v1\",\"version\":\"v1\"}",
+        "quoteHash": "EB331A0A5493B041F52F53FCFEF997962567AEBE4E1A11C6FF39415A779855CB",
         "amountMinor": 40,
         "currency": "SGD",
-        "expiresAt": "2026-11-10T23:29:45.476Z",
+        "expiresAt": "2026-11-11T00:01:30.023Z",
         "contentDigest": "1c8376d17bcc9151f2b8cdc08ca34aadd0faea6b2e7193fd13f03a473d3951fd",
         "payment": {
           "rail": "xrpl-testnet",
@@ -1549,39 +1313,31 @@
           "asset": "XRP",
           "payTo": "r9hkhUEsqcUBAhzp5dfVbPeX37UE6dEQ8c",
           "amountDrops": "40000",
-          "invoiceId": "1EDC31AA282D6E08E420DBF06DFF61DEBD3CCCD6885188A209F544396B3F589A"
+          "invoiceId": "EB331A0A5493B041F52F53FCFEF997962567AEBE4E1A11C6FF39415A779855CB"
         }
       },
       "paidPath": "/w/team-xrpl-explainers/articles/xrpl-x402",
-      "receiptId": "escrow-2C82AFF633D9296AC116FD4FAB4CAEA0106544ED6C73A29DA960991827E34C48",
-      "txHash": "2C82AFF633D9296AC116FD4FAB4CAEA0106544ED6C73A29DA960991827E34C48",
+      "receiptId": "escrow-78F5BF157C2B9792A92D865713E80EB8F2827364825D017F178F71810042C1B6",
+      "txHash": "78F5BF157C2B9792A92D865713E80EB8F2827364825D017F178F71810042C1B6",
       "failedClaimIds": []
     }
   ],
   "grants": [
     {
-      "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
+      "runId": "953af12e-c87c-4c83-85f6-e172ad372bfe",
       "resourceId": "product-x402-response",
       "version": "v1",
-      "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:1:product-x402-response:v1",
+      "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:1:product-x402-response:v1",
       "contentDigest": "1aced00680aa043e25658e7600d3aee5150f01a1e337a33e8c21f17ff218f190",
-      "grantedAt": "2026-11-10T23:28:25.026Z"
+      "grantedAt": "2026-11-11T00:00:25.436Z"
     },
     {
-      "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
-      "resourceId": "team-x402",
-      "version": "v3",
-      "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:2:team-x402:v3",
-      "contentDigest": "fd535a7f84fa83f0d6b25d9705ea203154076a9db7db5fe71f38fcf238d8fd86",
-      "grantedAt": "2026-11-10T23:28:42.642Z"
-    },
-    {
-      "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
+      "runId": "953af12e-c87c-4c83-85f6-e172ad372bfe",
       "resourceId": "xrpl-x402",
       "version": "v1",
-      "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:3:xrpl-x402:v1",
+      "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:3:xrpl-x402:v1",
       "contentDigest": "1c8376d17bcc9151f2b8cdc08ca34aadd0faea6b2e7193fd13f03a473d3951fd",
-      "grantedAt": "2026-11-10T23:28:59.472Z"
+      "grantedAt": "2026-11-11T00:00:42.507Z"
     }
   ],
   "receipts": [
@@ -1591,33 +1347,33 @@
         "policy": "escrow-policy-v1",
         "state": "RELEASED",
         "mode": "key-reveal",
-        "revealLedger": 22227982,
+        "revealLedger": 22228567,
         "owner": "rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1",
-        "cancelAfter": 847668611,
-        "createSequence": 22220352,
-        "createHash": "4570340072416670F5B17C471FFA4CC1D3225AEFAC9198F611F68B1F9BA769AD",
+        "cancelAfter": 847670531,
+        "createSequence": 22220356,
+        "createHash": "B6FDBD229FEBDFAE041C4A21FE115449E3396AE7E9A422D391C0F7B4100028E5",
         "keyVerified": true,
         "decryptVerified": true,
-        "finishHash": "01BFB0095C3F294A0951C1B50DE03C63EB2A0E246DCE02D9281E43CBA19340CB",
+        "finishHash": "4CCB4E56137D738847E853535B068329562AD490DA4D9F5551CEC2EB1AC70638",
         "proofOk": true
       },
-      "receiptId": "escrow-01BFB0095C3F294A0951C1B50DE03C63EB2A0E246DCE02D9281E43CBA19340CB",
-      "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:1:product-x402-response:v1",
-      "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
+      "receiptId": "escrow-4CCB4E56137D738847E853535B068329562AD490DA4D9F5551CEC2EB1AC70638",
+      "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:1:product-x402-response:v1",
+      "runId": "953af12e-c87c-4c83-85f6-e172ad372bfe",
       "resourceId": "product-x402-response",
       "version": "v1",
       "amountMinor": 40,
       "currency": "SGD",
-      "settledAt": "2026-11-10T23:28:25.043Z",
+      "settledAt": "2026-11-11T00:00:25.449Z",
       "label": "XRPL TESTNET · no real value",
       "xrpl": {
-        "txHash": "01BFB0095C3F294A0951C1B50DE03C63EB2A0E246DCE02D9281E43CBA19340CB",
-        "ledgerIndex": 22227982,
+        "txHash": "4CCB4E56137D738847E853535B068329562AD490DA4D9F5551CEC2EB1AC70638",
+        "ledgerIndex": 22228567,
         "payer": "rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1",
         "payTo": "r9hkhUEsqcUBAhzp5dfVbPeX37UE6dEQ8c",
         "amountDrops": "40000",
         "asset": "XRP",
-        "explorerUrl": "https://testnet.xrpl.org/transactions/01BFB0095C3F294A0951C1B50DE03C63EB2A0E246DCE02D9281E43CBA19340CB"
+        "explorerUrl": "https://testnet.xrpl.org/transactions/4CCB4E56137D738847E853535B068329562AD490DA4D9F5551CEC2EB1AC70638"
       }
     },
     {
@@ -1626,68 +1382,33 @@
         "policy": "escrow-policy-v1",
         "state": "RELEASED",
         "mode": "key-reveal",
-        "revealLedger": 22227988,
+        "revealLedger": 22228572,
         "owner": "rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1",
-        "cancelAfter": 847668622,
-        "createSequence": 22220353,
-        "createHash": "01EFF7B6D3F16B676C280930D67F44ABF25AB90992D159135B8B63C9BF6C2E44",
+        "cancelAfter": 847670550,
+        "createSequence": 22220357,
+        "createHash": "E61FD9D098B200DD99F53DB4C3F024ED44CAF44B7ED2435B4918E224244A156A",
         "keyVerified": true,
         "decryptVerified": true,
-        "finishHash": "9235C2CAECF7F49DE5F42EDE343ADD9378D155E42E2782EB72B050AB4320C22E",
+        "finishHash": "78F5BF157C2B9792A92D865713E80EB8F2827364825D017F178F71810042C1B6",
         "proofOk": true
       },
-      "receiptId": "escrow-9235C2CAECF7F49DE5F42EDE343ADD9378D155E42E2782EB72B050AB4320C22E",
-      "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:2:team-x402:v3",
-      "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
-      "resourceId": "team-x402",
-      "version": "v3",
-      "amountMinor": 40,
-      "currency": "SGD",
-      "settledAt": "2026-11-10T23:28:42.662Z",
-      "label": "XRPL TESTNET · no real value",
-      "xrpl": {
-        "txHash": "9235C2CAECF7F49DE5F42EDE343ADD9378D155E42E2782EB72B050AB4320C22E",
-        "ledgerIndex": 22227988,
-        "payer": "rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1",
-        "payTo": "rnFqpNSS2rcDoFe72cwneSzwZAhoxqduqr",
-        "amountDrops": "40000",
-        "asset": "XRP",
-        "explorerUrl": "https://testnet.xrpl.org/transactions/9235C2CAECF7F49DE5F42EDE343ADD9378D155E42E2782EB72B050AB4320C22E"
-      }
-    },
-    {
-      "escrow": {
-        "scheme": "escrow-v1",
-        "policy": "escrow-policy-v1",
-        "state": "RELEASED",
-        "mode": "key-reveal",
-        "revealLedger": 22227993,
-        "owner": "rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1",
-        "cancelAfter": 847668641,
-        "createSequence": 22220354,
-        "createHash": "7AE9DEB6C0A5C1BFAC8E1778B46130AD18D514869328547593D9E810AB857952",
-        "keyVerified": true,
-        "decryptVerified": true,
-        "finishHash": "2C82AFF633D9296AC116FD4FAB4CAEA0106544ED6C73A29DA960991827E34C48",
-        "proofOk": true
-      },
-      "receiptId": "escrow-2C82AFF633D9296AC116FD4FAB4CAEA0106544ED6C73A29DA960991827E34C48",
-      "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:3:xrpl-x402:v1",
-      "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
+      "receiptId": "escrow-78F5BF157C2B9792A92D865713E80EB8F2827364825D017F178F71810042C1B6",
+      "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:3:xrpl-x402:v1",
+      "runId": "953af12e-c87c-4c83-85f6-e172ad372bfe",
       "resourceId": "xrpl-x402",
       "version": "v1",
       "amountMinor": 40,
       "currency": "SGD",
-      "settledAt": "2026-11-10T23:28:59.488Z",
+      "settledAt": "2026-11-11T00:00:42.533Z",
       "label": "XRPL TESTNET · no real value",
       "xrpl": {
-        "txHash": "2C82AFF633D9296AC116FD4FAB4CAEA0106544ED6C73A29DA960991827E34C48",
-        "ledgerIndex": 22227993,
+        "txHash": "78F5BF157C2B9792A92D865713E80EB8F2827364825D017F178F71810042C1B6",
+        "ledgerIndex": 22228572,
         "payer": "rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1",
         "payTo": "r9hkhUEsqcUBAhzp5dfVbPeX37UE6dEQ8c",
         "amountDrops": "40000",
         "asset": "XRP",
-        "explorerUrl": "https://testnet.xrpl.org/transactions/2C82AFF633D9296AC116FD4FAB4CAEA0106544ED6C73A29DA960991827E34C48"
+        "explorerUrl": "https://testnet.xrpl.org/transactions/78F5BF157C2B9792A92D865713E80EB8F2827364825D017F178F71810042C1B6"
       }
     }
   ],
@@ -1696,16 +1417,16 @@
       "asset": "XRP",
       "escrowTerms": {
         "keyReveal": {
-          "ciphertextHash": "d20093e2e8a16b0bdfc035819a84b6045c41189598e8411ee4b52f97324c9df2",
+          "ciphertextHash": "21f1ec9b282b79e373b472d585b13f7645d779628dc1e2af2be03222752ac3b7",
           "plaintextHash": "7ec9168305c5b8bf1a916893027076463e8cdfa90be832502d3aba555770a5be",
-          "iv": "48114DB1E5086EA10C27E2AC",
-          "tag": "16E982E5E96DFEC22AB7972ECAE2FAE6"
+          "iv": "D2931518B9475C6D811FBB6C",
+          "tag": "DB07EE94653ABC816E6E32991B7FD651"
         },
         "scheme": "escrow-v1",
         "network": "xrpl:1",
         "asset": "XRP",
-        "quoteId": "01de810c-30c7-4e17-8881-e800d10074c8",
-        "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:1:product-x402-response:v1",
+        "quoteId": "10b172ca-a94d-4298-a106-e5e4b50f81a6",
+        "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:1:product-x402-response:v1",
         "publisherSlug": "team-xrpl-explainers",
         "articleId": "product-x402-response",
         "version": "v1",
@@ -1713,19 +1434,19 @@
         "amount": "40000",
         "payer": "rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1",
         "payTo": "r9hkhUEsqcUBAhzp5dfVbPeX37UE6dEQ8c",
-        "condition": "A025802046989916C95DF0F27FA5797BC106C78778CEA9F3C70FA1C65353AAD78C388DC7810120",
-        "cancelAfter": 847668611
+        "condition": "A0258020E4FD995AB816AC4C6EF73F775B1AD291A6DA5E937A1881FB9FC7F5E298D341B2810120",
+        "cancelAfter": 847670531
       },
-      "escrowCreateHash": "4570340072416670F5B17C471FFA4CC1D3225AEFAC9198F611F68B1F9BA769AD",
-      "escrowCreateSequence": 22220352,
+      "escrowCreateHash": "B6FDBD229FEBDFAE041C4A21FE115449E3396AE7E9A422D391C0F7B4100028E5",
+      "escrowCreateSequence": 22220356,
       "escrowState": "RELEASED",
       "kind": "purchase",
       "label": "XRPL TESTNET · no real value",
       "network": "XRPL Testnet (xrpl:1), no real value",
-      "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
-      "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:1:product-x402-response:v1",
+      "runId": "953af12e-c87c-4c83-85f6-e172ad372bfe",
+      "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:1:product-x402-response:v1",
       "surface": "web",
-      "principal": "e64032c634135e8ee49a50ef665c1c534647e6b0bae3be2b50ba52ee4a55f5d7",
+      "principal": "83eb773c66b0c92b2bbb33d6e5a234db48dc46aed9d5528922156ca58e79ecf7",
       "policyVersion": "wallet-v1",
       "writer": "team-xrpl-explainers",
       "resourceId": "product-x402-response",
@@ -1735,85 +1456,31 @@
       "amountMinor": 40,
       "currency": "SGD",
       "amountDrops": "40000",
-      "txHash": "01BFB0095C3F294A0951C1B50DE03C63EB2A0E246DCE02D9281E43CBA19340CB",
-      "invoiceId": "E7614EEFA2E9999E40731B4607AC52AC9DAE6E49458BD03BFDE227F2FCE371A0",
-      "ledgerIndex": 22227982,
-      "explorerUrl": "https://testnet.xrpl.org/transactions/01BFB0095C3F294A0951C1B50DE03C63EB2A0E246DCE02D9281E43CBA19340CB",
+      "txHash": "4CCB4E56137D738847E853535B068329562AD490DA4D9F5551CEC2EB1AC70638",
+      "invoiceId": "F336B8DE6E64B7151BEE802E57E40B383BE8D5186043394917FABFDCF04DFDCA",
+      "ledgerIndex": 22228567,
+      "explorerUrl": "https://testnet.xrpl.org/transactions/4CCB4E56137D738847E853535B068329562AD490DA4D9F5551CEC2EB1AC70638",
       "status": "VERIFIED",
       "refundTxHash": "",
       "refundAmountMinor": "",
       "refundExplorerUrl": "",
-      "reservedAt": "2026-11-10T23:28:13.286Z",
-      "settledAt": "2026-11-10T23:28:25.043Z"
+      "reservedAt": "2026-11-11T00:00:12.328Z",
+      "settledAt": "2026-11-11T00:00:25.449Z"
     },
     {
       "asset": "XRP",
       "escrowTerms": {
         "keyReveal": {
-          "ciphertextHash": "a85a390397ceffaad23a9992f2d85bd8871489ccd09301a8545ebd6d720d5157",
-          "plaintextHash": "fa541bafbd329fa10de4f5b64326f0735d766adcde3a2194469086def804b82c",
-          "iv": "051842140D56B2F909A6EC34",
-          "tag": "17D11E955BFFFBB01C93B8EA3BB8B984"
-        },
-        "scheme": "escrow-v1",
-        "network": "xrpl:1",
-        "asset": "XRP",
-        "quoteId": "dd1b8b3f-ca21-4ec7-b51b-10aec6a02927",
-        "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:2:team-x402:v3",
-        "publisherSlug": "team-builder-notes",
-        "articleId": "team-x402",
-        "version": "v3",
-        "manifestRoot": "fd535a7f84fa83f0d6b25d9705ea203154076a9db7db5fe71f38fcf238d8fd86",
-        "amount": "40000",
-        "payer": "rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1",
-        "payTo": "rnFqpNSS2rcDoFe72cwneSzwZAhoxqduqr",
-        "condition": "A025802076227B5A91F634DCF34929A7804F431A421F827490AE91C864D75328FDC622F8810120",
-        "cancelAfter": 847668622
-      },
-      "escrowCreateHash": "01EFF7B6D3F16B676C280930D67F44ABF25AB90992D159135B8B63C9BF6C2E44",
-      "escrowCreateSequence": 22220353,
-      "escrowState": "RELEASED",
-      "kind": "purchase",
-      "label": "XRPL TESTNET · no real value",
-      "network": "XRPL Testnet (xrpl:1), no real value",
-      "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
-      "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:2:team-x402:v3",
-      "surface": "web",
-      "principal": "e64032c634135e8ee49a50ef665c1c534647e6b0bae3be2b50ba52ee4a55f5d7",
-      "policyVersion": "wallet-v1",
-      "writer": "team-builder-notes",
-      "resourceId": "team-x402",
-      "version": "v3",
-      "payee": "rnFqpNSS2rcDoFe72cwneSzwZAhoxqduqr",
-      "payer": "rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1",
-      "amountMinor": 40,
-      "currency": "SGD",
-      "amountDrops": "40000",
-      "txHash": "9235C2CAECF7F49DE5F42EDE343ADD9378D155E42E2782EB72B050AB4320C22E",
-      "invoiceId": "ECF38A0E9133773C244AE9454F7912668B799FFD965D9B21BCCEC5A955915A8F",
-      "ledgerIndex": 22227988,
-      "explorerUrl": "https://testnet.xrpl.org/transactions/9235C2CAECF7F49DE5F42EDE343ADD9378D155E42E2782EB72B050AB4320C22E",
-      "status": "VERIFIED",
-      "refundTxHash": "",
-      "refundAmountMinor": "",
-      "refundExplorerUrl": "",
-      "reservedAt": "2026-11-10T23:28:27.433Z",
-      "settledAt": "2026-11-10T23:28:42.662Z"
-    },
-    {
-      "asset": "XRP",
-      "escrowTerms": {
-        "keyReveal": {
-          "ciphertextHash": "6d909ff35341ed6067047ddc4c8590882fba530aa790f50855eac09dfd5109d7",
+          "ciphertextHash": "c68e351d1bd85e4e4e4dc55643edbe7c180178381cf3034e43a113b1e59cec32",
           "plaintextHash": "b30ba033cb16246f0e2638a2bad0ea2a7b465bb14750a811d995914b6d530789",
-          "iv": "878033580AED932AE508DF46",
-          "tag": "C3BA7896574E23C5A883C7DB0E75949F"
+          "iv": "E2A67A93AF6EAF0A51EAD592",
+          "tag": "F56D817E7277070927C25175F5752728"
         },
         "scheme": "escrow-v1",
         "network": "xrpl:1",
         "asset": "XRP",
-        "quoteId": "de5f1d2b-fc6d-4332-a288-df88497233c4",
-        "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:3:xrpl-x402:v1",
+        "quoteId": "dd959100-a11d-4607-b2e6-f2df7427125c",
+        "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:3:xrpl-x402:v1",
         "publisherSlug": "team-xrpl-explainers",
         "articleId": "xrpl-x402",
         "version": "v1",
@@ -1821,19 +1488,19 @@
         "amount": "40000",
         "payer": "rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1",
         "payTo": "r9hkhUEsqcUBAhzp5dfVbPeX37UE6dEQ8c",
-        "condition": "A0258020AB0616DEECF30FF3686F1A5EAEFCF67FE18CA0A7CD95D536ECDF5732E551CF20810120",
-        "cancelAfter": 847668641
+        "condition": "A02580208A397559D731A890B5E371929CB1F102E3AE8278CF846CDD1CBE9EF48E27D788810120",
+        "cancelAfter": 847670550
       },
-      "escrowCreateHash": "7AE9DEB6C0A5C1BFAC8E1778B46130AD18D514869328547593D9E810AB857952",
-      "escrowCreateSequence": 22220354,
+      "escrowCreateHash": "E61FD9D098B200DD99F53DB4C3F024ED44CAF44B7ED2435B4918E224244A156A",
+      "escrowCreateSequence": 22220357,
       "escrowState": "RELEASED",
       "kind": "purchase",
       "label": "XRPL TESTNET · no real value",
       "network": "XRPL Testnet (xrpl:1), no real value",
-      "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
-      "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:3:xrpl-x402:v1",
+      "runId": "953af12e-c87c-4c83-85f6-e172ad372bfe",
+      "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:3:xrpl-x402:v1",
       "surface": "web",
-      "principal": "e64032c634135e8ee49a50ef665c1c534647e6b0bae3be2b50ba52ee4a55f5d7",
+      "principal": "83eb773c66b0c92b2bbb33d6e5a234db48dc46aed9d5528922156ca58e79ecf7",
       "policyVersion": "wallet-v1",
       "writer": "team-xrpl-explainers",
       "resourceId": "xrpl-x402",
@@ -1843,16 +1510,16 @@
       "amountMinor": 40,
       "currency": "SGD",
       "amountDrops": "40000",
-      "txHash": "2C82AFF633D9296AC116FD4FAB4CAEA0106544ED6C73A29DA960991827E34C48",
-      "invoiceId": "1EDC31AA282D6E08E420DBF06DFF61DEBD3CCCD6885188A209F544396B3F589A",
-      "ledgerIndex": 22227993,
-      "explorerUrl": "https://testnet.xrpl.org/transactions/2C82AFF633D9296AC116FD4FAB4CAEA0106544ED6C73A29DA960991827E34C48",
+      "txHash": "78F5BF157C2B9792A92D865713E80EB8F2827364825D017F178F71810042C1B6",
+      "invoiceId": "EB331A0A5493B041F52F53FCFEF997962567AEBE4E1A11C6FF39415A779855CB",
+      "ledgerIndex": 22228572,
+      "explorerUrl": "https://testnet.xrpl.org/transactions/78F5BF157C2B9792A92D865713E80EB8F2827364825D017F178F71810042C1B6",
       "status": "VERIFIED",
       "refundTxHash": "",
       "refundAmountMinor": "",
       "refundExplorerUrl": "",
-      "reservedAt": "2026-11-10T23:28:45.494Z",
-      "settledAt": "2026-11-10T23:28:59.488Z"
+      "reservedAt": "2026-11-11T00:00:30.029Z",
+      "settledAt": "2026-11-11T00:00:42.533Z"
     }
   ],
   "proofs": [
@@ -1887,8 +1554,8 @@
         ],
         "wordCount": 209,
         "publishedAt": "2026-11-10",
-        "relevance": 0.8515081691628991,
-        "sig": "1B4708B3F1365D8D4FDC2E0F39FA6C7105883921BA2C610D2B043836529D17BD0C473B07FA7D06014C5F92411835A06AF0FD0DE15498A7D193C89224AFDD300B"
+        "relevance": 0.8516079554579348,
+        "sig": "66C3CAF1F07E4AADA5C49E46B9A0CACBF2FF0C9B7248D0C57A4D900E7D212207D44EDBE66D9A1A93E9EE0DA558ED82F4781A57DDD9CA35CE0342FFB0458AEB00"
       },
       "salts": [
         "b4871707b68d34e44324be727bed8917",
@@ -1896,22 +1563,22 @@
         "99b00790094b75cc4ac8276b5d1c5a92",
         "1e91b49ed179eaae04d962fd51969474"
       ],
-      "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:1:product-x402-response:v1",
+      "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:1:product-x402-response:v1",
       "keyReveal": {
         "quote": {
-          "ciphertext": "7A0E353D85149B409556F24999787880D27B7D0BB0C654C539E5D3ABF8423AFF70907D706FBC2E0EA9E7537E94F26D113C264060C550C482DC86D1966B185DC21D271F9788A543067DDEF81342B41D9A398AC5444F10525B350F3273C9F78C0A31840096C0557A7441A51A4DCBC27E4FABF0456965C1E071995EBF023AE2B5604DC191BE944FAEBD624AB462D5212CCA829F7B7CF66924C4B4C6AFB96C86DE031E333226D4BAC3608223F563CDFB6FF02781F2F58909B34A1C78B617CE2C642FEC6BD3DD7583CC410A06B03527A73A9007C1F1ED478025167B80B949AF6238C128F4F3893015675ECCBC69BE59013A66806C5FD8FEE3022FFBDEEB19D492547770CF86ADA72A3D1DF46FDEB6F6EED580888CD67B26B1C6A622C77009852D5996926B767E4C90D121D05500F44DDF7425A791C94492ACB5161AB4AC5FB247AA9A372AE0C884D70ABB2FBE63D3243FB8DC3A91C4554FA41ED851E270DCC59138F528A0932C7B1440008D2FD5DA0D508C32DEA20A6520A6D2D15169FF0FCD3BE7B1DBF0446390D275C69B88661253D1D5691B69FFE04AF2F020FF0BDBF4F42161282FD8332C2567D11E3055290FBEB6E69E13D601E8DA1693072CEC6634AE1B5D358F89AA1A524FCA9FDDE0CAAA75274934CC5E634A5152701A8648A5675C73A5F0E9047A327FE31A36EB8E55B4B18D4D367ADE584515EEE33CD3A61A1D6D5166F71BA629A3C6E226B20ADDACCC4F393139A5682DD781B9EA574D593E5BD4F14397B17DD428EBAAAA33A02063A76B4C79223577F84503D4C94B17F737778A66A240AFEA1A6504A6342662678200B2403C7AAB872E26000C7EC3BEF7423149C3F49476FEF43EFB1F024E99DB12781369A555A07266F4CCB3ED7FC73962A07E40A7AB7D560C6958B50F13BCBCE9C9EAB8F651C5068B63BD3962BA2907B1DAF588E8DBF348544EB0F0A9692FB46D5C68D2BA0CF4671D425E6F477F137A28E7A7EE72BEEF0E90FF0B96AB49BC98F19FB7A04BE83BFAC3FA47243DEE94B0606D86288DB74CF32A9EAA6A98E93ED373E600C0C7A34C887CBD09A6A9166B2206145CD36B8BD7353347B93D814DAAE2204E4F37547EC7B1B0B9C08822FE9886B50350109B664318F8315088447C05C7844AD0401306766E6002B227F3D56CBE6202C69A3CA7960C6E1EAB89DF9F4222E9029C621DEACF0848242D95B6948AE113239ECCE420D53FB64208DE58014C9DFDB8FEC51BBE9ED031460FA47125A47CBCAB3D1E6F701BA229F7F2211555694412469B3E35D19B96E77C7923942D19C1A202C58D094D770C3E1D562FF3ED998FE28D052AED4875724B99ACE0738CFBBE7F85D50FC2348E1FFD50B4DAFD9A2CB99FCB2C4FE28B8BB83611738AF9777C3D5F4117A3C7A82086BB1C804E2171E3A0552F3369B139C22678F92F70BD50738E5AC7C6EBD842E1AEDA00F5321D033BA87589A539896AC432AB03BECF66B160A42285BA109BE42D5EB004F0FB42BD93E1E2A8A32F95CE70C9C9FEA8B3AE0AF112D9C48EE6E9B6C02E491AA34E05FC11D35A7B4EFD0D4EB342E5F9A8C620567C1ABEF3815BE6AE7F5B27FA4C6DF8CC3D2637B793E69E2C5C46265211E4F0B6F6EF2CB1EE7A476BCB2F9E9A7E1C34526B9DE9DF7647C3318B9F3C90864CF8A0185DD2B12D32B82C79804189779765EFCF8069602328D4D7485D9D14E88DB107CB5FBBCA16B429EE0596BF654D24F52AFF607471A5C8D62E6C4FC22B1CAF294524BA36697063DA392FA7C88C630F90184EE3C155C7225700A271878503416EAD710A194B897904FFA4D1A240E049812574870C8E1F0A85ABA03C1EAD4D7251362F58C82DA9449142C4143CFEDDBB4B86527EAF6AA501A4CF6E46D69A855B70715237D74AE5F67843F10E181B3B4E6716C075CEC68293F3F22CFC597F27E4BD77E964F42C3C8C5898F26A358F00CA5455B4EA77C25BB7B4CF6A33A58EB4B002848678B619C3632DAA934B35992D134BF9F2FCA747F8B2552627A3707BFC0CE579CCCEDFA43119E5D9EAD3592E47C190298E6768B9AE2472BA4457C8F829D5F947DB67882C677644F8874A63AB9689D1783793BF1EE8E2F208088D9816C04CCA0977DFFF51C2BC51D86B48DEAD2E6197DA0E337B8DB0F54F00DE2912E3AFA311E681C80F610568D74B73EC32C40C5337225E22F214181125315E0EF0F3C4289F0704C9D68A8D29A35E1AD16D8DAC3656241ABB7DEACF2FF7A28F19676489064E1D3ECB8F23F472174EBFB5E9C0FF6C83FB24D42AC7FBE38B4C45DD6D376C9A493C4E980F4BCC3AED45CE3DB7ACF92A85161D8E804AD2FD342BC33C940FD07888FB37CAABACCCEC318C5D2A6E33AF4A096A682EC014DBA8B2C191881791B37E7981160888D0BDB603E9324494ABC7531D5FF2BC5C66BA6FB59786FC83D5F794CDAAF224401BA08213DB404E01BB59D7B3793ACD90ABAAFDE197E97A9C62AEB5C0501521BE1C8E8B5E84060B561BD93CC95AAAAEAB2125B613F6C38D879D1BD3CE90BB1E80277784E758F216C84DB7D089AC45FEE0C6942A421A78CCF27B424BD1E4C006CB69CD37771D4F802A0519C71B389F9BE3F3B338F7490240FC8FAF239EB52BD96EF960050CFA81E84E603611485B392C7C44A3C3FFF8CE5CD9739BBECFA6B89016198F9C3FB0C8CC3006A1B3E99085A4B18E26F524C86FBD00846969AADCC4DD9359F0FB821876993F8DCE4089B5CC6530929161A4F4D8F5C54DDDDA9226C52EB992B6040A36BE396C43D0FA8A31972339F678D95B75E7F958C3378AC0AAAC6A4ECD8EE03899F0B9438758DC6BD5736F7DFD88A619546B7A6FBF51384A8F1F1C63FC629FFCCFDD5FB517A7B56C56276A2B39AC17336BFC7521503D4C2447267930BE9198D3D79A161764F3A9EBF34D2F5AC5A39C7B8560B4C46E73C5BA1CCC061D965F866AE94E1D638A79E65C7B75A8522BB61C375D5DB3BD4371FD7F967774ED7CB351F8AAD4E0C52DF71C3A1A2205972223B48FB47C4F563725C55B08C3C316DFD047608EB12F4CE92FE68A08545C670DAF779D6BEBC75F87732F1103F1E34B4E54E9DA7BF13DF0DD1DA01227398A88EA5003D1E7C2A5111D9844738858D0F03CDA75C1CA63326428B5C30A69EBBF0B715D9A57817C165BF0C9D4AB96C5096F1CF7EBB4C649B810942116C23CCDDD6960447A3142F48FEA0699AA738DFCBBD561B5AF44FE6555BC9DD2786F6D8F10E73362BED4E0A53E20F12DC812CCA15870CA91F860F97E56A5883DED6018B84903E2BFA4A9E02DD51586014A3877B6A7BD204C3F9D397AD07C64938FC592EBF7B96CF54076C43BFB1E4A821C40A7A461902371EFDA8ED91D0EF9A460BEC8B0886FE2BEB5B4D8667F28E1C0D14FC80B4CD795FC2FF44CB00CC3F717D2E92CDC8AA1A62211C0C8AE53EFA18E5DFD82C78DFCAF123289D78B61C1D4C70D0A79C6BB2EE81F6E10865E01EA5657FA791DED9CAA6F1DA3E122B5D9933D0269ADD75C8EAB2A7D36C53B54F7E7871B0451E3BB42C754950E4678BDAE70AD55F7FDDE49ECAE9F740210F6F0B8CADEDFCBB18756F32DEA04EF1566A8D3E1B5B19B2E4E6A1428A23B9F8B600EB10E3E3B34115824F2FE681A265F4EFE6DF6E14686B5A3D79A646C35BC595DA4A052BEC1B86326C8759DFDEEAEADD3EC184EC110FA13825F719B7B72E12F3838EE59AC0E07DB145F78C0B6E65AF1B92C2199758220645D5203A3A2244F6CD14EF506D704F33EF4FC94C38AF22DC979FB1A0605D9ED3E9F36D333C4A5D509D266C4495D205FA96C5DB9240A8F31EA6DE44D2E4C91079DA302B8A0A57DE4BF0AFFEEB2091189D37860B0522AA052365F02BD79CB60B2F1A66EA0A571A50EDA60A4360F00293A21424A8162C97C947DB8CBB1B41DD61373104CA5633771C7EA0A9A1C727A42C2B4DA7C6F964C4BEF801409BB30C7DAC7ED0DFBBA636D0EC63AE5D168718B7DDD157546DDBD2EFAC8EDB544D2FBBC9BECEC25DC2FC95815812634F47FDB5B2B07C73902A8278D49E1E7E9EEDCA45CD820D41A81D3F1442AF8636E0944D0ECA47B607EF37B8862344312B11AEB919A6F1591DBF367CAAC552B30A790279F8F38BD9F54586FBB919CA31434041C34154FDB4419DEF711898AAB3F26CDA07724F4A6746395022D59233C97722CF66BD71FCAE24C56DE0F352890A49A6AA0485806DE4953B2BD6FAB3D15809B5E4E1DD256F7ACE3D0402C1B0EF85F0DF32A8DE80D9EA6D8272140F62C0A83CCD874D8A35811FB7B816560DDC77DFA7C8BDEABD7BA6EAF6559703A604784F2BEB3A4F624B4D79950B8D433367D034545EC30A8C993DB50E32AF175E6D321DD70A86846352B34BBFEBCD0D30F99D1DF586BC7DF179BBBF23F64CA54996C5D63F091D4FD24A410340902AD6CAA07ECFB91470A32BAF13DADF3AA61304F12FD7DCE2CD63520042FB047ED46544D0387A1CED84B502BD2DAF12A0DAC3327390CEB90053E7F5FC95BC26D041A7CAE7AA1EE8DC324F7BC510C7DABC8ED907F436FCAA131AC5D5AB388EC4565F560B03776267518E033FA095E78C836D65ADFDC10EA729A8756FBAF5845941F6D67F67782E235F4DBB9484A3F6B368836EE06BAD8992DCD34C3C3774F29CBC467BFED62B0082DC41B0B7D29D7279B41F483A9344B65A00129E6120EC634FD1E8A6E9FE692881CB61BB356479D3B859137D6B6839C42E48EFA7C10EE5E131E3F9065DB74F3FFEE5C37D9FB4B6E30D444FA4D3DC884B5C5353423356222",
+          "ciphertext": "FEBF583241E4BCA44072F73736DCD1A887D4ED06DFDD8F6377854643CF29C4FA810B6C9CEF318973F5741125B2984EAC3E464BA739495365BDC8BC3AC79AC0936878D64C59544BCB71133822B22D5BED7A003FD8ED615CCDE4027549690813DBAFB33A00B4754362FEAD66A5788A439F375D523CBC222F1CF469766A8E51EC1D0B71949DB73D586E690655D75F3923A4FB6C32CA975055152D753A21EA78D9C9A464E77C8EA4E2210A13E9C9E6AF199C96AC0052B85C7B155F7416E90DA539DA819276628820CAB04FF552B5A2355B0E048FCFC5C1C71BDE7729DAFAC1B2D13CB0BAB494F1DD41D5CF253EDEC5849C682CFADB31AD124C4BCDC3C6947E98099FC626C855CC9CD246A7D2AB991D5263462F7D46BA2473DADEB2B902131F1BCD6CCEFC6556C842DBA8B79C63CA6C6743BC1B00FB25BDADDD478790E385C4C4CCBF7A00682D8AFAFCA7FEF66E50B5419A1CF7002900244A96A32D835C4B358C60EE22C287132C6F6048D78A6A01C64258B02682F7D14B95141536459B75034A32CD38A2312736069182F6E5D260E3EF352F89CC5F38764B16D7B4CBDF88456C0EBC1F280E73C8D5BF7A5D0380A6CC463FBCBA6C4BAD762AA08F1B1E1CC3503ACD617A397C984A56AB5AC3C29C1A51CDF47FEA2451450414F400385987C70A927546D8093A7025B9DD4E96D9952960F34764C6CE60A7438204936F1485BA42A7A1F1BC11FBE3B3F0CB41348432EAF07DA4193F0350166D8A9ABF3CD6D083C42785751DCA058DF482E1CAC8F357F6653D512ED261880A62C71E8AEC1A70E5C30104B7116312667348E1704159369E966A2A2C4D0A5DC79FD9119E541C2C2E792DD2E1D021F6BB81751FF6096F6619E83D6A24A1BE0CCF6A4697440EC51F441988EFEB17B735E65DDA5ACC3DAE54286886ACF5F49F8AE63AA9E3EA896B3A51824ABA50D7C6075E5EEC515E013E6D4F1DF09217835DF4170F25F0456C8C72446197DEFD9739C45012AB40074D696E0605F5C05AE1D3292561C2DBDA1CF2C7274F784E97F5D1D90C201A2C278286CB4150E59754DFDD875A9EA9371BAED1CE17C40A270B46684F8CA728FB0B1BB7BD8D9FBD20CF6309531F7BC49B2178B5A56D8B5310AA745993742D9FFBDFD533D722937B0874C58504C424339A53A251B16C4856AE5238E196B737F3BD44FFDEA160284FBA09E14A4240985319A088D2EA93BFED17A7248E7641A95D53A7DECC0E915570D9A1B749D512208AED352950FEDD22E783BC1F0CE24F314AEFA665762385FAE971FDE8E3A7DD9DAA2CCCAFF8B631DD497C28E4D3BD6D90862DC0A0E360B0DFAEB6C42D98B948BF23FA1F9C28DDBD59ECBA03CEF0327310AC5ABB36512DB84477CA27365600FA77978200BDD4F1728DCC0DE409DAB72B730D1E0F311B7B721E2F06F56D4059CDF19990514150C004053E56319458038A367F8DB2F36B2D9AFE2CC3A27129141043E595DAD96621D64AD9DA72EC3FAA863D7F24F004A311B0C2ADCEC0BF40131B8F2D38D78186712107DC20A507D1B0F1A78BB82CA522D6B58C145BEECECFED348910091E55403E26B947B9519891C289FD628F145D43C1BEAE12517ED774952ED7868112E9A89B9DB377B09D456F5F3AC6E911B24504B8E99794AAB6E7D7182A6F8B6E0212EBA6BBF4E3AA5809BDE70BE132961DC043715F3982FF6CA360ACB78E06B18B26F4929A4940D1B9784D9C31352B60E64B897272870D610C96AB583BF9526D2058A0D7F1CC051E35214BF521D78C58940D730743B3D009DC67B7D3541DDCC15CE2D8AEB1B199E7FD0F9991699C2F44B5016AC0BE8B87DFD5974E86F261C4042F1D09DB50073CAA4EE603B3B6DCD17AEFE51CA141B667BA0B8AAA6D05DD3ACD01DF52E7AC64BB44361831BB6CF58B51D64F0359580670B50D8E1FBC0AB1AEA2F968B7BEAC5C23A8802B4A6ABD7F5A650437E9759EAF6ACC3E30761DA6CA8FD160D84D078FB29A9A07495653E7890574E7587266E233E76DAC70AF1CEE2BDB54ACC074F9F8CD641184AF79B16683CDE8CCC0756EBA4EB3ECABFE6D7D5CE687974BFEF3BD79471CB928C88B9180F41855992C69F69FADD273492B0DC1EBAA7F0CB56AA995E95AC26B98A1E5CD78C9527DFE8BC65241AC87BF2E75C6FC19CB0C4216CE6E9F34869ACB24E8275615391EFC0CE33501449165381B56A6638CE0F2108EB4C67A0BC98AC1EA6172257F8AFA8DA2D4135347F3F041BE1B983853CF67A9009A0E43C4FE31E92ED7F2CBEAF0E1573C526ABC87D8CB87256CB9279438F200C5166970A7F08D907ABCE3F8D2D43C10A6412C1009A97D4F9324D30B8B115DF7CFD99649D65D4C1C245330A29318982EADF1B36AE6AEDAB90464D38F382FED47B07BC0E325957B0291F776875452C15FF021C52428AACC6B5AAB94F7307436D0542BCDBA59AECE9927F86C9FC05EFAE427FA4BCAF33C515B00F8D7AC791588D17608EA50EC9F97CC562E6A2A57D1109530B9008D04C5EDA593A1B8C66DC4A98AFBC1DA9021945E2A04E822FF4B074A44B7C4FC2D9EE34DB8A6117AB9AB8C1408891958752C1919B7679EBAC15281C3C67809517C1C1371F86AB266788EAB532E063FDE9AB1C8FC66B3690D9B2251912A2888622075AABDA08390D04D568923068B5FEE2D306320DE2C3E8CDF5AE8D4765E49FA73EC917C55AE94A1C050EC1CD02A3EDE5EF390390CAD0000CD57BDDED61F79D1FE2D4DE69BA0D9DFCCBCCC76D2814A910856B25F170AA902177E1ECBD8631C277277CF13FAE87322BB7D715058108A09F32DE6B33D360C1A6BF89E0653931E9CDB3E2DE1607BAC8DE57CFE4C748AD6AEEE59BCC8A47CBBB9B1F6F565EE99896EFB0A338282141EC2723C9143FD80614EC7361544EE102023124A47B69882F3E7A989D6C67CF040FE7AF5A6CDC16536BD6CA2A22A8958F638D3015AFEFC7E9C2F1B70850ADF4725051685408A5D54B73F0FF8D0EAA8EFF5F48F20B569E5885B2E2A5F37ED42845868B071EA865FA458A9764E862975C62F40CA183AAE0A8E1C8E679E1DB27CBD6B59BA2719981C52545F4A09EC5DDBD927F96ADF61A0A6E042E032BDB0375D29057ADDBF6C1E61767C5571008EFEF7392FE8B17B990147A3C283C36FA74178385DFD7FD2641C7D8CE8F1A0842335F580EDC99BDC8F84A9F48F10317CBEBFF564572D02F80A7D4D7FC2D4FBDE8257025C5618EC68249EDB0E3F2900286DA35D9974F7E15C3415DE4842DABAEEB80AC96377D25E50BE01140F0D2EF0F9406D52F119BFEE20EEF3F89DCFC529950BB2D7EB66B9562C39E20F132F7C8384BC70B15301BCC3F59593E1EA51E193E4F5D8DF458A52C3F4B8DCC600244E06EBEB62A88D42AD986E6E6D6386A79ED82DA75E457016591143FE5A35F8DB6A777041DDE61A0CB0EFD8CA40B527B47CB488E198677D682DB6350B4AEEFBE32573DFF87849CCE3C13E8C39C7361182F549EBDEDCF4C247535321DA7C369E17544440ED92DB45041A4CF97046404F6A041A51EF6E121760A885C9137281BB0A73E960B97E1516D77EC408695B557120D51E5D52C35200E48B49E9DAB0677A0A6185454CC2877728D418B6FB6612619F9425F0DB3AB08555266AA3F6C5A05C10F088E3B0915FE079D475D1011BDD3EC0367CBBEDFF17EE8BFD05662EA12262C060CA6C627C7BA2178D928C166E0DC480FC93946140FD5F413C96A96B0C08FD463A80A3E388FAD28BA1AD41F5D8D899F9C04E2B9B3DE5D2107598108DC8E6BB769060A2A0277DDD43AF711B182998CBDB6511577FECF1AE172ED643C19964301F288226820C41B2E3EC051F03A9E4949FA9356690E66859ACACDBD2D021F2DDE2C4BAD79CCE859F3924D648908368D2D905ECC74E8BF0C0DCF94B3DD04033B8083E3A3FB12567571B6F585E376264B38891E9690716AF55058DF944FFAC20BCB8928C0B030C7DA218138E83C75ED9C5825E42855C3640435DB1D83989028A96F3B50ABA5B65B9957C32EB7F8DAC3D1E2C31CC1EDDDF0AA0FF1DF7B8147AA20D460FBAA76E59B6B1B77CB9E2C9045EF63560BF12A1EB2D914092AD0D3BB1CF9B1DD18F89BFD533344413E2ACD247EDEB746731405FD04D45CD8E968414DAC64707EEB0BDBC8550438628884B3D3372288906F9C54E4793EFCB3A7ECC209268EB496E9ED37390C3D7DAADD52B5AA73F57B541D904623AB41B8A5E32DD2F38076056B1F5BE80296C2065DBDCB5BA7F5DE56EAF0B72BE3C6BDCC94A596BA76D5345323AC0BA7A1D9245FF02D84D5892B259F15DA8E3AB01E2EBE8F035DE40696AC7CD9AA9A0F51A1F6DB0E53BE225E0C4D42B670BD0679E5D2CB2153D097F4E21F87CF80C236F6DFFBDFE8B6462231AD3C2F1D35907D75D175F3DC9061CD2E45D9E6FDD25A1A80D187F17101992702376D7F2F7EC4E5144C4CFB5CEA2190DF561140F972E85A027099B5C76552FF77094023F7A1211F43B6770B4238FAEF30F660404C536A5BAE19FF37F82519802352220211A36D40060A9E9A728C1B00501E0E0C90D2146F12C6B0AF0FE6B97216AA5B57A4986814F7B837F4F8723C009FEAFDB6A8889F6794F8E7DB3D5B41A531500A7478F18B96AB0D43847E2CB7BA3B133C83B3D54B8A27029150D9284D92F6CB5A7061FD6FF97B1AB968EBA668109DB0E6D17854A76BAB9F8E000909670938940D03F7AD1B629958052581D4D3F7F114BE5B4F7213A238001926AC6787C5FAEC37B8A5C18FFBDE1491FE2B708729813",
           "terms": {
             "keyReveal": {
-              "ciphertextHash": "d20093e2e8a16b0bdfc035819a84b6045c41189598e8411ee4b52f97324c9df2",
+              "ciphertextHash": "21f1ec9b282b79e373b472d585b13f7645d779628dc1e2af2be03222752ac3b7",
               "plaintextHash": "7ec9168305c5b8bf1a916893027076463e8cdfa90be832502d3aba555770a5be",
-              "iv": "48114DB1E5086EA10C27E2AC",
-              "tag": "16E982E5E96DFEC22AB7972ECAE2FAE6"
+              "iv": "D2931518B9475C6D811FBB6C",
+              "tag": "DB07EE94653ABC816E6E32991B7FD651"
             },
             "scheme": "escrow-v1",
             "network": "xrpl:1",
             "asset": "XRP",
-            "quoteId": "01de810c-30c7-4e17-8881-e800d10074c8",
-            "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:1:product-x402-response:v1",
+            "quoteId": "10b172ca-a94d-4298-a106-e5e4b50f81a6",
+            "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:1:product-x402-response:v1",
             "publisherSlug": "team-xrpl-explainers",
             "articleId": "product-x402-response",
             "version": "v1",
@@ -1919,87 +1586,16 @@
             "amount": "40000",
             "payer": "rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1",
             "payTo": "r9hkhUEsqcUBAhzp5dfVbPeX37UE6dEQ8c",
-            "condition": "A025802046989916C95DF0F27FA5797BC106C78778CEA9F3C70FA1C65353AAD78C388DC7810120",
-            "cancelAfter": 847668611
+            "condition": "A0258020E4FD995AB816AC4C6EF73F775B1AD291A6DA5E937A1881FB9FC7F5E298D341B2810120",
+            "cancelAfter": 847670531
           },
           "pubKey": "ED98DC9EFBAF9F828290CD153789368BD86E4893A2BC6BFA884978CCFDE8AC706E",
-          "sig": "46DFE0CE25E42A88AB4AF1F4D3084EBFD41926AE745BED3BDE41B2299BEE57B46120830C7416285450443004BF2C85615F1ED4BCB18B64B8BCD69DD6835AF506"
+          "sig": "C9EE5E2F14DEE63A7C884801CAB8CF71158752C949E1B57E7BA8DF6906A6EC49B5E540562C77C8B071CAC0DCD7EACDF0A244D8B2B6FD022CC85820BD9581670A"
         },
-        "key": "8C07E3AA3B3EA6FFE8A119B5ECB0B31E42A9FA03D18DA9D1E950650486000634",
-        "finishHash": "01BFB0095C3F294A0951C1B50DE03C63EB2A0E246DCE02D9281E43CBA19340CB",
-        "ledgerIndex": 22227982,
-        "createHash": "4570340072416670F5B17C471FFA4CC1D3225AEFAC9198F611F68B1F9BA769AD"
-      }
-    },
-    {
-      "resourceId": "team-x402",
-      "version": "v3",
-      "manifest": {
-        "schemaVersion": 2,
-        "publisherSlug": "team-builder-notes",
-        "articleId": "team-x402",
-        "version": "v3",
-        "wallet": "rnFqpNSS2rcDoFe72cwneSzwZAhoxqduqr",
-        "pubKey": "ED5EA38164A729E57EAA5DD3517CBA40740243DD2CDD10FBE871C705470393521F",
-        "priceMinor": 40,
-        "leaves": [
-          "0ff461ba595f5c0ce49ef291b37a706ceab2fbc32f6152565f2eb58290dab411",
-          "97c92e398207f7cc7ffdfcceeaf5b93cf61c976189e00312ff27c77be5e80ff4",
-          "563d12b376adba2904953c4dc6c3d9d117fe9196bbecf0e7a7df3904f54ca8d2",
-          "6fc32239557456373e3319f1c09f47b90097da77e91269c7d94f5fec0036bd8b",
-          "21b7c26cae2925f9df6d160736197296892327fa8d908505f8b3dd2f20ce2a3a",
-          "45e863cec46a89077c98a02485c07a72008531ed2f45e79026c37eb2dda4994f",
-          "112b9e62aaafc783e65e3c8dacb9ff28d74cd7c9ec33fdc03336fa48f4c53177"
-        ],
-        "root": "fd535a7f84fa83f0d6b25d9705ea203154076a9db7db5fe71f38fcf238d8fd86",
-        "claims": [],
-        "wordCount": 373,
-        "publishedAt": "2026-11-07",
-        "relevance": 0.6688809050978586,
-        "sig": "23CE78A1CA74D03E6D08F6A920163B8FE361B871B3F7398EE79B183EA093FF4A8DB8A770E3ED6A4B2EE8140FA0109EE7A3EC7D828165AB937386D79BCA58650A"
-      },
-      "salts": [
-        "12d4c53401d2955904b5a53f78415593",
-        "b60814158df1101683bd6728fbbbfa9e",
-        "5587a6152066c95f542f0f89cf473e76",
-        "341df7e73fb8be32965c07cd6630318a",
-        "874aae10dbb4ffc8f6ff81ef6e0ce031",
-        "92909ee31730551b996de456c2317772",
-        "b2ce72b51ffb185d8fdd0b30cad575b1"
-      ],
-      "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:2:team-x402:v3",
-      "keyReveal": {
-        "quote": {
-          "ciphertext": "1AA16AC3AEBCCFDD3E628B922429E0D8760105757D8650ECCFBBF9E2E1030FB10057DC095C43838A4EFA57641A6B1FC4009FD86166854ADA7718DBA1442BB44621E71419B807A7AAC5455B5784FF012C2B9B63E12254C613BEE481E1B7A2396658B5A3AD07FBB949F4DD13913C6E03ACD42F15B7FABDDF1B2AB34B5C2327CCEEBFE0E8CC47FA391AC2E12201C91C8E8CDFA83C30D948E87607E0056736FC63BF8FDDF1C3DCEA43E3F15DA0C3FDAA012211F7C3EDA3DB77AFC5495B9F41935893279C9644862F0D159FF4D64A3F9358E6D51AA5015167793B45EAE3F029E9EC48651D32AD23CCF0B2B04CE3E4F3664EFBE4C800863D027C39576D563DDE33F0DB4BB0A3EBD5788E1461518335330393E1BD305C59A7ACB8D69C168293931BF030082EBC2FDDDA254B80EB594BBF04B323731156494C63D2913EBB486648ED46848DF1B40E1814327DF79A912C3D05935BABFAD30D639AD47A413E348657A4AF2319F4119CFC212DF23925E1FE28BF7D42A2444D096E1DEAF07B8D8A7AE1893A0C27092A2A41EB58C502438BDC17349514DACB834ACC2ADD6265D752851A0FA448F5FB842D7C37868224A18063EDE4280F3C306409BDA8A163A32CCFBB5D995278FCF9E0556A4226E1DC21FDC4BF93413FC4F873240EAD4A4E263819914A7DCE797B60F465D7DFC43D132341E6A2E33A91440A4FB7B3FA5DBB082D15B1AE33F3B6189E381CFC490A25F7791DE702A3B6622BDE2A736366AB7F4DCD02A65F2E0F8EF4862AD99DF4F9A63D3489402A5D94493F0983AF0F585C8E5840CDD95F83D7A868F59FAF01DA10B88019C96437956E9D809EE9F970EF795F742C8C64BB6A0EC367078B514E51A3268C40FDA7CD5BE2028F812F1BB23115A13E988BC67E26BA92CD2AF598A7A1E33CCAEAAA894FD7E83B8B1E5DBA8CDD702481D189629C12AF67AB228A5BF431CFEFEC0CFF81974D108C1AE4A7DC9061B1F44BA17915F28B8C2FECFDDE1A16553D193E82500807B5C025C87B31CEBAAAC5D79FF89CDB0C6408610B6B77D43E9DED9C21094513D535AFA9E71E8D6A6C3E280F75D7657A7A99AA88C9CF6D051DC18D6EF23DD82E8CC9A515CE6B40E5BA4756868C3FDEDA55EB9E3AB844AE6E24DAE70D53689EB53022ACF79A6F09146C4785E828FE0D7AE2482C1D8FED23CF6BE45CFBFC4AB9DE5D6E384491B27B3819DC0E323DD199524F5E7022571478060325E8598575761BAE4A4535052691E065BC19BD2C78BAC8BC48C5197D21EBEDCD006AB22663413B0720C9366AA410AFA830207CAE0373DD1875786B39A41CFFF1D0E5B27A781EDEFB78CC1DE1B5BDCFFC82A72A5E23A3581ABD83EC100658381BF2D512673569DE1067E1DD6342D551625EECA3F0BAE0B48F29D790DDF5D375119CE82AB4E009692E1EEAC485376502A65E3ECB4A1EF2288CC6CA63830723AB2924697301EA00042E8A8B2F9BE9C9778C4752298BD8046C6E9AA6C284F859E5F5946B75FB0372349C9FA1BAEAE673129CFEF67FDC399CAE5A7BADBA1B01620D1A6DBFABACD6FE491804029433022BBCBCA20EA76DEA4D2A97699CA2543EC4FFBBE494E2DE8F2B72DDC9CBE53C6FDB9486F94C6506B66BEB5AE6C22CF876088515B09F52DA9F0199DF9378258555903D32397963C5D4710291888F0E61514E70E12DAFFBE0F5E86F18F6DF9FE5187433D2324D20196BA662B9D1846826DE60AD986F44C3F719E6A4FB292980912AF7813D5787AAF90FA2ED2F502AAAD8A32E87B8A4B609E8DEEE472A40D7C9E79D710209794FE790EB36D9B14C8533536B5D4835419196576F3FD770BF4F2C4915CCFD74608E6EC6EB5504205C9E483DFE55EC26F96BD75FC71817E3D94947C518B46603905996A06CB3E19335B0B1A4616AA6271E3957881B383C49FEDDC15989A1E962806F72CA582F744C305005DE1F9255AD82B8E3147B7E8DFD838B5377208487581E54BF4052AFFE935DB8C95335BFC3EC6CA32804C0FFC075587122F2AE1D5CB9D3A6EFF1365226B9A51C59036FF8EB8C17AEC8FE74540B1F97E43370E0F7DD42EB873792510DF4EC86C4C373A9CD5C8C9D679831F36758FB4FBC0EA0A9B1F6E3AF2F667FA640DA5BAC5AE8258FAEE429B34B841EA0E7456828924C1ED4F40A554A8E4D6B58CC62E69CF769CD5CF0778E6654DCE1106C8CAD89176A1A34DB50D8B2B43917D1F9061BE5BAA5109F0BBDED8480240F272F9DC72095D55C551B9B1CC7605D1B5D5B524595F651CF5FFDD9E36942542D3F6C64D29DF0A86138889D75D3C471A0C92126190D84E39B3EA3BE4EC8ED3B07D361B7FF932A548CD67179847B361684B7940B43F9CA52823349B98168B045CD0094A0D33F5456EE93EEA6DAF5553060BB67372E77DC9E6FB6D7493EE750DD2F95E7106059530BAAA18AE0F897CDFEB1EB0B4CE99BBEDD8B8487EE39D87536077E52DACBE66A4B1CC3DE84051F8CA43BE5217E026B2005EED8471382F26665CA69E3DD9160A36A7611ACE137009B739EEF6AB9B29E7BCE4E0D20171331756B1E2C70FF15C08B3E11198ADAE0D2D6074D44F289E64D1B2BD641DD17BBF91AD9F9ABED75EA86288D725F1ACD796153060516D666C29CCBE0A177913E703CBDB9B308B9DFC80F6A8DDDD20782F1758A4146A4E530825C8CE811F02B6B344224182B761C22B3E2BBC323788DB75910E2DD3BE5BE07907193373080927355F705120008411A4D0244EB497E0009E8E97DDD808C30955B28E83C9F627F0D2C55D8F362815D241DFE0C859DC44EA86F6B3462B7CB2658210CDA2F2F7C177DAA0A2D0316E70ED2FF2E64EA52A1B201EE074B619139C5CC65F350C25D7AF3A506C2F24376B262418FD31FDB346C77C404475DF5601B4C4ABF140FA41D3D054C49A649292599FFC4CCC381512B9767B5FCB8F98C9DDC8FD529F9A9571E71EF5DEE76349631D526FE2E1D30AD78E08602C62E2705327A712A0C2C32D18A3BCB7ADEE1200A6BAED32B6FD31365079D6804DF7D6E5ECD80E9960B499A5602124989917C4B1C4B16241BEDE6B62902DA83F171B2F7ABA89CA410EDDD9D46E018DD6187F7DFE2A2719556DC892CF16BC66E34E5E36D0B491BFDF0DE4F464A000101D20D44E6F5E9D265CCB4D9DE61B3DBED5969DE9975D8049F7B3238891C87D61FBE93FDF540A8CCAECC9D9EB3C495A8AA8A90FC52F2E6A9A4997DB3D95EA512546A14CC579BDF71D1C3247DA1584A9CB5B56BF0C1ADFE4A5163466F5D30711A688D4391863DA41BFC718A43098AD3C6FD62E69FAEC2C0D852BB32C2DD9904B60368E52F84F33D92E844E615C0400061F7000C04F1AD789FE0A8842B404EC4E00DD243C2D0C1205F151FAE595ECA9ACE34D372DB453431586CAF8DACB9ADF2E7E4C93D7B49EDB7962AC67E29835E0B23B71EA2404FD9BBB454AE02AB8A782F7C6B32D727285FCC97AC41FFBFE50B7BBC5247D1E175D7CB4143029F0B1284BF7940D4A4E874C6134BFD7B4ADD7752B491290E62521D824C806E5CD87DE1FD3F9B409B0655FD66B9EEAC9A7700CFA339E40EF9BAD73E3AED87BCB385F8468ED23F470B0A0F3834DEAAF161D786BCC51556DBB848D40843302BD6B39FA8DEC70044417FD4B42BFE950FDCE3D3F4748E37240FAD00ADD1A86ABD652C17CB9A88C485C612C59E7F9FCEBC97D88FE792C691325947A5045EE69DBD1CC8D34E54D7E574609702CB2581482570E221302C12630B01E66657B8D14F4829FBBEBFED8BD2A38C5FBF313A9D3F977C8C5454B5049120820603F3C841E4DFD6A9B816478571AEAC28DAB87734B0DFC96B7B933995519EBAAB833E175AF1904B6B524C3048212855A5D94011FA457DC1ADD664F715B8D6EB71651E059D4F5C211297492F1634D02A709C4E2C65485A7703F63007E37B2424A56E2092585467BC0FC275C4140B8D82156C645AC66E71750B6426F6A22F6372144561F4C44317B3CC3F1D14707A91682CB980955EF18EA037629C911F61C5A41181CD105DD0104625F14DC20AD0A1F3278B85B828593C82D34304C504E1BE43967C9E010CE228728137373344FAA11AD128824976137042E1F262526DD24476807E4C6F2EB1FCD135F7E0225CF1C9093DA40B8DCF55A3193322BCF9F15BEE7FF55BB53AC5D17413569C7C12B78322D5DB1D178DA7FAFC02AA55EECCA5D39A4420522E33851761F7655615D3EBED94FEA37A824F92F4B637E8693B8A3ECDAB5757E42923F5B4494E2CB58A278822A6841DD861671B2F7F31B414BCCCE78EA7664E953391AE5D495F09D14714927A48F9F67168E13C3A1B9CCA91C41342A4C9B4D181C0FB9488FFFCCD3B1A0DE5326A1D033F8276ABC25E1986C3FC27BFD1A0F2364781DDCA18959498598EF4A70F1457E939360DEBC03EA5BE916C1F1D63E1E6653AF450F35EDE3C802F3E4FDC66E6C59CECF8220C1BA89D82D342B1D518034814EB3EE765E92E843263661DE99414DE72158B21D7682B21D909E3F5510991E405A463B5BC4A99E681DA375B42F8138BF03EE83BF61E00F5D05672983C741A2B1E96C03435283349A4C654000B42A49BFBD3B5941B0EE81ACD6420B3DA074EA1BBB4231EFE9622CE7DE4ABE301FBA8877BE9B0FF3B03CB98E2BB5C62ED448AB7B6BA89999A920AA570264EBE3B56F70BE4CC428DA6CD8BBE6A46E8357434FE954CDD9FEDD30B2922286FCCA84D09DE8DE69F81C6F55C3ECCF4ACD1E9935F0F91FA97607B129EA6D4AA82885756DBA2F00E8285B6216C03408ED20802843BD7E2D3E22CB5739BA9258926CD8C385F6A2A9B9777D8E55F9FAB81477F8FE874D3D27DAE929089625007796FD2D6C254339B5B5AF2311B1A0C3EDE42A2F747FEBB57AC8D4B75817846C8ED0E7C86ABA2EAFD04E7C4DD4C0B86D9040F9B52A82C7550128FBB947D0BF94239C7B22AD1EE8789A18855CEB109BFAA5197643E245D29DC1C0FAF84D90B3BE7105304980EC97F972CC61DA73F6827EF0152CAC8052F4D53BF997B4A57EA9815B4DD1F6F4EFECD246CC173E9E03731E51A452178219BD79747DFAA11E2083889694FC9DC4E8F0EC991A52B41ABEDE307709B3941A40EF489F37F7F6C4DA51C294DED3D8D1DA6ABCEBAFF1125C5C758E594151A4B1D467BB16F40E3763F67F55EF4B5B54DC921413ED3A1DD0F8E86557684D68459C0302D63B257275CB82B05E8DAEFDEF6F7DEEDB50A080C2DC28C983B4526F169CB0D4989860B11EEEFF2A40B6F069A7B55ED05A9A6712EFD6282FA791ADF4EEB140B833DDE8B48FA60C8C36C7F9E89B44F7513E5C1DE2462E408CF92F4C8C37CEA25B2A57BDD3F9FCA5BF3217BDCB9C686025C98C267D5D08496496787A98CE46B9F24C8DE76AB66FB5EC3FDF1785A5F6C120ECA6018EA4D1C537AFB8859F5325A63834EA5BD1B0803A9A81C3F9D1949763C549F5374984F5A06F0AB126D0392AFD7E71ADC0656A98E1FC7386327FB78364F439C0F00143567F20196C005CC070F9339036ABE805D055C7846B99CE9DBBA4028E8878BAB7C362837F56790E19C149B097277153D3DCEA59B34C622C24C83A250F27900C77B40CE8A6F7E7684A78545C6B4C4A4EA74743C3FA29E4C4772275084502D087C3707889EC7864FF6F89B77F500E0D7410BBE2A69AF2FD8A996E68762E96E091B0C09BB622BEDB3DC730FA53F11DB0D23C93F2BC6374929183533DAB03B7A556D3806AA5DCA3E309736E49050D87B3FCDEF55FB7793B564B7EA58D1A46E1B2F7C2355B211322426964C917DF0E2F7053F422E1C4A3FFC83EB02CFE218AEA60AF6F9B55DE70548458BAC317070637FAFAF75035BCF2C9471E64B2365A6D9341026E734CB4921E598E5BAECBEC248C6D77A683AB62565CFE710109D2F37E870733C48EEC51E774C820A9EA03E3AE9A93C7EA57CC3684275B344E7C46075F51B4741990EFD1A406C933AAA9FCFF10E6FAFD1CDD49D8A2226C63F9529E70C4A5598F9EE1436156694C906B71255DB8EB10306784376F6F428D5DA7BB7DFD9C72EFEF0669B111853E162CD50376A47DDE527069673BB6BFCFED19FA99FEF8BC2CD0E6DBD252E3AF847B8712334E03BC5BCC84A59B9EBA97C2AF423FF29335974C6F75C240A38C5511635172FDADDE1684D4AD612AF25F02FFD361967C9AA1E1ED55A7EFEEE17A57F01757875AC50784CB5B12AE78D4B4DEBBCDE6BF98D0DD7E0FECA44E65C5050AB9D600BD6EF671C017043E74195C9D2FA4B90D325E3C1EC75433CDDF881B6C77F9C4621099B14DF7BC20C4B21153EED014D45666DCD819BC0EACE986EF0B2287C31B0F5F665997A369E1084931076D0A279FA8B75B83FB3CEA07504726BD8351ED78C71F812A7A76134833E13E2102E0CADF67BBFF24A9255B0408E7A0DB0F9FA5A5669CF6357C6667DFC1820313B85DDFD8EE93D3727E4BD29CCF7C95B13F1F8C5C5AFE1DE4A01E3D7AE4CB419468B527F782B9197BFC017FB2B8632C43CDFFE0A73F7E1BF9E75069CDFD85C595EDA280CDE315F32E3BAC08A5A9D3567726716E70F5EC6EA79B6CAF97115F4EB018CA3D841BAE559D36AB8EDD4C5EFC32C616E99918ECA1439C32D0EC5AB7B837DAEDC9CAFA6801A25443C6F70127DA265319C00F6AE9828CF1C109B91F1C88A96D1BCD157111412FB031EB87A737359AAA81E7500082AE17505AFFFA6B5450F5CB7DE465CD3C753F2B0505D667DF4C9122399828F647EA5270A497601D07ECF72DFE2960CF7EC16E9852EDD6879A1854DA8D8769F4B791E2DA1E02660C66929797FF2C746F95306C0B97D592D7746127FF3DB1F4C6BB0A9935CF3DBB31BAE5F8AB5541B89FCFBBD3C38468F731C99F2A54BF530F4D0D1563F5EA524410C7132A239CDE837A5CBEC4E28D53E150B2BCBB1F0866EB591FC2960CFC27881A1C634B9DB8FA7F2D197F2DF845044EB1538E51B7DA8D5FBDC1C418C933FABFF67842FBB3C8CD59B60D8D508B1219EBDFCA5F0D11B0E3E90F6628FE9816B84443ADE8A142C8A0F5BE508F0019650D977123AC1AEE5A710A8D0C43457AAA1142AA56019936BF1E52160CDC0DC2904404CB9955D5FF7D0FDF3BCEB840912251E1AA86A4781E24CC7FB6A78025A34495DE7647C0ACA39DF9ADDD112906DB3AAFD3CBC9F9D89FD8C0C8FD129620C4134BF0EFF78A7E0254DD9CCE6BFB7D6FC9E541CF9A242E2D1EEB563B92386B336E5068492A22AB135779742414160FF0111957B363F161E2A18FCF46165648F54F768D7945E72B55C6CDFC57E19C20AA3A444EAEF6970583AEBAB28D02F95B18CFD40778DB974BDFDFB14B34B283A0F31E10D7A6C12454BA5284A5A0E077A9E61B069952D6FDFD0707864F60A2DB5987074EFCBDFAE4F45006132AA223CFC0B430D9CF80C5A3944A7D5FCA784EF0A9C22431DA89D3B10F1C5E86452F5CC153D106198C78CDC741C7165BD033C61D4448068D9BB28E391A387CBF3C5BCAFB61B3665789C99F6A25173965114A6AA2D899E1B1F7756469C207CB3EB4BBB98B3D052029D42F3762B0B995991925B9A27147EE18E0EF80B5035A3F4640B642293969B3869C8B5C6B9D31D13DB0C0ECF94B2B7B548BA70EFF968701C7D6F6E1CF19E4DD1C70B0CA7E1702313DE87C3AF6F6375885842D23636BEF20E6A036A3CFA9FDEDEC895ADDE6A92AE47261CC410D2B5CA95B64C350064C615C1D9038579170ED83435CDC05E16FE9502B4E0C3585E3C18B8B1EA7CCBA774E1AD9EE3BC3BD4B83AAA5A5716438D8AEF4E41CAC2BEA3B201BD05CC359F4747FF5301DAEDD54C95550D5A73ED3E3EC68FE2FCAAF37DD0212223E2E72EE115705BCE8FE72174FF74CF4601853070EE368620E2B951A3D07317F47E06F9784BCBF4F2CCAE5F3BB79BED0CA1F012E731C3D0834A6B9D99337AAB0CB2BB69C2F168D7311AA0D7CDBA2A49DF552344182AF1CAEF3164AE8CCFBFD6896313AF6B396F2CA8E625D4DC530A49A685CF61FDA9CFB0C07C9AE2D3CB7F9D77687A9B79E41684343D3E913CE429C4F80A6530BD21646EBE2E691DD38D53069512749C2C5A75DED2770535B5F62DE7416807A3A636F4E34157AF071DDD011E797D3243",
-          "terms": {
-            "keyReveal": {
-              "ciphertextHash": "a85a390397ceffaad23a9992f2d85bd8871489ccd09301a8545ebd6d720d5157",
-              "plaintextHash": "fa541bafbd329fa10de4f5b64326f0735d766adcde3a2194469086def804b82c",
-              "iv": "051842140D56B2F909A6EC34",
-              "tag": "17D11E955BFFFBB01C93B8EA3BB8B984"
-            },
-            "scheme": "escrow-v1",
-            "network": "xrpl:1",
-            "asset": "XRP",
-            "quoteId": "dd1b8b3f-ca21-4ec7-b51b-10aec6a02927",
-            "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:2:team-x402:v3",
-            "publisherSlug": "team-builder-notes",
-            "articleId": "team-x402",
-            "version": "v3",
-            "manifestRoot": "fd535a7f84fa83f0d6b25d9705ea203154076a9db7db5fe71f38fcf238d8fd86",
-            "amount": "40000",
-            "payer": "rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1",
-            "payTo": "rnFqpNSS2rcDoFe72cwneSzwZAhoxqduqr",
-            "condition": "A025802076227B5A91F634DCF34929A7804F431A421F827490AE91C864D75328FDC622F8810120",
-            "cancelAfter": 847668622
-          },
-          "pubKey": "ED5EA38164A729E57EAA5DD3517CBA40740243DD2CDD10FBE871C705470393521F",
-          "sig": "4AB763E6AEE3F98887932C7923289610357AE185602514292C3E87AB9EE3E582E3A1C4A8565332A61EEAFA996D5254F7FB7C81892161C8174E7D5127BADB7E08"
-        },
-        "key": "3B9A0C62B0F46562F99A80356D2ACCC9781A0A2716A43B70B890E1721CF2B53E",
-        "finishHash": "9235C2CAECF7F49DE5F42EDE343ADD9378D155E42E2782EB72B050AB4320C22E",
-        "ledgerIndex": 22227988,
-        "createHash": "01EFF7B6D3F16B676C280930D67F44ABF25AB90992D159135B8B63C9BF6C2E44"
+        "key": "69228F168B1805F527B89EE9ACF37CA4FAB80D71FA4AF0C9EC23AFC79391F2AC",
+        "finishHash": "4CCB4E56137D738847E853535B068329562AD490DA4D9F5551CEC2EB1AC70638",
+        "ledgerIndex": 22228567,
+        "createHash": "B6FDBD229FEBDFAE041C4A21FE115449E3396AE7E9A422D391C0F7B4100028E5"
       }
     },
     {
@@ -2023,8 +1619,8 @@
         "claims": [],
         "wordCount": 235,
         "publishedAt": "2026-11-07",
-        "relevance": 0.8227850451562957,
-        "sig": "04BBA6A74BA9FD28E8A3F1BDED5FE6ACEE8E37622C7B199CF99EFD9A94A41087ECB45768FDF63D2D52FDBB346968B410292D69565DCD0F7424155CAA61C0A60F"
+        "relevance": 0.8243078082240405,
+        "sig": "AD7F12CF7191B2FDB54FC550429AAA0E9CD4EA0D7AA0297D8B3684A93475DE7EE51D52019BA51A99D6DA73EA2BC456084BE0E41E75C048261B2AADB7647BEA09"
       },
       "salts": [
         "2a6654c8f68765fa11cd01c5cda1c48e",
@@ -2032,22 +1628,22 @@
         "08fc245ecd05da5ad64d035fe930cd57",
         "198e3fa2f61ac40f26dca3f3285da787"
       ],
-      "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:3:xrpl-x402:v1",
+      "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:3:xrpl-x402:v1",
       "keyReveal": {
         "quote": {
-          "ciphertext": "505FC045B752C054BCA804B961E248BC1A009A576E2EB76E484814DC6466DE1E7812E84D481A8CBED8C388A06B5FF3AC0248A2459CE5104AD62128AF38974571AB44F04ADC1859B4BC53E79E6B5C06CA01BCD79DBC3081E16F106572B0AC7353A31384009D070E51F84CDF5A5396C37DE8C9DF35EE08AC280FE3014700976B149DCF66A39B4CFB302F6A91DFD0D36A6A2AB008DFAC016BC81A685064B6EA0636D87179FD2212716818AEEA49A2542865383291A33471BB278EB64A861CB0808744580D1A9606586B3036D94FF4E92898E4139690C326E7ACDD04F531BE1548255C2BEAFF4141DE7BAB9A94E9F8D4B4D162CBF2099C142E1DE6DF9BE8F847AF490944392D2F356A8A15E6A1D427B3C88B5094E2C0BD4907402221E9C1C6C13614F3D8F0AD81B9C67EC725F372EDD0E056139B515C2A90C7E5BAAAC29BFE640BE4CDC8EE99B42049469F31566AB3CE70A90BFB09B7B80ED5128F5937469BC1717F5C4FDBE058305E8A224AE0F8F879AF839BD86017D469A75086A7BB4BC2AE46C762A252D69117BECADDC78A72B97EFAB0F14204BC3E36D72393633E79194166D3598B6B4D0F8B5A272D4C971CFE89C658DE51939C8F0A93925FC9CFC0FA9219190A02064F3F3043380F035F1663408EEFE2D05709EC08929AC7283C63AD0EB0C5F83D61CF3388DE9B7A30509C96E81C659CEEE9D797A7B28C81389C684EA13E36DA947C7F6F0C7BECD6F98A0B1EBAE561F8306CA09C0394E0E050B4C84D9780F631A4EF7D1CC47388180112C7F4F09AEA1F0F7068033FD0E97E4F41267E43C8627DC85506240F96822F366B15561F6130129600E6514C116108E5728666773DB5BC61FB2813AF98382F0D51465FAD9EC8FDD87FA94BD66C39820792398981DA825E718E2E8B49DF7DDC404CAADA28E32A3D6C300D05CA43669FDCE52F31DB5D6CDBCE3CDBD7BABBDC168D4BC09BA8DD9624729F058CEA4A6934D1415F5A01791C6A5A5251D7840C511A7B48942F0EC872CD3622B29A5D289276A8F873395D86B9EA0D4ACD4139B5369980FC5C51A33E80584263239D73DE66EAEF1D6B94590FFFABF243FDA951824ACFB23BB31429AF023D5510EB00CE48E34DD89EC878F9F77137B62986CBB251AA01166D95E5873A548599CCC69BABFA90C6F23F8FE30BBEE89DAE83D2748A0861FFBF2ED5B02CA30ADF4899B3013509085421EE7915DF12428B28C5730D00A504DC97C8A35567B11DABB820321F0052A1ADD42051A9EC5ACB669C999840FBEC0ADE4273E281583F32833F2AD2BEF9006FED421917CD612BEE591DF011701A1FF5CADD048CFADD3E6B5A2E21DF8C6980D5C5F49A06B47AF24AF0DBFE6D56AD79611D500B9C220968F3C27C82770C24015170F27EEC410F1BA257405903BC6DCCAC259C9B80E9051EB3D3B82B2063463FCE62BD6A9400A6D5D9C54463B8CC290793191EDB6904F47988F5452AB22D152B6A1517DE678B84745D65EC6C10C3CB4C56859597E44ED0C13B6779403B1E76C90967762A6BA5E1742390AC32828DAF80F1516F285583BB5A300FE25A6DA12B1E5C30BC15DE9DA3936E5623A4F4B257E34456E45BC7417AE8EF69433C0A2A9D7B16CBB20176750755C57CD1F55172D2843DFFAC5D64B600AA5CD44A1D9178B8CC4A40C366ADDE0D5BBAC6603B966095973700B4FFA1439C9FECCEEE3E8F803DFB5C1F386D81B69757BFCCA5F2DB37CDD19ECF00A2A042A1B1681BC0EA5818F42237C720A3C694B8E5F38C00C284808025915E1EE54ECD512594F700200173A3A14F9BC199A6E6218B9DF208626D481FE41B15E0FB03C36DDA1B7959326292A6EACEC35DFAECA7F722C993EEC8CCEC281468D3DBF76278F2A70D637248B2D3A464AA335F55D854056C385851119A9081EEE62B115977DD26C4B8F74FA3637349932416AC2D0FF1EBC7116BE52EF60E20636F862C750952E65F978C5518460976334696FFE4C4A291992A34A9F06FB87B663D855C5B306600DC1F60E0A4B717A328FED54678B0EB616F9CF0DD5C08A95E2AC5A1602BF5C2EDB613459F063DB15AA94FA2CAA572CDA570735D960A13E4AF03732EC8DA1EE44421D683FD89807514AA3F42A703EC0A9F3E0936413AE70F9A3F4B1822E033946616AEAB4B7A8A337C5252BE880C5AB875DFC4C47D61B58E72730043E39959BB6A040931C9C78CBA09C2EEB80D0F32E522BE3B0CDD92A3840CB965FD999A3D307EAD2A950B06E3E66951FE559791A1ECF437EA321B84385B1439500154A0977291C6A68CCEA837164A524B27A8C7FE70DF7DB1B8B03ABDE1A93A1AC4C8D77EF6DD1B11E4E92E12EF1B50DEC8483D28706492887DB7C9C5A1F4232DE8BC18289CC7067572AF3FA317DC20131069DE2B910782EEA5DBE34726837CB2FC8937F83868188F2200E6BE87BBFE3831EE9CFDA9ACA75C3C94DF7B65B636B20F2F27C493A6497900B356E820F18928518F74169B8BF1922766F7A829B4E512AB96D01A28EAE89B4F3DA0FF232755471D0E672C546FC49296AA130956B42D5F1BE66C28513045ABB330CB5FC4372E10EDB51A5BB7266C052F48523E30737B27C2029A7AED8CC731019DA08E90B6AE0C55DC77EF2E01865BE71FABD36F20455AB857E6516CFD42198727DBBD1F9BD7A2DEECB33BDA02BB045EC36D3E3233F4F1D1180CBC25C72A6BE0A9C0C34CC4B1961E1F30D46F15123E609C725F86D0C47B922D46203213398D66A2AA13ED4FA15C4324A132B4D16EEC3D33D4988BFCC5B49A57216E695DCCFB1291B6FB8F763EAD0AC882A9F38B9B6CBE2053CB9F1180FB6E4ADE3A1BDF73E736EB4D27AFF04FD68523ABC6B0B18DD9AC236317A01835CE305CA9D607F175CAD7A3B657FDF3A72AF7B1ED935C0F51C5A42ECF5CB5C0E2651015C03E1F547FE7E310E62DEDD7473180695C4D7D9FB246E15D94ECA90E75823C688AD75D48B3ACD43BBAEA2990C4B5F7E5E2B743DA97CEE5C8D4ACA09592E608A1D68EBF816C2F2B58FB89F04BDBFA4D332B473C9F3EAFE6C942F5B4979891B997FD18B29FBF3AEEF91F542F9DAC28BF53F92E8B0D133EF6F1BB621C73711B51600C699AB5BFE4ED3B74FDA8C68F52434B6D0C64D1714658A823286F38480CC275C4A415B04C914BA7ABDF98FB51CF85B429FE04639043D3016B41E449350C79153C8C2609991094A031EF51C2AFAE429449D1B1CEAC4E4F5CF68AE0E4252CCE1AE2C012EDED07423A8CBDA6CC2BB5F6028AC23EA173B7A7A5413DAF8FF4E898C90FAEB7C12CE0754EA30F55BF07319A1E4B6088674254E07D6B0889FD597FF8AF447CCC38BC1B99388920DFC03E4D6F30E57E0F2C2ECF5701A4D7D9C8821AE2F7D231EFD7A91A521DA78FF1C1A917A5C8EBA0DDF6A2975F3483CA807DD8253A84D1FD4118978AAC5D2C8890FCD6DA267CA999A382473940AE9E0358FDF7E15E3DBF457B61A832C06875C1EC29D2A41D8309CB5BCA924A4BA2EB2C2CF3745F750B2A31F4E28A7E99C3A39756FC097943B8B774A451C6BD197C5A07E9F97E465B263267C312ACA626FD3AC25493C40CD3A638D5886497372D58EBCBF153C1F9B24C4ACE882FA566CF10EC38DB23A9B8264139C9755C574322CC25837A9FE58086C8929916DB446E34504F5C259098D2AB965E57A5517B85BC6F29F282B2EDBEB848028B81925E5977D37A7C31EFEF38597AEDA8A0FFD0E1DEDB3C369C51EECC3E05CFB1B1F3627464C85FAF864E5BA32BAB411C80AA9D29FA60A9D3E7F5D755FEAB8ACB7B9119B621586FC03EBDE4B13168749271D97FA9169BC9C7D6E191DB51CACC9F79A22E64BD870DAF17C16C5FA1719EA070675985780F963E7577A07E88EA9438BB041C89A0CA76CD17AFC16A05BE91E31E31589EE9948EED7829753DAB70B0D2450A12EF4E651A5B8A749D90EDBDE637876FE8AA46469F7AE6B05CB879C7CEB71C6028BC5193C8F886B0AEE09FCE6B1966F27E9F13706B4C12826A2DC6227E7FDB5E79277B92614C30595E2E15D100227C270DA9C959CC24CC04C8E6795B85E1431446142BFE32CEE6B263E34CE62EC9555AE97BFA6B800593F70759147FA7A22A15570CBE1FA48FC7E469E5DD06B802F533A6E8B3237A4BD96D385D9F5363777C14DF2D049F80A12C66460D4EC83362F1D745EA241B5773B0605014C9B55B1A123D6937200B33E252433A0500A871424E64B1926454CDE1A6094110B6AC838E2E28050473E17EAC1BCF594FAA687FC02FEE47F45090893E5865C7B313808229074F7D2E5C54A0AA80333E82D69BFF2E2CD7884F38764BDE3E6AF291EC3286C9E8AF50EB40F297FD7A5EACAB58215809C358E5E7E71917215AB415E21BF6AB0A1C9AD16C6F43B52A9261C24B51BC50A29542D7C0DFC56BE14FA44F3ECD0BF7BC32E52AB0DD4CD567CE56585955EB8A5A52777BE3A802E0399F40A0F2FF122F25B826BF19F2DCCDF337AF6CF76A8AD159B833B6C3C9BE66A03B7807F50EDE539D29D554007F01C1CF76CBFD43890A30D6FC3AA016427FEAE393961A9A8F22C6FADC6668C4DD338BE990A995ABE2A1F32160037B0B8F07671E61F24111B8B7F9198A5AE8775F6B44EB5F17FC416096D9513F97C00A2DE17300DE7C950814A5B1277D748EA454529D6AFFE483013C6309E77E729FA03F18874C408CF04B10395EF299D58D6280A31DF5AE24809D51D30AC79DEEE3FD3CF69E6061B7996AA4F225353B87CFBBF4D4F2CADFC756AB44B09D4B71E670F0B99B41618B74AD1D5E271760484E2B7E56106D2B4C1BE3EF8FC1F1E1BB80EA783A7862AA92323B90DBA6CA7EAD78C591468A5FF3B0D6326A8FC7D90792E3A0D36C835704B3D205EB290C0EF5EC693C127218872A2B30D4A3CE0AE912D28A3A83925CA98A60311915E207A2AA0DAE1C6EE85FA1FEA8D1D10DE2A2FE70ABEA0A2F7853E94E9B327BB4A394E8BE6058D3B0BD33579DDBB067F8A5C662BDB9633075F8F4FA1CFB61993FD8A55CA01A581C715A142385084B41E8DB2EEC2001751F4410FB09E7E7C6B88BB7C8F8AB3DA5C7D0177727AA7A93DD2AABCDA2A49B0A94699FD9F4CE507F5210AA33C7CDC203CE893B16FBC9F1C7776B4A95A98E1B901D61021631F1775EE5C2D02B358F2FE307B6767FBDA427FA2BBE9FF45677E4DD9052E482C767F7FBFC2DE25213E821242346D66122EB5C7A8CBAD9BD95061BD70E1735D385804CDE5E5426E330A4E143D285A771D8000C37DF746CF1F768DEBEBD66760206FD3C53701C3A0965544E1ECB3F1738FE61A379F2F4FA76DAC76959B0DC9E0F38DA2CEEF8593B517BE0088D0425047F995C0A9126F57F347DCE038929B39824D6902510427ED7BB7D88AF5B8A5750A84F026E0F8BBF1292030A56537B2BF8AC8BD6013423FC1FE5B2C8E425C2CFE9847D4922453269EE300FD6AEDD29",
+          "ciphertext": "1D9D3B2A60282D24C239EB4D57EDD252D5355DD7A4458577BC1934E5F7EC34A4567FF95C4168293B440609C7A97102D6790EA6736F2BD6BF115ABA9B2AE6A0A5000948EB432FF579720B132A45E6826BFEF59CEA80D86AD70730B38D518360DC1BEE4BB12F68CE88C95FFBC3D11798984C8E2761C0FF4F0C5BD4C7B2D61DD3804060145303BBC777D99AB0042786D4FFD233B3BB98D514F691743F2A3851B1CA0477015659D97DCC29044EEA823ED273B2172EDC4EB4CB09D5A5857A5B2BA4E07021D0AD91B1061EC3875F38D63F5488C4246BF55369869AA79542504BE04C9495E31FD1E8BBAF74FEE78C0B032B7184184ADB104BE3FC29282BA85854581B1EE4631E07F11BB8251B7B639E773C81DA5C15831DE42562B0DFE775152FC0DB3478428F7322D63C1B008A03920DDFFD1DA18C1091F30A4DE252B2347D26CA1D8F73235E2F90520FFFAE8EFDB4961B8FB36394DDAD90C4B73C717988AFA365F1665E1F08591570F75F870F281D3A448FBF7442F255EEAEC9A39F9C502A4FD8873E5592E99CA54B775ABE115DB1B93FCBD8434B880BD9EDC793B5D042F3FEFD25BC94E784F51912CE294E4DFDC504707D6B2C0A8B360417AB69FE5FD873253AA1815C8F6A6EB06AB72ECFB6C69981E2C2EABCB16BE3059F36BEFDBCD1BE504A00E07724F27C244EDBD81001DD5BDD9CAE1F4EFF1DD11E3D101911F86C4044B1FDA674CFCC0482A18F6EAFC9FB616E6D8E000098489B4DD1A40935B81AB019382AC40998B7A8D0F8EBA3C16B69A626FEB8DF244BBAE6ACB6B335A35A5EE5469C8366ADD72D0071BB212EE578A337333B465F341D69FD11F73DD1687871E242C4E1F186D87316CF119C3B9C25BD027D126C8A70C194476BC76530AE42676E246AE54EADE0CA88A04E94CC31CC348F897BBF76D28FAA4B89BD7FA0DE1CE40A051D645427D23779CCE520BEDB65191AD05386E8729D9F4A0718816D4341DC4D0F694DF17F3E85787C78A54C8C82D456854B948128CBF5C09524D4E7C1E4A70AD1B4D0053C94CA1604B27A80AC19BD2EA6DC3C851FCD122D20DEAD87F75ED65A56FFBDE494C3DF52A599A4FBE88AC2C51753547F3A48B374229CB06DAAC6B7CA63517014E4D2F0DC9015F7B26CF736DDC672346ACC463C038720EBBEB162B085ACD7F3815436E017FD18FE1F435E8856D0BAB3306AA441D5FF3BBBD0033FB37EB441ECA5B393BE4E2A96D47E8646FF25489DA35A9645BCBED5DBBB2E43E37A909419E06BD15143760F6228DF51196B204E4B9686CBFA5938F6A7985E68CCA67EF126C08DB0030B93338AA84E90A3B3806FB2EF156285D46CC03EBABAE650AE1FD9ED845528E13438C96FCA4043570060C8644C811D5D9884A4CCC28AD6E2FA5EE8CD61A38BFE47C608214A95B9D81B7DD31D506252566080A8C48D3C8433A226A9A5660657A5A83DD2E3976F250C05AF2A1476007AFF33B42436F3B2668B83508155DAE114F67032DEAA65DFE7FFD1D0F84682283680AF5C8920D7D94DB32D17ED8BAE4F4C2FFAC4F0946972078FD5178F0A7D27999D25B3576487F5C8C5A17828448B858D1D62B7A5034963F0985AFEA7B373DAD5EF051D420F49BA0BB893847F91893580BC5D7DDC2693118943ABA45D183E6D11705CB457FA0D1CE96B9D28030CD6A37A748A5CA1D588A52B0C084FCF388F1D335727024DF4C76CF31FF010C35CEEC57166AC1C1EAE2E7A98C83ED54D8E858E9622BCB9EE3AAFE618992840F4A6F26D8FB60B22FC0FB5CF467937A83C81682714BE021DA37BB9BCAE5D71BE906A9E98F0B9D568460237F66657A2E4D916882E3B559D8FCBBF96D7E0337275183A1CC2515265D314506B099E7E79491D126D2A8B6601FC64541B3C0A04312BBD3612B3A7DF8F9A718E22D6658B74E25827056B0E1C9BC254A9F084A7D2FD2D5B470980CB88A6D11BB2DC37A0BDAEA46BA76A098B27A5BD321B7C543497DC4496E4B61439AF3B02AC95BCD9DEE5529F80E7D6373D124FE59624BBE0B0F892E2A5070B6847527B6E8A7A7D551A9D9D119F0FC37DDDB90284D1E9FC71102B8336AFA04668865EDAFA0B77D8A72CB8D716106503E63C4E60C84D07DF88486F8DDF7689DC3085F854654C0A5C1D97601A5A2148858AF756D35189B78F49FF24009DF17CE6AEAC1383CC84E93AA1D787D54EE15D69D5B79053F04F8E9313CE82000B50007D3A09140268893006CD3AEB3B3C29AE46739920FBB8DDC02CF56A8E0CDAA18D63267F66568479651200DC148D82C56C883180FABBE0EF4F6074849A75ABA4250C2EBA099532E37DE6BC029F42C2853762CF7391EB89A814AFA1BCF343743CB717E2F164ABB8B48207A373B3082D6E5970AD2EE5F192D9254EEE9E447D085557ECE346C8422FF71017F344A6861CD898436B3D050232E4E7F1EEE345A2C74F9B64C25AE8D98D1C693AC352ADA2D129C014C4A09C75CE4267688ADA718B10430BB84414241658D4D401256BC54A996D15F3A83216DC2850B6D0C27106BE242869F2907388F2D317BC9D1561EFE1A55A998EDC23CEF4B0AD5C40416B8AA348656ED8322DACF98062EFD1EFE0956751AA0B953665DCD627886FB3934EE2898D6AE6F4B5A2E9AC473CFE4F6D54156751700C70B380A84B2390D6583954F3F739155F3A944FF08306A496549AEB87E4FA553A18F62856CFDA213971ED2B8C817250FAAB48187EC21CE64B41A920E868011B77B5AD9EEE8BEA5EF654AC18153C3B133C1A3A05C297D4451A3A07011DCB2AE4251888FB6CD6E8E1D4AF1818D4751EA6CDCC17EE02E98177CDF66FF55A908BF235BD6E748958E90109FCB87E500E40FA0B2A6CF56826F38F1545509D5B7E97F5D9949264C8701AABC7BB7D02809EE89C86CB97EA7E0E4B837B601A3999E03103E6CAB5D80C009FDBF42B92C8B6EEE74499AD5E659A6A3C123E2353D99E4EEA44746C8943812E1B71AF670E2FF8EAE86D82DFC2D6F18910D05F2BBA71B8FB4765F1977FA008117708B75A369F648A8046EB8120985276B294C8983E4A28D24D39381E5D835C424CABF5391438B30C402D4344075D428093877BC0808889CCC94B65E2CDA1347E54B4C39CD6580513015EFAF3992BFE00AB79689A310E8FB4A4A3DF940E1A992B0174D8615046AAD7E9E51AC1E41DE8181A02CC72B0117DA55790BEBBDC8FD40B1C3D708D43DEE840CCFAC9A0BECBA7F38AF04FA7ADB114D65367C1FA571B2E6CE182527F6E041AF707730D2F12DD800470725D790A7307FCEC64E81B0B75F1868FD7DACD505D1055FB7277FB66E170CD3DAA0FBD3A8084E4261565B44D2D2BE88E79B281F8D19132F9E537819FB5505994EB86ECEDBB9DBB450873F72DEA1795CA5615118FDF7B155CC191672574C5497717C703CAADB93AF9094017B2A8DC1633F5C9C0B892F70CEABCC722C654B5A9A71B14AC83BC033F219A08F48CDE0D64BF06D415BD11AFB5982E36B862408DAA4E5E310A7CE5655D0E94BB06D7EDF75B4D0A6455F4EB8988050217B6DFF44EA947FCBEE2F177507CA3C3CBF0F43B81A5781E09008863D7EBDD26322019FDDEA9C7C651569114BBB7E8701630720A4A94C8949C6ACF2A7293E880C760E2E531E80B4CE2626CBFF6E31478C37BFE26D2C4C7F00CF173C83849FC266AE3995FA0469647979787138828F994769DA4C999EB2D23792D2D7DE37230624E223185C5FF3B97238BD16B33718AA87443321E29B412B58A21D5F43F280282063E149CB4BAC0E2F9D612E088F83B1CB2522585B84C4BEEE5CAC462DE8E97CD7200D98AF07716857AA52DBC6D1E20B1EF5D0F84D94346A76051D28A136CCBAF24BC3A236598182EC40AC21CD613396D1B19CB0705B27198AC386827E8EA248A963217C8B07E799006DF7B9B201B2BDDD0269E3E13935ABDA8F618102D01A5AFDEE16B35A8FAD5FFCCB83E64954C0955F9FCD8D278B85E76DE4B67E33D334CD24F28974063C7697044D0E4824F14203C1A9E019ED45D8A1ABD10F287CF038D1CD43D1251FBFD39A66CC59F0363F763E1A240CEAA420BEF199B0F570FBE0A4E0E24F2F430B30A17064A7D2269ECA0B9501A0605574AEF897E8C4FFEC02D31AA2807D5A3D446FD55BFB35D88F65A9F1DC49633EC32B62CA2E122A8C2A62963F28771277DA80BCEB8D4BE9DA280634A3A0E30DB09AD45C93644D2ED49B9C66E64A2A96A71B107B83E3D47EB8DA1C9F69752136F33D72056D681A04BAB4D32FF1988A8973D89DA3AF5FE1018E7B68721DA95EEE2704D120F60E3E1BB410EBB147C23F03C5E9AA2194C42F9F9346347ECF81C2D5C612B9352492E291A8BFB520932323EC2F3AD7D667DE22F6E0538849C9A0570BE0CB85340B654DB4775804A0DD2C6DCCF6D264CB271D6FE6CDFC687214FBA5B6D4CEFD73765933A3644C27C082883CF4F4E06347D3B014C6D9E713CEDF8085FBB3A86B9670C7731491E776A44CEC81A951131329467658FD06527FD2FB1D42A798088B5292F72E2EB993023904249FFD5FDE6A99A8955290DB3E942D7F36CEE57D49AD76C3786CE21609746CA2423CE506EF349048064C488A98EA3D59CBFBC7C68B75B28349D212D602E3D05B4A940790C786B2F6E97B552E34BD71380DDED7737C86E3B1B8B24D2177D56165D9C9C3A73C2464746828890CCEDFE8430A3A01E3AEF5DB5E94282FA970950C60B813F7B595807961D22BD615ECEF001912634E76B4BF7F03596B09635B1A30C995E92F1460872CA604F7AC162205E9A03EB38BE79D77840B5DB62EDB36F2937D5F45652B515DEEE0D158BCDAC65FCDD7A287A951CD73EB15A098D4AC75C96663AF70F3EE5ECEBC017D5E831DCA00737A2B4C314A863D9D8DE4C44D518D0C8D67108FD0A2D0261604BDF7EFE8022A37E129E842986899AE10FB0F4CCB09D6152F7336C8ECB7AD6AD12A3D6179FB60A31E43186C3B8BB33F16E297FFA18A266BD55A3F3336A6818DEBFACA926A310276DB3E511BDE57B8D71D2EBB60F15A71A7DA64E128CC2AAAAC069F423EB4EC49293A66BAAFA4997C8C98B851AF37523F6C6D726342D46B98FE1A87BA4E3C9894E7BC6C5A886B9C28136C0953EB37359485AFB9569617C3FE554EED3E2629C333C14CE8C82E07A27C0FE1141ABC19F25F5278AFF5FD591F60C676A33DAAB4961D31B71C25202B794B15B650C26A2A6A2E3FCD14880304EF2EF083D4A38B7C79198C100F79055C185E6CFE8A5CAA949D83E3C84EBE8DA1389F8715A0AD40781F3795BC116ED4CFBA42C674B4E926CCA00DB017A2C605CE4DA44B756B8FF170C3F20219D869B56207BB077C56961188287F004A29ECF803B9929D110BB7EF75553CD8271768A9A063F4ABCE40EDAD8DFD4A30FDD48B3D8656ADB54B667D1701C790F606E2055E397274C1A6D6F26AD51952CCF494020F2",
           "terms": {
             "keyReveal": {
-              "ciphertextHash": "6d909ff35341ed6067047ddc4c8590882fba530aa790f50855eac09dfd5109d7",
+              "ciphertextHash": "c68e351d1bd85e4e4e4dc55643edbe7c180178381cf3034e43a113b1e59cec32",
               "plaintextHash": "b30ba033cb16246f0e2638a2bad0ea2a7b465bb14750a811d995914b6d530789",
-              "iv": "878033580AED932AE508DF46",
-              "tag": "C3BA7896574E23C5A883C7DB0E75949F"
+              "iv": "E2A67A93AF6EAF0A51EAD592",
+              "tag": "F56D817E7277070927C25175F5752728"
             },
             "scheme": "escrow-v1",
             "network": "xrpl:1",
             "asset": "XRP",
-            "quoteId": "de5f1d2b-fc6d-4332-a288-df88497233c4",
-            "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:3:xrpl-x402:v1",
+            "quoteId": "dd959100-a11d-4607-b2e6-f2df7427125c",
+            "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:3:xrpl-x402:v1",
             "publisherSlug": "team-xrpl-explainers",
             "articleId": "xrpl-x402",
             "version": "v1",
@@ -2055,39 +1651,39 @@
             "amount": "40000",
             "payer": "rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1",
             "payTo": "r9hkhUEsqcUBAhzp5dfVbPeX37UE6dEQ8c",
-            "condition": "A0258020AB0616DEECF30FF3686F1A5EAEFCF67FE18CA0A7CD95D536ECDF5732E551CF20810120",
-            "cancelAfter": 847668641
+            "condition": "A02580208A397559D731A890B5E371929CB1F102E3AE8278CF846CDD1CBE9EF48E27D788810120",
+            "cancelAfter": 847670550
           },
           "pubKey": "ED98DC9EFBAF9F828290CD153789368BD86E4893A2BC6BFA884978CCFDE8AC706E",
-          "sig": "2B3A0B207BFEE3693647F5B7593B2A2C7C5F88A5F800AEB6BC9F2DD7C6272BD091DA20A256CC1396EF1A0293F20C61E21576F44093DE05D2CF65E418ACE08204"
+          "sig": "CC119A0B52950F95402627AAECADFACA90C290EE310EDE7382F3D3F9FCC320B51FC837F9CB16A483AF9006932A495009570BFFCAE3BC63AFA259ECB3FBE68E07"
         },
-        "key": "F6AF5CE625855F822DFF36175E7AE752DDB93DB72F92145AA8F0BDC1ACCA5A0D",
-        "finishHash": "2C82AFF633D9296AC116FD4FAB4CAEA0106544ED6C73A29DA960991827E34C48",
-        "ledgerIndex": 22227993,
-        "createHash": "7AE9DEB6C0A5C1BFAC8E1778B46130AD18D514869328547593D9E810AB857952"
+        "key": "FC13F3E5F94D3433C23F326A9986A89CC70762CE4CDAFF144D530615B13402CC",
+        "finishHash": "78F5BF157C2B9792A92D865713E80EB8F2827364825D017F178F71810042C1B6",
+        "ledgerIndex": 22228572,
+        "createHash": "E61FD9D098B200DD99F53DB4C3F024ED44CAF44B7ED2435B4918E224244A156A"
       }
     }
   ],
   "audit": {
     "anchor": {
-      "seq": 787,
-      "hash": "dd72d8f0c81968d5133b9e5b04b156dffd8164c1887e0f137dadd4417023ce5e"
+      "seq": 813,
+      "hash": "9d3062ebcb22d170d966686b3f32fe90e314a6d4f554e1dc552cb6f4abd04cb7"
     },
     "entries": [
       {
-        "seq": 788,
-        "at": "2026-11-10T23:28:11.101Z",
-        "prevHash": "dd72d8f0c81968d5133b9e5b04b156dffd8164c1887e0f137dadd4417023ce5e",
-        "hash": "872a51d0e0fd10ef3eb646e3b7557cc3f8a9d67bc4939469cd4dcf38a1842a72",
-        "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
+        "seq": 814,
+        "at": "2026-11-11T00:00:09.382Z",
+        "prevHash": "9d3062ebcb22d170d966686b3f32fe90e314a6d4f554e1dc552cb6f4abd04cb7",
+        "hash": "d468af9c07866f01ba46f9725798e1a90eb8b8c072c68cafe0ae97343e363cc9",
+        "runId": "953af12e-c87c-4c83-85f6-e172ad372bfe",
         "intentId": null,
         "surface": "web",
-        "principal": "e64032c634135e8ee49a50ef665c1c534647e6b0bae3be2b50ba52ee4a55f5d7",
+        "principal": "83eb773c66b0c92b2bbb33d6e5a234db48dc46aed9d5528922156ca58e79ecf7",
         "kind": "admission",
         "data": {
           "admittedMinor": 200,
           "agentMaxMinor": null,
-          "day": "2026-11-10",
+          "day": "2026-11-11",
           "hireReserveMinor": 0,
           "labels": {
             "decision": "fixture · metadata-fixture",
@@ -2098,23 +1694,23 @@
           "maxMinor": 200,
           "paused": false,
           "policyVersion": "wallet-v1",
-          "questionCommitment": "9a2c889e8e14a266b17b10f43afc277a7e05c29c53ef02c4f1066181903045b8",
+          "questionCommitment": "d1a7eb17218e22dfac8ac0d12d02ff6ab16bc8a6c20ce608156a3e5c37de96fa",
           "requestedMinor": 200,
           "surfaceDailyMinor": null,
-          "surfaceRemainingMinor": 6800,
+          "surfaceRemainingMinor": 10000,
           "walletDailyMinor": 10000,
-          "walletRemainingMinor": 6800
+          "walletRemainingMinor": 10000
         }
       },
       {
-        "seq": 789,
-        "at": "2026-11-10T23:28:12.859Z",
-        "prevHash": "872a51d0e0fd10ef3eb646e3b7557cc3f8a9d67bc4939469cd4dcf38a1842a72",
-        "hash": "a7bb05779e86e9d07a64223719097319111ec11a1805b5b4606c70eab22e60ff",
-        "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
+        "seq": 815,
+        "at": "2026-11-11T00:00:11.922Z",
+        "prevHash": "d468af9c07866f01ba46f9725798e1a90eb8b8c072c68cafe0ae97343e363cc9",
+        "hash": "369e9d1ce201269c6a1f4ae37149ea8bd0b46d9ad7f0cbf7cd40148c55a848e8",
+        "runId": "953af12e-c87c-4c83-85f6-e172ad372bfe",
         "intentId": null,
         "surface": "web",
-        "principal": "e64032c634135e8ee49a50ef665c1c534647e6b0bae3be2b50ba52ee4a55f5d7",
+        "principal": "83eb773c66b0c92b2bbb33d6e5a234db48dc46aed9d5528922156ca58e79ecf7",
         "kind": "decision",
         "data": {
           "calibration": null,
@@ -2134,14 +1730,14 @@
         }
       },
       {
-        "seq": 790,
-        "at": "2026-11-10T23:28:13.286Z",
-        "prevHash": "a7bb05779e86e9d07a64223719097319111ec11a1805b5b4606c70eab22e60ff",
-        "hash": "4c3075cc9c69199720319e7a328f6ed13b398aa3303e792ffb2f9191c41319e8",
-        "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
-        "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:1:product-x402-response:v1",
+        "seq": 816,
+        "at": "2026-11-11T00:00:12.329Z",
+        "prevHash": "369e9d1ce201269c6a1f4ae37149ea8bd0b46d9ad7f0cbf7cd40148c55a848e8",
+        "hash": "8ce2a45b1e16607e4f2888a1c590337d470077dfae3c82b37a8e87aabe4cc5f3",
+        "runId": "953af12e-c87c-4c83-85f6-e172ad372bfe",
+        "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:1:product-x402-response:v1",
         "surface": "web",
-        "principal": "e64032c634135e8ee49a50ef665c1c534647e6b0bae3be2b50ba52ee4a55f5d7",
+        "principal": "83eb773c66b0c92b2bbb33d6e5a234db48dc46aed9d5528922156ca58e79ecf7",
         "kind": "reserve",
         "data": {
           "amountMinor": 40,
@@ -2150,7 +1746,7 @@
           "perSourceCapMinor": 100,
           "policyVersion": "wallet-v1",
           "profileId": "team-xrpl-explainers",
-          "quoteHash": "E7614EEFA2E9999E40731B4607AC52AC9DAE6E49458BD03BFDE227F2FCE371A0",
+          "quoteHash": "F336B8DE6E64B7151BEE802E57E40B383BE8D5186043394917FABFDCF04DFDCA",
           "rail": "xrpl-testnet",
           "resourceId": "product-x402-response",
           "runBudgetMinor": 200,
@@ -2160,58 +1756,58 @@
         }
       },
       {
-        "seq": 791,
-        "at": "2026-11-10T23:28:15.610Z",
-        "prevHash": "4c3075cc9c69199720319e7a328f6ed13b398aa3303e792ffb2f9191c41319e8",
-        "hash": "c8d9f17b0267fdf2d0952effe0e02aba5e306a50c1fda2012856d8fa54664899",
-        "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
-        "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:1:product-x402-response:v1",
+        "seq": 817,
+        "at": "2026-11-11T00:00:14.433Z",
+        "prevHash": "8ce2a45b1e16607e4f2888a1c590337d470077dfae3c82b37a8e87aabe4cc5f3",
+        "hash": "6dd6ff0b13c54f6a7be285ccc35e36ea60d0eb04e80d7550ee2ea3c0f159120e",
+        "runId": "953af12e-c87c-4c83-85f6-e172ad372bfe",
+        "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:1:product-x402-response:v1",
         "surface": "web",
-        "principal": "e64032c634135e8ee49a50ef665c1c534647e6b0bae3be2b50ba52ee4a55f5d7",
+        "principal": "83eb773c66b0c92b2bbb33d6e5a234db48dc46aed9d5528922156ca58e79ecf7",
         "kind": "escrow-sign",
         "data": {
           "amountDrops": "40000",
-          "createSequence": 22220352,
-          "invoiceHash": "E7614EEFA2E9999E40731B4607AC52AC9DAE6E49458BD03BFDE227F2FCE371A0",
-          "lastLedgerSequence": 22227999,
+          "createSequence": 22220356,
+          "invoiceHash": "F336B8DE6E64B7151BEE802E57E40B383BE8D5186043394917FABFDCF04DFDCA",
+          "lastLedgerSequence": 22228584,
           "operation": "create",
           "owner": "rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1",
           "payTo": "r9hkhUEsqcUBAhzp5dfVbPeX37UE6dEQ8c",
           "proofOk": false,
-          "txHash": "4570340072416670F5B17C471FFA4CC1D3225AEFAC9198F611F68B1F9BA769AD"
+          "txHash": "B6FDBD229FEBDFAE041C4A21FE115449E3396AE7E9A422D391C0F7B4100028E5"
         }
       },
       {
-        "seq": 792,
-        "at": "2026-11-10T23:28:19.502Z",
-        "prevHash": "c8d9f17b0267fdf2d0952effe0e02aba5e306a50c1fda2012856d8fa54664899",
-        "hash": "0c3cba7b97c32c4d3982ad5084c34358d4b0250b1021ca2cec880dfc4921536a",
-        "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
-        "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:1:product-x402-response:v1",
+        "seq": 818,
+        "at": "2026-11-11T00:00:18.291Z",
+        "prevHash": "6dd6ff0b13c54f6a7be285ccc35e36ea60d0eb04e80d7550ee2ea3c0f159120e",
+        "hash": "87471d2e8a8b9513a756c8af7f5fa0919c51885ce9e6ee47cfe25eac758cc74f",
+        "runId": "953af12e-c87c-4c83-85f6-e172ad372bfe",
+        "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:1:product-x402-response:v1",
         "surface": "web",
-        "principal": "e64032c634135e8ee49a50ef665c1c534647e6b0bae3be2b50ba52ee4a55f5d7",
+        "principal": "83eb773c66b0c92b2bbb33d6e5a234db48dc46aed9d5528922156ca58e79ecf7",
         "kind": "ESCROW_CREATE",
         "data": {
           "amountDrops": "40000",
-          "cancelAfter": 847668611,
-          "createSequence": 22220352,
-          "invoiceHash": "E7614EEFA2E9999E40731B4607AC52AC9DAE6E49458BD03BFDE227F2FCE371A0",
-          "ledgerIndex": 22227980,
+          "cancelAfter": 847670531,
+          "createSequence": 22220356,
+          "invoiceHash": "F336B8DE6E64B7151BEE802E57E40B383BE8D5186043394917FABFDCF04DFDCA",
+          "ledgerIndex": 22228565,
           "owner": "rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1",
           "payTo": "r9hkhUEsqcUBAhzp5dfVbPeX37UE6dEQ8c",
           "result": "tesSUCCESS",
-          "txHash": "4570340072416670F5B17C471FFA4CC1D3225AEFAC9198F611F68B1F9BA769AD"
+          "txHash": "B6FDBD229FEBDFAE041C4A21FE115449E3396AE7E9A422D391C0F7B4100028E5"
         }
       },
       {
-        "seq": 793,
-        "at": "2026-11-10T23:28:25.027Z",
-        "prevHash": "0c3cba7b97c32c4d3982ad5084c34358d4b0250b1021ca2cec880dfc4921536a",
-        "hash": "75aa5c788adc0da55d627bfe93eb48ec4cff3f0f7a40e74ba21eaab20dd91e9a",
-        "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
-        "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:1:product-x402-response:v1",
+        "seq": 819,
+        "at": "2026-11-11T00:00:25.436Z",
+        "prevHash": "87471d2e8a8b9513a756c8af7f5fa0919c51885ce9e6ee47cfe25eac758cc74f",
+        "hash": "07b0d8779e9b15931ad31e4321e3a5e575d876cdaf39254f30618c004b9705ad",
+        "runId": "953af12e-c87c-4c83-85f6-e172ad372bfe",
+        "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:1:product-x402-response:v1",
         "surface": "web",
-        "principal": "e64032c634135e8ee49a50ef665c1c534647e6b0bae3be2b50ba52ee4a55f5d7",
+        "principal": "83eb773c66b0c92b2bbb33d6e5a234db48dc46aed9d5528922156ca58e79ecf7",
         "kind": "deliver",
         "data": {
           "accessible": false,
@@ -2222,14 +1818,14 @@
         }
       },
       {
-        "seq": 794,
-        "at": "2026-11-10T23:28:25.040Z",
-        "prevHash": "75aa5c788adc0da55d627bfe93eb48ec4cff3f0f7a40e74ba21eaab20dd91e9a",
-        "hash": "f80e49e222972ab3a399e677b6e8c2baaa9e839d76c474d9658a82b8c65c1f06",
-        "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
-        "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:1:product-x402-response:v1",
+        "seq": 820,
+        "at": "2026-11-11T00:00:25.446Z",
+        "prevHash": "07b0d8779e9b15931ad31e4321e3a5e575d876cdaf39254f30618c004b9705ad",
+        "hash": "14e587b92a1d11f95c1e04023506b2020be8ab4c8f3588e8f0cb731b42f6a4bd",
+        "runId": "953af12e-c87c-4c83-85f6-e172ad372bfe",
+        "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:1:product-x402-response:v1",
         "surface": "web",
-        "principal": "e64032c634135e8ee49a50ef665c1c534647e6b0bae3be2b50ba52ee4a55f5d7",
+        "principal": "83eb773c66b0c92b2bbb33d6e5a234db48dc46aed9d5528922156ca58e79ecf7",
         "kind": "proof",
         "data": {
           "accessible": false,
@@ -2239,36 +1835,36 @@
         }
       },
       {
-        "seq": 795,
-        "at": "2026-11-10T23:28:25.043Z",
-        "prevHash": "f80e49e222972ab3a399e677b6e8c2baaa9e839d76c474d9658a82b8c65c1f06",
-        "hash": "53e4f895884068373740681a00491d28430ffae2c7a3be906668a26f2ff81e65",
-        "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
-        "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:1:product-x402-response:v1",
+        "seq": 821,
+        "at": "2026-11-11T00:00:25.450Z",
+        "prevHash": "14e587b92a1d11f95c1e04023506b2020be8ab4c8f3588e8f0cb731b42f6a4bd",
+        "hash": "43fe9f243615970a3c91dcfcc20a60085f3d3d77c998d574218e65728a102e19",
+        "runId": "953af12e-c87c-4c83-85f6-e172ad372bfe",
+        "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:1:product-x402-response:v1",
         "surface": "web",
-        "principal": "e64032c634135e8ee49a50ef665c1c534647e6b0bae3be2b50ba52ee4a55f5d7",
+        "principal": "83eb773c66b0c92b2bbb33d6e5a234db48dc46aed9d5528922156ca58e79ecf7",
         "kind": "ESCROW_FINISH",
         "data": {
           "amountDrops": "40000",
-          "createHash": "4570340072416670F5B17C471FFA4CC1D3225AEFAC9198F611F68B1F9BA769AD",
-          "createSequence": 22220352,
-          "ledgerIndex": 22227982,
+          "createHash": "B6FDBD229FEBDFAE041C4A21FE115449E3396AE7E9A422D391C0F7B4100028E5",
+          "createSequence": 22220356,
+          "ledgerIndex": 22228567,
           "owner": "rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1",
           "payTo": "r9hkhUEsqcUBAhzp5dfVbPeX37UE6dEQ8c",
           "proofOk": true,
           "result": "tesSUCCESS",
-          "txHash": "01BFB0095C3F294A0951C1B50DE03C63EB2A0E246DCE02D9281E43CBA19340CB"
+          "txHash": "4CCB4E56137D738847E853535B068329562AD490DA4D9F5551CEC2EB1AC70638"
         }
       },
       {
-        "seq": 796,
-        "at": "2026-11-10T23:28:25.044Z",
-        "prevHash": "53e4f895884068373740681a00491d28430ffae2c7a3be906668a26f2ff81e65",
-        "hash": "3f6946cdad94e672569c099953951e07f176796f17f3f3f96f1f852d1673deab",
-        "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
-        "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:1:product-x402-response:v1",
+        "seq": 822,
+        "at": "2026-11-11T00:00:25.450Z",
+        "prevHash": "43fe9f243615970a3c91dcfcc20a60085f3d3d77c998d574218e65728a102e19",
+        "hash": "eb517887ea9ada0e8bfc86734ce3d431885981715c170ff0db509bd7013c6456",
+        "runId": "953af12e-c87c-4c83-85f6-e172ad372bfe",
+        "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:1:product-x402-response:v1",
         "surface": "web",
-        "principal": "e64032c634135e8ee49a50ef665c1c534647e6b0bae3be2b50ba52ee4a55f5d7",
+        "principal": "83eb773c66b0c92b2bbb33d6e5a234db48dc46aed9d5528922156ca58e79ecf7",
         "kind": "settle",
         "data": {
           "amountDrops": "40000",
@@ -2276,24 +1872,24 @@
           "asset": "XRP",
           "deliveredAmount": null,
           "label": "XRPL TESTNET · no real value",
-          "ledgerIndex": 22227982,
+          "ledgerIndex": 22228567,
           "payTo": "r9hkhUEsqcUBAhzp5dfVbPeX37UE6dEQ8c",
           "payer": "rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1",
-          "receiptId": "escrow-01BFB0095C3F294A0951C1B50DE03C63EB2A0E246DCE02D9281E43CBA19340CB",
+          "receiptId": "escrow-4CCB4E56137D738847E853535B068329562AD490DA4D9F5551CEC2EB1AC70638",
           "scheme": "escrow-v1",
           "state": "RELEASED",
-          "txHash": "01BFB0095C3F294A0951C1B50DE03C63EB2A0E246DCE02D9281E43CBA19340CB"
+          "txHash": "4CCB4E56137D738847E853535B068329562AD490DA4D9F5551CEC2EB1AC70638"
         }
       },
       {
-        "seq": 797,
-        "at": "2026-11-10T23:28:27.013Z",
-        "prevHash": "3f6946cdad94e672569c099953951e07f176796f17f3f3f96f1f852d1673deab",
-        "hash": "6a4d3b990dc09449e6b8c4568c192a56fa970e132526cad1accf6b10346a6220",
-        "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
+        "seq": 823,
+        "at": "2026-11-11T00:00:29.417Z",
+        "prevHash": "eb517887ea9ada0e8bfc86734ce3d431885981715c170ff0db509bd7013c6456",
+        "hash": "cdd5c83535b2b887ee7b82f8f5f25b5ece747f68e78db34326667af69b8e91eb",
+        "runId": "953af12e-c87c-4c83-85f6-e172ad372bfe",
         "intentId": null,
         "surface": "web",
-        "principal": "e64032c634135e8ee49a50ef665c1c534647e6b0bae3be2b50ba52ee4a55f5d7",
+        "principal": "83eb773c66b0c92b2bbb33d6e5a234db48dc46aed9d5528922156ca58e79ecf7",
         "kind": "decision",
         "data": {
           "calibration": null,
@@ -2303,177 +1899,24 @@
           "promptVersion": null,
           "provider": "fixture",
           "round": 2,
-          "selectedResourceId": "team-x402",
-          "selectedSourceKey": "team-x402@v3",
+          "selectedResourceId": null,
+          "selectedSourceKey": null,
           "threshold": 0.2,
           "verdicts": {
-            "BUY": 5,
-            "SKIP_LOW_VALUE": 6,
+            "SKIP_LOW_VALUE": 11,
             "SKIP_REWRITE": 1
           }
         }
       },
       {
-        "seq": 798,
-        "at": "2026-11-10T23:28:27.434Z",
-        "prevHash": "6a4d3b990dc09449e6b8c4568c192a56fa970e132526cad1accf6b10346a6220",
-        "hash": "d0deafa15c26e8398b1c27b6b3c0199d7ecacf37205feced4e4a195a56ca77d1",
-        "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
-        "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:2:team-x402:v3",
-        "surface": "web",
-        "principal": "e64032c634135e8ee49a50ef665c1c534647e6b0bae3be2b50ba52ee4a55f5d7",
-        "kind": "reserve",
-        "data": {
-          "amountMinor": 40,
-          "committedMinor": 40,
-          "payTo": "rnFqpNSS2rcDoFe72cwneSzwZAhoxqduqr",
-          "perSourceCapMinor": 100,
-          "policyVersion": "wallet-v1",
-          "profileId": "team-builder-notes",
-          "quoteHash": "ECF38A0E9133773C244AE9454F7912668B799FFD965D9B21BCCEC5A955915A8F",
-          "rail": "xrpl-testnet",
-          "resourceId": "team-x402",
-          "runBudgetMinor": 200,
-          "source": null,
-          "version": "v3",
-          "walletDailyMinor": 10000
-        }
-      },
-      {
-        "seq": 799,
-        "at": "2026-11-10T23:28:29.648Z",
-        "prevHash": "d0deafa15c26e8398b1c27b6b3c0199d7ecacf37205feced4e4a195a56ca77d1",
-        "hash": "4e77dbb79ca343c69304dc41fbe340bec345ec53df2105ef88caf0bf8f0eb97c",
-        "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
-        "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:2:team-x402:v3",
-        "surface": "web",
-        "principal": "e64032c634135e8ee49a50ef665c1c534647e6b0bae3be2b50ba52ee4a55f5d7",
-        "kind": "escrow-sign",
-        "data": {
-          "amountDrops": "40000",
-          "createSequence": 22220353,
-          "invoiceHash": "ECF38A0E9133773C244AE9454F7912668B799FFD965D9B21BCCEC5A955915A8F",
-          "lastLedgerSequence": 22228004,
-          "operation": "create",
-          "owner": "rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1",
-          "payTo": "rnFqpNSS2rcDoFe72cwneSzwZAhoxqduqr",
-          "proofOk": false,
-          "txHash": "01EFF7B6D3F16B676C280930D67F44ABF25AB90992D159135B8B63C9BF6C2E44"
-        }
-      },
-      {
-        "seq": 800,
-        "at": "2026-11-10T23:28:34.880Z",
-        "prevHash": "4e77dbb79ca343c69304dc41fbe340bec345ec53df2105ef88caf0bf8f0eb97c",
-        "hash": "768df74bbaa5e1aeb3be288613dd603def11d029a1bd95e8724495a32f77631f",
-        "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
-        "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:2:team-x402:v3",
-        "surface": "web",
-        "principal": "e64032c634135e8ee49a50ef665c1c534647e6b0bae3be2b50ba52ee4a55f5d7",
-        "kind": "ESCROW_CREATE",
-        "data": {
-          "amountDrops": "40000",
-          "cancelAfter": 847668622,
-          "createSequence": 22220353,
-          "invoiceHash": "ECF38A0E9133773C244AE9454F7912668B799FFD965D9B21BCCEC5A955915A8F",
-          "ledgerIndex": 22227985,
-          "owner": "rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1",
-          "payTo": "rnFqpNSS2rcDoFe72cwneSzwZAhoxqduqr",
-          "result": "tesSUCCESS",
-          "txHash": "01EFF7B6D3F16B676C280930D67F44ABF25AB90992D159135B8B63C9BF6C2E44"
-        }
-      },
-      {
-        "seq": 801,
-        "at": "2026-11-10T23:28:42.643Z",
-        "prevHash": "768df74bbaa5e1aeb3be288613dd603def11d029a1bd95e8724495a32f77631f",
-        "hash": "772ddf543d25488151473123792c6a5472fc64d714ed51f09ebeae9aaff3d1cc",
-        "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
-        "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:2:team-x402:v3",
-        "surface": "web",
-        "principal": "e64032c634135e8ee49a50ef665c1c534647e6b0bae3be2b50ba52ee4a55f5d7",
-        "kind": "deliver",
-        "data": {
-          "accessible": false,
-          "contentDigest": "fd535a7f84fa83f0d6b25d9705ea203154076a9db7db5fe71f38fcf238d8fd86",
-          "passageCount": 7,
-          "resourceId": "team-x402",
-          "version": "v3"
-        }
-      },
-      {
-        "seq": 802,
-        "at": "2026-11-10T23:28:42.659Z",
-        "prevHash": "772ddf543d25488151473123792c6a5472fc64d714ed51f09ebeae9aaff3d1cc",
-        "hash": "788ca6e0015feef432c744dd52729b3f6080e96e5cc36766dec54e15c1422ded",
-        "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
-        "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:2:team-x402:v3",
-        "surface": "web",
-        "principal": "e64032c634135e8ee49a50ef665c1c534647e6b0bae3be2b50ba52ee4a55f5d7",
-        "kind": "proof",
-        "data": {
-          "accessible": false,
-          "scheme": "escrow-v1",
-          "status": "LOCKED",
-          "verified": true
-        }
-      },
-      {
-        "seq": 803,
-        "at": "2026-11-10T23:28:42.663Z",
-        "prevHash": "788ca6e0015feef432c744dd52729b3f6080e96e5cc36766dec54e15c1422ded",
-        "hash": "4a28dd417085846eedb3feda03c5c6ae031eef74cab2749a9394db1cce227eaf",
-        "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
-        "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:2:team-x402:v3",
-        "surface": "web",
-        "principal": "e64032c634135e8ee49a50ef665c1c534647e6b0bae3be2b50ba52ee4a55f5d7",
-        "kind": "ESCROW_FINISH",
-        "data": {
-          "amountDrops": "40000",
-          "createHash": "01EFF7B6D3F16B676C280930D67F44ABF25AB90992D159135B8B63C9BF6C2E44",
-          "createSequence": 22220353,
-          "ledgerIndex": 22227988,
-          "owner": "rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1",
-          "payTo": "rnFqpNSS2rcDoFe72cwneSzwZAhoxqduqr",
-          "proofOk": true,
-          "result": "tesSUCCESS",
-          "txHash": "9235C2CAECF7F49DE5F42EDE343ADD9378D155E42E2782EB72B050AB4320C22E"
-        }
-      },
-      {
-        "seq": 804,
-        "at": "2026-11-10T23:28:42.663Z",
-        "prevHash": "4a28dd417085846eedb3feda03c5c6ae031eef74cab2749a9394db1cce227eaf",
-        "hash": "a843c7b00571086c2ecd88daf56f7f68b405cb971d5c3da89a9b48019daa6464",
-        "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
-        "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:2:team-x402:v3",
-        "surface": "web",
-        "principal": "e64032c634135e8ee49a50ef665c1c534647e6b0bae3be2b50ba52ee4a55f5d7",
-        "kind": "settle",
-        "data": {
-          "amountDrops": "40000",
-          "amountMinor": 40,
-          "asset": "XRP",
-          "deliveredAmount": null,
-          "label": "XRPL TESTNET · no real value",
-          "ledgerIndex": 22227988,
-          "payTo": "rnFqpNSS2rcDoFe72cwneSzwZAhoxqduqr",
-          "payer": "rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1",
-          "receiptId": "escrow-9235C2CAECF7F49DE5F42EDE343ADD9378D155E42E2782EB72B050AB4320C22E",
-          "scheme": "escrow-v1",
-          "state": "RELEASED",
-          "txHash": "9235C2CAECF7F49DE5F42EDE343ADD9378D155E42E2782EB72B050AB4320C22E"
-        }
-      },
-      {
-        "seq": 805,
-        "at": "2026-11-10T23:28:45.065Z",
-        "prevHash": "a843c7b00571086c2ecd88daf56f7f68b405cb971d5c3da89a9b48019daa6464",
-        "hash": "5dd038e59f12b13d21f2753c8728edde3da868b416cf49b844045e7ef5eafc09",
-        "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
+        "seq": 824,
+        "at": "2026-11-11T00:00:29.608Z",
+        "prevHash": "cdd5c83535b2b887ee7b82f8f5f25b5ece747f68e78db34326667af69b8e91eb",
+        "hash": "de6d7348651373f86f6bbb8e24ec10679e4200a06c037334d7218f289930012f",
+        "runId": "953af12e-c87c-4c83-85f6-e172ad372bfe",
         "intentId": null,
         "surface": "web",
-        "principal": "e64032c634135e8ee49a50ef665c1c534647e6b0bae3be2b50ba52ee4a55f5d7",
+        "principal": "83eb773c66b0c92b2bbb33d6e5a234db48dc46aed9d5528922156ca58e79ecf7",
         "kind": "decision",
         "data": {
           "calibration": null,
@@ -2487,30 +1930,30 @@
           "selectedSourceKey": "xrpl-x402@v1",
           "threshold": 0.2,
           "verdicts": {
-            "BUY": 4,
-            "SKIP_LOW_VALUE": 6,
-            "SKIP_REWRITE": 2
+            "BUY": 3,
+            "SKIP_LOW_VALUE": 8,
+            "SKIP_REWRITE": 1
           }
         }
       },
       {
-        "seq": 806,
-        "at": "2026-11-10T23:28:45.495Z",
-        "prevHash": "5dd038e59f12b13d21f2753c8728edde3da868b416cf49b844045e7ef5eafc09",
-        "hash": "f827e30eb4fdeeac34a7801702613cec34c788d2c2cf4ca5177c1339eac50892",
-        "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
-        "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:3:xrpl-x402:v1",
+        "seq": 825,
+        "at": "2026-11-11T00:00:30.029Z",
+        "prevHash": "de6d7348651373f86f6bbb8e24ec10679e4200a06c037334d7218f289930012f",
+        "hash": "e222eba698d1f0da0bd43e8dda10f62758c2e1ceac81c792f170010d0ca47288",
+        "runId": "953af12e-c87c-4c83-85f6-e172ad372bfe",
+        "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:3:xrpl-x402:v1",
         "surface": "web",
-        "principal": "e64032c634135e8ee49a50ef665c1c534647e6b0bae3be2b50ba52ee4a55f5d7",
+        "principal": "83eb773c66b0c92b2bbb33d6e5a234db48dc46aed9d5528922156ca58e79ecf7",
         "kind": "reserve",
         "data": {
           "amountMinor": 40,
-          "committedMinor": 80,
+          "committedMinor": 40,
           "payTo": "r9hkhUEsqcUBAhzp5dfVbPeX37UE6dEQ8c",
           "perSourceCapMinor": 100,
           "policyVersion": "wallet-v1",
           "profileId": "team-xrpl-explainers",
-          "quoteHash": "1EDC31AA282D6E08E420DBF06DFF61DEBD3CCCD6885188A209F544396B3F589A",
+          "quoteHash": "EB331A0A5493B041F52F53FCFEF997962567AEBE4E1A11C6FF39415A779855CB",
           "rail": "xrpl-testnet",
           "resourceId": "xrpl-x402",
           "runBudgetMinor": 200,
@@ -2520,58 +1963,58 @@
         }
       },
       {
-        "seq": 807,
-        "at": "2026-11-10T23:28:47.030Z",
-        "prevHash": "f827e30eb4fdeeac34a7801702613cec34c788d2c2cf4ca5177c1339eac50892",
-        "hash": "df079bd2dc28fef3523610bd86bcf8e6a38e874b45cc389e5c024decb981843f",
-        "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
-        "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:3:xrpl-x402:v1",
+        "seq": 826,
+        "at": "2026-11-11T00:00:31.500Z",
+        "prevHash": "e222eba698d1f0da0bd43e8dda10f62758c2e1ceac81c792f170010d0ca47288",
+        "hash": "294247e7473cb71af603465aec8f4f6785d1351a33fa8f06835d99100d20e1d3",
+        "runId": "953af12e-c87c-4c83-85f6-e172ad372bfe",
+        "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:3:xrpl-x402:v1",
         "surface": "web",
-        "principal": "e64032c634135e8ee49a50ef665c1c534647e6b0bae3be2b50ba52ee4a55f5d7",
+        "principal": "83eb773c66b0c92b2bbb33d6e5a234db48dc46aed9d5528922156ca58e79ecf7",
         "kind": "escrow-sign",
         "data": {
           "amountDrops": "40000",
-          "createSequence": 22220354,
-          "invoiceHash": "1EDC31AA282D6E08E420DBF06DFF61DEBD3CCCD6885188A209F544396B3F589A",
-          "lastLedgerSequence": 22228010,
+          "createSequence": 22220357,
+          "invoiceHash": "EB331A0A5493B041F52F53FCFEF997962567AEBE4E1A11C6FF39415A779855CB",
+          "lastLedgerSequence": 22228590,
           "operation": "create",
           "owner": "rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1",
           "payTo": "r9hkhUEsqcUBAhzp5dfVbPeX37UE6dEQ8c",
           "proofOk": false,
-          "txHash": "7AE9DEB6C0A5C1BFAC8E1778B46130AD18D514869328547593D9E810AB857952"
+          "txHash": "E61FD9D098B200DD99F53DB4C3F024ED44CAF44B7ED2435B4918E224244A156A"
         }
       },
       {
-        "seq": 808,
-        "at": "2026-11-10T23:28:53.599Z",
-        "prevHash": "df079bd2dc28fef3523610bd86bcf8e6a38e874b45cc389e5c024decb981843f",
-        "hash": "e885c362ca02ab31280619339abe6dcf48b13be419e6322b596e6cf536908173",
-        "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
-        "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:3:xrpl-x402:v1",
+        "seq": 827,
+        "at": "2026-11-11T00:00:35.355Z",
+        "prevHash": "294247e7473cb71af603465aec8f4f6785d1351a33fa8f06835d99100d20e1d3",
+        "hash": "3781d72a5210579506344da60f993644e596928c46a25eec9a839f501a626205",
+        "runId": "953af12e-c87c-4c83-85f6-e172ad372bfe",
+        "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:3:xrpl-x402:v1",
         "surface": "web",
-        "principal": "e64032c634135e8ee49a50ef665c1c534647e6b0bae3be2b50ba52ee4a55f5d7",
+        "principal": "83eb773c66b0c92b2bbb33d6e5a234db48dc46aed9d5528922156ca58e79ecf7",
         "kind": "ESCROW_CREATE",
         "data": {
           "amountDrops": "40000",
-          "cancelAfter": 847668641,
-          "createSequence": 22220354,
-          "invoiceHash": "1EDC31AA282D6E08E420DBF06DFF61DEBD3CCCD6885188A209F544396B3F589A",
-          "ledgerIndex": 22227991,
+          "cancelAfter": 847670550,
+          "createSequence": 22220357,
+          "invoiceHash": "EB331A0A5493B041F52F53FCFEF997962567AEBE4E1A11C6FF39415A779855CB",
+          "ledgerIndex": 22228570,
           "owner": "rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1",
           "payTo": "r9hkhUEsqcUBAhzp5dfVbPeX37UE6dEQ8c",
           "result": "tesSUCCESS",
-          "txHash": "7AE9DEB6C0A5C1BFAC8E1778B46130AD18D514869328547593D9E810AB857952"
+          "txHash": "E61FD9D098B200DD99F53DB4C3F024ED44CAF44B7ED2435B4918E224244A156A"
         }
       },
       {
-        "seq": 809,
-        "at": "2026-11-10T23:28:59.473Z",
-        "prevHash": "e885c362ca02ab31280619339abe6dcf48b13be419e6322b596e6cf536908173",
-        "hash": "afee8887903ae911177b144ff9df9bc0f00a17ad728e93dfece73cd691031531",
-        "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
-        "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:3:xrpl-x402:v1",
+        "seq": 828,
+        "at": "2026-11-11T00:00:42.507Z",
+        "prevHash": "3781d72a5210579506344da60f993644e596928c46a25eec9a839f501a626205",
+        "hash": "a0862e30b9e1fd69ced991320a821fbd819981f7bb28e68b33ab2f29b27d9713",
+        "runId": "953af12e-c87c-4c83-85f6-e172ad372bfe",
+        "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:3:xrpl-x402:v1",
         "surface": "web",
-        "principal": "e64032c634135e8ee49a50ef665c1c534647e6b0bae3be2b50ba52ee4a55f5d7",
+        "principal": "83eb773c66b0c92b2bbb33d6e5a234db48dc46aed9d5528922156ca58e79ecf7",
         "kind": "deliver",
         "data": {
           "accessible": false,
@@ -2582,14 +2025,14 @@
         }
       },
       {
-        "seq": 810,
-        "at": "2026-11-10T23:28:59.485Z",
-        "prevHash": "afee8887903ae911177b144ff9df9bc0f00a17ad728e93dfece73cd691031531",
-        "hash": "4583a6e475da75e899fbf2d9302f89995621b8402786fa0855eb7ad655985cbd",
-        "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
-        "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:3:xrpl-x402:v1",
+        "seq": 829,
+        "at": "2026-11-11T00:00:42.529Z",
+        "prevHash": "a0862e30b9e1fd69ced991320a821fbd819981f7bb28e68b33ab2f29b27d9713",
+        "hash": "6e8a51505b1040bb9aa37945e45a73880ebdce25225a0f282cb86d377fdb8ed5",
+        "runId": "953af12e-c87c-4c83-85f6-e172ad372bfe",
+        "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:3:xrpl-x402:v1",
         "surface": "web",
-        "principal": "e64032c634135e8ee49a50ef665c1c534647e6b0bae3be2b50ba52ee4a55f5d7",
+        "principal": "83eb773c66b0c92b2bbb33d6e5a234db48dc46aed9d5528922156ca58e79ecf7",
         "kind": "proof",
         "data": {
           "accessible": false,
@@ -2599,36 +2042,36 @@
         }
       },
       {
-        "seq": 811,
-        "at": "2026-11-10T23:28:59.489Z",
-        "prevHash": "4583a6e475da75e899fbf2d9302f89995621b8402786fa0855eb7ad655985cbd",
-        "hash": "5a95c7561f40948d16c4758d94830185bcaaf6bcd31950ac115d432c278fa84b",
-        "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
-        "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:3:xrpl-x402:v1",
+        "seq": 830,
+        "at": "2026-11-11T00:00:42.534Z",
+        "prevHash": "6e8a51505b1040bb9aa37945e45a73880ebdce25225a0f282cb86d377fdb8ed5",
+        "hash": "4b1c81cb7bc3c124220657fcb25511dbb71acaa5afe3138920a2d5bf1b3c012f",
+        "runId": "953af12e-c87c-4c83-85f6-e172ad372bfe",
+        "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:3:xrpl-x402:v1",
         "surface": "web",
-        "principal": "e64032c634135e8ee49a50ef665c1c534647e6b0bae3be2b50ba52ee4a55f5d7",
+        "principal": "83eb773c66b0c92b2bbb33d6e5a234db48dc46aed9d5528922156ca58e79ecf7",
         "kind": "ESCROW_FINISH",
         "data": {
           "amountDrops": "40000",
-          "createHash": "7AE9DEB6C0A5C1BFAC8E1778B46130AD18D514869328547593D9E810AB857952",
-          "createSequence": 22220354,
-          "ledgerIndex": 22227993,
+          "createHash": "E61FD9D098B200DD99F53DB4C3F024ED44CAF44B7ED2435B4918E224244A156A",
+          "createSequence": 22220357,
+          "ledgerIndex": 22228572,
           "owner": "rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1",
           "payTo": "r9hkhUEsqcUBAhzp5dfVbPeX37UE6dEQ8c",
           "proofOk": true,
           "result": "tesSUCCESS",
-          "txHash": "2C82AFF633D9296AC116FD4FAB4CAEA0106544ED6C73A29DA960991827E34C48"
+          "txHash": "78F5BF157C2B9792A92D865713E80EB8F2827364825D017F178F71810042C1B6"
         }
       },
       {
-        "seq": 812,
-        "at": "2026-11-10T23:28:59.489Z",
-        "prevHash": "5a95c7561f40948d16c4758d94830185bcaaf6bcd31950ac115d432c278fa84b",
-        "hash": "48c42b47f70498fe3cfacbdd701399e3dfb916bc3a5fd53faca9e8a90e5b13a2",
-        "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
-        "intentId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3:3:xrpl-x402:v1",
+        "seq": 831,
+        "at": "2026-11-11T00:00:42.534Z",
+        "prevHash": "4b1c81cb7bc3c124220657fcb25511dbb71acaa5afe3138920a2d5bf1b3c012f",
+        "hash": "fde3d90ca3fc128d8907af82a29ea2434f0a5979db7caf0263d422c038711839",
+        "runId": "953af12e-c87c-4c83-85f6-e172ad372bfe",
+        "intentId": "953af12e-c87c-4c83-85f6-e172ad372bfe:3:xrpl-x402:v1",
         "surface": "web",
-        "principal": "e64032c634135e8ee49a50ef665c1c534647e6b0bae3be2b50ba52ee4a55f5d7",
+        "principal": "83eb773c66b0c92b2bbb33d6e5a234db48dc46aed9d5528922156ca58e79ecf7",
         "kind": "settle",
         "data": {
           "amountDrops": "40000",
@@ -2636,30 +2079,30 @@
           "asset": "XRP",
           "deliveredAmount": null,
           "label": "XRPL TESTNET · no real value",
-          "ledgerIndex": 22227993,
+          "ledgerIndex": 22228572,
           "payTo": "r9hkhUEsqcUBAhzp5dfVbPeX37UE6dEQ8c",
           "payer": "rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1",
-          "receiptId": "escrow-2C82AFF633D9296AC116FD4FAB4CAEA0106544ED6C73A29DA960991827E34C48",
+          "receiptId": "escrow-78F5BF157C2B9792A92D865713E80EB8F2827364825D017F178F71810042C1B6",
           "scheme": "escrow-v1",
           "state": "RELEASED",
-          "txHash": "2C82AFF633D9296AC116FD4FAB4CAEA0106544ED6C73A29DA960991827E34C48"
+          "txHash": "78F5BF157C2B9792A92D865713E80EB8F2827364825D017F178F71810042C1B6"
         }
       },
       {
-        "seq": 813,
-        "at": "2026-11-10T23:29:02.207Z",
-        "prevHash": "48c42b47f70498fe3cfacbdd701399e3dfb916bc3a5fd53faca9e8a90e5b13a2",
-        "hash": "9d3062ebcb22d170d966686b3f32fe90e314a6d4f554e1dc552cb6f4abd04cb7",
-        "runId": "3b02bbca-1767-4dc1-9eb3-b092be7ccdc3",
+        "seq": 832,
+        "at": "2026-11-11T00:00:45.488Z",
+        "prevHash": "fde3d90ca3fc128d8907af82a29ea2434f0a5979db7caf0263d422c038711839",
+        "hash": "d694f27688ffb81c0bc53319dedaa1287b711f1a192d129f668038524bac2d48",
+        "runId": "953af12e-c87c-4c83-85f6-e172ad372bfe",
         "intentId": null,
         "surface": "web",
-        "principal": "e64032c634135e8ee49a50ef665c1c534647e6b0bae3be2b50ba52ee4a55f5d7",
+        "principal": "83eb773c66b0c92b2bbb33d6e5a234db48dc46aed9d5528922156ca58e79ecf7",
         "kind": "answer-anchor",
         "data": {
-          "answersHash": "50967788df1dfb916d7150486dd66a5cec3a67e5ac7c73ea5e9da68204486cf3"
+          "answersHash": "787f3129ff56558a733ea7615d4de4c0fd168bcfeddb3c9d006813db5fe4cbfd"
         }
       }
     ],
-    "head": "9d3062ebcb22d170d966686b3f32fe90e314a6d4f554e1dc552cb6f4abd04cb7"
+    "head": "d694f27688ffb81c0bc53319dedaa1287b711f1a192d129f668038524bac2d48"
   }
 }

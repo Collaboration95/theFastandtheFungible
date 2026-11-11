@@ -83,6 +83,7 @@ export const releases = {
   'v1.0.0': { title: 'One command to a verified purchase', snippet: { path: 'docs/evidence/round4-j2/try-output.txt', lines: [1, 7], tail: 1, caption: 'try --testnet, cold run (docs/evidence/round4-j2)' }, tx: { path: 'docs/evidence/round4-j2/try-output.txt' } },
   'v1.0.1': { title: 'Answers lead with the fact you paid for', image: { path: 'docs/evidence/u1-ux/after/1440x900/06-answer.jpg', alt: 'An answer whose first sentence is the purchased fact, with its citation', caption: 'Answer-first layout (captured 7 Nov)' } },
   'v1.0.2': { title: 'Honest states for anchors and no-purchase runs', image: { path: 'docs/evidence/r5-k/decline-state.png', alt: 'A no-purchase run listing each article considered and why none cleared the value bar', caption: 'A no-purchase run explains each decision (captured 7 Nov, before the v1.0.2 anchor label)' } },
+  'v1.1.0': { title: 'A hosted demo for judges, and receipts that verify from it', image: { path: 'docs/media/readme-answer.png', alt: 'A hosted-demo answer on XRPL Testnet next to its payment card: each article paid by key reveal, every step linked to its transaction', caption: 'Hosted demo, XRPL Testnet, 11 Nov' } },
 }
 
 // Then → now. `prs` resolve to the merge date and the first release tag containing them.

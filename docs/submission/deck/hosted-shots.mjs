@@ -105,7 +105,7 @@ try {
   const deckTop = await header()
   const main = { x: 0, y: deckTop.y, width: HOSTED_SHOTS.deck.viewport.width, height: HOSTED_SHOTS.deck.main.height }
   await page.screenshot({ path: join(assets, HOSTED_SHOTS.deck.main.file), clip: main })
-  const kept = page.locator('[aria-label^="Payment:"]').filter({ hasText: /Paid by key reveal|Article unlocked/ }).first()
+  const kept = page.locator('[aria-label^="Payment:"]').filter({ visible: true }).filter({ hasText: /Paid by key reveal|Article unlocked/ }).first()
   await kept.scrollIntoViewIfNeeded()
   const region = await kept.getAttribute('aria-label')
   const row = await kept.boundingBox()
