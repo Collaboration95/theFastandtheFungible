@@ -29,6 +29,17 @@ describe('manifest (#113)', () => {
     expect(verifyManifestSignature(manifest)).toBe(true)
   })
 
+  it('a remembered valid result never vouches for a tampered copy (field, signature, key or wallet)', () => {
+    const manifest = build()
+    for (let i = 0; i < 3; i++) expect(verifyManifestSignature(manifest)).toBe(true)
+    const other = deriveKeypair(generateSeed())
+    for (const tampered of [{ ...manifest, priceMinor: manifest.priceMinor + 1 }, { ...manifest, sig: build().sig.replace(/^../, '00') }, { ...manifest, pubKey: other.publicKey }, { ...manifest, wallet: deriveAddress(other.publicKey) }]) {
+      expect(verifyManifestSignature(tampered)).toBe(false)
+      expect(verifyManifestSignature(tampered)).toBe(false)
+    }
+    expect(verifyManifestSignature(manifest)).toBe(true)
+  })
+
   it('a tampered field fails', () => {
     const manifest = build()
     expect(verifyManifestSignature({ ...manifest, priceMinor: manifest.priceMinor + 1 })).toBe(false)

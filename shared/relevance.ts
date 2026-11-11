@@ -53,13 +53,13 @@ const phraseIn = (normalized: string, phrase: string) => normalized.includes(ali
  * was scanned against the whole glossary thousands of times per run (about a third of a fixture ask's event-loop
  * time). The results depend only on the text; keep the most recent ones, frozen so no caller can alter a shared result.
  */
-const memoByText = <T>(compute: (text: string) => T): ((text: string) => T) => {
+const memoByText = <T>(compute: (text: string) => T, { entries = 512, maxLength = 4096 } = {}): ((text: string) => T) => {
   const cache = new Map<string, T>()
   return text => {
-    if (text.length > 4096) return compute(text)
+    if (text.length > maxLength) return compute(text)
     if (cache.has(text)) return cache.get(text)!
     const value = compute(text)
-    if (cache.size >= 512) cache.delete(cache.keys().next().value!)
+    if (cache.size >= entries) cache.delete(cache.keys().next().value!)
     cache.set(text, value)
     return value
   }
@@ -70,6 +70,9 @@ const matchingGroups = memoByText((query: string) => {
 })
 /** topicWords of a query-side text, shared and frozen; topicWords itself still returns a fresh array. */
 const queryWords = memoByText((query: string) => Object.freeze(topicWords(query)))
+/** The same passages and candidate texts are tested against many queries and clauses within one answer. */
+const documentWords = memoByText((document: string): ReadonlySet<string> => new Set(topicWords(document)), { entries: 64, maxLength: 16384 })
+const documentPhrases = memoByText(phraseText, { entries: 64, maxLength: 16384 })
 export const isProtocolQuery = memoByText((query: string) => /\b(?:XRPL|XRP|x402|RLUSD|escrow\w*|credentials?|trustset|AMM\w*|FATF|VASPs|MAS|prompt.inject\w*)\b/i.test(query) || /\bDID(?:Set|Delete)?\b/.test(query) || matchingGroups(query).length > 0 && /\b(?:payment|purchase|http|transaction|ledger|token|account|wallet)\b/i.test(query))
 /** The glossary phrases a query's families add that the query does not already say. */
 export function protocolAliases(query: string): string[] {
@@ -120,8 +123,8 @@ export function familyMemberWords(family: string): Set<string> {
 }
 /** Match each original term directly or through a glossary group it belongs to. */
 export function topicOverlap(query: string, document: string, prepared?: TopicDocument): number {
-  const need = queryWords(query), own = prepared?.words ?? new Set(topicWords(document))
-  const normalized = prepared?.phrases ?? phraseText(document)
+  const need = queryWords(query), own = prepared?.words ?? documentWords(document)
+  const normalized = prepared?.phrases ?? documentPhrases(document)
   const aliases = matchingGroups(query).filter(group => group.some(p => phraseIn(normalized, p)))
   return need.length ? need.filter(w => own.has(w) || aliases.some(g => groupWords.get(g)!.has(w))).length / need.length : 0
 }
@@ -149,7 +152,7 @@ const requiredFamilies = memoByText((query: string) => {
  * (x402, finality, fees, digital payment tokens), 0 for none. Ranks eligible protocol articles; it admits nothing.
  */
 export function subjectRank(query: string, document: string): number {
-  const documentText = phraseText(document)
+  const documentText = documentPhrases(document)
   const hits = subjectFamilies(query).filter(group => group.some(p => phraseIn(documentText, p)))
   return hits.some(group => !BROAD.has(group[0])) ? 2 : hits.length ? 1 : 0
 }
@@ -170,12 +173,12 @@ export function metadataTopicMatches(query: string, document: string, prepared?:
     // the old rule skipped (H8-01). subjectRank then ranks a specific family first. Finality still needs finality
     // metadata, so wallet/budget tags cannot satisfy a finality question.
     if (families.length) {
-      const documentText = prepared?.phrases ?? phraseText(document)
+      const documentText = prepared?.phrases ?? documentPhrases(document)
       return families.some(group => group.some(p => phraseIn(documentText, p)))
     }
     const generic = new Set(['xrpl','xrp','ledger','payment','transaction','account','token','asset'])
     const need = words.filter(w => !generic.has(w))
-    const own = prepared?.words ?? new Set(topicWords(document))
+    const own = prepared?.words ?? documentWords(document)
     return need.length ? need.some(w => own.has(w)) : true
   }
   return topicOverlap(query.replace(/\b\d+\b/g, ' '), document, prepared) >= 0.5
