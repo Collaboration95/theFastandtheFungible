@@ -191,8 +191,13 @@ test('scenario links open their run within ten seconds and keep compact, honest 
         }
         if (!scenario) {
           const skip = page.getByRole('link', { name: 'Skip to recorded run' })
+          // The integrated app focuses the run heading on navigation. Check that,
+          // then start a fresh document traversal to exercise the first skip link.
+          await expect(page.getByRole('heading', { level: 1 })).toBeFocused()
+          await page.locator('body').evaluate(body => { body.tabIndex = -1; body.focus() })
           await page.keyboard.press('Tab')
           await expect(skip).toBeFocused()
+          await page.locator('body').evaluate(body => body.removeAttribute('tabindex'))
           await page.keyboard.press('Enter')
           await expect(page.locator('#main')).toBeFocused()
           await expect(page.locator('.demo-shell > summary .demo-label')).toHaveText('Replay · XRPL Testnet, recorded 11 Nov 2026 · fictional writers · no real value')
