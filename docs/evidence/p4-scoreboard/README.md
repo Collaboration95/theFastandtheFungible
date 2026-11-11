@@ -34,4 +34,4 @@ The load probe uses the real HOSTED=1 app, 5,000 synthetic metadata runs and 1,0
 
 Measured load and visual results are recorded in `load.json` and `layout.json`; screenshots are `scoreboard-1280.png` and `scoreboard-390.png`.
 
-Measured cached endpoint latency: p50 1.01 ms, p95 1.69 ms, p99 2.64 ms, maximum 6.13 ms; one cold refresh 82.31 ms. All 1,000 requests succeeded, and sessions, session mints and admissions remained zero. Both 1280 and 390 px checks have no horizontal overflow and zero serious/critical axe findings. Screenshots capture the full page at those viewport widths.
+Measured cached endpoint latency: p50 1.01 ms, p95 1.95 ms, p99 3.50 ms, maximum 5.92 ms; one cold refresh 89.72 ms. All 1,000 requests succeeded, and sessions, session mints and admissions remained zero. Both 1280 and 390 px checks have no horizontal overflow and zero serious/critical axe findings. Screenshots capture the full page at those viewport widths.
