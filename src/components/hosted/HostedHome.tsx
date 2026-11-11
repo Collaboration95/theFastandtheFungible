@@ -120,7 +120,7 @@ export function HostedFooter({ hosted }: { hosted: Hosted }) {
         <li><Out href={links.deck}>Pitch deck</Out></li>
         {links.video && <li><Out href={links.video}>Demo video</Out></li>}
         <li><Out href={links.progress}>Progress since SingHacks</Out></li>
-        <li><Out href={links.keyReveal}>Recorded walkthrough: key reveal and refund</Out></li>
+        <li><Out href={links.keyReveal}>Recorded walkthrough: writer no-show and refund</Out></li>
         <li><Out href={links.verify}>How to verify a receipt</Out></li>
       </ul></nav>
     </footer>

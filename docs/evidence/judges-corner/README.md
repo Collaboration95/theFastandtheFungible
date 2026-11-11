@@ -55,6 +55,14 @@ was added for the intended prose labels; the recorded receipts hash is unchanged
 
 ## Shipping verification
 
+The first full gate passed 19 of 20 steps. Its hosted privacy test used a broad
+“any Verify region” selector, which also matched the new public recorded-run
+verifier. The test now explicitly denies the private-run verifier and asserts
+the public judges’ corner remains available. The existing inaccessible-run
+and empty-sidebar checks remain. Targeted hosted checks then passed **4/4**.
+The footer now calls `UC-key-reveal` “writer no-show and refund”, matching the
+recording it opens; a unit test pins both the label and URL.
+
 The required clean-head local gate and post-merge published gate are recorded
 in the PR. No gate success is inferred from the targeted checks above.
 

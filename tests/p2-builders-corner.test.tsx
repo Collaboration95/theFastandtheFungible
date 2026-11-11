@@ -93,4 +93,8 @@ describe('the row', () => {
     render(<HostedFooter hosted={hosted('https://ra-front.example/proof/' + 'd'.repeat(32))} />)
     expect(screen.getByRole('link', { name: /See a real proof of refusal \(no question used\)/ }).getAttribute('href')).toContain('/proof/')
   })
+  it('names the replay target as a writer no-show and refund', () => {
+    render(<HostedFooter hosted={hosted()} />)
+    expect(screen.getByRole('link', { name: /^Recorded walkthrough: writer no-show and refund/ }).getAttribute('href')).toMatch(/\?scenario=UC-key-reveal$/)
+  })
 })
