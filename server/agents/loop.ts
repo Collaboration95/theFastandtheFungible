@@ -17,6 +17,7 @@ import { freeDraft, followUpSearch, hitsByPublisher, retrieve, sanitizeGaps, usa
 import { resolveCitation, validateClaims } from './citations.js'
 import { FIXTURE_GAP_RULES, fixtureSupports, followUpQuery, INSTRUCTION, STATUS_RANK, type CoverageEvidence } from './requirements.js'
 import { isProtocolQuery, titleCovers } from '../../shared/relevance.js'
+import { openGapsAfterLead } from '../../shared/open-gaps.js'
 import type { Plan } from '../../shared/contracts/index.js'
 
 export type RunLoopOptions = {
@@ -169,7 +170,8 @@ export class RunLoop {
     }
     if (requirements) {
       coverage ??= await this.assessCoverage(runId, answer)
-      answer.openGaps = requirements.filter(r => coverage!.entries.find(e => e.requirementId === r.id)?.status !== 'supported').map(r => ({ text: r.text.replace(/\s*&\s*/g, ' and ') }))
+      // H9-10 (R9-B): the coverage rewrite keeps the rule research.ts applies, so MCP and the SDK never list a fact the lead answers.
+      answer.openGaps = openGapsAfterLead(run.question, { lead: answer.lead, openGaps: requirements.filter(r => coverage!.entries.find(e => e.requirementId === r.id)?.status !== 'supported').map(r => ({ text: r.text.replace(/\s*&\s*/g, ' and ') })) })
     }
     this.store.addAnswer(runId, structuredClone(answer), result.impact ? structuredClone(result.impact) : undefined)
     this.store.appendEvent(runId, { type: 'ANSWER_READY', label: previous ? 'Answer updated with verified evidence.' : 'Free answer checked.', data: { answerVersion: answer.version, durationMs: Date.now() - compositionStarted } })

@@ -78,7 +78,7 @@ describe('the x402 402 question is the first preset and RLUSD the second', () =>
 })
 
 describe('round-9 judge questions with the live planner\'s recorded plans (fixture decisions, SIMULATED payments)', () => {
-  const ids = ['A1', 'E1', 'A2', 'F2', 'A3', 'A4', 'A5', 'D1', 'D3', 'D4', 'E3', 'E5']
+  const ids = ['A1', 'E1', 'A2', 'F2', 'A3', 'A4', 'A5', 'B1', 'D1', 'D3', 'D4', 'E3', 'E5']
   let results: LiveShapedResult[] = []
   const result = (id: string, wording: 'modal' | 'run') => results.find(r => r.id === id && r.wording === wording)!
   beforeAll(async () => {
@@ -124,6 +124,17 @@ describe('round-9 judge questions with the live planner\'s recorded plans (fixtu
   }
   it('modal plan (the plan that now runs): the writer no-show question buys the no-show article (H9-05)', () => {
     expect(result('D4', 'modal').bought).toContain('product-escrow-no-show')
+  })
+  it('a planned run never lists, as still unanswered, the fact its lead answers (H9-10 on the loop path, R9-B open-gaps rule)', () => {
+    // Round 9 listed the prompt-injection question itself under "Still unanswered" beside a lead that answers it; the
+    // coverage rewrite in the run loop (what MCP and the SDK return) now applies the same rule as the answer writer.
+    for (const wording of ['modal', 'run'] as const) {
+      expect(result('B1', wording).lead[0], wording).toMatch(/prompt injection cannot increase spending authorization/i)
+      expect(result('B1', wording).openGaps, wording).not.toContain(liveQuestion('B1').run.requirements[0])
+    }
+    expect(result('B1', 'run').openGaps).toEqual([])
+    // A fact the lead does not answer stays open: the fee question's lead gives the drops, not how many transactions.
+    expect(result('A3', 'modal').openGaps.some(gap => /how many XRPL transactions/i.test(gap))).toBe(true)
   })
   it('the EscrowFinish/EscrowCancel question still leads with a cited escrow sentence', () => {
     for (const wording of ['modal', 'run'] as const) expect(result('A5', wording).lead[0], wording).toMatch(/EscrowFinish|EscrowCancel/)
