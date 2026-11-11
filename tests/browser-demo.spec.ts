@@ -180,13 +180,13 @@ test('scenario links open their run within ten seconds and keep compact, honest 
       for (const scenario of ['', 'UC3-key-reveal', 'UC-key-reveal', 'UC3-testnet', 'UC1', 'UC2', 'UC3']) {
         await page.goto(`http://127.0.0.1:${port}/theFastandtheFungible/demo/${scenario ? `?scenario=${scenario}` : ''}`)
         const recording = JSON.parse(await (await import('node:fs/promises')).readFile(`demo/traces/${scenario || 'UC3-key-reveal'}.json`, 'utf8'))
-        await expect(page.getByRole('heading', { level: 1 })).toHaveText(recording.run.question, { timeout: 10_000 })
+        await expect(page.locator('#main:not(.demo-loading) > h1')).toHaveText(recording.run.question, { timeout: 10_000 })
         expect(new URL(page.url()).searchParams.get('run')).toBe(recording.run.runId)
         expect(await page.evaluate(() => Math.max(...['.ra-hdr', '.demo-banner', '.ra-top'].map(selector => document.querySelector(selector)!.getBoundingClientRect().bottom)))).toBeLessThanOrEqual(width === 390 ? 120 : 100)
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
         if (scenario) {
           await page.goto(`http://127.0.0.1:${port}/theFastandtheFungible/demo/?run=${recording.run.runId}`)
-          await expect(page.getByRole('heading', { level: 1 })).toHaveText(recording.run.question, { timeout: 10_000 })
+          await expect(page.locator('#main:not(.demo-loading) > h1')).toHaveText(recording.run.question, { timeout: 10_000 })
           await expect(page.getByRole('combobox', { name: 'Recorded scenario', includeHidden: true })).toHaveValue(scenario === 'UC3-key-reveal' ? '' : scenario)
         }
         if (!scenario) {
@@ -266,14 +266,14 @@ test('replay downloads only the requested recording, then loads another scenario
   await page.routeWebSocket(/wss:\/\/.*/,ws=>ws.close())
   const requests:string[]=[];page.on('request',r=>requests.push(new URL(r.url()).pathname))
   const base=`http://127.0.0.1:${port}/theFastandtheFungible/demo/`
-  await page.goto(base);await expect(page.getByRole('heading',{level:1})).toContainText('Kestrel',{timeout:10_000})
+  await page.goto(base);await expect(page.locator('#main:not(.demo-loading) > h1')).toContainText('Kestrel',{timeout:10_000})
   await expect(page.locator('link[rel="modulepreload"][href*="/assets/main-"]')).toHaveCount(1)
   await expect(page.locator('link[rel="stylesheet"][href*="/assets/main-"]')).toHaveCount(1)
   expect(requests.filter(p=>/\/(?:UC1|UC2|UC3|UC3-testnet|UC-key-reveal)-[A-Za-z0-9_-]{8}\.js$/.test(p))).toEqual([])
   expect(requests.filter(p=>/\/UC3-key-reveal-[\w-]+\.js$/.test(p))).toHaveLength(1)
   await expect(page.locator('.demo-transactions p')).toHaveCount(6)
   await page.getByRole('combobox',{name:'Recorded scenario'}).selectOption('UC2')
-  await expect(page.getByRole('heading',{level:1})).toContainText("What's the analyst outlook",{timeout:10_000})
+  await expect(page.locator('#main:not(.demo-loading) > h1')).toContainText("What's the analyst outlook",{timeout:10_000})
   expect(requests.filter(p=>/\/UC2-[\w-]+\.js$/.test(p))).toHaveLength(1)
   // A cold direct link must preload its own trace, including run-ID links.
   for (const entry of recordingIndex) for (const query of [`scenario=${entry.scenario}`, `run=${entry.runId}`, `scenario=${entry.scenario}&run=${recordingIndex.find(other => other.runId !== entry.runId)!.runId}`]) {
@@ -282,7 +282,7 @@ test('replay downloads only the requested recording, then loads another scenario
       await direct.routeWebSocket(/wss:\/\/.*/, ws => ws.close())
       direct.on('request', request => { const file = new URL(request.url()).pathname.split('/').pop()!; if (/^UC.*\.js$/.test(file)) traces.push(file) })
       await direct.goto(`${base}?${query}`)
-      await expect(direct.getByRole('heading', { level: 1 })).toHaveText(entry.question)
+      await expect(direct.locator('#main:not(.demo-loading) > h1')).toHaveText(entry.question)
       expect(traces).toHaveLength(1)
       expect(traces[0]).toMatch(new RegExp(`^${entry.scenario}-[\\w-]+\\.js$`))
     } finally { await context.close() }
