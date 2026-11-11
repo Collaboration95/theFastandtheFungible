@@ -47,12 +47,8 @@ export async function readPayer(rpc: Rpc = publicRead): Promise<PayerFact> {
   if (validated(list) !== ledger || list.ledger_hash !== account.ledger_hash || list.account !== SHARED_PAYER || !Array.isArray(list.account_objects) || list.marker || list.account_objects.some(v => object(v).LedgerEntryType !== 'Escrow')) throw new Error('Incomplete payer objects')
   return { network: 'XRPL Testnet', ledger, readAt: new Date().toISOString(), openEscrows: list.account_objects.length, ownerCount: Number(data.OwnerCount), text: `Shared Testnet payer rbcLo4… · open escrows ${list.account_objects.length} · owner count ${data.OwnerCount} · read at ledger ${ledger}` }
 }
-/** L12 has not landed yet. SGT presentation per its contract, independent of the viewer's timezone. */
-export function ledgerReadTime(iso: string) {
-  const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Singapore', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(new Date(iso))
-  const part = (type: string) => parts.find(p => p.type === type)?.value
-  return `${part('day')} ${part('month')} ${part('year')}, ${part('hour')}:${part('minute')} SGT`
-}
+/** Share the same SGT presentation as receipts and replay. */
+export { whenSGT as ledgerReadTime } from '../shared/presentation'
 
 export type ReadReceipt = { fields: Fields; readAt: string }
 export async function readLedgerReceipt(create: string, finish: string, rpc: Rpc = publicRead): Promise<ReadReceipt> {
