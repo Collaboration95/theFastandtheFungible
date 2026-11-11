@@ -9,6 +9,15 @@ const free = miniCorpus.articles.find(a => a.tier === 'FREE' && a.publisherSlug 
 const paid = miniCorpus.articles.find(a => a.tier === 'PAID')!
 
 describe('blog pages', () => {
+  it('labels the operator-authored Open Records pages separately from their synthetic content', async () => {
+    const base = await serve(miniCorpus)
+    const article = miniCorpus.articles.find(a => a.publisherSlug === 'open-records')!
+    for (const path of ['/w/open-records/', '/w/open-records/about', '/w/open-records/contact', articleUrl(article.publisherSlug, article.articleId)]) {
+      const { text } = await get(base + path)
+      expect(text).toContain('TEAM-AUTHORED · SYNTHETIC demo content · XRPL Testnet · no real value')
+      expect(text).not.toContain('fictional writer')
+    }
+  })
   it('keeps author-supplied provenance on Contact', async () => {
     const base=await serve({...miniCorpus,publishers:miniCorpus.publishers.map(p=>({...p,synthetic:false}))})
     const {text}=await get(`${base}/w/load-factor/contact`)

@@ -5,6 +5,7 @@ import { articleUrl } from '../../shared/contracts/manifest.js'
 import type { Article } from '../../shared/contracts/writers.js'
 import type { PublisherEntry } from '../registry.js'
 import { SITE_CSS } from './css.js'
+import { TEAM_AUTHORED_PUBLISHERS } from '../../shared/writer-authorship.js'
 
 export const esc = (s: unknown) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!)
 const sgd = (minor: number) => `S$${(minor / 100).toFixed(2)}`
@@ -15,7 +16,7 @@ const page = (title: string, nav: string, main: string, synthetic = true, team =
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)}</title><link rel="stylesheet" href="/w/site.css"></head>
 <body>${nav}<main>${main}</main>
-<footer><span>${team ? 'TEAM-AUTHORED · XRPL Testnet · no real value' : synthetic ? 'SYNTHETIC · fictional writer. Nothing here is real reporting.' : 'AUTHOR SUPPLIED · unverified writer · XRPL Testnet'}</span><a href="/w/">The web the engine searches</a></footer></body></html>
+<footer><span>${team ? `TEAM-AUTHORED · ${synthetic ? 'SYNTHETIC demo content · ' : ''}XRPL Testnet · no real value` : synthetic ? 'SYNTHETIC · fictional writer. Nothing here is real reporting.' : 'AUTHOR SUPPLIED · unverified writer · XRPL Testnet'}</span><a href="/w/">The web the engine searches</a></footer></body></html>
 `
 
 const navFor = ({ publisher }: PublisherEntry) => {
@@ -23,7 +24,7 @@ const navFor = ({ publisher }: PublisherEntry) => {
   return `<nav><a class="name" href="${base}/">${esc(publisher.name)}</a><div class="mid"><a href="${base}/">Blogs</a><a href="${base}/about">About</a></div><div class="right"><a href="${base}/contact">Contact</a></div></nav>`
 }
 
-const entryPage = (entry: PublisherEntry, title: string, nav: string, main: string) => page(title, nav, main, entry.publisher.synthetic, entry.publisher.slug.startsWith('team-'))
+const entryPage = (entry: PublisherEntry, title: string, nav: string, main: string) => page(title, nav, main, entry.publisher.synthetic, TEAM_AUTHORED_PUBLISHERS.has(entry.publisher.slug))
 
 const homePage = (entry: PublisherEntry) => {
   const { publisher, articles } = entry
