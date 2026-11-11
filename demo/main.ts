@@ -29,7 +29,7 @@ const testnetRun = (recording: Recording) => recording.run.labels.settlement.inc
 // Recording dates read in Singapore time, as the submission and the site do.
 const recordedOn = (recording: Recording) => { const at = recording.run.events[0]?.at; return at ? dateSGT(at) : 'date unavailable' }
 const scenarioOf = (recording: Recording) => { const key = recordingIndex.find(item => item.runId === recording.run.runId)?.scenario ?? ''; return key === 'UC3-key-reveal' ? '' : key }
-let updateTransactions: (() => Promise<void>) | undefined
+let updateTransactions: (() => Promise<void>) | undefined = undefined
 const showLabel = () => {
   for (const label of document.querySelectorAll('.demo-label')) label.textContent = ENV.replay(recordedOn(active), testnetRun(active))
   document.querySelector('.demo-short')!.textContent = ENV.replayShort(testnetRun(active))
