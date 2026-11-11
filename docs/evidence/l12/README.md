@@ -26,8 +26,8 @@ critical axe violations. `before-checks.json` and `after-checks.json` record
 overflow and serious/critical axe violations for each surface. Chrome is the bottom of the stacked
 site header and replay banner (the app controls share the site header).
 
-After hosted-home and replay screenshots were refreshed after rebasing onto
-JC’s judges’ corner (`0f7a2c25`). The replay retains variable Geist Mono in a
+Hosted-home screenshots include JC’s judges’ corner (`0f7a2c25`); replay and
+receipt screenshots also include KEY’s merged work (`d06b13f1`). The replay retains variable Geist Mono in a
 smaller character subset with the full-font fallback. A keyboard skip link
 focuses the recorded run without adding header height.
 
