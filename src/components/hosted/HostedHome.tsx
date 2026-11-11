@@ -1,6 +1,6 @@
-import { useState, type ReactNode } from 'react'
+import { lazy, Suspense, useState, type ReactNode } from 'react'
 import { allowanceText, builderLines, canAsk, explorerTx, hostedLinks, HOSTED_DAILY_QUESTIONS, HOSTED_ENDS, JUDGE_RUN, questionCap, minorText, proofLink, waitCopy, type HomeState, type Hosted } from '../../hosted'
-import VerifyInBrowser from './VerifyInBrowser'
+const VerifyInBrowser = lazy(() => import('./VerifyInBrowser'))
 import { SharedPayer } from '../LedgerCheckEntry'
 import './judges-corner.css'
 
@@ -44,7 +44,7 @@ export function HostedJudgesCorner({ hosted }: { hosted: Hosted }) {
     <section className="ra-hjc" aria-label="Check our work without asking a question">
     <p className="ra-hjc-label" aria-hidden="true">Check our work without asking a question</p>
     <ul className={proof ? 'ra-hjc-list' : 'ra-hjc-list is-two'}>
-      <li className="ra-hjc-verify">{icons.verify}<VerifyInBrowser bundleUrl={JUDGE_RUN.bundleUrl} caption={JUDGE_RUN.caption} title="Verify a real run from this sandbox in your browser" /></li>
+      <li className="ra-hjc-verify">{icons.verify}{opened && <Suspense fallback={<p role="status">Loading recorded run checks…</p>}><VerifyInBrowser bundleUrl={JUDGE_RUN.bundleUrl} caption={JUDGE_RUN.caption} title="Verify a real run from this sandbox in your browser" /></Suspense>}</li>
       <li>{icons.key}<div><h2>See the key on the ledger</h2><p>The Fulfillment field is the article key.</p><Out href={explorerTx(JUDGE_RUN.keyTx)}>Open the EscrowFinish</Out></div></li>
       {proof && <li>{icons.refuse}<div><h2>See it refuse to spend</h2><p>A question it declined to pay for, S$0.00 spent, anchored on the ledger.</p><Out href={proof}>Open the proof of refusal</Out></div></li>}
     </ul>

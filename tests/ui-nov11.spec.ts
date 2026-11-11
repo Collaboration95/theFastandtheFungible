@@ -34,6 +34,7 @@ for (const mode of ['local','hosted']) for (const width of [1440,390]) test(`${m
  await page.getByRole('button',{name:'Cancel',exact:true}).click()
  await page.goto(`/?run=${recording.run.runId}`);await expect(page.locator('.ra-q')).toBeVisible();await capture('answer')
  if(width===390){await page.locator('.ra-mobile-spend > button').click();await capture('mobile-spend')}
+ const spend=page.locator('.ra-spend:visible');await spend.locator('.ra-spending-proof > summary').click();await spend.locator('.ra-run-proof > summary').click();await expect(spend.getByRole('heading',{name:'Verify on XRPL in your browser'})).toBeVisible()
  await page.getByRole('button',{name:/Receipt/}).first().click();await capture('receipt');await page.keyboard.press('Escape')
  await page.locator('.ra-cite').first().click();await capture('citation');await expect.soft(page.locator('.ra-dr-b')).toHaveAttribute('tabindex','0');await page.keyboard.press('Escape')
  await page.keyboard.press('w');await page.getByRole('tab',{name:'Ledger',exact:true}).click();await expect(page.getByRole('button',{name:'Retry balances'})).toBeVisible();await capture('ledger');await page.keyboard.press('Escape')
