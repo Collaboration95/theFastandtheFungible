@@ -80,6 +80,7 @@ it('mints no session or admission through the actual HOSTED=1 app, even while pa
   seedSandbox(backend.store!)
   for (let n=0;n<3;n++) { const response=await get(url); expect(response.status).toBe(200); expect(response.headers['set-cookie']).toBeUndefined(); expect(JSON.parse(response.body).questions).toBe(4); for (const secret of ['PRIVATE_QUESTION_SENTINEL','PRIVATE_TOKEN_SENTINEL','synthetic-principal']) expect(response.body).not.toContain(secret) }
   const head=await get(url,'HEAD');expect(head.status).toBe(200);expect(head.body).toBe('');expect(head.headers['set-cookie']).toBeUndefined()
+  for (const method of ['POST','OPTIONS','PUT','DELETE']) { const response=await get(url,method);expect(response.status).toBe(405);expect(response.headers['set-cookie']).toBeUndefined();expect(response.headers.allow).toBe('GET, HEAD') }
   backend.store!.hostedState(db => { for (const table of ['hosted_sessions','hosted_session_mints','admissions']) expect(Number(db.prepare(`SELECT count(*) AS n FROM ${table}`).get()!.n)).toBe(0) })
 })
 

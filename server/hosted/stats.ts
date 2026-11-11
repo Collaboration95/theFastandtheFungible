@@ -123,5 +123,6 @@ export function sandboxStatsRouter(store: Store, now: () => number = Date.now) {
     } catch { res.status(503).json({ error: 'Sandbox numbers are unavailable.' }); return }
     res.set({ 'Cache-Control': 'public, max-age=0, must-revalidate', 'X-Content-Type-Options': 'nosniff' }).json(cache.body)
   })
+  router.all('/api/demo/stats', (_req,res) => res.set('Allow','GET, HEAD').status(405).json({ error: 'Method not allowed.' }))
   return router
 }

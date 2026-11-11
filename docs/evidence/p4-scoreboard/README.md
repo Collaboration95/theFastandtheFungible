@@ -2,7 +2,7 @@
 
 Local acceptance uses synthetic metadata only. It makes no model calls, ledger calls, purchases or cloud changes. The four-run seed is not evidence of real sandbox usage. Screenshots visibly identify the synthetic store.
 
-The public `GET /api/demo/stats` endpoint returns fixed aggregate fields only, caches the result for 60 seconds, and is mounted before the session/admission middleware. The small `server/routes.ts` mount is necessary to avoid minting a session; session and limit semantics are unchanged. The one-line export in `server/hosted/routes.ts` keeps that public hosted router grouped with the hosted routes. It accepts cookieless GET/HEAD; query parameters are rejected. Cache-Control requires revalidation so downstream caches cannot add another 60 seconds of staleness.
+The public `GET /api/demo/stats` endpoint returns fixed aggregate fields only, caches the result for 60 seconds, and is mounted before the session/admission middleware. The small `server/routes.ts` mount is necessary to avoid minting a session; session and limit semantics are unchanged. The one-line export in `server/hosted/routes.ts` keeps that public hosted router grouped with the hosted routes. It accepts cookieless GET/HEAD; query parameters are rejected. Other methods return 405 before the session guard, so unsupported calls cannot mint a session either. Cache-Control requires revalidation so downstream caches cannot add another 60 seconds of staleness.
 
 The judges' corner opens a native details panel. It fetches with `credentials: omit` only after opening and refreshes once per minute. It publishes no question, run ID, intent ID, transaction hash, session, principal, IP, token or individual model record. It adds no per-answer fee line.
 
