@@ -10,6 +10,7 @@ something significant: a feature, a metric move, a finished deliverable. Don't
 add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
+- 11 Nov: H6 fixes the hosted demo showing **"paused" while nothing was paused**. The packaged guard checked HG before every request, with a 1.5 s timeout. When HG's readiness refresh (two Testnet round trips from Singapore) ran slow, visitors and the `/ready` uptime check got the paused page: 11 live visitor 503s on 11 Nov, and the check failed about once a minute. Each cookieless probe also minted a session, 3,530 of HG's 5,000 by 13:00 SGT. The guard now qualifies HG once per Host and re-checks in the background, still failing closed on any non-hosted, broken or silent API. Its probes use its own session, and a deploy restores the 60 s uptime check. Local load at the live cadence (6 visitors, 180 s): 18 → 0 paused answers, 42 → 12 sessions minted. The operator pause still pauses. Same PR: free-only Open Records gets its own signing seed in the deploy plan, so R9-B does not drop its free sources. [Evidence](evidence/h6/README.md)
 - 11 Nov: R9-A makes the first click right on the hosted demo's live-planner path.
   - **RLUSD preset:** 1 article (S$0.40, was 3 for S$1.20), leading with AllowTrustLineLocking.
   - **Other judge questions:** the fee question buys the drops note first and leads with "423 drops"; "Which XRPL validators are run by Singapore banks?" buys nothing; "writer never reveals the key" buys only the no-show article and leads with EscrowCancel.

@@ -1,0 +1,107 @@
+{
+  "kind": "local-hosted-load",
+  "at": "2026-11-11T04:29:31.786Z",
+  "guard": "docker/hosted/start.mjs at 3157fe41",
+  "visitors": 6,
+  "seconds": 120,
+  "readinessRefreshMs": "380,400,1310,520,370,570,1900,380,650,450",
+  "mode": "HOSTED=1 · fixture models · simulated rail · ephemeral ports",
+  "cloud": false,
+  "requests": 157,
+  "guardPaused": 2,
+  "guardPausedVisitor": 0,
+  "readyz": {
+    "checks": 55,
+    "ok": 53,
+    "guardPaused": 2,
+    "hgNotReady": {}
+  },
+  "hgPaused": 0,
+  "refused429": {
+    "queue_full": 3,
+    "busy": 5
+  },
+  "other": {},
+  "runs": {
+    "asked": 18,
+    "admitted": 15,
+    "finished": 15
+  },
+  "sessionsMinted": 67,
+  "eventLoopDelayMs": {
+    "p50": 12,
+    "p99": 12.6,
+    "max": 55.8
+  },
+  "readinessRefreshes": 19,
+  "routes": {
+    "GET /api/demo/status": {
+      "n": 24,
+      "p50": 6,
+      "p95": 14,
+      "max": 19,
+      "guardPaused": 0
+    },
+    "GET /api/runs": {
+      "n": 6,
+      "p50": 6,
+      "p95": 10,
+      "max": 10,
+      "guardPaused": 0
+    },
+    "GET /readyz": {
+      "n": 55,
+      "p50": 6,
+      "p95": 1318,
+      "max": 1504,
+      "guardPaused": 2
+    },
+    "GET /api/writers/status": {
+      "n": 6,
+      "p50": 16,
+      "p95": 27,
+      "max": 27,
+      "guardPaused": 0
+    },
+    "POST /api/scope": {
+      "n": 18,
+      "p50": 8,
+      "p95": 382,
+      "max": 382,
+      "guardPaused": 0
+    },
+    "POST /runs": {
+      "n": 18,
+      "p50": 7,
+      "p95": 17,
+      "max": 17,
+      "guardPaused": 0
+    },
+    "GET /runs/:id/events": {
+      "n": 15,
+      "p50": 3,
+      "p95": 12,
+      "max": 12,
+      "guardPaused": 0
+    },
+    "GET /runs/:id": {
+      "n": 15,
+      "p50": 2,
+      "p95": 4,
+      "max": 4,
+      "guardPaused": 0
+    }
+  },
+  "guardPausedSamples": [
+    {
+      "t": 40811,
+      "route": "GET /readyz",
+      "ms": 1503
+    },
+    {
+      "t": 107194,
+      "route": "GET /readyz",
+      "ms": 1504
+    }
+  ]
+}

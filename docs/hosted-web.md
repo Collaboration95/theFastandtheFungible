@@ -218,7 +218,7 @@ The `/w` path also passes through HG; the publisher is never a public upstream.
 
 Secrets supplied as environment variable **names**, never CLI values, are
 `DEEPSEEK_API_KEY`, `OPENAI_API_KEY`, `PUBLISHER_SECRET`, `HOSTED_IP_HMAC_KEY`,
-`XRPL_PAYER_SEED`, and paid roster `XRPL_PUBLISHER_<SLUG>_SEED` values. Session
+`XRPL_PAYER_SEED`, and one `XRPL_PUBLISHER_<SLUG>_SEED` for every served writer, free-only Open Records included (it signs free deliveries; it is never paid, so it needs no funding). Session
 cookies are random opaque values with server-side hashes; no session signing key
 is required. Deploy copies secrets through 0600 temporary files into pinned
 Secret Manager versions and removes local scratch files. The front receives no
@@ -236,7 +236,28 @@ while the publisher and recovery process can initialize. It never falls through
 to local owner routes. The original `docker/Dockerfile.publisher` K_SERVICE guard is
 unchanged; new stateful roles also refuse K_SERVICE. The guard probes HG over
 `node:http` with the visitor's exact `Host` (`fetch()` drops `Host`, and HG
-answers `origin_denied` to any other host). `PublisherClient` accepts only a
+answers `origin_denied` to any other host).
+
+The guard qualifies the child once per `Host`, not once per request (H6). A
+contract answer is kept and re-checked in the background every 10 s, one probe
+per Host at a time, each with a 5 s timeout. An answer that is not the contract
+(or a refused connection) withdraws it at once. A re-check that is only slow keeps
+it until 60 s after the last good answer; after that the guard serves the paused
+page again until HG answers. Probes carry the guard's own HG session, never a
+visitor's cookie or address, so they mint at most one session a day. The guard
+is not the pause authority: HG reports an operator pause itself (paused state,
+503 `paused` on asks, 503 `/readyz`), and that passes through unchanged. Before
+H6 the guard probed on every request with a 1.5 s timeout. A slow HG readiness
+refresh (two Testnet round trips from Singapore, about 0.4 s, sometimes over 1.5 s)
+therefore showed visitors and the `/ready` uptime check the paused page while
+nothing was paused, and every cookieless probe (6 uptime checks a minute) minted
+a session toward HG's 5,000-session ceiling (3,530 by 13:00 SGT on 11 Nov, when the
+check was slowed to 900 s). Uptime checks hit `/readyz`, which mints no session, so
+every deploy now sets the existing `ra-readyz` check back to 60 s. Evidence:
+[evidence/h6](evidence/h6/README.md).
+Re-run locally with `node --import tsx scripts/hosted-load.mjs`.
+
+`PublisherClient` accepts only a
 numeric-loopback publisher origin, so in compose the API supervisor relays
 `127.0.0.1:8790` to `HOSTED_PUBLISHER_UPSTREAM` (`publisher:8790`). Startup
 derives `ESCROW_WRITERS` from the deployed writer seeds; without it the

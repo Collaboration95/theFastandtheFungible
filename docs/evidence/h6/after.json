@@ -1,0 +1,115 @@
+{
+  "kind": "local-hosted-load",
+  "at": "2026-11-11T04:32:39.515Z",
+  "guard": "docker/hosted/start.mjs (this checkout)",
+  "visitors": 6,
+  "seconds": 120,
+  "readinessRefreshMs": "380,400,1310,520,370,570,1900,380,650,450",
+  "mode": "HOSTED=1 · fixture models · simulated rail · ephemeral ports",
+  "cloud": false,
+  "requests": 156,
+  "guardPaused": 0,
+  "guardPausedVisitor": 0,
+  "readyz": {
+    "checks": 54,
+    "ok": 54,
+    "guardPaused": 0,
+    "hgNotReady": {}
+  },
+  "hgPaused": 0,
+  "refused429": {
+    "queue_full": 3,
+    "busy": 2
+  },
+  "other": {},
+  "runs": {
+    "asked": 18,
+    "admitted": 15,
+    "finished": 15
+  },
+  "sessionsMinted": 6,
+  "eventLoopDelayMs": {
+    "p50": 12,
+    "p99": 12.4,
+    "max": 48.5
+  },
+  "readinessRefreshes": 18,
+  "routes": {
+    "GET /api/demo/status": {
+      "n": 24,
+      "p50": 6,
+      "p95": 13,
+      "max": 20,
+      "guardPaused": 0
+    },
+    "GET /api/runs": {
+      "n": 6,
+      "p50": 8,
+      "p95": 21,
+      "max": 21,
+      "guardPaused": 0
+    },
+    "GET /readyz": {
+      "n": 54,
+      "p50": 4,
+      "p95": 1315,
+      "max": 1905,
+      "guardPaused": 0
+    },
+    "GET /api/writers/status": {
+      "n": 6,
+      "p50": 14,
+      "p95": 23,
+      "max": 23,
+      "guardPaused": 0
+    },
+    "POST /api/scope": {
+      "n": 18,
+      "p50": 7,
+      "p95": 17,
+      "max": 17,
+      "guardPaused": 0
+    },
+    "POST /runs": {
+      "n": 18,
+      "p50": 8,
+      "p95": 19,
+      "max": 19,
+      "guardPaused": 0
+    },
+    "GET /runs/:id/events": {
+      "n": 15,
+      "p50": 2,
+      "p95": 10,
+      "max": 10,
+      "guardPaused": 0
+    },
+    "GET /runs/:id": {
+      "n": 15,
+      "p50": 1,
+      "p95": 4,
+      "max": 4,
+      "guardPaused": 0
+    }
+  },
+  "guardPausedSamples": [],
+  "pausedControl": {
+    "status": {
+      "http": 200,
+      "state": "paused",
+      "ask": false
+    },
+    "submit": {
+      "http": 503,
+      "error": "paused"
+    },
+    "scope": {
+      "http": 503,
+      "error": "paused"
+    },
+    "readyz": {
+      "http": 503,
+      "status": "paused"
+    }
+  }
+}
