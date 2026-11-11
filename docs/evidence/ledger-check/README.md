@@ -27,6 +27,8 @@ At 390 px, document scrollWidth = 390. Axe serious/critical violations = **0**. 
 
 All connections use exactly the verifier’s two public Testnet endpoints. Desktop policies are untouched and P3 is hidden there. The hosted app has no restrictive connect-src policy in its static HTML/server/host configuration; these are the same sockets already used by VerifyInBrowser. No Mainnet endpoints were added. The static Pages replay retains its tx-only policy: X3 is shown in the hosted/local app, while P3 and X3 are hidden in the static replay. The ledger UI is loaded in a separate chunk to preserve the existing initial-JS budget. L12 has not merged at this base; amounts use two decimals and dates use the specified SGT format. Existing transaction links do not add hash labels.
 
+Screenshots and width/axe checks were refreshed after A11Y #487 merged. The full App and its mobile Spend sheet visibly identify the local recorded UC3 replay and fictional writers, separate from the native public ledger reads. The refreshed checks remain at 0 overflow and 0 serious/critical axe findings.
+
 ## Verification
 
 40 new targeted tests pass. Full check:fast, local gate, published PR-head gate and post-merge gate are recorded in the PR / local-gate receipts.
