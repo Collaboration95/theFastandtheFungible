@@ -7,10 +7,10 @@ import Connecting from './Connecting'
 export default function Boot() {
   const [result, setResult] = useState<Awaited<ReturnType<typeof detectHosted>>>()
   useEffect(() => {
-    let cancelled = false
+    let cancelled = false, attempt = 0
     const connect = async () => {
       while (!cancelled) {
-        const next = await detectHosted()
+        const next = await detectHosted(1)
         if (!next.failed) {
           if (cancelled) return
           // Record mode is an owner tool, never available to a hosted visitor.
@@ -20,7 +20,7 @@ export default function Boot() {
           }
           setResult(next); return
         }
-        await new Promise(resolve => setTimeout(resolve, 15000))
+        await new Promise(resolve => setTimeout(resolve, [4000, 8000, 15000][Math.min(attempt++, 2)]))
       }
     }
     void connect()

@@ -8,6 +8,7 @@ import { act, cleanup, render, screen } from '@testing-library/react'
 import { detectHosted, type HostedDemoStatus } from '../src/api'
 import Connecting from '../src/components/Connecting'
 import App from '../src/App'
+import Boot from '../src/components/Boot'
 import { verificationError, verificationNeedsReload, verificationNetworkFailure } from '../src/verify-network'
 import { warmVerifier } from '../src/warm-verifier'
 import type { BrowserVerification } from '../src/verify/browser'
@@ -96,4 +97,18 @@ it('starts the phone sidebar closed so an initial open cannot race a deferred bo
   const html = renderToStaticMarkup(<App hosted={status} />)
   expect(html).toContain('aria-label="Show sidebar"')
   expect(html).not.toContain('aria-label="Hide sidebar"')
+})
+
+
+it('keeps boot retries capped at fifteen seconds instead of restarting the short backoff', async () => {
+  vi.useFakeTimers()
+  const fetcher = vi.fn().mockRejectedValue(new TypeError('network'))
+  vi.stubGlobal('fetch', fetcher)
+  render(<Boot />)
+  for (const [index, delay] of [4000, 8000, 15000, 15000].entries()) {
+    await act(() => vi.advanceTimersByTimeAsync(delay - 1)); expect(fetcher).toHaveBeenCalledTimes(index + 1)
+    await act(() => vi.advanceTimersByTimeAsync(1)); expect(fetcher).toHaveBeenCalledTimes(index + 2)
+  }
+  expect(screen.getByRole('heading', { name: 'Connecting to the demo…' })).toBeTruthy()
+  expect(screen.queryByRole('textbox')).toBeNull()
 })
