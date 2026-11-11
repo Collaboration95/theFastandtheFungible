@@ -70,7 +70,8 @@ try {
         const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)
         const axe=(await new AxeBuilder({page}).analyze()).violations.filter(v=>['serious','critical'].includes(v.impact??''))
         const response=await context.request.get(origin+'/api/demo/stats'),stats=await response.json()
-        await panel.screenshot({path:join(output,`scoreboard-${width}.png`)})
+        await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}))
+        await page.screenshot({path:join(output,`scoreboard-${width}.png`),fullPage:true})
         evidence.push({width,overflow,seriousCritical:axe.map(v=>v.id),stats})
         assert.equal(overflow,false);assert.deepEqual(axe,[])
       }

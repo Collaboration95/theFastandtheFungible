@@ -33,3 +33,5 @@ The load probe uses the real HOSTED=1 app, 5,000 synthetic metadata runs and 1,0
 4 questions; 2 purchase runs; 2 settled purchases; 1 refund; 4/4 anchored; median Start→Done 25 s, p90 40 s; median gross spend S$0.50; median model US$0.0050; every violation counter 0. A separate corrupted seed makes all six counters nonzero. Additional tests cover missing traces, empty stores, pre-cutoff holds, simulated exclusions, cancellation, key-reveal trace identities, pending anchors, pre-Start planning time, unavailable UI and 60-second cache expiry.
 
 Measured load and visual results are recorded in `load.json` and `layout.json`; screenshots are `scoreboard-1280.png` and `scoreboard-390.png`.
+
+Measured cached endpoint latency: p50 1.01 ms, p95 1.69 ms, p99 2.64 ms, maximum 6.13 ms; one cold refresh 82.31 ms. All 1,000 requests succeeded, and sessions, session mints and admissions remained zero. Both 1280 and 390 px checks have no horizontal overflow and zero serious/critical axe findings. Screenshots capture the full page at those viewport widths.
