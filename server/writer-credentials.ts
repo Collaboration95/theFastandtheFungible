@@ -33,20 +33,75 @@ export function credentialRpc(): Rpc {
     return JSON.parse((await boundedBody(response, 16 * 1024)).toString('utf8'))
   }
 }
+type Observation = { value?: WriterVerification; until: number; retryAt: number; inFlight?: Promise<WriterVerification>; timer?: ReturnType<typeof setTimeout> }
+const coldWaitMs = 300, staleMs = 600_000, retryMs = 60_000
 export class WriterCredentials {
-  private context?: { until: number; value: Promise<{ header: { ledger_hash: string; ledger_index: number; ledger: { close_time: number } }; issuers: CredentialIssuer[] }> }
-  private cache = new Map<string, { until: number; value: Promise<WriterVerification> }>()
+  private context?: { pending: boolean; until: number; value: Promise<{ header: { ledger_hash: string; ledger_index: number; ledger: { close_time: number } }; issuers: CredentialIssuer[] }> }
+  private cache = new Map<string, Observation>()
+  private warming = Promise.resolve()
+  private disposed = false
   constructor(private issuers: CredentialIssuer[], private rpc: Rpc = credentialRpc(), private timeoutMs = 1200, private ttlMs = 300_000, private domainId?: string) {
     this.issuers = z.array(CredentialIssuerSchema).max(4).parse(issuers)
   }
   async check(subject: string): Promise<WriterVerification> {
     if (!this.issuers.length && !this.domainId) return unverified()
-    const cached = this.cache.get(subject)
-    if (cached && cached.until > Date.now()) return cached.value
-    if (this.cache.size >= 256) this.cache.delete(this.cache.keys().next().value!)
-    const value = this.lookup(subject).catch((): WriterVerification => ({ status: 'check_failed' }))
-    this.cache.set(subject, { until: this.context?.until ?? Date.now() + this.ttlMs, value })
-    return value
+    let cached = this.cache.get(subject)
+    if (!cached) {
+      if (this.cache.size >= 256) {
+        const oldest = this.cache.keys().next().value!
+        clearTimeout(this.cache.get(oldest)?.timer)
+        this.cache.delete(oldest)
+      }
+      cached = { until: 0, retryAt: 0 }
+      this.cache.set(subject, cached)
+    }
+    if (Date.now() >= cached.retryAt && (!cached.value || Date.now() >= cached.until - this.refreshLeadMs)) this.refresh(subject, cached)
+    if (cached.value) {
+      // A refresh failure cannot extend either the snapshot age or credential expiry.
+      if (Date.now() >= cached.until + staleMs || (cached.value.status === 'verified' && cached.value.expiresAt && Date.parse(cached.value.expiresAt) <= Date.now())) return { status: 'check_failed' }
+      return cached.value
+    }
+    if (!cached.inFlight) return { status: 'check_failed' }
+    let timer: ReturnType<typeof setTimeout> | undefined
+    try {
+      return await Promise.race([cached.inFlight, new Promise<WriterVerification>(resolve => { timer = setTimeout(() => resolve({ status: 'check_pending' }), coldWaitMs) })])
+    } finally { clearTimeout(timer) }
+  }
+  private get refreshLeadMs() { return Math.min(60_000, this.ttlMs / 5) }
+  private refresh(subject: string, cached: Observation) {
+    if (cached.inFlight) return
+    clearTimeout(cached.timer)
+    cached.inFlight = this.lookup(subject).then(({ value, until }) => {
+      cached.value = value; cached.until = until
+      cached.retryAt = until - this.refreshLeadMs
+      return value
+    }).catch((): WriterVerification => {
+      cached.retryAt = Date.now() + retryMs
+      return { status: 'check_failed' }
+    }).finally(() => {
+      cached.inFlight = undefined
+      if (this.cache.get(subject) !== cached) return
+      cached.timer = setTimeout(() => this.refresh(subject, cached), Math.max(1, cached.retryAt - Date.now()))
+      cached.timer.unref?.()
+    })
+  }
+  /** Only warms advisory observations; registry wallets still require signed binding at use. */
+  prewarm(subjects: string[] = []) {
+    if (this.disposed || (!this.issuers.length && !this.domainId)) return
+    void this.getContext().value.catch(() => {})
+    // Pace startup warming so it cannot fill its own bounded RPC queue.
+    for (const subject of new Set(subjects.slice(0, 256))) {
+      this.warming = this.warming.then(async () => {
+        if (this.disposed) return
+        await this.check(subject)
+        await this.cache.get(subject)?.inFlight
+      }).catch(() => {})
+    }
+  }
+  dispose() {
+    this.disposed = true
+    for (const cached of this.cache.values()) clearTimeout(cached.timer)
+    this.cache.clear()
   }
   private async request(request: Record<string, unknown>) {
     const controller = new AbortController()
@@ -82,13 +137,18 @@ export class WriterCredentials {
     if (new Set(issuers.map(i => `${i.issuer}:${i.credentialType}`)).size !== issuers.length) return { header, issuers: [] }
     return { header, issuers }
   }
-  private async lookup(subject: string): Promise<WriterVerification> {
-    z.string().regex(/^r[1-9A-HJ-NP-Za-km-z]{24,34}$/).parse(subject)
-    if (!this.context || this.context.until <= Date.now()) {
-      this.cache.clear()
-      this.context = { until: Date.now() + this.ttlMs, value: this.loadContext() }
+  private getContext() {
+    if (!this.context || (!this.context.pending && this.context.until - this.refreshLeadMs <= Date.now())) {
+      const context = { pending: true, until: Date.now() + this.ttlMs, value: this.loadContext() }
+      this.context = context
+      void context.value.catch(() => { if (this.context === context) this.context = undefined }).finally(() => { context.pending = false })
     }
-    const { header, issuers } = await this.context.value
+    return this.context
+  }
+  private async lookup(subject: string): Promise<{ value: WriterVerification; until: number }> {
+    z.string().regex(/^r[1-9A-HJ-NP-Za-km-z]{24,34}$/).parse(subject)
+    const context = this.getContext()
+    const { header, issuers } = await context.value
     const checkedAt = new Date().toISOString()
     for (const issuer of issuers) {
       const raw = await this.request({ command: 'ledger_entry', ledger_hash: header.ledger_hash,
@@ -104,20 +164,39 @@ export class WriterCredentials {
       // Do not cache an accepted credential past its ledger-relative expiry.
       const expiresAt = n.Expiration === undefined ? undefined : new Date((n.Expiration + epoch) * 1000).toISOString()
       if (expiresAt && Date.parse(expiresAt) <= Date.now() + this.ttlMs) continue
-      return { status: 'verified', issuerLabel: issuer.label, issuer: issuer.issuer, credentialType: issuer.credentialType,
-        credentialId: data.index, credentialTxHash: n.PreviousTxnID, domainId: this.domainId?.toUpperCase(), ledgerIndex: header.ledger_index, expiresAt, checkedAt }
+      return { until: context.until, value: { status: 'verified', issuerLabel: issuer.label, issuer: issuer.issuer, credentialType: issuer.credentialType,
+        credentialId: data.index, credentialTxHash: n.PreviousTxnID, domainId: this.domainId?.toUpperCase(), ledgerIndex: header.ledger_index, expiresAt, checkedAt } }
     }
-    return unverified()
+    return { until: context.until, value: unverified() }
   }
 }
 let configured: { raw: string; verifier: WriterCredentials } | undefined
+function configuredVerifier() {
+  const config = loadConfig()
+  const issuers = config.WRITER_CREDENTIAL_ISSUERS || '[]'
+  // Presentation-only configuration: never used by spending policy.
+  const domain = config.WRITER_CREDENTIAL_DOMAIN || undefined
+  const raw = JSON.stringify([issuers, domain, config.XRPL_RPC_URL])
+  if (!configured || configured.raw !== raw) {
+    configured?.verifier.dispose()
+    configured = { raw, verifier: new WriterCredentials(domain ? [] : z.array(CredentialIssuerSchema).max(4).parse(JSON.parse(issuers)), credentialRpc(), 1200, 300_000, domain) }
+  }
+  return configured.verifier
+}
 export async function writerVerification(subject: string): Promise<WriterVerification> {
+  try { return await configuredVerifier().check(subject) } catch { return { status: 'check_failed' } }
+}
+/** Best effort startup task: never awaited by startup or readiness. */
+export async function prewarmWriterVerification() {
   try {
-    const issuers = loadConfig().WRITER_CREDENTIAL_ISSUERS || '[]'
-    // Presentation-only configuration: never used by spending policy.
-    const domain = loadConfig().WRITER_CREDENTIAL_DOMAIN || undefined
-    const raw = JSON.stringify([issuers, domain])
-    if (!configured || configured.raw !== raw) configured = { raw, verifier: new WriterCredentials(domain ? [] : z.array(CredentialIssuerSchema).max(4).parse(JSON.parse(issuers)), credentialRpc(), 1200, 300_000, domain) }
-    return await configured.verifier.check(subject)
-  } catch { return { status: 'check_failed' } }
+    const config = loadConfig()
+    if (!config.WRITER_CREDENTIAL_ISSUERS && !config.WRITER_CREDENTIAL_DOMAIN) return
+    const verifier = configuredVerifier()
+    verifier.prewarm()
+    const { PublisherClient } = await import('./publisher-client.js')
+    await Promise.allSettled(new PublisherClient().origins().map(async client => {
+      const registry = await client.registry()
+      verifier.prewarm(registry.flatMap(writer => writer.wallet ? [writer.wallet] : []))
+    }))
+  } catch { /* Identity display cannot block startup or readiness. */ }
 }

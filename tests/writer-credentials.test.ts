@@ -139,12 +139,12 @@ describe('Permissioned Domain writer identity', () => {
    expect(await new WriterCredentials([], request, 1200, 300_000, domainId).check(subject)).toEqual({status:'unverified'})
   }
  })
- it('shares the domain snapshot across wallets and refreshes after five minutes', async () => {
+ it('shares the domain snapshot across wallets and refreshes one minute before expiry', async () => {
   vi.useFakeTimers()
   try {
    const request = domainRpc(), verifier = new WriterCredentials([], request, 1200, 300_000, domainId)
    expect((await verifier.check(subject)).status).toBe('verified')
-   await vi.advanceTimersByTimeAsync(299_000)
+   await vi.advanceTimersByTimeAsync(239_000)
    await verifier.check(issuer)
    expect(request.mock.calls.filter(([r]) => r.index)).toHaveLength(1)
    await vi.advanceTimersByTimeAsync(1001)
