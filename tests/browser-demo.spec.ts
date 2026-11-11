@@ -225,7 +225,7 @@ test('replay downloads only the requested recording, then loads another scenario
   await expect(page.getByRole('heading',{level:1})).toContainText("What's the analyst outlook",{timeout:10_000})
   expect(requests.filter(p=>/\/UC2-[\w-]+\.js$/.test(p))).toHaveLength(1)
   // A cold direct link must preload its own trace, including run-ID links.
-  for (const entry of recordingIndex) for (const query of [`scenario=${entry.scenario}`, `run=${entry.runId}`]) {
+  for (const entry of recordingIndex) for (const query of [`scenario=${entry.scenario}`, `run=${entry.runId}`, `scenario=${entry.scenario}&run=${recordingIndex.find(other => other.runId !== entry.runId)!.runId}`]) {
     const context = await browser.newContext(), direct = await context.newPage(), traces: string[] = []
     try {
       await direct.routeWebSocket(/wss:\/\/.*/, ws => ws.close())
