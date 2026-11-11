@@ -206,7 +206,7 @@ test('scenario links open their run within ten seconds and keep compact, honest 
   } finally { server.kill('SIGTERM'); await once(server, 'exit') }
 })
 
-test('replay downloads only the requested recording, then loads another scenario on demand', async ({page}, info) => {
+test('replay downloads only the requested recording, then loads another scenario on demand', async ({page, browser}, info) => {
  const root=info.outputPath('pages'); await mkdir(`${root}/theFastandtheFungible`,{recursive:true}); await cp('site',`${root}/theFastandtheFungible`,{recursive:true})
  const server=spawn('python3',['-u','-m','http.server','0','--bind','127.0.0.1','--directory',root],{stdio:['ignore','pipe','ignore']})
  try {
@@ -222,5 +222,18 @@ test('replay downloads only the requested recording, then loads another scenario
   await page.getByRole('combobox',{name:'Recorded scenario'}).selectOption('UC2')
   await expect(page.getByRole('heading',{level:1})).toContainText("What's the analyst outlook",{timeout:10_000})
   expect(requests.filter(p=>/\/UC2-[\w-]+\.js$/.test(p))).toHaveLength(1)
+  // A cold direct link must preload its own trace, including run-ID links.
+  const index = (await import('../demo/recording-index.json')).default
+  for (const entry of index) for (const query of [`scenario=${entry.scenario}`, `run=${entry.runId}`]) {
+    const context = await browser.newContext(), direct = await context.newPage(), traces: string[] = []
+    try {
+      await direct.routeWebSocket(/wss:\/\/.*/, ws => ws.close())
+      direct.on('request', request => { const file = new URL(request.url()).pathname.split('/').pop()!; if (/^UC.*\.js$/.test(file)) traces.push(file) })
+      await direct.goto(`${base}?${query}`)
+      await expect(direct.getByRole('heading', { level: 1 })).toHaveText(entry.question)
+      expect(traces).toHaveLength(1)
+      expect(traces[0]).toMatch(new RegExp(`^${entry.scenario}-[\\w-]+\\.js$`))
+    } finally { await context.close() }
+  }
  }finally{server.kill('SIGTERM');await once(server,'exit')}
 })

@@ -42,6 +42,10 @@ FontTools and Brotli installed:
 pyftsubset node_modules/@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2 --output-file=demo/fonts/geist-mono-replay.woff2 --flavor=woff2 --unicodes=U+0020-007E,U+00A0,U+00B7,U+2026,U+FEFF,U+FFFD --layout-features='*' --no-recalc-timestamp
 ```
 
-The build stores repeated JSON subtrees once before gzip; the decoder restores
+The selected trace is module-preloaded from the HTML using the entry's scenario,
+run-ID and default precedence. This downloads one trace while the entry's schema
+dependency arrives; it does not execute a second recording or bypass validation.
+The build stores repeated JSON subtrees once before gzip and encodes long uppercase
+hex as binary base64, including the selected recording's transaction proof. The decoder restores
 independent copies with exactly the original field values. Unit tests round-trip
-all six recordings before any runtime schema or grant checks are applied.
+all six recordings and three proof lists before any runtime schema or grant checks are applied.
