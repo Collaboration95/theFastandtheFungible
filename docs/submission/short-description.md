@@ -57,7 +57,7 @@ New since SingHacks (<!--f:prs-->270<!--/f--> pull requests merged since
   about <!--f:writer_s-->33.9<!--/f--> s.
 - **Honest measurement.** On a blind held-out bank it bought and cited on
   <!--f:heldout-->16/20<!--/f--> questions and bought nothing on
-  <!--f:offtopic-->0/10<!--/f--> off-topic ones (run once on XRPL Testnet with fixture research
+  <!--f:offtopic_N-->ten<!--/f--> off-topic ones (run once on XRPL Testnet with fixture research
   and decision models, answers written offline, team-authored writers). The key fact leads
   <!--f:answers_it-->7/20<!--/f--> answers; we say so.
 
