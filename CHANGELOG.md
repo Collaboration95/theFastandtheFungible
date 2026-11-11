@@ -44,6 +44,7 @@ Finals release: everything since v1.0.2 (8 Nov), judge-facing changes first. XRP
 - MCP and SDK answers no longer carry raw `[1] [2]` markers in claim text; citations stay in their bindings.
 - In the Mac app, Export no longer offers "Copy link": the run's `app://` address opens nowhere but that computer. Proof pages keep their own share controls.
 - The README hero and deck slide 10 show a live hosted XRPL run instead of the fictional first-person Kestrel recording; slide 7 shows v1.1.0 verifying a hosted export.
+- Release soak passes on unchanged budgets (SOAK): the engine's per-second event-loop p99 falls from 47 to 32 ms and a fixture ask from 187 to 158 ms (repeated relevance and writer-signature checks are remembered per exact text, with identical outputs), the soak harness no longer rewrites its whole report after every ask (that had grown the measured process's memory), and the zero-clone app answers an oversize upload with 413 instead of resetting the connection mid-upload ([evidence](docs/evidence/soak-nov11/README.md)).
 - Dev loop: shipping and release admission run locally on exact artifacts (#433); developer entry paths repaired (#426); the repo front page has 42 entries instead of 52 (#449).
 
 ### Known limits
