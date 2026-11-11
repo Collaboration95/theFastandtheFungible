@@ -3,7 +3,7 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import exceptions from './one-product-exceptions.json'
 import { sitePresentation } from '../scripts/site-presentation.mjs'
-import { ENV, money, shortTx, whenSGT } from '../shared/presentation'
+import { ENV, money, shortTx, dateSGT, whenSGT } from '../shared/presentation'
 import { minorText, environment, type Hosted } from '../src/hosted'
 import { shortHex } from '../src/verify/key-on-ledger'
 import { proofEnvironmentLabel } from '../shared/execution-labels'
@@ -20,6 +20,8 @@ it('keeps one presentation contract across app, replay, proof and site', () => {
   expect(exceptions.filter(e => !e.reason.trim() || !found.some(v => identity(e) === identity(v)))).toEqual([])
   expect(readFileSync('site/brand/presentation.js', 'utf8')).toBe(sitePresentation())
   expect(minorText).toBe(money); expect(shortHex).toBe(shortTx); expect(ledgerReadTime).toBe(whenSGT)
+  // Valid parameterised labels (including en-GB's September abbreviation) must not be false positives.
+  for (const label of [ENV.localTestnet('fixture models'), ENV.localSimulated('live answers, rule-based buying'), ENV.hostedConfigured(false, 'live'), ENV.replay(dateSGT('2026-09-19T00:00:00Z'))]) expect(presentationDrift(`<p>${label}</p>`, 'valid.html').filter(v => v.rule === 'environment')).toEqual([])
   // Source font loaders and deployed font files must exist, not just a family name.
   const main = readFileSync('src/main.tsx', 'utf8')
   for (const family of ['geist', 'geist-mono']) expect(main).toContain(`import '@fontsource-variable/${family}'`)
