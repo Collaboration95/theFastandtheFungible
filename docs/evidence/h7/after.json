@@ -1,7 +1,7 @@
 {
   "kind": "local-hosted-load",
-  "at": "2026-11-11T14:40:42.115Z",
-  "source": "H7 on bd52beff (source hashes below)",
+  "at": "2026-11-11T16:32:57.369Z",
+  "source": "H7 final with SSE/front/refund, source SHA-256 values below",
   "readinessMode": "background (H7)",
   "guard": "docker/hosted/start.mjs (this checkout)",
   "visitors": 6,
@@ -11,15 +11,19 @@
   "mode": "HOSTED=1 · fixture models · simulated rail · ephemeral ports",
   "cloud": false,
   "sourceFiles": {
-    "scripts/hosted-load.mjs": "9c095f08d1c9cc64f0d502218f905220f644b9db542fb2a2af52cc9b36859449",
-    "server/routes.ts": "195d78ed281f6011c774be292db351246f5d0c7920411e85e3103c71a633b7ab",
-    "server/hosted/routes.ts": "6098a99b79d02151644f0edfc29a834009d55908d4da59b869c6e39aba45411d",
-    "server/hosted/limits.ts": "7c3be1a0c0a15ba1cbec22eb961510b15412d42d768137ceae9bcdb20da66455",
-    "server/hosted/queue.ts": "190d2d6a2fe3b55ceb6da88d7146fe6b70b2da5492baac2ec8050aa12788c6bd",
-    "server/hosted/readiness.ts": "0663d280d2eacc10a9151281d42e2edf4c734a19da3c707641ac2c061474406a"
+    "scripts/hosted-load.mjs": "e599b2122c52f64909065f0b98ea055fd5e3db55a4e78fecff041bf37b26b4b5",
+    "server/routes.ts": "1a8cb0a3550fd274505381b249d04de7fece262b56f603a173228583802be8b7",
+    "server/api/runs.ts": "07dab8ab60cb86e8c900b66c4afbb21cb4a96e22e82a7bc75cea0f3d193d78b3",
+    "server/api/sse.ts": "54537c0a5b5471e188336600c2b683684c84cc3dfa0a0d57990b666818f77f95",
+    "server/hosted/routes.ts": "04e7def753f0905295fcf33626ee961decb23c01bed4de0d0d84110064f13b89",
+    "server/hosted/limits.ts": "a8acc97eafc3f967fe843258d38a8cfb229709e50e1496633e3c743354059e3f",
+    "server/hosted/queue.ts": "209f8d89c478c67782ff9d049cd30bf33fb1f9975d1c6c7921b846c34d9afb4e",
+    "server/hosted/readiness.ts": "0663d280d2eacc10a9151281d42e2edf4c734a19da3c707641ac2c061474406a",
+    "server/hosted/links.ts": "67ff0d0f71943f5e9d4de9dd325ac4737339a6328294e04f3c502dac0edbf957",
+    "docker/hosted/links.mjs": "4fdcc88c3bee62534ac6d6acdc82d50c23ed80db37a0e87052068f9eb9e6ddff"
   },
-  "measuredSeconds": 121.4,
-  "requests": 978,
+  "measuredSeconds": 122.3,
+  "requests": 960,
   "guardPaused": 0,
   "guardPausedVisitor": 0,
   "readyz": {
@@ -30,78 +34,78 @@
   },
   "hgPaused": 0,
   "refused429": {
-    "queue_full": 3,
-    "allowance_exhausted": 24,
-    "start_rate": 372
+    "queue_full": 4,
+    "allowance_exhausted": 12,
+    "start_rate": 392
   },
   "other": {},
   "runs": {
     "asked": 270,
-    "admitted": 69,
-    "finished": 69
+    "admitted": 60,
+    "finished": 60
   },
   "sessionsMinted": 18,
   "eventLoopDelayMs": {
-    "p50": 11,
-    "p99": 15,
-    "max": 49.6
+    "p50": 12,
+    "p99": 14.9,
+    "max": 45.3
   },
   "readinessRefreshes": 25,
   "routes": {
     "GET /api/demo/status": {
       "n": 276,
       "p50": 3,
-      "p95": 8,
-      "max": 22,
+      "p95": 9,
+      "max": 16,
       "guardPaused": 0
     },
     "GET /readyz": {
       "n": 12,
       "p50": 3,
-      "p95": 6,
-      "max": 6,
+      "p95": 7,
+      "max": 7,
       "guardPaused": 0
     },
     "GET /api/runs": {
       "n": 6,
       "p50": 5,
-      "p95": 11,
-      "max": 11,
+      "p95": 13,
+      "max": 13,
       "guardPaused": 0
     },
     "GET /api/writers/status": {
       "n": 6,
-      "p50": 10,
-      "p95": 14,
-      "max": 14,
+      "p50": 14,
+      "p95": 19,
+      "max": 19,
       "guardPaused": 0
     },
     "POST /api/scope": {
       "n": 270,
       "p50": 2,
-      "p95": 5,
-      "max": 15,
+      "p95": 8,
+      "max": 14,
       "guardPaused": 0
     },
     "POST /runs": {
       "n": 270,
       "p50": 2,
-      "p95": 14,
+      "p95": 13,
       "max": 24,
       "guardPaused": 0
     },
     "GET /runs/:id/events": {
-      "n": 69,
-      "p50": 2,
-      "p95": 4,
-      "max": 21,
+      "n": 60,
+      "p50": 3,
+      "p95": 7,
+      "max": 10,
       "guardPaused": 0
     },
     "GET /runs/:id": {
-      "n": 69,
+      "n": 60,
       "p50": 1,
-      "p95": 3,
-      "max": 6,
+      "p95": 4,
+      "max": 7,
       "guardPaused": 0
     }
   },
