@@ -226,7 +226,9 @@ describe('local media readiness', () => {
     const dir = scratch(), file = join(dir, id === 'deck' ? 'deck.pdf' : 'video.mp4')
     const check = () => checkFiles({ deck: DEFAULTS.deck, video: undefined, [id]: file, receipts: DEFAULTS.receipts, evidence: DEFAULTS.evidence, exists: mocks().exists, readFile: readFileSync }).find(r => r.id === id)!
     expect(check().status).toBe('NO-GO')
-    for (const bytes of [Buffer.alloc(0), Buffer.from('x'), Buffer.alloc(2048)]) {
+    const corruptMagic = Buffer.from(id === 'deck' ? Buffer.from('%PDF-1.7') : mp4Header)
+    corruptMagic[id === 'deck' ? 0 : 4] |= 0x80 // ASCII decoding must not disguise a wrong magic byte.
+    for (const bytes of [Buffer.alloc(0), Buffer.from('x'), Buffer.alloc(2048), corruptMagic]) {
       writeFileSync(file, bytes)
       expect(check().status).toBe('NO-GO')
     }

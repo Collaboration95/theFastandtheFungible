@@ -232,8 +232,8 @@ export function checkFiles({ deck, video, receipts, evidence, exists, readFile, 
       if (!info.isFile()) throw new Error('not a regular file')
       if (info.size < min) throw new Error(`too small: ${info.size} bytes (minimum ${min})`)
       const bytes = Buffer.from(header(file))
-      const valid = id === 'deck' ? /^%PDF-\d\.\d/.test(bytes.toString('ascii', 0, 8))
-        : bytes.length >= 16 && bytes.toString('ascii', 4, 8) === 'ftyp' && bytes.readUInt32BE(0) >= 16 && bytes.readUInt32BE(0) <= info.size
+      const valid = id === 'deck' ? /^%PDF-\d\.\d/.test(bytes.toString('latin1', 0, 8))
+        : bytes.length >= 16 && bytes.toString('latin1', 4, 8) === 'ftyp' && bytes.readUInt32BE(0) >= 16 && bytes.readUInt32BE(0) <= info.size
       if (!valid) throw new Error(id === 'deck' ? 'not a PDF header' : 'not an MP4 ftyp box')
       return go(id, name, `${file.replace(ROOT + sep, '')} (${info.size} bytes; signature checked, not playback)`)
     } catch (error) { return nogo(id, name, `${file}: ${reason(error)}`) }
