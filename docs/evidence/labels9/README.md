@@ -1,6 +1,6 @@
 # LABELS9: plain trace and promise labels
 
-Local fixture UI evidence, 12 November 2026. No live model, hosted admission,
+Local fixture UI evidence, 12 November 2026. Full [code-to-label table](labels.md). No live model, hosted admission,
 Testnet transaction or paid purchase was made for this work.
 
 The before/after screenshots use the same committed UC1 fixture plus one explicitly
@@ -14,6 +14,7 @@ same sheet to its last row so the substitution explanation can be read.
 | --- | --- |
 | Show work Trace, 1280 | axe: 0 violations, including 0 serious/critical; 0 warning rows; no horizontal overflow |
 | Show work Trace, 390 | axe: 0 violations, including 0 serious/critical; 0 warning rows; sheet/scroll area 390px, trace 338px, no overflow |
+| All five Show work tabs, both widths | axe: 0 violations in Trace, Wire, Policy, Receipts and Models |
 | Healthy UC1 and paid UC2 fixtures | 0 warning rows |
 | Forced failed delivery | warning row and failure alert retained |
 | Guard / model allowance substitutions | explicit offline-extract label, neutral styling |
@@ -25,7 +26,7 @@ same sheet to its last row so the substitution explanation can be read.
 Reproduce: serve the repository with Vite on an allocated local port, open
 `/tests/labels9-preview.html`, resize to each width and open Show work. Run axe-core
 on the dialog. The fixture uses real components and production styles. Automated
-rendering and code-coverage checks: `npx vitest run tests/trace-labels.test.tsx`.
+rendering and catalogue checks: `npx vitest run tests/trace-labels.test.tsx`.
 
 Persisted server codes, event text, manifests, receipts and verifiers are unchanged.
 The Models tab retains the recorded provider identities and fixture disclosures.
