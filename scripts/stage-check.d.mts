@@ -7,6 +7,8 @@ export interface Deps {
   WebSocket: unknown
   exists: (file: string) => boolean
   readFile: (file: string) => Uint8Array
+  stat?: (file: string) => { size: number; isFile(): boolean }
+  header?: (file: string) => Uint8Array
   run: (file: string, signal?: AbortSignal) => Promise<{ code: number; output: string }>
 }
 export interface Options { hosted?: string; deck?: string; video?: string; ms?: number; jarFile?: string }
@@ -33,3 +35,5 @@ export function serveReplay(options: { dir: string; base?: string }): Promise<{ 
 export function buildReplay(outDir: string): Promise<void>
 export function parseArgs(argv: string[]): { json: boolean; serveReplay: boolean; rebuild: boolean; help?: boolean; video?: string; deck?: string; replayDir?: string; jarFile?: string; hosted?: string; ms?: number }
 export function main(argv?: string[], deps?: Deps, io?: { out(text: string): void; err(text: string): void }): Promise<number>
+export function readHeader(file: string): Uint8Array
+export function checkFiles(options: { deck: string; video?: string; receipts: string; evidence: string; exists: Deps['exists']; readFile: Deps['readFile']; stat?: Deps['stat']; header?: Deps['header']; replay?: string[] }): CheckResult[]

@@ -35,8 +35,47 @@ describe('the why line on each payment', () => {
   it('the one-purchase x402 run shows exactly one plain line built from the decision record', () => {
     const run = oneBuy()
     const lines = whyLines(row(run))
-    expect(lines).toEqual(['Bought because it covers “What fields an x402 402 response contains” · within your S$2.00'])
+    expect(lines).toEqual(['Bought to fill: “What fields an x402 402 response contains” · within your S$2.00'])
     expect(lines[0].length).toBeLessThanOrEqual(WHY_MAX)
+  })
+
+  it('uses covers only when saved coverage supports this gap with a claim citing this purchase', () => {
+    const run = clone(ucRuns.UC2)
+    const line = whyBought(run, run.intents[0])!
+    expect(line).toMatch(/^Covers “analyst estimates on pricing and margins”/)
+    expect(line.length).toBeLessThanOrEqual(WHY_MAX)
+  })
+
+  it('uses the latest answer version even when saved answers arrive out of order', () => {
+    const run = clone(ucRuns.UC2)
+    run.answers.reverse()
+    expect(whyBought(run, run.intents[0])).toMatch(/^Covers/)
+  })
+
+  it('keeps the recorded F-P3 owner-reserve target honest in a synthetic uncovered-gap case', () => {
+    // H10-06's saved target: trust-lines/TrustSet were bought for this still-open fact.
+    const run = oneBuy('The owner-reserve increment')
+    run.checkpoint.requirements = [{ id: 'r1', text: 'The owner-reserve increment' }]
+    run.checkpoint.coverage = [{ answerVersion: 2, judge: 'fixture', entries: [{ requirementId: 'r1', status: 'missing' }] }]
+    expect(whyBought(run, run.intents[0])).toBe('Bought to fill: “The owner-reserve increment” · within your S$2.00')
+    expect(whyLines(row(run))[0]).not.toContain('covers')
+  })
+
+  it.each(['missing', 'partial', 'conflicting', 'unknown'] as const)('never calls %s coverage verified', status => {
+    const run = clone(ucRuns.UC2)
+    run.checkpoint.coverage!.find(c => c.answerVersion === 2)!.entries.find(e => e.requirementId === 'r2')!.status = status
+    expect(whyBought(run, run.intents[0])).toMatch(/^Bought to fill:/)
+  })
+
+  it.each(['no record', 'stale answer', 'error', 'other source', 'no grant', 'delivery pending'])('does not claim coverage with %s', problem => {
+    const run = clone(ucRuns.UC2), coverage = run.checkpoint.coverage!.find(c => c.answerVersion === 2)!
+    if (problem === 'no record') run.checkpoint.coverage = []
+    if (problem === 'stale answer') run.answers.push({ ...clone(run.answers.at(-1)!), version: 3 })
+    if (problem === 'error') coverage.error = 'unavailable'
+    if (problem === 'other source') coverage.entries.find(e => e.requirementId === 'r2')!.claimIds = [run.answers.at(-1)!.claims.at(-1)!.id]
+    if (problem === 'no grant') run.grants = []
+    if (problem === 'delivery pending') run.intents[0].status = 'DELIVERY_PENDING'
+    expect(whyBought(run, run.intents[0])).toMatch(/^Bought to fill:/)
   })
 
   it('a run that bought nothing shows no line', () => {
@@ -51,7 +90,7 @@ describe('the why line on each payment', () => {
     const run = clone(ucRuns.UC3)
     const refunded = run.intents.find(intent => intent.status === 'REFUNDED')!
     const [line] = whyLines(row(run, refunded))
-    expect(line).toMatch(/^Bought because it covers “.+” · within your S\$2\.00 · Refunded: writer-signed$|^Bought because it covers “.+” · Refunded: writer-signed$/)
+    expect(line).toMatch(/^Bought to fill: “.+” · within your S\$2\.00 · Refunded: writer-signed$|^Bought to fill: “.+” · Refunded: writer-signed$/)
     expect(line.length).toBeLessThanOrEqual(WHY_MAX)
     // The article bought in the second round shows its own reason, with no refund.
     const kept = run.intents.find(intent => intent.status === 'VERIFIED')!
@@ -75,8 +114,12 @@ describe('the why line on each payment', () => {
 
   it('never exceeds 90 characters, whatever the fact, the budget or the refund', () => {
     const gaps = ['', 'x', 'No accessible evidence on grid energisation.', 'What fields an x402 402 response contains', `The XRPL network fee for the transactions in one key-reveal purchase, in drops or XRP ${'and more '.repeat(30)}`, 'Superlongwordwithoutanyspaces'.repeat(12)]
-    for (const gap of gaps) for (const budget of [0, 50, 200, 100000]) for (const refund of [false, true]) {
+    for (const gap of gaps) for (const budget of [0, 50, 200, 100000]) for (const refund of [false, true]) for (const verified of [false, true]) {
       const run = oneBuy(gap); run.budgetMinor = budget
+      if (verified && gap.trim()) {
+        run.checkpoint.requirements = [{ id: 'r1', text: gap }]
+        run.checkpoint.coverage = [{ answerVersion: 2, judge: 'fixture', entries: [{ requirementId: 'r1', status: 'supported', claimIds: [run.answers.at(-1)!.claims[0].id] }] }]
+      }
       if (refund) run.intents[0].status = 'REFUNDED'
       const line = whyBought(run, run.intents[0])
       expect(line, JSON.stringify({ gap: gap.slice(0, 20), budget, refund })).toBeDefined()
@@ -108,7 +151,7 @@ describe('the why line on each payment', () => {
   it('cuts a long fact at a word and never leaves a dangling "in" or "of"', () => {
     const refunded = oneBuy('Dated figures for lead times in weeks, or their trend'); refunded.intents[0].status = 'REFUNDED'
     const line = whyBought(refunded, refunded.intents[0])!
-    expect(line).toBe('Bought because it covers “dated figures for lead times…” · Refunded: writer-signed'.replace('dated', 'Dated'))
+    expect(line).toBe('Bought to fill: “dated figures for lead times in weeks,…” · Refunded: writer-signed'.replace('dated', 'Dated'))
     expect(line.length).toBeLessThanOrEqual(WHY_MAX)
   })
 
@@ -116,7 +159,7 @@ describe('the why line on each payment', () => {
     const long = oneBuy('A requested fact that is described in a fairly long sentence about escrow release')
     const line = whyBought(long, long.intents[0])!
     expect(line.length).toBeLessThanOrEqual(WHY_MAX)
-    expect(line.startsWith('Bought because it covers “A requested fact that')).toBe(true)
+    expect(line.startsWith('Bought to fill: “A requested fact that')).toBe(true)
   })
 })
 
