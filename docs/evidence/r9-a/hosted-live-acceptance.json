@@ -1,0 +1,481 @@
+{
+ "note": "R9-A acceptance on a local HOSTED=1 stack: the real hosted gateway in one process, POST /api/scope then POST /runs with one Idempotency-Key (as the web app does), the live DeepSeek planner and research writer (owner .env, key never printed or stored), fixture decision model, SIMULATED payments, in-process fixture writer server, ephemeral loopback ports. Each question got a fresh live plan, so wording differs from round 9. planEqualsModal compares the run's single PLAN event (plan and requested facts) with what /api/scope returned to the modal. Regression data on questions already seen, never held out.",
+ "commit": "this branch (final R9-A code)",
+ "results": [
+  {
+   "id": "XRPL2",
+   "question": "What does an x402 402 response contain, and can my agent pay it with XRP on Testnet?",
+   "scopeLabel": "DeepSeek \u00b7 deepseek-flash",
+   "modalRequirements": [
+    "What fields an x402 402 response contains",
+    "Whether x402 supports paying with XRP",
+    "Whether x402 payments can run on XRPL Testnet"
+   ],
+   "planEvent": {
+    "plan": {
+     "restatement": "What an x402 402 response contains and whether an agent can pay it with XRP on Testnet.",
+     "subqueries": [
+      "x402 402 response contents payment requirements",
+      "x402 XRP payment support Testnet",
+      "x402 protocol payment scheme XRP ledger"
+     ]
+    },
+    "planner": "DeepSeek \u00b7 deepseek-flash",
+    "requirements": [
+     "What fields an x402 402 response contains",
+     "Whether x402 supports paying with XRP",
+     "Whether x402 payments can run on XRPL Testnet"
+    ],
+    "requirementsBy": "DeepSeek \u00b7 deepseek-flash",
+    "confirmed": true
+   },
+   "planEqualsModal": true,
+   "planEvents": 1,
+   "phase": "DONE",
+   "stopReason": "no-eligible-purchase",
+   "bought": [
+    "product-x402-response"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details.",
+    "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE."
+   ],
+   "research": "DeepSeek \u00b7 deepseek-flash",
+   "decision": "fixture \u00b7 metadata-fixture",
+   "plan": "DeepSeek \u00b7 deepseek-flash",
+   "seconds": 3.759
+  },
+  {
+   "id": "XRPL1",
+   "question": "Can an XRPL escrow hold RLUSD today, and what must the issuer enable before a buyer can lock it?",
+   "scopeLabel": "DeepSeek \u00b7 deepseek-flash",
+   "modalRequirements": [
+    "Whether XRPL escrow can hold RLUSD today, with the relevant amendment or feature status",
+    "What the RLUSD issuer must enable before a buyer can lock it in escrow",
+    "Any constraints on escrowing RLUSD as a trust line token"
+   ],
+   "planEvent": {
+    "plan": {
+     "restatement": "Whether XRPL escrows can hold RLUSD today and what the issuer must enable before a buyer can lock it.",
+     "subqueries": [
+      "XRPL escrow RLUSD token support",
+      "XRPL escrow token escrow amendment issuer enable",
+      "XRPL RLUSD escrow requirements issuer"
+     ]
+    },
+    "planner": "DeepSeek \u00b7 deepseek-flash",
+    "requirements": [
+     "Whether XRPL escrow can hold RLUSD today, with the relevant amendment or feature status",
+     "What the RLUSD issuer must enable before a buyer can lock it in escrow",
+     "Any constraints on escrowing RLUSD as a trust line token"
+    ],
+    "requirementsBy": "DeepSeek \u00b7 deepseek-flash",
+    "confirmed": true
+   },
+   "planEqualsModal": true,
+   "planEvents": 1,
+   "phase": "DONE",
+   "stopReason": "no-eligible-purchase",
+   "bought": [
+    "team-rlusd"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "The team documented official RLUSD as blocked until its issuer enables AllowTrustLineLocking.",
+    "The experimental issuer enables token locking before the buyer and writer establish eligible trust lines."
+   ],
+   "research": "DeepSeek \u00b7 deepseek-flash",
+   "decision": "fixture \u00b7 metadata-fixture",
+   "plan": "DeepSeek \u00b7 deepseek-flash",
+   "seconds": 4.075
+  },
+  {
+   "id": "XRPL3",
+   "question": "How much XRP reserve does an agent wallet need, and how much does each open escrow or trust line add?",
+   "scopeLabel": "DeepSeek \u00b7 deepseek-flash",
+   "modalRequirements": [
+    "XRPL base account reserve amount in XRP",
+    "XRPL owner reserve per object in XRP",
+    "Whether an escrow adds to the owner reserve and by how much",
+    "Whether a trust line adds to the owner reserve and by how much"
+   ],
+   "planEvent": {
+    "plan": {
+     "restatement": "The XRP reserve an agent wallet needs on the XRPL and how much each open escrow or trust line adds.",
+     "subqueries": [
+      "XRPL base reserve and owner reserve requirements",
+      "XRPL escrow owner reserve cost",
+      "XRPL trust line owner reserve cost"
+     ]
+    },
+    "planner": "DeepSeek \u00b7 deepseek-flash",
+    "requirements": [
+     "XRPL base account reserve amount in XRP",
+     "XRPL owner reserve per object in XRP",
+     "Whether an escrow adds to the owner reserve and by how much",
+     "Whether a trust line adds to the owner reserve and by how much"
+    ],
+    "requirementsBy": "DeepSeek \u00b7 deepseek-flash",
+    "confirmed": true
+   },
+   "planEqualsModal": true,
+   "planEvents": 1,
+   "phase": "DONE",
+   "stopReason": "round-limit",
+   "bought": [
+    "xrpl-reserves",
+    "xrpl-trust-lines"
+   ],
+   "spentMinor": 80,
+   "lead": [
+    "An XRPL wallet needs a base reserve plus applicable owner reserves, separately from the money it intends to send."
+   ],
+   "research": "DeepSeek \u00b7 deepseek-flash",
+   "decision": "fixture \u00b7 metadata-fixture",
+   "plan": "DeepSeek \u00b7 deepseek-flash",
+   "seconds": 5.378
+  },
+  {
+   "id": "A3",
+   "question": "How much does one key-reveal purchase cost in XRPL network fees?",
+   "scopeLabel": "DeepSeek \u00b7 deepseek-flash",
+   "modalRequirements": [
+    "XRPL network fee for the escrow transactions in one key-reveal purchase",
+    "How XRPL transaction fees are calculated for escrow create and finish"
+   ],
+   "planEvent": {
+    "plan": {
+     "restatement": "The XRPL network fees incurred by one key-reveal purchase.",
+     "subqueries": [
+      "XRPL escrow transaction network fee cost",
+      "XRPL key reveal escrow payment fees",
+      "XRPL transaction fee per escrow create finish"
+     ]
+    },
+    "planner": "DeepSeek \u00b7 deepseek-flash",
+    "requirements": [
+     "XRPL network fee for the escrow transactions in one key-reveal purchase",
+     "How XRPL transaction fees are calculated for escrow create and finish"
+    ],
+    "requirementsBy": "DeepSeek \u00b7 deepseek-flash",
+    "confirmed": true
+   },
+   "planEqualsModal": true,
+   "planEvents": 1,
+   "phase": "DONE",
+   "stopReason": "complete",
+   "bought": [
+    "team-fees"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "EscrowFinish with a fulfillment cost 423 drops in our observed XRPL Testnet conditional finish, more than a plain XRP Payment."
+   ],
+   "research": "DeepSeek \u00b7 deepseek-flash",
+   "decision": "fixture \u00b7 metadata-fixture",
+   "plan": "DeepSeek \u00b7 deepseek-flash",
+   "seconds": 4.079
+  },
+  {
+   "id": "D4",
+   "question": "If my agent pays for an article and the writer never reveals the key, what happens to my money?",
+   "scopeLabel": "DeepSeek \u00b7 deepseek-flash",
+   "modalRequirements": [
+    "How the key-reveal escrow holds the payment until the writer publishes the key",
+    "What happens to the escrowed funds if the writer never reveals the key, including refund or expiry",
+    "Whether the payer can recover the funds and how, on XRPL Testnet"
+   ],
+   "planEvent": {
+    "plan": {
+     "restatement": "What happens to the payer's funds if an agent pays for an article via key reveal and the writer never publishes the key.",
+     "subqueries": [
+      "XRPL escrow key reveal payment writer never publishes key refund",
+      "XRPL escrow cancel expiry funds returned payer",
+      "x402 agent payment paywalled article key reveal refund"
+     ]
+    },
+    "planner": "DeepSeek \u00b7 deepseek-flash",
+    "requirements": [
+     "How the key-reveal escrow holds the payment until the writer publishes the key",
+     "What happens to the escrowed funds if the writer never reveals the key, including refund or expiry",
+     "Whether the payer can recover the funds and how, on XRPL Testnet"
+    ],
+    "requirementsBy": "DeepSeek \u00b7 deepseek-flash",
+    "confirmed": true
+   },
+   "planEqualsModal": true,
+   "planEvents": 1,
+   "phase": "DONE",
+   "stopReason": "no-eligible-purchase",
+   "bought": [
+    "product-escrow-no-show"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "a buyer can recover an unfinished key-reveal escrow with EscrowCancel after CancelAfter; expiry permits cancellation but does not automatically return funds."
+   ],
+   "research": "DeepSeek \u00b7 deepseek-flash",
+   "decision": "fixture \u00b7 metadata-fixture",
+   "plan": "DeepSeek \u00b7 deepseek-flash",
+   "seconds": 4.162
+  },
+  {
+   "id": "E5",
+   "question": "Which XRPL validators are run by Singapore banks?",
+   "scopeLabel": "DeepSeek \u00b7 deepseek-flash",
+   "modalRequirements": [
+    "Which Singapore banks run XRPL validators, named individually",
+    "The validator public keys or identities associated with Singapore banks on the XRPL",
+    "Whether these validators are on the default UNL or a published validator list, with date"
+   ],
+   "planEvent": {
+    "plan": {
+     "restatement": "Which XRPL validators are operated by Singapore banks.",
+     "subqueries": [
+      "XRPL validators operated by Singapore banks",
+      "Singapore banks XRPL validator list",
+      "XRPL validator list Singapore financial institutions"
+     ]
+    },
+    "planner": "DeepSeek \u00b7 deepseek-flash",
+    "requirements": [
+     "Which Singapore banks run XRPL validators, named individually",
+     "The validator public keys or identities associated with Singapore banks on the XRPL",
+     "Whether these validators are on the default UNL or a published validator list, with date"
+    ],
+    "requirementsBy": "DeepSeek \u00b7 deepseek-flash",
+    "confirmed": true
+   },
+   "planEqualsModal": true,
+   "planEvents": 1,
+   "phase": "DONE",
+   "stopReason": "round-limit",
+   "bought": [],
+   "spentMinor": 0,
+   "lead": [],
+   "research": "fixture \u00b7 extractive-fixture",
+   "decision": "fixture \u00b7 metadata-fixture",
+   "plan": "DeepSeek \u00b7 deepseek-flash",
+   "seconds": 1.622
+  },
+  {
+   "id": "D1",
+   "question": "What travel-rule information must a VASP send with a crypto transfer in Singapore?",
+   "scopeLabel": "DeepSeek \u00b7 deepseek-flash",
+   "modalRequirements": [
+    "What originator information a Singapore VASP must send with a crypto transfer",
+    "What beneficiary information a Singapore VASP must send with a crypto transfer",
+    "The MAS rules and thresholds governing travel-rule data in Singapore"
+   ],
+   "planEvent": {
+    "plan": {
+     "restatement": "Travel-rule information a VASP must send with a crypto transfer in Singapore.",
+     "subqueries": [
+      "Singapore VASP travel rule information required crypto transfer",
+      "MAS travel rule requirements originator beneficiary information crypto"
+     ]
+    },
+    "planner": "DeepSeek \u00b7 deepseek-flash",
+    "requirements": [
+     "What originator information a Singapore VASP must send with a crypto transfer",
+     "What beneficiary information a Singapore VASP must send with a crypto transfer",
+     "The MAS rules and thresholds governing travel-rule data in Singapore"
+    ],
+    "requirementsBy": "DeepSeek \u00b7 deepseek-flash",
+    "confirmed": true
+   },
+   "planEqualsModal": true,
+   "planEvents": 1,
+   "phase": "DONE",
+   "stopReason": "round-limit",
+   "bought": [
+    "c5-fatf-recommendation-16-travel-rule",
+    "xrpl-compliance-fatf-travel-rule"
+   ],
+   "spentMinor": 80,
+   "lead": [
+    "Recommendation 16, the travel rule, applies to virtual-asset transfers: the originating provider must obtain required and accurate originator information and required beneficiary information and send it to the beneficiary institution immediately and securely."
+   ],
+   "research": "DeepSeek \u00b7 deepseek-flash",
+   "decision": "fixture \u00b7 metadata-fixture",
+   "plan": "DeepSeek \u00b7 deepseek-flash",
+   "seconds": 67.636
+  },
+  {
+   "id": "A4",
+   "question": "Which XRPL amendment and issuer flag does token escrow need?",
+   "scopeLabel": "DeepSeek \u00b7 deepseek-flash",
+   "modalRequirements": [
+    "The XRPL amendment that enables token escrow",
+    "The issuer flag required for token escrow",
+    "How the amendment and issuer flag interact for token escrow"
+   ],
+   "planEvent": {
+    "plan": {
+     "restatement": "Which XRPL amendment and issuer flag are required for token escrow.",
+     "subqueries": [
+      "XRPL token escrow amendment required",
+      "XRPL token escrow issuer flag",
+      "XRPL escrow token issuance requirements"
+     ]
+    },
+    "planner": "DeepSeek \u00b7 deepseek-flash",
+    "requirements": [
+     "The XRPL amendment that enables token escrow",
+     "The issuer flag required for token escrow",
+     "How the amendment and issuer flag interact for token escrow"
+    ],
+    "requirementsBy": "DeepSeek \u00b7 deepseek-flash",
+    "confirmed": true
+   },
+   "planEqualsModal": true,
+   "planEvents": 1,
+   "phase": "DONE",
+   "stopReason": "complete",
+   "bought": [
+    "c5-xrpl-token-escrow-xls85"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "the proposed TokenEscrow amendment enhances the existing XRPL Escrow functionality by enabling support for both trust line tokens, called IOUs, and Multi-Purpose Tokens, called MPTs."
+   ],
+   "research": "DeepSeek \u00b7 deepseek-flash",
+   "decision": "fixture \u00b7 metadata-fixture",
+   "plan": "DeepSeek \u00b7 deepseek-flash",
+   "seconds": 3.437
+  },
+  {
+   "id": "B2",
+   "question": "Can the language model in ResearchAgent spend money on its own?",
+   "scopeLabel": "DeepSeek \u00b7 deepseek-flash",
+   "modalRequirements": [
+    "Whether the language model in ResearchAgent can initiate or complete a payment on its own",
+    "Whether ResearchAgent's language model has any spending controls or payment finality limits",
+    "Whether any human approval is required before the ResearchAgent language model spends money"
+   ],
+   "planEvent": {
+    "plan": {
+     "restatement": "The question asks whether the language model inside ResearchAgent can spend money on its own.",
+     "subqueries": [
+      "ResearchAgent language model autonomous spending money",
+      "ResearchAgent AI agent payment capability spending controls",
+      "ResearchAgent language model can it make payments independently"
+     ]
+    },
+    "planner": "DeepSeek \u00b7 deepseek-flash",
+    "requirements": [
+     "Whether the language model in ResearchAgent can initiate or complete a payment on its own",
+     "Whether ResearchAgent's language model has any spending controls or payment finality limits",
+     "Whether any human approval is required before the ResearchAgent language model spends money"
+    ],
+    "requirementsBy": "DeepSeek \u00b7 deepseek-flash",
+    "confirmed": true
+   },
+   "planEqualsModal": true,
+   "planEvents": 1,
+   "phase": "DONE",
+   "stopReason": "round-limit",
+   "bought": [
+    "product-prompt-injection"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments."
+   ],
+   "research": "DeepSeek \u00b7 deepseek-flash",
+   "decision": "fixture \u00b7 metadata-fixture",
+   "plan": "DeepSeek \u00b7 deepseek-flash",
+   "seconds": 6.111
+  },
+  {
+   "id": "E3",
+   "question": "How do XRPL AMM pools set their trading fee, and who can vote to change it?",
+   "scopeLabel": "DeepSeek \u00b7 deepseek-flash",
+   "modalRequirements": [
+    "How an XRPL AMM pool's trading fee is set, including default and allowed range",
+    "Who can vote to change an XRPL AMM pool's trading fee and how voting works",
+    "Any limits or mechanics on fee changes in XRPL AMM pools"
+   ],
+   "planEvent": {
+    "plan": {
+     "restatement": "How XRPL AMM pools set their trading fee and who can vote to change it.",
+     "subqueries": [
+      "XRPL AMM trading fee how set",
+      "XRPL AMM fee vote holders change fee",
+      "XRPL automated market maker auction slot fee voting"
+     ]
+    },
+    "planner": "DeepSeek \u00b7 deepseek-flash",
+    "requirements": [
+     "How an XRPL AMM pool's trading fee is set, including default and allowed range",
+     "Who can vote to change an XRPL AMM pool's trading fee and how voting works",
+     "Any limits or mechanics on fee changes in XRPL AMM pools"
+    ],
+    "requirementsBy": "DeepSeek \u00b7 deepseek-flash",
+    "confirmed": true
+   },
+   "planEqualsModal": true,
+   "planEvents": 1,
+   "phase": "DONE",
+   "stopReason": "no-eligible-purchase",
+   "bought": [
+    "c5-xrpl-amm-create-deposit",
+    "xrpl-tx-ammvote"
+   ],
+   "spentMinor": 80,
+   "lead": [
+    "AMMCreate creates a new Automated Market Maker instance for a pair of assets, and its TradingFee is at most 1000, a 1% trading fee.",
+    "AMMVote lets liquidity providers express a preference for an AMM's trading fee."
+   ],
+   "research": "DeepSeek \u00b7 deepseek-flash",
+   "decision": "fixture \u00b7 metadata-fixture",
+   "plan": "DeepSeek \u00b7 deepseek-flash",
+   "seconds": 6.287
+  },
+  {
+   "id": "A5",
+   "question": "What's the difference between EscrowFinish and EscrowCancel, and who can submit each one?",
+   "scopeLabel": "DeepSeek \u00b7 deepseek-flash",
+   "modalRequirements": [
+    "What EscrowFinish does and who can submit it",
+    "What EscrowCancel does and who can submit it",
+    "How the two transactions differ in effect and authorization"
+   ],
+   "planEvent": {
+    "plan": {
+     "restatement": "The difference between the XRPL EscrowFinish and EscrowCancel transactions and who is authorized to submit each.",
+     "subqueries": [
+      "XRPL EscrowFinish transaction who can submit",
+      "XRPL EscrowCancel transaction who can submit",
+      "XRPL escrow finish cancel difference authorization"
+     ]
+    },
+    "planner": "DeepSeek \u00b7 deepseek-flash",
+    "requirements": [
+     "What EscrowFinish does and who can submit it",
+     "What EscrowCancel does and who can submit it",
+     "How the two transactions differ in effect and authorization"
+    ],
+    "requirementsBy": "DeepSeek \u00b7 deepseek-flash",
+    "confirmed": true
+   },
+   "planEqualsModal": true,
+   "planEvents": 1,
+   "phase": "DONE",
+   "stopReason": "no-eligible-purchase",
+   "bought": [
+    "xrpl-escrow"
+   ],
+   "spentMinor": 40,
+   "lead": [
+    "EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds.",
+    "A condition can bind release to a cryptographic fulfillment, while FinishAfter and CancelAfter control time windows."
+   ],
+   "research": "DeepSeek \u00b7 deepseek-flash",
+   "decision": "fixture \u00b7 metadata-fixture",
+   "plan": "DeepSeek \u00b7 deepseek-flash",
+   "seconds": 3.805
+  }
+ ]
+}

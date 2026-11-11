@@ -50,15 +50,15 @@ it('serializes session/IP/global caps across independent journal connections, mi
   expect(()=>restarted.reserve('restart','key','question','2.3.4.5',200,'submit',{})).toThrow('allowance_exhausted')
   expect(JSON.stringify(a.hostedState(db=>db.prepare('SELECT * FROM hosted_holds').all()))).not.toContain('10.0.')
 })
-it('enforces one outstanding ask, session questions/gross and three IP starts per minute',()=>{
+it('enforces one outstanding ask, session questions/gross and six IP starts per minute (H9-09)',()=>{
   const {limits,advance}=setup();advance(-600000)
   const first=limits.reserve('a','1','q','1.1.1.1',200,'submit',{})
   expect(()=>limits.reserve('a','2','q','2.2.2.2',200,'submit',{})).toThrow('session_busy')
   limits.update(first.id,{state:'done'})
   for(let i=2;i<=5;i++){advance(61000);const h=limits.reserve('a',String(i),'q','1.1.1.1',200,'submit',{});limits.update(h.id,{state:'done'})}
   expect(()=>limits.reserve('a','6','q','1.1.1.1',1,'submit',{})).toThrow('allowance_exhausted')
-  for(let i=0;i<3;i++) limits.reserve('burst'+i,'k','q','9.9.9.9',0,'submit',{})
-  expect(()=>limits.reserve('burst4','k','q','9.9.9.9',0,'submit',{})).toThrow('start_rate')
+  for(let i=0;i<6;i++) limits.reserve('burst'+i,'k','q','9.9.9.9',0,'submit',{})
+  expect(()=>limits.reserve('burst7','k','q','9.9.9.9',0,'submit',{})).toThrow('start_rate')
 })
 it('charges failed and partial model attempts before transport, with conservative per-question and token ceilings',async()=>{
   const {limits,c,write,a}=setup();vi.stubEnv('HOSTED','1')

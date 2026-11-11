@@ -11,9 +11,12 @@ export const DEMO_QUESTIONS = [
  * Home examples for a Testnet app. The fictional-corpus questions above get no answer from the labelled team-authored XRPL writers,
  * so a judge's first click would be a decline. These three are bought and cited from those writers on Testnet.
  */
+// R9-A (r9 §6.1): the x402 402 question leads. It was the most reliable question in round 9 (2/2 hosted, one purchase,
+// the PAYMENT-REQUIRED / PAYMENT-SIGNATURE answer) and the likeliest Ripple DevRel question; it replaces the overlapping
+// "x402 headers" preset under the same id. RLUSD escrow follows now that it buys one article and leads with the flag.
 export const TESTNET_QUESTIONS = [
+  { id: 'XRPL2', label: 'x402 payment', text: 'What does an x402 402 response contain, and can my agent pay it with XRP on Testnet?' },
   { id: 'XRPL1', label: 'RLUSD escrow', text: 'Can an XRPL escrow hold RLUSD today, and what must the issuer enable before a buyer can lock it?' },
-  { id: 'XRPL2', label: 'x402 headers', text: 'What HTTP headers does x402 use on XRPL, and how does the server know the payment actually settled?' },
   { id: 'XRPL3', label: 'Account reserves', text: 'How much XRP reserve does an agent wallet need, and how much does each open escrow or trust line add?' },
 ] as const
 const FIXTURE_LABELS: Record<string, string> = { UC1: 'Bank of Japan decision', UC2: 'Kestrel–TSMC outlook', UC3: 'Malaysia packaging lead times', UC4: 'Penang plant power' }

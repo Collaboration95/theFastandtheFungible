@@ -1,0 +1,1162 @@
+{
+ "note": "Round-9 judge questions replayed with the live DeepSeek plans the judges recorded on the hosted demo (tests/fixtures/r9-live-plans.json): fixture decisions and research, SIMULATED payments, keyword search. \"modal\" is the plan the visitor confirmed (it now runs, H9-04); \"run\" is the plan the hosted run re-planned at start in round 9. Regression data on questions already seen, never held out. Before = main 3157fe41.",
+ "questions": [
+  {
+   "id": "A1",
+   "question": "Can an XRPL escrow hold RLUSD today, and what must the issuer enable before a buyer can lock it?",
+   "hostedRound9": {
+    "bought": [
+     "team-rlusd",
+     "c5-xrpl-token-escrow-xls85",
+     "xrpl-tx-escrowcreate"
+    ],
+    "spentMinor": 120,
+    "lead": [
+     "EscrowCreate locks funds for a specified recipient until the configured time or cryptographic conditions permit release."
+    ]
+   },
+   "modal": {
+    "before": {
+     "bought": [
+      "team-rlusd",
+      "c5-xrpl-token-escrow-xls85",
+      "xrpl-tx-escrowcreate"
+     ],
+     "spentMinor": 120,
+     "lead": [
+      "EscrowCreate locks funds for a specified recipient until the configured time or cryptographic conditions permit release."
+     ]
+    },
+    "after": {
+     "bought": [
+      "team-rlusd"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "The team documented official RLUSD as blocked until its issuer enables AllowTrustLineLocking.",
+      "The experimental issuer enables token locking before the buyer and writer establish eligible trust lines."
+     ]
+    }
+   },
+   "run": {
+    "before": {
+     "bought": [
+      "team-rlusd",
+      "c5-xrpl-token-escrow-xls85",
+      "xrpl-tx-escrowcreate"
+     ],
+     "spentMinor": 120,
+     "lead": [
+      "EscrowCreate locks funds for a specified recipient until the configured time or cryptographic conditions permit release."
+     ]
+    },
+    "after": {
+     "bought": [
+      "team-rlusd"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "The team documented official RLUSD as blocked until its issuer enables AllowTrustLineLocking.",
+      "The experimental issuer enables token locking before the buyer and writer establish eligible trust lines."
+     ]
+    }
+   }
+  },
+  {
+   "id": "A2",
+   "question": "What does an x402 402 response contain, and can my agent pay it with XRP on Testnet?",
+   "hostedRound9": {
+    "bought": [
+     "product-x402-response"
+    ],
+    "spentMinor": 40,
+    "lead": [
+     "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
+     "A successful HTTP response can include PAYMENT-RESPONSE with settlement details."
+    ]
+   },
+   "modal": {
+    "before": {
+     "bought": [
+      "product-x402-response"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details.",
+      "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE."
+     ]
+    },
+    "after": {
+     "bought": [
+      "product-x402-response"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details.",
+      "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE."
+     ]
+    }
+   },
+   "run": {
+    "before": {
+     "bought": [
+      "product-x402-response"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
+      "A successful HTTP response can include PAYMENT-RESPONSE with settlement details."
+     ]
+    },
+    "after": {
+     "bought": [
+      "product-x402-response"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
+      "A successful HTTP response can include PAYMENT-RESPONSE with settlement details."
+     ]
+    }
+   }
+  },
+  {
+   "id": "A3",
+   "question": "How much does one key-reveal purchase cost in XRPL network fees?",
+   "hostedRound9": {
+    "bought": [
+     "team-delivery",
+     "xrpl-fees"
+    ],
+    "spentMinor": 80,
+    "lead": [
+     "XRPL transaction fees destroy XRP to deter spam, and the required fee can rise with load.",
+     "Key reveal delivers paid research by making the writer publish a decryption key through a validated EscrowFinish."
+    ]
+   },
+   "modal": {
+    "before": {
+     "bought": [
+      "team-delivery",
+      "xrpl-fees"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "XRPL transaction fees destroy XRP to deter spam, and the required fee can rise with load.",
+      "Key reveal delivers paid research by making the writer publish a decryption key through a validated EscrowFinish."
+     ]
+    },
+    "after": {
+     "bought": [
+      "team-fees",
+      "team-delivery"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "EscrowFinish with a fulfillment cost 423 drops in our observed XRPL Testnet conditional finish, more than a plain XRP Payment.",
+      "Key reveal delivers paid research by making the writer publish a decryption key through a validated EscrowFinish."
+     ]
+    }
+   },
+   "run": {
+    "before": {
+     "bought": [
+      "team-delivery",
+      "xrpl-fees"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "XRPL transaction fees destroy XRP to deter spam, and the required fee can rise with load.",
+      "Key reveal delivers paid research by making the writer publish a decryption key through a validated EscrowFinish."
+     ]
+    },
+    "after": {
+     "bought": [
+      "team-fees"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "EscrowFinish with a fulfillment cost 423 drops in our observed XRPL Testnet conditional finish, more than a plain XRP Payment."
+     ]
+    }
+   }
+  },
+  {
+   "id": "A4",
+   "question": "Which XRPL amendment and issuer flag does token escrow need?",
+   "hostedRound9": {
+    "bought": [
+     "c5-xrpl-token-escrow-xls85"
+    ],
+    "spentMinor": 40,
+    "lead": [
+     "the proposed TokenEscrow amendment enhances the existing XRPL Escrow functionality by enabling support for both trust line tokens, called IOUs, and Multi-Purpose Tokens, called MPTs."
+    ]
+   },
+   "modal": {
+    "before": {
+     "bought": [
+      "c5-xrpl-token-escrow-xls85"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "the proposed TokenEscrow amendment enhances the existing XRPL Escrow functionality by enabling support for both trust line tokens, called IOUs, and Multi-Purpose Tokens, called MPTs."
+     ]
+    },
+    "after": {
+     "bought": [
+      "c5-xrpl-token-escrow-xls85"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "the proposed TokenEscrow amendment enhances the existing XRPL Escrow functionality by enabling support for both trust line tokens, called IOUs, and Multi-Purpose Tokens, called MPTs."
+     ]
+    }
+   },
+   "run": {
+    "before": {
+     "bought": [
+      "c5-xrpl-token-escrow-xls85"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "the proposed TokenEscrow amendment enhances the existing XRPL Escrow functionality by enabling support for both trust line tokens, called IOUs, and Multi-Purpose Tokens, called MPTs."
+     ]
+    },
+    "after": {
+     "bought": [
+      "c5-xrpl-token-escrow-xls85"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "the proposed TokenEscrow amendment enhances the existing XRPL Escrow functionality by enabling support for both trust line tokens, called IOUs, and Multi-Purpose Tokens, called MPTs."
+     ]
+    }
+   }
+  },
+  {
+   "id": "A5",
+   "question": "What's the difference between EscrowFinish and EscrowCancel, and who can submit each one?",
+   "hostedRound9": {
+    "bought": [
+     "xrpl-escrow"
+    ],
+    "spentMinor": 40,
+    "lead": [
+     "EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds.",
+     "A condition can bind release to a cryptographic fulfillment, while FinishAfter and CancelAfter control time windows."
+    ]
+   },
+   "modal": {
+    "before": {
+     "bought": [
+      "xrpl-escrow",
+      "product-escrow-no-show"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds."
+     ]
+    },
+    "after": {
+     "bought": [
+      "xrpl-escrow",
+      "product-escrow-no-show"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds."
+     ]
+    }
+   },
+   "run": {
+    "before": {
+     "bought": [
+      "xrpl-escrow"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds.",
+      "A condition can bind release to a cryptographic fulfillment, while FinishAfter and CancelAfter control time windows."
+     ]
+    },
+    "after": {
+     "bought": [
+      "xrpl-escrow"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "EscrowCreate establishes the obligation, EscrowFinish releases it when requirements are satisfied, and EscrowCancel returns an expired escrow's funds when cancellation succeeds.",
+      "A condition can bind release to a cryptographic fulfillment, while FinishAfter and CancelAfter control time windows."
+     ]
+    }
+   }
+  },
+  {
+   "id": "B1",
+   "question": "How can I stop a prompt-injected AI agent from draining its wallet?",
+   "hostedRound9": {
+    "bought": [
+     "product-prompt-injection"
+    ],
+    "spentMinor": 40,
+    "lead": [
+     "prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments."
+    ]
+   },
+   "modal": {
+    "before": {
+     "bought": [
+      "product-prompt-injection"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments."
+     ]
+    },
+    "after": {
+     "bought": [
+      "product-prompt-injection"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments."
+     ]
+    }
+   },
+   "run": {
+    "before": {
+     "bought": [
+      "product-prompt-injection"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments."
+     ]
+    },
+    "after": {
+     "bought": [
+      "product-prompt-injection"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments."
+     ]
+    }
+   }
+  },
+  {
+   "id": "B2",
+   "question": "Can the language model in ResearchAgent spend money on its own?",
+   "hostedRound9": {
+    "bought": [
+     "product-prompt-injection"
+    ],
+    "spentMinor": 40,
+    "lead": [
+     "prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments."
+    ]
+   },
+   "modal": {
+    "before": {
+     "bought": [],
+     "spentMinor": 0,
+     "lead": []
+    },
+    "after": {
+     "bought": [],
+     "spentMinor": 0,
+     "lead": []
+    }
+   },
+   "run": {
+    "before": {
+     "bought": [
+      "product-prompt-injection"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments."
+     ]
+    },
+    "after": {
+     "bought": [
+      "product-prompt-injection"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments."
+     ]
+    }
+   }
+  },
+  {
+   "id": "B5",
+   "question": "How does ResearchAgent decide which article is worth buying?",
+   "hostedRound9": {
+    "bought": [],
+    "spentMinor": 0,
+    "lead": []
+   },
+   "modal": {
+    "before": {
+     "bought": [],
+     "spentMinor": 0,
+     "lead": []
+    },
+    "after": {
+     "bought": [],
+     "spentMinor": 0,
+     "lead": []
+    }
+   },
+   "run": {
+    "before": {
+     "bought": [],
+     "spentMinor": 0,
+     "lead": []
+    },
+    "after": {
+     "bought": [],
+     "spentMinor": 0,
+     "lead": []
+    }
+   }
+  },
+  {
+   "id": "C1",
+   "question": "How does the writer get paid, and what stops the agent from reading the article and then refusing to pay?",
+   "hostedRound9": {
+    "bought": [
+     "product-key-reveal-trust",
+     "team-credentials"
+    ],
+    "spentMinor": 80,
+    "lead": []
+   },
+   "modal": {
+    "before": {
+     "bought": [
+      "product-escrow-no-show",
+      "xrpl-tx-escrowcancel",
+      "xrpl-tx-escrowcreate"
+     ],
+     "spentMinor": 120,
+     "lead": []
+    },
+    "after": {
+     "bought": [
+      "product-escrow-no-show",
+      "xrpl-tx-escrowcancel",
+      "xrpl-tx-escrowcreate"
+     ],
+     "spentMinor": 120,
+     "lead": []
+    }
+   },
+   "run": {
+    "before": {
+     "bought": [
+      "product-key-reveal-trust",
+      "team-credentials"
+     ],
+     "spentMinor": 80,
+     "lead": []
+    },
+    "after": {
+     "bought": [
+      "product-key-reveal-trust",
+      "team-credentials"
+     ],
+     "spentMinor": 80,
+     "lead": []
+    }
+   }
+  },
+  {
+   "id": "C4",
+   "question": "How much does a writer earn per sale, and what does ResearchAgent take as a fee?",
+   "hostedRound9": {
+    "bought": [],
+    "spentMinor": 0,
+    "lead": []
+   },
+   "modal": {
+    "before": {
+     "bought": [],
+     "spentMinor": 0,
+     "lead": []
+    },
+    "after": {
+     "bought": [],
+     "spentMinor": 0,
+     "lead": []
+    }
+   },
+   "run": {
+    "before": {
+     "bought": [],
+     "spentMinor": 0,
+     "lead": []
+    },
+    "after": {
+     "bought": [],
+     "spentMinor": 0,
+     "lead": []
+    }
+   }
+  },
+  {
+   "id": "C5",
+   "question": "How much XRP reserve does an agent wallet need, and how much does each open escrow or trust line add?",
+   "hostedRound9": {
+    "bought": [
+     "xrpl-reserves",
+     "team-rlusd"
+    ],
+    "spentMinor": 80,
+    "lead": [
+     "An XRPL wallet needs a base reserve plus applicable owner reserves, separately from the money it intends to send."
+    ]
+   },
+   "modal": {
+    "before": {
+     "bought": [
+      "xrpl-reserves",
+      "xrpl-trust-lines",
+      "xrpl-tx-trustset"
+     ],
+     "spentMinor": 120,
+     "lead": [
+      "An XRPL wallet needs a base reserve plus applicable owner reserves, separately from the money it intends to send."
+     ]
+    },
+    "after": {
+     "bought": [
+      "xrpl-reserves",
+      "team-asset-provisioning"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "An XRPL wallet needs a base reserve plus applicable owner reserves, separately from the money it intends to send."
+     ]
+    }
+   },
+   "run": {
+    "before": {
+     "bought": [
+      "xrpl-reserves",
+      "team-asset-provisioning"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "An XRPL wallet needs a base reserve plus applicable owner reserves, separately from the money it intends to send."
+     ]
+    },
+    "after": {
+     "bought": [
+      "xrpl-reserves",
+      "team-asset-provisioning"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "An XRPL wallet needs a base reserve plus applicable owner reserves, separately from the money it intends to send."
+     ]
+    }
+   }
+  },
+  {
+   "id": "D1",
+   "question": "What travel-rule information must a VASP send with a crypto transfer in Singapore?",
+   "hostedRound9": {
+    "bought": [
+     "c5-fatf-recommendation-16-travel-rule",
+     "xrpl-compliance-fatf-travel-rule"
+    ],
+    "spentMinor": 80,
+    "lead": [
+     "Recommendation 16, the travel rule, applies to virtual-asset transfers: the originating provider must obtain required and accurate originator information and required beneficiary information and send it to the beneficiary institution immediately and securely."
+    ]
+   },
+   "modal": {
+    "before": {
+     "bought": [
+      "c5-fatf-recommendation-16-travel-rule",
+      "xrpl-compliance-fatf-travel-rule"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "Recommendation 16, the travel rule, applies to virtual-asset transfers: the originating provider must obtain required and accurate originator information and required beneficiary information and send it to the beneficiary institution immediately and securely."
+     ]
+    },
+    "after": {
+     "bought": [
+      "c5-fatf-recommendation-16-travel-rule",
+      "xrpl-compliance-fatf-travel-rule"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "Recommendation 16, the travel rule, applies to virtual-asset transfers: the originating provider must obtain required and accurate originator information and required beneficiary information and send it to the beneficiary institution immediately and securely."
+     ]
+    }
+   },
+   "run": {
+    "before": {
+     "bought": [
+      "c5-fatf-recommendation-16-travel-rule",
+      "xrpl-compliance-fatf-travel-rule"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "Recommendation 16, the travel rule, applies to virtual-asset transfers: the originating provider must obtain required and accurate originator information and required beneficiary information and send it to the beneficiary institution immediately and securely."
+     ]
+    },
+    "after": {
+     "bought": [
+      "c5-fatf-recommendation-16-travel-rule",
+      "xrpl-compliance-fatf-travel-rule"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "Recommendation 16, the travel rule, applies to virtual-asset transfers: the originating provider must obtain required and accurate originator information and required beneficiary information and send it to the beneficiary institution immediately and securely."
+     ]
+    }
+   }
+  },
+  {
+   "id": "D2",
+   "question": "Is RLUSD a regulated stablecoin, and who supervises its issuer?",
+   "hostedRound9": {
+    "bought": [
+     "xrpl-rlusd"
+    ],
+    "spentMinor": 40,
+    "lead": [
+     "RLUSD is issued by Standard Custody & Trust Company under a New York limited-purpose trust charter, according to Ripple's issuer materials; that oversight does not automatically authorize every downstream service worldwide."
+    ]
+   },
+   "modal": {
+    "before": {
+     "bought": [
+      "xrpl-rlusd"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "RLUSD is issued by Standard Custody & Trust Company under a New York limited-purpose trust charter, according to Ripple's issuer materials; that oversight does not automatically authorize every downstream service worldwide."
+     ]
+    },
+    "after": {
+     "bought": [
+      "xrpl-rlusd"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "RLUSD is issued by Standard Custody & Trust Company under a New York limited-purpose trust charter, according to Ripple's issuer materials; that oversight does not automatically authorize every downstream service worldwide."
+     ]
+    }
+   },
+   "run": {
+    "before": {
+     "bought": [
+      "xrpl-rlusd"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "RLUSD is issued by Standard Custody & Trust Company under a New York limited-purpose trust charter, according to Ripple's issuer materials; that oversight does not automatically authorize every downstream service worldwide."
+     ]
+    },
+    "after": {
+     "bought": [
+      "xrpl-rlusd"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "RLUSD is issued by Standard Custody & Trust Company under a New York limited-purpose trust charter, according to Ripple's issuer materials; that oversight does not automatically authorize every downstream service worldwide."
+     ]
+    }
+   }
+  },
+  {
+   "id": "D3",
+   "question": "Does a Singapore company need a MAS licence to pay suppliers in RLUSD?",
+   "hostedRound9": {
+    "bought": [
+     "c5-mas-licence-paying-suppliers-rlusd"
+    ],
+    "spentMinor": 40,
+    "lead": [
+     "Licensing becomes a likelier question if the company moves tokens for other parties, runs an exchange or holds tokens for others."
+    ]
+   },
+   "modal": {
+    "before": {
+     "bought": [
+      "c5-mas-licence-paying-suppliers-rlusd"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "merely accepting digital payment tokens does not by itself trigger a Payment Services Act licence."
+     ]
+    },
+    "after": {
+     "bought": [
+      "c5-mas-licence-paying-suppliers-rlusd"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "merely accepting digital payment tokens does not by itself trigger a Payment Services Act licence."
+     ]
+    }
+   },
+   "run": {
+    "before": {
+     "bought": [
+      "c5-mas-licence-paying-suppliers-rlusd"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "Licensing becomes a likelier question if the company moves tokens for other parties, runs an exchange or holds tokens for others."
+     ]
+    },
+    "after": {
+     "bought": [
+      "c5-mas-licence-paying-suppliers-rlusd"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "Licensing becomes a likelier question if the company moves tokens for other parties, runs an exchange or holds tokens for others."
+     ]
+    }
+   }
+  },
+  {
+   "id": "D4",
+   "question": "If my agent pays for an article and the writer never reveals the key, what happens to my money?",
+   "hostedRound9": {
+    "bought": [
+     "product-key-reveal-trust"
+    ],
+    "spentMinor": 40,
+    "lead": [
+     "A writer can reveal a key to content that fails its advertised promise."
+    ]
+   },
+   "modal": {
+    "before": {
+     "bought": [
+      "product-key-reveal-trust",
+      "product-escrow-no-show",
+      "team-recovery"
+     ],
+     "spentMinor": 120,
+     "lead": [
+      "key-reveal escrow makes payment and publication of the article key atomic, but a refund after a completed purchase still requires the writer to sign."
+     ]
+    },
+    "after": {
+     "bought": [
+      "product-escrow-no-show"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "a buyer can recover an unfinished key-reveal escrow with EscrowCancel after CancelAfter; expiry permits cancellation but does not automatically return funds."
+     ]
+    }
+   },
+   "run": {
+    "before": {
+     "bought": [
+      "product-key-reveal-trust"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "A writer can reveal a key to content that fails its advertised promise."
+     ]
+    },
+    "after": {
+     "bought": [
+      "product-escrow-no-show"
+     ],
+     "spentMinor": 40,
+     "lead": []
+    }
+   }
+  },
+  {
+   "id": "E1",
+   "question": "Can an XRPL escrow hold RLUSD today, and what must the issuer enable before a buyer can lock it?",
+   "hostedRound9": {
+    "bought": [
+     "team-rlusd",
+     "c5-xrpl-token-escrow-xls85",
+     "xrpl-tx-escrowcreate"
+    ],
+    "spentMinor": 120,
+    "lead": [
+     "EscrowCreate locks funds for a specified recipient until the configured time or cryptographic conditions permit release."
+    ]
+   },
+   "modal": {
+    "before": {
+     "bought": [
+      "team-rlusd",
+      "c5-xrpl-token-escrow-xls85",
+      "xrpl-tx-escrowcreate"
+     ],
+     "spentMinor": 120,
+     "lead": [
+      "EscrowCreate locks funds for a specified recipient until the configured time or cryptographic conditions permit release."
+     ]
+    },
+    "after": {
+     "bought": [
+      "team-rlusd"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "The team documented official RLUSD as blocked until its issuer enables AllowTrustLineLocking.",
+      "The experimental issuer enables token locking before the buyer and writer establish eligible trust lines."
+     ]
+    }
+   },
+   "run": {
+    "before": {
+     "bought": [
+      "team-rlusd",
+      "c5-xrpl-token-escrow-xls85",
+      "xrpl-tx-escrowcreate"
+     ],
+     "spentMinor": 120,
+     "lead": [
+      "EscrowCreate locks funds for a specified recipient until the configured time or cryptographic conditions permit release."
+     ]
+    },
+    "after": {
+     "bought": [
+      "team-rlusd"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "The team documented official RLUSD as blocked until its issuer enables AllowTrustLineLocking.",
+      "The experimental issuer enables token locking before the buyer and writer establish eligible trust lines."
+     ]
+    }
+   }
+  },
+  {
+   "id": "E2",
+   "question": "What does an XRPL Credential prove, and which transactions create and accept one?",
+   "hostedRound9": {
+    "bought": [
+     "xrpl-tx-credentialaccept"
+    ],
+    "spentMinor": 40,
+    "lead": [
+     "CredentialAccept records the subject account's acceptance of a credential issued to it.",
+     "The issuer, subject and CredentialType identify the credential being accepted."
+    ]
+   },
+   "modal": {
+    "before": {
+     "bought": [
+      "xrpl-tx-credentialaccept"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "CredentialAccept records the subject account's acceptance of a credential issued to it.",
+      "The issuer, subject and CredentialType identify the credential being accepted."
+     ]
+    },
+    "after": {
+     "bought": [
+      "xrpl-tx-credentialaccept"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "CredentialAccept records the subject account's acceptance of a credential issued to it.",
+      "The issuer, subject and CredentialType identify the credential being accepted."
+     ]
+    }
+   },
+   "run": {
+    "before": {
+     "bought": [
+      "xrpl-tx-credentialaccept"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "CredentialAccept records the subject account's acceptance of a credential issued to it.",
+      "The issuer, subject and CredentialType identify the credential being accepted."
+     ]
+    },
+    "after": {
+     "bought": [
+      "xrpl-tx-credentialaccept"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "CredentialAccept records the subject account's acceptance of a credential issued to it.",
+      "The issuer, subject and CredentialType identify the credential being accepted."
+     ]
+    }
+   }
+  },
+  {
+   "id": "E3",
+   "question": "How do XRPL AMM pools set their trading fee, and who can vote to change it?",
+   "hostedRound9": {
+    "bought": [
+     "c5-xrpl-amm-create-deposit",
+     "xrpl-tx-ammvote"
+    ],
+    "spentMinor": 80,
+    "lead": [
+     "AMMCreate creates a new Automated Market Maker instance for a pair of assets, and its TradingFee is at most 1000, a 1% trading fee.",
+     "AMMVote lets liquidity providers express a preference for an AMM's trading fee."
+    ]
+   },
+   "modal": {
+    "before": {
+     "bought": [
+      "c5-xrpl-amm-create-deposit",
+      "xrpl-tx-ammvote",
+      "xrpl-amm"
+     ],
+     "spentMinor": 120,
+     "lead": [
+      "The XLS-30 AMM adds liquidity pools to the XRPL DEX alongside order books, and routing can consider both sources of liquidity.",
+      "AMMVote lets liquidity providers express a preference for an AMM's trading fee."
+     ]
+    },
+    "after": {
+     "bought": [
+      "c5-xrpl-amm-create-deposit",
+      "xrpl-tx-ammvote"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "AMMVote lets liquidity providers express a preference for an AMM's trading fee.",
+      "Voting weight depends on the provider's pool participation, and the reference defines how recorded votes determine the fee."
+     ]
+    }
+   },
+   "run": {
+    "before": {
+     "bought": [
+      "c5-xrpl-amm-create-deposit",
+      "xrpl-tx-ammvote"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "AMMCreate creates a new Automated Market Maker instance for a pair of assets, and its TradingFee is at most 1000, a 1% trading fee.",
+      "AMMVote lets liquidity providers express a preference for an AMM's trading fee."
+     ]
+    },
+    "after": {
+     "bought": [
+      "c5-xrpl-amm-create-deposit",
+      "xrpl-tx-ammvote"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "AMMCreate creates a new Automated Market Maker instance for a pair of assets, and its TradingFee is at most 1000, a 1% trading fee.",
+      "AMMVote lets liquidity providers express a preference for an AMM's trading fee."
+     ]
+    }
+   }
+  },
+  {
+   "id": "E4",
+   "question": "How long does an XRPL payment take to become final, and when should an agent treat it as settled?",
+   "hostedRound9": {
+    "bought": [
+     "product-payment-finality"
+    ],
+    "spentMinor": 40,
+    "lead": [
+     "an agent should treat a successful payment as final only when its tesSUCCESS result appears in a validated ledger; an initial submit response is provisional."
+    ]
+   },
+   "modal": {
+    "before": {
+     "bought": [
+      "product-payment-finality"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "an agent should treat a successful payment as final only when its tesSUCCESS result appears in a validated ledger; an initial submit response is provisional."
+     ]
+    },
+    "after": {
+     "bought": [
+      "product-payment-finality"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "an agent should treat a successful payment as final only when its tesSUCCESS result appears in a validated ledger; an initial submit response is provisional."
+     ]
+    }
+   },
+   "run": {
+    "before": {
+     "bought": [
+      "product-payment-finality"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "an agent should treat a successful payment as final only when its tesSUCCESS result appears in a validated ledger; an initial submit response is provisional."
+     ]
+    },
+    "after": {
+     "bought": [
+      "product-payment-finality"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "an agent should treat a successful payment as final only when its tesSUCCESS result appears in a validated ledger; an initial submit response is provisional."
+     ]
+    }
+   }
+  },
+  {
+   "id": "E5",
+   "question": "Which XRPL validators are run by Singapore banks?",
+   "hostedRound9": {
+    "bought": [
+     "xrpl-singapore",
+     "c5-xrpl-validation-quorum"
+    ],
+    "spentMinor": 80,
+    "lead": [
+     "Singapore payment-service obligations depend on the service and applicable legal scope, not on whether an agent or XRPL submits the transaction."
+    ]
+   },
+   "modal": {
+    "before": {
+     "bought": [
+      "xrpl-singapore",
+      "c5-xrpl-validation-quorum",
+      "c5-xrpl-testnet-servers"
+     ],
+     "spentMinor": 120,
+     "lead": [
+      "Singapore payment-service obligations depend on the service and applicable legal scope, not on whether an agent or XRPL submits the transaction."
+     ]
+    },
+    "after": {
+     "bought": [],
+     "spentMinor": 0,
+     "lead": []
+    }
+   },
+   "run": {
+    "before": {
+     "bought": [
+      "xrpl-singapore",
+      "c5-xrpl-validation-quorum"
+     ],
+     "spentMinor": 80,
+     "lead": [
+      "Singapore payment-service obligations depend on the service and applicable legal scope, not on whether an agent or XRPL submits the transaction."
+     ]
+    },
+    "after": {
+     "bought": [],
+     "spentMinor": 0,
+     "lead": []
+    }
+   }
+  },
+  {
+   "id": "F1",
+   "question": "How much does a writer earn per sale, and what does ResearchAgent take as a fee?",
+   "hostedRound9": {
+    "bought": [],
+    "spentMinor": 0,
+    "lead": []
+   },
+   "modal": {
+    "before": {
+     "bought": [],
+     "spentMinor": 0,
+     "lead": []
+    },
+    "after": {
+     "bought": [],
+     "spentMinor": 0,
+     "lead": []
+    }
+   },
+   "run": {
+    "before": {
+     "bought": [],
+     "spentMinor": 0,
+     "lead": []
+    },
+    "after": {
+     "bought": [],
+     "spentMinor": 0,
+     "lead": []
+    }
+   }
+  },
+  {
+   "id": "F2",
+   "question": "What does an x402 402 response contain, and can my agent pay it with XRP on Testnet?",
+   "hostedRound9": {
+    "bought": [
+     "product-x402-response"
+    ],
+    "spentMinor": 40,
+    "lead": [
+     "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
+     "A successful HTTP response can include PAYMENT-RESPONSE with settlement details."
+    ]
+   },
+   "modal": {
+    "before": {
+     "bought": [
+      "product-x402-response"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details.",
+      "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE."
+     ]
+    },
+    "after": {
+     "bought": [
+      "product-x402-response"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "Each option names scheme, network, amount, asset, payTo and maxTimeoutSeconds; extra carries scheme-specific details.",
+      "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE."
+     ]
+    }
+   },
+   "run": {
+    "before": {
+     "bought": [
+      "product-x402-response"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
+      "A successful HTTP response can include PAYMENT-RESPONSE with settlement details."
+     ]
+    },
+    "after": {
+     "bought": [
+      "product-x402-response"
+     ],
+     "spentMinor": 40,
+     "lead": [
+      "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
+      "A successful HTTP response can include PAYMENT-RESPONSE with settlement details."
+     ]
+    }
+   }
+  }
+ ]
+}

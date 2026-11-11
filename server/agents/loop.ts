@@ -10,13 +10,14 @@ import { challenge } from '../challenges.js'
 import { createHash } from 'node:crypto'
 import { AnswerSchema, COVERAGE_STATUSES, MAX_ROUNDS, CoverageSchema, PlanSchema, PublicCandidateSchema, RunCheckpointSchema, SEARCH_LABELS, STOP_LABELS, decisionLabel, providerLabels } from '../../shared/contracts/index.js'
 import type { Answer, ContentEnvelope, Coverage, CoverageStatus, FollowUp, PublicCandidate, PurchaseIntent, Requirement, RunSnapshot, StopReason, TraceEvent } from '../../shared/contracts/index.js'
-import { decide, decisionFailureStatus, DecisionUnavailableError, FixtureDecisionProvider, publicSources } from './decision.js'
+import { decide, decisionFailureStatus, DecisionUnavailableError, FixtureDecisionProvider, publicSources, titlesNameQuestion } from './decision.js'
 import type { ProofOutcome, Reputation } from '../reputation.js'
 import type { DecisionProvider } from './decision.js'
 import { freeDraft, followUpSearch, hitsByPublisher, retrieve, sanitizeGaps, usableContents, writeAnswer, type Retrieved } from './research.js'
 import { resolveCitation, validateClaims } from './citations.js'
 import { FIXTURE_GAP_RULES, fixtureSupports, followUpQuery, INSTRUCTION, STATUS_RANK, type CoverageEvidence } from './requirements.js'
-import { titleCovers } from '../../shared/relevance.js'
+import { isProtocolQuery, titleCovers } from '../../shared/relevance.js'
+import { openGapsAfterLead } from '../../shared/open-gaps.js'
 import type { Plan } from '../../shared/contracts/index.js'
 
 export type RunLoopOptions = {
@@ -169,7 +170,8 @@ export class RunLoop {
     }
     if (requirements) {
       coverage ??= await this.assessCoverage(runId, answer)
-      answer.openGaps = requirements.filter(r => coverage!.entries.find(e => e.requirementId === r.id)?.status !== 'supported').map(r => ({ text: r.text.replace(/\s*&\s*/g, ' and ') }))
+      // H9-10 (R9-B): the coverage rewrite keeps the rule research.ts applies, so MCP and the SDK never list a fact the lead answers.
+      answer.openGaps = openGapsAfterLead(run.question, { lead: answer.lead, openGaps: requirements.filter(r => coverage!.entries.find(e => e.requirementId === r.id)?.status !== 'supported').map(r => ({ text: r.text.replace(/\s*&\s*/g, ' and ') })) })
     }
     this.store.addAnswer(runId, structuredClone(answer), result.impact ? structuredClone(result.impact) : undefined)
     this.store.appendEvent(runId, { type: 'ANSWER_READY', label: previous ? 'Answer updated with verified evidence.' : 'Free answer checked.', data: { answerVersion: answer.version, durationMs: Date.now() - compositionStarted } })
@@ -207,11 +209,22 @@ export class RunLoop {
    * graded such purchases "missing" and the run went on to buy up to three articles for one fact. A live coverage
    * judge decides unaided, and a story-bible cue rule keeps its exact test. This only withholds further spending;
    * the coverage the reader sees is unchanged.
+   *
+   * R9-A (H9-01): the hosted demo plans with the live model, whose requested facts are worded differently ("Whether an
+   * XRPL escrow can hold RLUSD today"), so neither title test fired and the RLUSD preset bought three articles after
+   * the one that answers it. The question itself is the stable reference: once the bought titles name every clause
+   * of the question (titlesNameQuestion), no further fact is bought for, whatever the planner's wording.
    */
   private answeredByPurchase(run: RunSnapshot, requirement: Requirement): boolean {
-    if ((this.options.provider?.name ?? 'fixture') !== 'fixture' || requirement.gap || FIXTURE_GAP_RULES.some(rule => rule.cue.test(requirement.text))) return false
+    if ((this.options.provider?.name ?? 'fixture') !== 'fixture' || requirement.gap) return false
+    const purchases = this.verifiedPurchases(run)
+    // The story-bible cue rules belong to the fictional finance questions; on a protocol question "change" is not the UC1
+    // cue ("who can vote to change it"), so it does not exempt the question-level rule (R9-A).
+    const storyQuestion = !isProtocolQuery(run.question) && FIXTURE_GAP_RULES.some(rule => rule.cue.test(run.question))
+    if (!storyQuestion && titlesNameQuestion(run.question, purchases.map(candidate => candidate.title))) return true
+    if (FIXTURE_GAP_RULES.some(rule => rule.cue.test(requirement.text))) return false
     const single = this.requirements(run)?.length === 1
-    return this.verifiedPurchases(run).some(candidate => titleCovers(requirement.text, candidate.title) || single && titleCovers(run.question, candidate.title))
+    return purchases.some(candidate => titleCovers(requirement.text, candidate.title) || single && titleCovers(run.question, candidate.title))
   }
   /** Passages for a coverage judgment: exact accessible spans, never instructions (gate 1: free or verified-granted only). */
   private evidence(contents: ContentEnvelope[], refs: { resourceId: string; version: string; spanId: string }[]): CoverageEvidence[] {
