@@ -116,3 +116,17 @@ it('counts repeated BUY identities once, but permits a same-intent reconciliatio
   })
   expect(aggregateSandbox(store).audit.duplicateIntent).toBe(1)
 })
+it('detects a late GRANT even when the final trace contains that grant', () => {
+  const store=seeded()
+  store.hostedState(db => {
+    const row=db.prepare(`SELECT id,json FROM events WHERE run_id='synthetic-0' AND json_extract(json,'$.type')='GRANT'`).get()!
+    db.prepare('DELETE FROM events WHERE id=?').run(row.id)
+    db.prepare('INSERT INTO events (run_id,json) VALUES (?,?)').run('synthetic-0',String(row.json))
+  })
+  expect(aggregateSandbox(store).audit.readBeforeGrant).toBe(1)
+})
+it('rejects a later-round policy pick as authority for an earlier BUY', () => {
+  const store=seeded()
+  store.hostedState(db => db.prepare(`UPDATE decisions SET json=json_set(json,'$.round',2) WHERE run_id='synthetic-0'`).run())
+  expect(aggregateSandbox(store).audit.buyWithoutPolicy).toBe(1)
+})
