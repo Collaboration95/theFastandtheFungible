@@ -1,6 +1,6 @@
 # SFF push: tracker and changelog
 
-The single running record for the SingHacks finals push: submit by **Thu 12 Nov**
+The single running record for the SingHacks finals push: submit **Fri 13 Nov morning**
 (official deadline 13 Nov, 23:59 SGT), pitch at SFF on **Wed 18 Nov, 11:30 SGT**.
 How we're scored: [JUDGING-CRITERIA.md](JUDGING-CRITERIA.md). The October design
 record stays in [FINAL-PUSH.md](FINAL-PUSH.md).

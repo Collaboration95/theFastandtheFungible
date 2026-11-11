@@ -1,7 +1,7 @@
 # SingHacks finals submission pack
 
-Ripple track. **Official deadline Fri 13 Nov, 23:59 SGT; our own target is Thu
-12 Nov.** Live pitch **Wed 18 Nov, 11:30–12:00 SGT**, Swiss Pavilion, SFF
+Ripple track. **Official deadline Fri 13 Nov, 23:59 SGT; our own target is Fri
+13 Nov morning.** Live pitch **Wed 18 Nov, 11:30–12:00 SGT**, Swiss Pavilion, SFF
 (Singapore EXPO). Scoring: [JUDGING-CRITERIA.md](../JUDGING-CRITERIA.md).
 
 Judges **pre-assess the submission and the demo video** before SFF, and that
@@ -43,13 +43,13 @@ The form link is in the organisers' email and in the local, untracked
       [`scripts/facts.mjs`](../../scripts/facts.mjs), run
       `node scripts/facts.mjs && node docs/submission/deck/export.mjs` (slide 14
       then links it), and add it to the README links line and the form.
-- [ ] **Thu 12 Nov, before the freeze:** if a release or a new measurement landed since
+- [ ] **Before submission on Fri 13 Nov morning:** if a release or a new measurement landed since
       the facts were taken (see "counts as of" above), refresh the numbers:
       `npm run site:progress -- --at origin/main && node scripts/facts.mjs`,
       commit and re-export the deck. The orchestrator publishes the site after merging.
-- [ ] **Thu 12 Nov:** submit the form with the fields below. Open the GitHub
+- [ ] **Fri 13 Nov morning:** submit the form with the fields below. Open the GitHub
       repo, the deck PDF, the video and the live sandbox in a private window.
-- [ ] **Fri 13 Nov, 23:59 SGT:** hard deadline. Our target is a day earlier.
+- [ ] **Fri 13 Nov, 23:59 SGT:** hard deadline. Our target is that morning.
 - [ ] **13–19 Nov:** the live sandbox is open; watch its status
       (`/api/demo/status`) and spend.
 - [ ] **14–17 Nov:** rehearse the [pitch](pitch-2min.md) to time; study the
@@ -113,10 +113,10 @@ upstream count is `feedback_line`.
 - [x] Slide 2 uses `singhacks_then`; counts are `prs`, `releases`,
       `transactions` and `vectors` at `sha` on `as_of`.
 - [x] Slide 3 is the committed `try` output
-      ([r5-a/try-fresh-output.txt](../evidence/r5-a/try-fresh-output.txt)), links
+      ([v1.1.1/try-output.txt](evidence/v1.1.1/try-output.txt)), links
       shortened to their hashes; a test checks it line by line.
 - [x] Slide 10 is one large shot of the current app plus one zoom, captured
-      by a script from the recorded Testnet replay.
+      by a script from the live hosted XRPL Testnet run on 11 Nov.
 - [x] New: who pays / market / why now (11), compliance posture (12), team (14).
       Each slide's speaker notes name the judging criteria it serves.
 - [x] Slide 13 follows the ranked order in
