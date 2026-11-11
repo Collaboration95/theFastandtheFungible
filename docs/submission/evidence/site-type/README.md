@@ -2,7 +2,7 @@
 
 Local static site only, served on an OS-assigned loopback port. No hosted
 questions, GitHub browsing, cloud changes or site publication. The shared
-T3 browser captured the home before edits and after at 1280×900 and 390×844.
+T3 browser captured the home before edits and after at 1280×900 and 390×844. The after captures were refreshed after the font-loading and footer changes; [phone footer](footer-390.png).
 
 | Width | Before | After |
 |---|---|---|
