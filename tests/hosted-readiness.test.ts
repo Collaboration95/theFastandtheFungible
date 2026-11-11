@@ -24,14 +24,14 @@ it('answers from memory while a refresh is still running, and never starts a pro
   expect(await readiness.ready()).toBe(true)
 })
 
-it('makes only the very first request wait, for the first probe', async () => {
+it('fails closed immediately on cold startup while the first probe is pending', async () => {
   const first = deferred(), readiness = make(() => first.promise)
-  let settled = false
-  const pending = readiness.ready().then(v => { settled = true; return v })
+  expect(await readiness.ready()).toBe(false)
   await vi.advanceTimersByTimeAsync(1000)
-  expect(settled).toBe(false)
+  expect(await readiness.ready()).toBe(false)
   first.resolve(true)
-  expect(await pending).toBe(true)
+  await vi.advanceTimersByTimeAsync(0)
+  expect(await readiness.ready()).toBe(true)
 })
 
 it('refuses as soon as a refresh says not ready or fails, and recovers on the next good one', async () => {

@@ -117,8 +117,11 @@ export function hostedRouter(context: ApiContext, config: Config, limits: Hosted
     // a question's start queues. A small separate lane bounds how many plans run at once.
     limits.update(hold.id,{state:'active'})
     try {
-      if (context.work.signal.aborted) throw new HostedError(503,'demo_unavailable')
-      const result = await planning.run(() => execute(hold,() => scopeWithPlanner(question,{ ...(req.body.clarify === 'never' ? {clarify:'never' as const}:{}),signal:context.work.signal })))
+      const result = await planning.run(() => {
+        requireAdmissions(config)
+        if (context.work.signal.aborted) throw new HostedError(503,'demo_unavailable')
+        return execute(hold,() => scopeWithPlanner(question,{ ...(req.body.clarify === 'never' ? {clarify:'never' as const}:{}),signal:context.work.signal }))
+      })
       limits.update(hold.id,{scope_result:JSON.stringify(result)})
       res.json(result)
     } finally { limits.update(hold.id,{state:'draft'}) }

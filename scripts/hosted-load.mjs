@@ -200,6 +200,7 @@ try {
   const routes = {}
   for (const r of records) (routes[`${r.method} ${r.route}`] ??= []).push(r)
   Object.assign(summary, {
+    measuredSeconds: +((Date.now() - t0) / 1000).toFixed(1),
     requests: records.length,
     guardPaused: count(records, 'guard-paused'),
     guardPausedVisitor: records.filter(r => r.kind === 'guard-paused' && r.route !== '/readyz').length,

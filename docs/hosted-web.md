@@ -239,7 +239,7 @@ light theme and type, self-contained (the app's own files live on the VM), carri
 label, and links the recorded walkthrough, the slide deck and the source. A demo video link appears when the front has
 one: export `HOSTED_VIDEO_URL` (a plain https URL) in the shell that runs `ops.mjs deploy`, which passes it to the Cloud
 Run front; nginx fills it into the page. The front is the only place that can serve this page while the VM is down, so
-this link, unlike the links file below, needs a front redeploy (a Cloud Run revision; the VM is not touched).
+this link, unlike the state-disk links above, needs a front redeploy (a Cloud Run revision; the VM is not touched).
 
 ## Gateway configuration (HG)
 
@@ -304,7 +304,7 @@ H7 closed the three follow-ups H6 left ([evidence/h7](evidence/h7/README.md)):
   Testnet ledger) runs on its own timer every 5 s and `/api/demo/status`, `/readyz`,
   `/health` and the ask gate read its last answer from memory (`server/hosted/readiness.ts`).
   **Staleness bound: 15 s.** An answer is used only while the check behind it started at most
-  15 s ago; in steady state that is 5 to 11 s (a check is cut off after 6 s and counted as not
+  15 s ago; cold startup answers not ready without waiting. In steady state that is 5 to 11 s (a check is cut off after 6 s and counted as not
   ready). Timed-out probes do not overlap: if the underlying ledger call is still pending, readiness stays false until it settles and a fresh check succeeds. If the timer stops, answers turn into "not ready" after 15 s: it fails closed. Pause,
   the admission window, the money caps and the spending guard are not read from this cache;
   they are still read fresh at every authority boundary.

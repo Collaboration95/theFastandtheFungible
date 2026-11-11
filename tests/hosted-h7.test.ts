@@ -19,6 +19,7 @@ import type { ApiContext } from '../server/api/context.js'
 import { createApiApp } from '../server/routes.js'
 import { PublisherClient } from '../server/publisher-client.js'
 import { XrplPayer } from '../server/xrpl.js'
+import * as scopePlanner from '../server/agents/scope.js'
 
 // H7, through the real hosted middleware: the session flood cap, readiness off the request path, and /readyz on a full queue.
 beforeEach(() => { vi.spyOn(Date, 'now').mockReturnValue(Date.parse('2026-11-11T12:00:00Z')) })
@@ -147,6 +148,26 @@ it('plans while another visitor’s question holds the demo (it used to answer 4
   // A second visitor plans at the same time as well.
   const b = await visitor(url, '198.51.100.22')
   expect((await post(url, '/api/scope', { ...b, 'Idempotency-Key': 'plan-2' }, { question, clarify: 'never' })).status).toBe(200)
+})
+it('rechecks the operator pause when a waiting plan gets its turn', async () => {
+  const { url, pause, store } = await stack()
+  const finish: (() => void)[] = []
+  const planner = vi.spyOn(scopePlanner, 'scope').mockImplementation(() => new Promise(resolve => {
+    finish.push(() => resolve({ label: 'fixture · test', questions: [], plan: { restatement: 'XRPL', subqueries: ['XRPL'] } }))
+  }))
+  const people = await Promise.all([51, 52, 53].map(n => visitor(url, `198.51.100.${n}`)))
+  const plan = (i: number) => post(url, '/api/scope', { ...people[i], 'Idempotency-Key': `waiting-${i}` }, { question: 'How does XRPL escrow work?' })
+  const a = plan(0), b = plan(1)
+  await vi.waitFor(() => expect(planner).toHaveBeenCalledTimes(2))
+  const c = plan(2)
+  // The third hold is active but its planner has not started: it is waiting for a planning place.
+  await vi.waitFor(() => expect(store.hostedState(db => Number(db.prepare("SELECT count(*) AS n FROM hosted_holds WHERE state='active'").get()!.n))).toBe(3))
+  pause(true)
+  finish.forEach(done => done())
+  const replies = await Promise.all([a, b, c])
+  expect(replies[2].status).toBe(503)
+  expect(replies[2].json().error).toBe('paused')
+  expect(planner).toHaveBeenCalledTimes(2)
 })
 it('shows how long a queued question should wait once runs have finished here, and nothing before', async () => {
   const { url, queue, from } = await stack()

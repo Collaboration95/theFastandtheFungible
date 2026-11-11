@@ -1,7 +1,7 @@
 {
   "kind": "local-hosted-load",
-  "at": "2026-11-11T09:55:17.157Z",
-  "source": "H7 implementation on bd52beff55589f026e71cef3c73cf84984bc516e",
+  "at": "2026-11-11T14:40:42.115Z",
+  "source": "H7 on bd52beff (source hashes below)",
   "readinessMode": "background (H7)",
   "guard": "docker/hosted/start.mjs (this checkout)",
   "visitors": 6,
@@ -11,94 +11,97 @@
   "mode": "HOSTED=1 · fixture models · simulated rail · ephemeral ports",
   "cloud": false,
   "sourceFiles": {
-    "scripts/hosted-load.mjs": "afecb70d94845d572892968439911fa2fc3739f50adea1a88ab512c694e1847f",
+    "scripts/hosted-load.mjs": "9c095f08d1c9cc64f0d502218f905220f644b9db542fb2a2af52cc9b36859449",
     "server/routes.ts": "195d78ed281f6011c774be292db351246f5d0c7920411e85e3103c71a633b7ab",
-    "server/hosted/routes.ts": "022ffd31c2957e0cd2c4ab551bdfb62263d4c4b3880075c03bb894b846345efd",
+    "server/hosted/routes.ts": "6098a99b79d02151644f0edfc29a834009d55908d4da59b869c6e39aba45411d",
     "server/hosted/limits.ts": "7c3be1a0c0a15ba1cbec22eb961510b15412d42d768137ceae9bcdb20da66455",
     "server/hosted/queue.ts": "190d2d6a2fe3b55ceb6da88d7146fe6b70b2da5492baac2ec8050aa12788c6bd",
-    "server/hosted/readiness.ts": "e29e829a3a39b401de90939324a5a62f2731fdcdcd9b7204b0299055b4d3758b"
+    "server/hosted/readiness.ts": "0663d280d2eacc10a9151281d42e2edf4c734a19da3c707641ac2c061474406a"
   },
-  "requests": 43,
+  "measuredSeconds": 121.4,
+  "requests": 978,
   "guardPaused": 0,
   "guardPausedVisitor": 0,
   "readyz": {
-    "checks": 1,
-    "ok": 1,
+    "checks": 12,
+    "ok": 12,
     "guardPaused": 0,
     "hgNotReady": {}
   },
   "hgPaused": 0,
   "refused429": {
-    "queue_full": 3
+    "queue_full": 3,
+    "allowance_exhausted": 24,
+    "start_rate": 372
   },
   "other": {},
   "runs": {
-    "asked": 6,
-    "admitted": 3,
-    "finished": 3
+    "asked": 270,
+    "admitted": 69,
+    "finished": 69
   },
-  "sessionsMinted": 6,
+  "sessionsMinted": 18,
   "eventLoopDelayMs": {
-    "p50": 12,
-    "p99": 30,
-    "max": 985158.1
+    "p50": 11,
+    "p99": 15,
+    "max": 49.6
   },
-  "readinessRefreshes": 1,
+  "readinessRefreshes": 25,
   "routes": {
     "GET /api/demo/status": {
-      "n": 12,
-      "p50": 11,
-      "p95": 22,
+      "n": 276,
+      "p50": 3,
+      "p95": 8,
       "max": 22,
       "guardPaused": 0
     },
     "GET /readyz": {
-      "n": 1,
-      "p50": 6,
+      "n": 12,
+      "p50": 3,
       "p95": 6,
       "max": 6,
       "guardPaused": 0
     },
     "GET /api/runs": {
       "n": 6,
-      "p50": 10,
-      "p95": 21,
-      "max": 21,
+      "p50": 5,
+      "p95": 11,
+      "max": 11,
       "guardPaused": 0
     },
     "GET /api/writers/status": {
       "n": 6,
-      "p50": 15,
-      "p95": 25,
-      "max": 25,
+      "p50": 10,
+      "p95": 14,
+      "max": 14,
       "guardPaused": 0
     },
     "POST /api/scope": {
-      "n": 6,
-      "p50": 11,
-      "p95": 13,
-      "max": 13,
+      "n": 270,
+      "p50": 2,
+      "p95": 5,
+      "max": 15,
       "guardPaused": 0
     },
     "POST /runs": {
-      "n": 6,
-      "p50": 15,
-      "p95": 20,
-      "max": 20,
+      "n": 270,
+      "p50": 2,
+      "p95": 14,
+      "max": 24,
       "guardPaused": 0
     },
     "GET /runs/:id/events": {
-      "n": 3,
-      "p50": 3,
-      "p95": 10,
-      "max": 10,
+      "n": 69,
+      "p50": 2,
+      "p95": 4,
+      "max": 21,
       "guardPaused": 0
     },
     "GET /runs/:id": {
-      "n": 3,
+      "n": 69,
       "p50": 1,
       "p95": 3,
-      "max": 3,
+      "max": 6,
       "guardPaused": 0
     }
   },
@@ -110,8 +113,8 @@
     "refused": {
       "429 session_rate": 5080
     },
-    "seconds": 0.6,
-    "sessionTableAfter": 129,
+    "seconds": 0.5,
+    "sessionTableAfter": 143,
     "sessionsAddedByFlood": 120,
     "nextRealVisitor": {
       "http": 200,

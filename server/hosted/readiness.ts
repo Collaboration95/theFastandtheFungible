@@ -25,7 +25,6 @@ export class HostedReadiness {
   private timer?: ReturnType<typeof setTimeout>
   private closed = false
   private probeInFlight = false
-  private first: Promise<void>
   private readonly intervalMs: number
   private readonly maxAgeMs: number
   private readonly probeTimeoutMs: number
@@ -35,14 +34,13 @@ export class HostedReadiness {
     this.maxAgeMs = options.maxAgeMs ?? READINESS.maxAgeMs
     this.probeTimeoutMs = options.probeTimeoutMs ?? READINESS.probeTimeoutMs
     this.now = options.now ?? (() => Date.now())
-    this.first = this.refresh()
+    void this.refresh()
   }
-  /** The last answer, if it is recent enough. Never starts a probe. Only the very first call can wait, for the first probe. */
+  /** The last answer, if recent enough. Never starts or waits for a probe; cold startup is not ready. */
   ready(): Promise<boolean> {
-    if (this.startedAt === Number.NEGATIVE_INFINITY && !this.closed) return this.first.then(() => this.fresh())
     return Promise.resolve(this.fresh())
   }
-  private fresh() { return this.healthy && this.now() - this.startedAt <= this.maxAgeMs }
+  private fresh() { return !this.closed && this.healthy && this.now() - this.startedAt <= this.maxAgeMs }
   private async refresh(): Promise<void> {
     const startedAt = this.now()
     let value: boolean, cut: ReturnType<typeof setTimeout> | undefined
