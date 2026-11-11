@@ -55,8 +55,8 @@ it('keeps in-progress, pruned traces, cancelled escrow, excluded simulations and
   store.hostedState(db => db.prepare("UPDATE hosted_holds SET created=0,day='2026-11-10'").run())
   expect(aggregateSandbox(store)).toMatchObject({questions:0,medianSpendMinor:null,medianModelUsd:null,timing:{samples:0,medianMs:null,p90Ms:null}})
 })
-const get = (url: string) => new Promise<{status:number;headers:Record<string,unknown>;body:string}>(resolve => {
-  request(url,{headers:{Host:'demo.example'}},res => { let body='';res.on('data',c=>body+=c);res.on('end',()=>resolve({status:res.statusCode!,headers:res.headers,body})) }).end()
+const get = (url: string, method = 'GET') => new Promise<{status:number;headers:Record<string,unknown>;body:string}>(resolve => {
+  request(url,{method,headers:{Host:'demo.example'}},res => { let body='';res.on('data',c=>body+=c);res.on('end',()=>resolve({status:res.statusCode!,headers:res.headers,body})) }).end()
 })
 it('uses a 60 s cache even across callers and refreshes at expiry', async () => {
   const store=seeded(), now=vi.fn(()=>100000), aggregate=vi.spyOn(store,'hostedState')
@@ -79,6 +79,7 @@ it('mints no session or admission through the actual HOSTED=1 app, even while pa
   const url=`http://127.0.0.1:${(server.address() as {port:number}).port}/api/demo/stats`
   seedSandbox(backend.store!)
   for (let n=0;n<3;n++) { const response=await get(url); expect(response.status).toBe(200); expect(response.headers['set-cookie']).toBeUndefined(); expect(JSON.parse(response.body).questions).toBe(4); for (const secret of ['PRIVATE_QUESTION_SENTINEL','PRIVATE_TOKEN_SENTINEL','synthetic-principal']) expect(response.body).not.toContain(secret) }
+  const head=await get(url,'HEAD');expect(head.status).toBe(200);expect(head.body).toBe('');expect(head.headers['set-cookie']).toBeUndefined()
   backend.store!.hostedState(db => { for (const table of ['hosted_sessions','hosted_session_mints','admissions']) expect(Number(db.prepare(`SELECT count(*) AS n FROM ${table}`).get()!.n)).toBe(0) })
 })
 
