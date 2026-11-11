@@ -2,7 +2,7 @@ import { expect, it } from 'vitest'
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import ts from 'typescript'
-import { ENV, money, shortTx, whenSGT, xrpAmount } from '../shared/presentation'
+import { ENV, money, shortTx, whenSGT, xrpAmount, environmentLabel, modelsLabel } from '../shared/presentation'
 
 it('formats every minor-unit amount from 0 through 500 with exactly two decimals', () => {
   for (let minor = 0; minor <= 500; minor++) expect(money(minor)).toMatch(/^S\$\d+\.\d{2}$/)
@@ -15,6 +15,19 @@ it('formats ledger amounts, fingerprints and Singapore dates independently of th
   expect(shortTx('abcdef01')).toBe('ABCDEF01')
   expect(whenSGT('2026-11-11T07:06:05Z')).toBe('11 Nov 2026, 15:06 SGT')
   expect(ENV.replay('11 Nov 2026')).toBe('Replay · XRPL Testnet, recorded 11 Nov 2026 · fictional writers · no real value')
+})
+
+it('keeps live, fixture and mixed provider modes truthful on either payment rail', () => {
+  for (const [research, decision, label] of [
+    ['fixture · extracts', 'fixture · rules', 'fixture models'],
+    ['deepseek', 'fixture · rules', 'live answers, rule-based buying'],
+    ['fixture · extracts', 'openai', 'fixture answers, live buying'],
+    ['deepseek', 'openai', 'live models'],
+  ]) {
+    expect(modelsLabel(research, decision)).toBe(label)
+    expect(environmentLabel('XRPL TESTNET', label)).toBe(`XRPL Testnet demo · ${label} · no real value`)
+    expect(environmentLabel('SIMULATED', label)).toBe(`Simulated demo · ${label} · no real value`)
+  }
 })
 
 /** Parse code, not comments or recorded source prose. Account addresses have their separate 6…4 rule. */
