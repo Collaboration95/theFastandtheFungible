@@ -48,12 +48,16 @@ overflow or serious/critical axe violations.
   strings from `ENV`, retaining actual rail/provider and paused/offline/ended
   state and ending every full/short label with “no real value”. Keep live
   answers paired with rule-based buying when the decision provider is fixture.
+  The new judges’ corner caption changes “Recorded on this sandbox, 11 Nov”
+  to “Recorded on this demo, 11 Nov 2026”, retaining its truthful disclosures.
   The `UC-key-reveal` footer link should read “Recorded walkthrough: writer
   never reveals, money back”, matching the picker and its 7 Nov recording.
 - JC: `src/components/hosted/HostedEnv.tsx`: use `ENV.hostedWriters` for the live
   writers caption and the canonical ENV values for environment headings.
   The local simulated hosted preview currently inherits the live green dot;
   use amber for simulated payments and green for Testnet, retaining offline states.
+- JC: `src/components/hosted/HostedHome.tsx`: judges’ corner title uses
+  “Verify a real run from this demo in your browser”.
 - JC: `src/components/Ask.tsx`: local/replay Home h1 “Research with a wallet.”;
   align the subtitle with hosted while retaining the actual simulated/fixture
   mode. No changes to JC-owned files in this PR.
