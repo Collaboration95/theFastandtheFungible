@@ -38,6 +38,8 @@ import CommandPalette, { type Command } from './components/CommandPalette'
 import { deriveRunState } from './runState'
 import { offlineNotice, planNotice } from './notices'
 import Icon from './components/Icon'
+import Connecting from './components/Connecting'
+import { warmVerifier } from './warm-verifier'
 import { modifier } from './shortcuts'
 import { exampleQuestions } from '../shared/contracts/examples'
 
@@ -138,8 +140,9 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
     const tick = () => { if (!document.hidden) void refreshDemo() }
     const timer = setInterval(tick, waiting || ownQueued || connection || detecting ? 3000 : 15000)
     const offline = () => setConnection('offline')
-    window.addEventListener('online', tick); window.addEventListener('offline', offline); document.addEventListener('visibilitychange', tick)
-    return () => { clearInterval(timer); window.removeEventListener('online', tick); window.removeEventListener('offline', offline); document.removeEventListener('visibilitychange', tick) }
+    const online = () => { setError(current => current.startsWith('You’re offline.') || current === 'Connection lost. Reconnecting…' ? '' : current); tick() }
+    window.addEventListener('online', online); window.addEventListener('offline', offline); document.addEventListener('visibilitychange', tick)
+    return () => { clearInterval(timer); window.removeEventListener('online', online); window.removeEventListener('offline', offline); document.removeEventListener('visibilitychange', tick) }
   }, [demo, detecting, waiting, ownQueued, connection, refreshDemo])
 
   useEffect(() => {
@@ -184,6 +187,16 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
   const shown = run && replaying && (recording || browserDemo || !isTerminal(run)) ? staged(run, cursor) : run
   const model = deriveRunState(shown, pending?.step)
   const finished = !!shown && model.terminal && !replaying
+  const runHeading = useRef<HTMLHeadingElement>(null)
+  useEffect(() => { if (screen === 'run') runHeading.current?.focus() }, [screen, runId])
+  const done = run?.phase === 'DONE'
+  useEffect(() => { if (done && !browserDemo) return warmVerifier() }, [done])
+  const returningToQuestion = useRef(false)
+  useEffect(() => {
+    if (pending || sending) { returningToQuestion.current = true; return }
+    if (returningToQuestion.current && screen === 'home') document.querySelector<HTMLTextAreaElement>('.ra-qbox')?.focus()
+    returningToQuestion.current = false
+  }, [pending, sending, screen])
   const openRun = async (id: string) => {
     const show = () => { const url = new URL(window.location.href); url.searchParams.set('run', id); window.history.replaceState(null, '', url) }
     if (id === run?.runId) { show(); setScreen('run'); return }
@@ -457,9 +470,12 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
   const settlement = shown?.labels.settlement ?? health.labels?.settlement ?? 'SIMULATED SGD · no real funds'
   const provide = (node: ReactNode) => <HostedContext.Provider value={hosted}>{node}</HostedContext.Provider>
   // Hosted errors are specific and retry on their own; the local banner keeps its reload.
-  const banner = hosted ? error && <p className="ra-banner" role="alert">{error}</p>
+  const notice = finished && connection === 'offline' ? "You're offline. This result is final; it refreshes when you reconnect."
+    : finished && error === 'Connection lost. Reconnecting…' ? 'The result is final. Trying to reconnect for ledger updates…' : error
+  const banner = hosted ? notice && <p className="ra-banner" role="alert">{notice}</p>
     : (error || healthError) && <p className="ra-banner" role="alert">{error || "Can’t reach the ResearchAgent server."} <button className="ra-link" onClick={() => window.location.reload()}>Try again</button></p>
   const state = hosted && homeState(hosted)
+  if (detecting && !hosted) return <Connecting />
   if (tab === 'writers') return provide(<Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}><main id="main" tabIndex={-1} className="ra-writers-view"><h1>Writers</h1>{writersError && <p role="alert">{writersError}</p>}{writersLoading ? <p role="status" className="ra-writer-loading"><AgentSprite animation="search" />Loading writer reputation…</p> : <ReputationPanel records={reputation} run={shown} full={run} />}{overlays}</main></Layout>)
   if (screen === 'settings' && !hosted) return provide(<Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
     <Suspense fallback={<main id="main" tabIndex={-1} className="ra-settings"><h1>Settings</h1><p role="status">Loading settings…</p></main>}><Settings universal={universal} budgetMinor={universalMinor} settlement={settlement} notify={notify} onBack={closeSettings} onNotify={chooseNotify}
@@ -489,7 +505,7 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
   return provide(<Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
     <div className="ra-ws">
       <main id="main" tabIndex={-1} className="ra-brief">
-        <h1 className="ra-q">{shown.question}</h1>
+        <h1 ref={runHeading} tabIndex={-1} className="ra-q" onKeyDown={event => { if (event.key === 'Tab' && !event.shiftKey) { event.preventDefault(); document.querySelector<HTMLButtonElement>('.ra-show-work')?.focus() } }}>{shown.question}</h1>
         <MobileSpend run={shown} onRetry={id => void retry(id)} onReceipt={setReceipt} />
         <RunActivity run={shown} actualTerminal={!!run && isTerminal(run)} onStop={() => void stopRun()} stopping={stopping} onShowWork={() => setWork(true)} />
         {hosted && <HostedRunNotice hosted={hosted} run={shown} stopping={stopping} onCancel={() => void stopRun()} />}

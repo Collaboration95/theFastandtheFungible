@@ -42,9 +42,11 @@ export default function PlanSheet({ plan, writers, budgetMinor = BUDGET.initialM
     const edited = PlanSchema.safeParse({ ...plan, subqueries: subqueries.map(q => q.trim()).filter(Boolean) })
     const confirmed = edited.success ? edited.data : plan
     rememberConfirmedPlan(confirmed) // Show work compares this with the plan the run records ("Ran the plan you confirmed")
+    // Release the modal focus trap before App moves focus to the run or the preserved question.
+    dialog.current?.close()
     onGo(confirmed)
   }
-  const cancel = () => { if (!fired.current) { fired.current = true; onCancel() } }
+  const cancel = () => { if (!fired.current) { fired.current = true; dialog.current?.close(); onCancel() } }
   const latest = useRef({ go, cancel })
   useEffect(() => { latest.current = { go, cancel } })
   useEffect(() => {

@@ -1,5 +1,6 @@
 import Icon from '../Icon'
-import { useId, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
+import { verificationError, verificationNetworkFailure } from '../../verify-network'
 import type { RunSnapshot } from '../../../shared/contracts'
 import type { BrowserVerification } from '../../verify/browser'
 
@@ -13,12 +14,20 @@ const simulatedTitle: Record<string, string> = { ledger: 'Payments on a public l
 export default function VerifyInBrowser({ run, bundleUrl, caption, title }: { run?: RunSnapshot; bundleUrl?: string; caption?: string; title?: string }) {
   const [state, setState] = useState<{ step: 'idle' | 'fetch' | 'check' | 'done' | 'error'; result?: BrowserVerification; error?: string }>({ step: 'idle' })
   const headingId = useId()
+  const heading = useRef<HTMLHeadingElement>(null)
+  useEffect(() => {
+    if (state.step === 'idle' || (document.activeElement !== document.body && document.activeElement !== heading.current)) return
+    const target = state.step === 'done' ? heading.current?.parentElement?.querySelector<HTMLElement>('.ra-hv-head')
+      : state.step === 'error' ? heading.current?.parentElement?.querySelector<HTMLButtonElement>('button') : heading.current
+    target?.focus()
+  }, [state.step])
   // A recorded bundle is a Testnet run; the verifier reads its own label, so a simulated bundle still says so once it has been checked.
   const testnet = run ? run.labels.settlement.startsWith('XRPL') : state.result?.testnet ?? true
   const recorded = !run && !!bundleUrl
   const start = async () => {
     setState({ step: 'fetch' })
     try {
+      if (!navigator.onLine) throw new Error('offline')
       const url = bundleUrl ?? (run ? `/runs/${encodeURIComponent(run.runId)}/receipts.json` : '')
       if (!url) throw new Error('receipts')
       const response = await fetch(url)
@@ -26,9 +35,12 @@ export default function VerifyInBrowser({ run, bundleUrl, caption, title }: { ru
       const bundle: unknown = await response.json()
       setState({ step: 'check' })
       const { verifyInBrowser } = await import('../../verify/browser')
-      setState({ step: 'done', result: await verifyInBrowser(bundle) })
+      const result = await verifyInBrowser(bundle)
+      const unavailable = verificationNetworkFailure(result)
+      if (unavailable) throw unavailable
+      setState({ step: 'done', result })
     } catch (error) {
-      setState({ step: 'error', error: error instanceof Error && error.message === 'receipts' ? 'This run’s receipts could not be downloaded.' : 'The checks could not finish in this browser.' })
+      setState({ step: 'error', error: verificationError(error, navigator.onLine) })
     }
   }
   const result = state.result
@@ -36,13 +48,13 @@ export default function VerifyInBrowser({ run, bundleUrl, caption, title }: { ru
   const passed = result?.checks.filter(check => check.status === 'PASS').length ?? 0
   const skipped = result?.checks.filter(check => check.status === 'SKIP').length ?? 0
   return <section className="ra-hv" aria-labelledby={headingId}>
-    <h2 id={headingId}>{title ?? (testnet ? 'Verify on XRPL in your browser' : 'Verify in your browser')}</h2>
+    <h2 ref={heading} tabIndex={-1} id={headingId}>{title ?? (testnet ? 'Verify on XRPL in your browser' : 'Verify in your browser')}</h2>
     {state.step === 'idle' && <><p>{recorded ? 'Re-checks the recorded run’s signatures, hashes and every payment, from a public XRPL Testnet node, right here.' : <>Re-check this run’s receipts here: writer signatures, passage hashes and the audit log{testnet ? ', then every payment on a public XRPL Testnet node' : ''}. The result doesn’t rely on our server.</>}</p>
       <button type="button" className="ra-btn" onClick={() => void start()}>Run the checks</button></>}
     {(state.step === 'fetch' || state.step === 'check') && <p role="status" className="ra-hv-busy"><span className="ra-spin" aria-hidden="true" />{state.step === 'fetch' ? 'Downloading receipts.json…' : testnet ? 'Checking signatures and reading XRPL Testnet…' : 'Checking signatures and hashes…'}</p>}
     {state.step === 'error' && <><p role="alert" className="ra-err">{state.error} Nothing was changed.</p><button type="button" className="ra-btn" onClick={() => void start()}>Try again</button></>}
     {result && <div>
-      <p role="status" className={`ra-hv-head ${result.ok ? 'is-ok' : 'is-bad'}`}>{result.ok ? skipped ? `${passed} passed · ${skipped} not checked` : `All ${passed} checks passed` : `${failed} of ${result.checks.length} checks failed`}{result.ok && !testnet && <small> · ledger checks skipped: simulated payments</small>}</p>
+      <p role="status" tabIndex={-1} className={`ra-hv-head ${result.ok ? 'is-ok' : 'is-bad'}`}>{result.ok ? skipped ? `${passed} passed · ${skipped} not checked` : `All ${passed} checks passed` : `${failed} of ${result.checks.length} checks failed`}{result.ok && !testnet && <small> · ledger checks skipped: simulated payments</small>}</p>
       <ul className="ra-hv-groups">{result.groups.map(group => <li key={group.id} className={`is-${group.status.toLowerCase()}`}>
         <details open={group.status === 'FAIL'}>
           <summary><i aria-hidden="true"><Icon name={mark[group.status]} size={16} /></i><span>{(!testnet && simulatedTitle[group.id]) || group.title}</span><small>{group.status === 'SKIP' ? testnet || group.id === 'identity' ? 'not checked' : 'simulated' : `${group.passed}/${group.total}`}<span className="ra-sr"> {word[group.status]}</span></small></summary>
