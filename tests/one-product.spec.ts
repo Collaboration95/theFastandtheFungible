@@ -80,5 +80,7 @@ test('current site and proof pages load Geist and render headings at 600', async
     expect(headings.length, path).toBeGreaterThan(0)
     for (const heading of headings) { expect(heading.weight, `${path}: ${heading.text}`).toBe('600'); expect(heading.family, path).toContain('Geist') }
     expect(await page.evaluate(() => [...document.fonts].some(f => /Geist/.test(f.family) && f.status === 'loaded')), path).toBe(true)
+    const monoVisible = await page.locator('code,.mono').evaluateAll(nodes => nodes.some(n => n.getClientRects().length && /Geist.*Mono/.test(getComputedStyle(n).fontFamily)))
+    if (monoVisible) expect(await page.evaluate(() => [...document.fonts].some(f => /Geist.*Mono/.test(f.family) && f.status === 'loaded')), `${path}: Geist Mono loaded`).toBe(true)
   }
 })
