@@ -1,7 +1,7 @@
 import Icon from './Icon'
 import { useEffect, useState } from 'react'
 import type { PurchaseIntent, RunSnapshot } from '../../shared/contracts'
-import { displayPeriod } from '../../shared/fact-menu'
+import { promiseLabel } from '../../shared/promise-label'
 import { candidateOf } from '../format'
 
 /** Promise names come from the public manifest; only recorded proof results earn a check. */
@@ -14,7 +14,7 @@ export default function Verification({ run, intent }: { run: RunSnapshot; intent
   if (!checked) return null
   const claims = candidateOf(run, intent)?.manifest?.claims ?? []
   const failures = proof?.data?.failedClaimIds as string[] | undefined
-  const nameOf = (claim: typeof claims[number]) => displayPeriod((claim.covers ? [claim.covers.entity, claim.covers.measure, claim.covers.period, claim.covers.comparison].filter(Boolean).join(' ') : claim.id.replace(/-/g, ' ')))
+  const nameOf = (claim: typeof claims[number]) => promiseLabel(claim)
   const names = [...new Set(claims.map(nameOf))]
   return <details className="ra-verification" open={open} onToggle={e => setOpen(e.currentTarget.open)}><summary>Checked against the writer’s promises</summary><ul>{names.slice(0, 5).map(name => {
     const group = claims.filter(c => nameOf(c) === name)

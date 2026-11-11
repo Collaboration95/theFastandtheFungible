@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { LedgerAnchorSchema } from './contracts/anchor.js'
 import { ReceiptBundleSchema } from './contracts/receipts.js'
 import { XRPL_LABEL } from './contracts/publisher.js'
-import type { RunSnapshot } from './contracts/index.js'
+import type { DecisionRow, RunSnapshot } from './contracts/index.js'
 import { anchorProgress } from './anchor-status.js'
 import { declineSummary } from './decline.js'
 
@@ -15,8 +15,11 @@ export const PROOF_ID = /^[a-f0-9]{32}$/
  * article a live plan finds (signed manifests) and every free source it reads, so the cap leaves room for a broad question
  * (R8-B; was 256 KiB). 400 proofs at the cap are still under 300 MB. */
 export const PROOF_MAX_BYTES = 768 * 1024
-/** Hosted retention: the shared demo ends 20 Nov 00:00 SGT; pages stay up through 20 Nov UTC. */
-export const HOSTED_PROOF_RETAIN_UNTIL = '2026-11-21T00:00:00Z'
+/** Hosted retention: the shared demo's providers end 20 Nov 00:00 SGT and its VM stops at 20 Nov 00:30 SGT, so a proof page is promised
+ * only "through 19 November 2026" (the end of 19 Nov SGT). Nothing says it stays up after that. */
+export const HOSTED_PROOF_RETAIN_UNTIL = '2026-11-19T16:00:00Z'
+/** The words the confirm dialog uses for that promise; a test pins them to HOSTED_PROOF_RETAIN_UNTIL so the two cannot drift apart. */
+export const HOSTED_PROOF_PROMISE = 'through 19 November 2026'
 export const HOSTED_PROOFS_PER_SESSION = 5
 export const HOSTED_PROOFS_TOTAL = 400
 /** An anchor not recorded this long after the run ended is reported as missing (it is still picked up if it lands later). */
@@ -69,6 +72,18 @@ export const VERDICT_WORDS: Record<string, string> = {
   SKIP_LOW_VALUE: 'Wouldn’t add enough', SKIP_LOW_TRUST: 'Writer didn’t meet the trust checks', SKIP_OVER_CAP: 'Over the per-article cap',
   SKIP_OVER_BUDGET: 'Over the budget left', SKIP_REWRITE: 'Repeats what is already known', SKIP_NO_GAP: 'Nothing left to fill', NOT_JUDGED: 'Not needed',
 }
+/** An article the topic guard turned away, or one that says nothing about the question at all, is "not about this question". It is
+ * never described as repeating what is known: that sentence is only true of a real rewrite of evidence the run already holds. */
+export const TOPIC_MISS_WORDS = 'Not about this question'
+export function verdictWords(row: Pick<DecisionRow, 'verdict' | 'reason' | 'judgment'> & { candidate: Pick<DecisionRow['candidate'], 'derivedFrom'> }): string {
+  const topicGuard = /do not cover the requested subject/i.test(row.reason)
+  const unrelated = (row.verdict === 'SKIP_REWRITE' || row.verdict === 'SKIP_LOW_VALUE') && row.judgment.addressesGap === 0 && !row.candidate.derivedFrom
+  return topicGuard || unrelated ? TOPIC_MISS_WORDS : VERDICT_WORDS[row.verdict] ?? VERDICT_WORDS.NOT_JUDGED
+}
+
+/** The team's two writers are one author: "ResearchAgent builders", labelled the same way wherever a proof names them. Other writers keep their own name. */
+export const TEAM_WRITER_NAME = 'ResearchAgent builders (team-authored)'
+export const proofWriter = (publisher: string) => /^ResearchAgent builders\b/.test(publisher) ? TEAM_WRITER_NAME : clip(publisher.split(' · ')[0], 120)
 
 export const ProofItemSchema = z.object({ title: z.string().max(200), writer: z.string().max(120), priceMinor: z.number().int().nonnegative(), verdict: z.string().max(80) })
 export const ProofSnapshotSchema = z.object({
@@ -99,11 +114,11 @@ export function describeRefusal(run: Pick<RunSnapshot, 'candidates' | 'decisions
   const verdicts = new Map<string, string>()
   for (const round of run.decisions) for (const row of round.rows) {
     const key = `${row.candidate.profileId}/${row.candidate.resourceId}@${row.candidate.version}`
-    if (!verdicts.has(key) || row.verdict !== 'BUY') verdicts.set(key, row.verdict)
+    if (!verdicts.has(key) || row.verdict !== 'BUY') verdicts.set(key, verdictWords(row))
   }
   const items = paid.map(candidate => ({
-    title: clip(candidate.title, 200), writer: clip(candidate.publisher.split(' · ')[0], 120), priceMinor: candidate.price.amountMinor,
-    verdict: VERDICT_WORDS[verdicts.get(`${candidate.profileId}/${candidate.resourceId}@${candidate.version}`) ?? 'NOT_JUDGED'] ?? VERDICT_WORDS.NOT_JUDGED,
+    title: clip(candidate.title, 200), writer: proofWriter(candidate.publisher), priceMinor: candidate.price.amountMinor,
+    verdict: verdicts.get(`${candidate.profileId}/${candidate.resourceId}@${candidate.version}`) ?? VERDICT_WORDS.NOT_JUDGED,
   }))
   const writers = new Set(paid.map(candidate => candidate.publisherSlug ?? candidate.publisher)).size
   return {

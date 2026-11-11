@@ -1,0 +1,49 @@
+/* Hosted home: the Judges' corner (check our work with no question) and the builders' row (use it from your own agent).
+   Light theme, tokens from tokens.css, 20 px geometric icons on the same 1.5 px stroke grid as the step tiles. No motion. */
+
+.ra-hjc { width: min(820px, 100%); margin: 22px 0 24px; }
+.ra-hjc-label { margin: 0 0 8px; font-size: 12px; line-height: 17px; font-weight: 600; color: var(--muted); }
+.ra-hjc-list { display: grid; grid-template-columns: minmax(0, 1.5fr) repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
+.ra-hjc-list.is-two { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }
+.ra-hjc-list > li { display: flex; align-items: flex-start; gap: 10px; min-width: 0; padding: 12px 14px; border: 1px solid var(--rule); border-radius: var(--radius-md); background: var(--surface); }
+.ra-hjc-list > li > svg { flex: none; width: 20px; height: 20px; margin-top: 1px; fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.ra-hjc-list > li > div, .ra-hjc-list > li > .ra-hv { flex: 1; min-width: 0; }
+.ra-hjc h2 { margin: 0 0 2px; font-size: 13px; line-height: 18px; font-weight: 600; }
+.ra-hjc-list p { margin: 0 0 6px; font-size: 12px; line-height: 17px; color: var(--muted); }
+.ra-hjc-list a { font-size: 12px; line-height: 17px; }
+
+/* The recorded-run check sits in a card of its own: take the plain-section look away from the run page's panel. */
+.ra-hjc .ra-hv { padding: 0; border: 0; border-radius: 0; background: none; }
+.ra-hjc .ra-hv > p { margin: 0 0 8px; font-size: 12px; line-height: 17px; }
+.ra-hjc .ra-hv .ra-btn { height: 30px; padding: 0 12px; font-size: 12px; }
+.ra-hjc .ra-hv-caption { margin: 8px 0 0; font-size: 12px; line-height: 17px; color: var(--muted); }
+.ra-hjc .ra-hv-head { font-size: 14px; }
+/* Once there is a result its checklist needs the whole row. */
+.ra-hjc-list > li.ra-hjc-verify:has(.ra-hv-head) { grid-column: 1 / -1; order: -1; }
+.ra-hjc-list > li.ra-hjc-verify:has(.ra-hv-busy), .ra-hjc-list > li.ra-hjc-verify:has([role='alert']) { grid-column: 1 / -1; order: -1; }
+
+/* Builders: collapsed by default, under the examples. */
+.ra-hbuild { width: min(820px, 100%); margin: 28px 0 0; border: 1px solid var(--rule); border-radius: var(--radius-md); background: var(--surface); }
+.ra-hbuild > summary { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 10px 14px; cursor: pointer; list-style: none; }
+.ra-hbuild > summary::-webkit-details-marker { display: none; }
+.ra-hbuild > summary::after { content: ''; flex: none; width: 7px; height: 7px; margin: 0 4px 3px auto; border: solid var(--muted); border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); }
+.ra-hbuild[open] > summary::after { margin-bottom: -2px; transform: rotate(-135deg); }
+.ra-hbuild > summary svg { flex: none; width: 20px; height: 20px; fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.ra-hbuild > summary b { display: block; font-size: 13px; line-height: 18px; font-weight: 600; }
+.ra-hbuild > summary small { display: block; font-size: 12px; line-height: 17px; color: var(--muted); }
+.ra-hbuild > summary:focus-visible { outline: var(--focus); outline-offset: -2px; border-radius: var(--radius-md); }
+.ra-hbuild > ul { display: grid; gap: 14px; margin: 0; padding: 4px 14px 14px; list-style: none; border-top: 1px solid var(--rule); }
+.ra-hbuild > ul > li { padding-top: 10px; }
+.ra-hbuild > ul b { display: block; font-size: 13px; line-height: 18px; font-weight: 600; }
+.ra-hbuild > ul small { display: block; margin-bottom: 6px; font-size: 12px; line-height: 17px; color: var(--muted); }
+.ra-hcopy { display: flex; align-items: flex-start; gap: 8px; }
+.ra-hcopy code { flex: 1; min-width: 0; padding: 8px 10px; border: 1px solid var(--rule); border-radius: var(--radius-sm); background: var(--paper); font: 12px/17px var(--f-mono); overflow-wrap: anywhere; user-select: all; }
+.ra-hcopy .ra-btn { flex: none; height: 34px; min-width: 64px; padding: 0 12px; font-size: 12px; }
+.ra-hbuild-foot { margin: 0; padding: 0 14px 14px; font-size: 12px; line-height: 17px; color: var(--muted); }
+.ra-hbuild + .ra-hfoot { margin-top: 24px; }
+
+@media (max-width: 780px) {
+  .ra-hjc-list, .ra-hjc-list.is-two { grid-template-columns: minmax(0, 1fr); }
+  .ra-hcopy { flex-direction: column; }
+  .ra-hcopy .ra-btn { align-self: flex-start; }
+}

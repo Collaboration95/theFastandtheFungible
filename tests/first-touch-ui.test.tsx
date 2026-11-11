@@ -23,8 +23,8 @@ it('lists promises with digit years, no duplicates, capped at five', () => {
   const run = { ...exampleRun, intents: [intent], candidates: [{ ...exampleCandidate, manifest: { claims } }] } as unknown as typeof exampleRun
   const html = renderToStaticMarkup(<Verification run={run} intent={intent} />)
   expect(html).not.toContain('twenty twenty')
-  expect(html).toContain('Kestrel prepayment 2027')
-  expect(html.match(/Kestrel prepayment 2027/g)).toHaveLength(1)
+  expect(html).toContain('Mentions Kestrel and prepayment in 2027')
+  expect(html.match(/Mentions Kestrel and prepayment in 2027/g)).toHaveLength(1)
   expect(html.match(/<li/g)).toHaveLength(6)
   expect(html).toContain('and 1 more')
 })

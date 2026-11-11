@@ -2,6 +2,7 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import type { RunSnapshot } from '../../shared/contracts/index.js'
 import { ApiError, createRefusalProof, getRefusalProof, type RefusalProof, type RefusalStatus } from '../api'
 import { useHosted } from '../hosted'
+import { HOSTED_PROOF_PROMISE } from '../../shared/refusal-proof.js'
 import './share-proof.css'
 
 /** Reasons worth saying out loud in the decline view. Everything else (a purchase, a free answer) is not this feature's business. */
@@ -85,7 +86,7 @@ export default function ShareProof({ run }: { run: RunSnapshot }) {
           <li>the paid articles found and why none was bought</li>
           <li>S$0.00 spent, with the XRPL Testnet record and the receipts to check it</li>
         </ul>
-        <p className="ra-note">No article text and no account details are included. The page can’t be edited, and it stays up through 21 November 2026. Clearing your history won’t take it down.</p>
+        <p className="ra-note">No article text and no account details are included. The page can’t be edited, and it stays up {HOSTED_PROOF_PROMISE}. Clearing your history won’t take it down.</p>
       </> : <>
         <p>This creates a proof page on this computer, and a card you can download and send. Nothing is uploaded.</p>
         <p className="ra-note">The card shows your question: <q>{run.question}</q>, the paid articles found, S$0.00 spent, and the XRPL Testnet record. It carries no article text.</p>

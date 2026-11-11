@@ -1,5 +1,7 @@
-import type { ReactNode } from 'react'
-import { allowanceText, hostedLinks, HOSTED_DAILY_QUESTIONS, HOSTED_ENDS, questionCap, minorText, waitCopy, type HomeState, type Hosted } from '../../hosted'
+import { useState, type ReactNode } from 'react'
+import { allowanceText, builderLines, canAsk, explorerTx, hostedLinks, HOSTED_DAILY_QUESTIONS, HOSTED_ENDS, JUDGE_RUN, questionCap, minorText, proofLink, waitCopy, type HomeState, type Hosted } from '../../hosted'
+import VerifyInBrowser from './VerifyInBrowser'
+import './judges-corner.css'
 
 const Out = ({ href, children }: { href: string; children: ReactNode }) => <a href={href} target="_blank" rel="noopener noreferrer">{children}<span className="ra-sr"> (opens in a new tab)</span></a>
 
@@ -8,6 +10,9 @@ const icons = {
   ask: <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2.75" y="3.75" width="14.5" height="10" rx="2.5" /><path d="M6.5 13.75v3l3.5-3" /><path d="M6.5 8.75h7" /></svg>,
   pay: <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.25" /><path d="M7 10h6M10.5 7.5 13 10l-2.5 2.5" /></svg>,
   verify: <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2.75 16.25 5v4.5c0 3.6-2.6 6.4-6.25 7.75C6.35 15.9 3.75 13.1 3.75 9.5V5L10 2.75z" /><path d="m7.25 9.75 2 2 3.5-3.75" /></svg>,
+  key: <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="6.75" cy="10" r="3.5" /><path d="M10.25 10h6.5M14.25 10v2.75M16.75 10v1.75" /></svg>,
+  refuse: <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="7.25" /><path d="m5 15 10-10" /></svg>,
+  agent: <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2.75" y="3.75" width="14.5" height="12.5" rx="2.5" /><path d="m6.5 8.5 2.5 2-2.5 2M11 12.5h3" /></svg>,
 }
 
 /** The first screen: what this is, in about ten seconds, then the visitor's own question. */
@@ -18,11 +23,55 @@ export function HostedIntro({ hosted, state }: { hosted: Hosted; state: HomeStat
     <p className="ra-home-description ra-hlede">Ask a question and set a budget. The agent answers from free sources first, then pays writers for missing evidence over x402 {testnet ? 'on XRPL Testnet' : 'with simulated payments'}, never beyond your budget. Every payment comes with a receipt you can verify.</p>
     <ol className="ra-hsteps" aria-label="How it works">
       <li>{icons.ask}<span><b>Ask with a budget</b><small>Up to {minorText(questionCap(hosted.status))} in test funds</small></span></li>
-      <li>{icons.pay}<span><b>It buys only what helps</b><small>One article at a time, only to fill a gap</small></span></li>
+      <li>{icons.pay}<span><b>It buys only to fill a gap</b><small>One article at a time, only to fill a gap</small></span></li>
       <li>{icons.verify}<span><b>Verify every receipt</b><small>{testnet ? 'On XRPL Testnet, in your browser' : 'Signatures and hashes, in your browser'}</small></span></li>
     </ol>
     <HostedState hosted={hosted} state={state} />
+    {!canAsk(state) && <HostedJudgesCorner hosted={hosted} />}
   </>
+}
+
+/** Three ways to check our work that cost no question and need no admission, so they work whether the sandbox is ready, busy,
+ * paused or closed: a recorded run re-checked in this browser, the key on the public ledger, and (when one is published) a refusal. */
+export function HostedJudgesCorner({ hosted }: { hosted: Hosted }) {
+  const proof = proofLink(hosted)
+  return <section className="ra-hjc" aria-label="Check our work without asking a question">
+    <p className="ra-hjc-label" aria-hidden="true">Check our work without asking a question</p>
+    <ul className={proof ? 'ra-hjc-list' : 'ra-hjc-list is-two'}>
+      <li className="ra-hjc-verify">{icons.verify}<VerifyInBrowser bundleUrl={JUDGE_RUN.bundleUrl} caption={JUDGE_RUN.caption} title="Verify a real run from this sandbox in your browser" /></li>
+      <li>{icons.key}<div><h2>See the key on the ledger</h2><p>The Fulfillment field is the article key.</p><Out href={explorerTx(JUDGE_RUN.keyTx)}>Open the EscrowFinish</Out></div></li>
+      {proof && <li>{icons.refuse}<div><h2>See it refuse to spend</h2><p>A question it declined to pay for, S$0.00 spent, anchored on the ledger.</p><Out href={proof}>Open the proof of refusal</Out></div></li>}
+    </ul>
+  </section>
+}
+
+/** A collapsed row under the examples for the developer who wants this in their own agent: three lines to copy, pinned to a published release. */
+export function BuildersCorner({ hosted }: { hosted: Hosted }) {
+  const lines = builderLines()
+  const proof = proofLink(hosted)
+  const rows = [
+    { title: 'Add it to Claude Code', note: 'The spending caps are set in this command, not by the model.', text: lines.claude },
+    { title: 'Run the whole money path once', note: 'No clone and no account. About 75 seconds, and it ends in RESULT PASS.', text: lines.try },
+    { title: 'Verify a receipts.json', note: 'Export one from any answer here, then check it against the public ledger.', text: lines.verify },
+  ]
+  return <details className="ra-hbuild">
+    <summary>{icons.agent}<span><b>Use it from your own agent</b><small>Claude Code, a terminal or your own code · {lines.tag}</small></span></summary>
+    <ul>{rows.map(row => <li key={row.title}><b>{row.title}</b><small>{row.note}</small><CopyLine label={row.title} text={row.text} /></li>)}</ul>
+    <p className="ra-hbuild-foot">XRPL Testnet only, no real value. Needs Node 22.13 or later.{proof && <> · <Out href={proof}>See a real proof of refusal (no question used)</Out></>}</p>
+  </details>
+}
+
+function CopyLine({ label, text }: { label: string; text: string }) {
+  const [copied, setCopied] = useState(false)
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000) }
+    catch { /* The line above stays selectable. */ }
+  }
+  return <div className="ra-hcopy">
+    <code>{text}</code>
+    <button type="button" className="ra-btn" aria-label={`Copy: ${label}`} onClick={() => void copy()}>{copied ? 'Copied' : 'Copy'}</button>
+    <span className="ra-sr" role="status">{copied ? 'Copied to the clipboard' : ''}</span>
+  </div>
 }
 
 /** One clear state when the shared demo can't take a new question. Ready and busy need no card. */
@@ -63,14 +112,17 @@ export function HostedWaiting({ hosted, onCancel }: { hosted: Hosted; onCancel: 
 
 export function HostedFooter({ hosted }: { hosted: Hosted }) {
   const links = hostedLinks(hosted)
-  return <footer className="ra-hfoot" aria-label="About this project">
-    <nav aria-label="Project links"><ul>
-      <li><Out href={links.repo}>Source code</Out></li>
-      <li><Out href={links.deck}>Pitch deck</Out></li>
-      {links.video && <li><Out href={links.video}>Demo video</Out></li>}
-      <li><Out href={links.progress}>Progress since SingHacks</Out></li>
-      <li><Out href={links.keyReveal}>Recorded walkthrough: key reveal and refund</Out></li>
-      <li><Out href={links.verify}>How to verify a receipt</Out></li>
-    </ul></nav>
-  </footer>
+  return <>
+    <BuildersCorner hosted={hosted} />
+    <footer className="ra-hfoot" aria-label="About this project">
+      <nav aria-label="Project links"><ul>
+        <li><Out href={links.repo}>Source code</Out></li>
+        <li><Out href={links.deck}>Pitch deck</Out></li>
+        {links.video && <li><Out href={links.video}>Demo video</Out></li>}
+        <li><Out href={links.progress}>Progress since SingHacks</Out></li>
+        <li><Out href={links.keyReveal}>Recorded walkthrough: key reveal and refund</Out></li>
+        <li><Out href={links.verify}>How to verify a receipt</Out></li>
+      </ul></nav>
+    </footer>
+  </>
 }

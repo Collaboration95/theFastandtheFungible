@@ -1,7 +1,7 @@
 // The public proof-of-refusal page and its downloadable card. Server-rendered and dependency-free so a link preview,
 // a screen reader and a phone all get the whole proof without running our app. The one script (page mode) loads the
 // same lazy verifier chunk the app uses and re-checks the receipts in the visitor's browser; nothing else is dynamic.
-import { clip, explorerTx, sgd, type ProofSnapshot } from '../shared/refusal-proof.js'
+import { clip, explorerTx, proofWriter, sgd, type ProofSnapshot } from '../shared/refusal-proof.js'
 
 const esc = (text: string) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -123,7 +123,7 @@ export function renderProofPage(snapshot: ProofSnapshot, { mode, origin = '', no
   const title = 'Refused to spend · verified on XRPL'
   const asked = new Date(snapshot.askedAt).toISOString()
   const bundleJson = JSON.stringify(snapshot.bundle)
-  const row = (item: ProofSnapshot['found']['items'][number]) => `<li><div><b>${esc(item.title)}</b><small>${esc(item.writer)} · ${sgd(item.priceMinor)}</small></div><span class="why">${esc(item.verdict)}</span></li>`
+  const row = (item: ProofSnapshot['found']['items'][number]) => `<li><div><b>${esc(item.title)}</b><small>${esc(proofWriter(item.writer))} · ${sgd(item.priceMinor)}</small></div><span class="why">${esc(item.verdict)}</span></li>`
   const shown = 6, items = found.items.slice(0, shown).map(row).join(''), rest = found.items.slice(shown).map(row).join('')
   const meta = mode === 'page' ? `
 <meta name="robots" content="noindex">

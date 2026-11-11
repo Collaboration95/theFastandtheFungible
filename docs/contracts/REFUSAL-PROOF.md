@@ -42,7 +42,7 @@ The run's own audit rows carry the session's pseudonymous principal (a SHA-256 o
 
 Table `refusal_proofs` in the app database, so hosted retention and backups cover it. `UPDATE` is blocked by a trigger,
 `DELETE` is blocked until the row's retention date, and every read recomputes the stored digest, so a row altered behind
-the triggers is not served. Hosted retention: through 21 Nov 2026 00:00 UTC, or two days after creation if later; local: ten years.
+the triggers is not served. Hosted retention: promised only "through 19 November 2026" (the demo's providers end 20 Nov 00:00 SGT and its VM stops 20 Nov 00:30 SGT); kept until 19 Nov 16:00 UTC, or two days after creation if later; local: ten years.
 Hosted caps: 5 proofs per session per day, 400 in all, 256 KiB each. A retention sweep (hosted, every minute) deletes only expired rows.
 Clearing history, pruning run bodies or deleting the run does not remove a shared proof; it is a snapshot.
 

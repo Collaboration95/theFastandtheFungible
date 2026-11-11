@@ -93,7 +93,7 @@ it('hosted: says the page is public, who can open it, how long it stays and that
   expect(text).toContain('anyone with the link')
   expect(text).toContain(decline.question)
   expect(text).toContain('can’t be edited')
-  expect(text).toContain('21 November 2026')
+  expect(text).toContain('through 19 November 2026')
   expect(text).toContain('Clearing your history won’t take it down')
   expect(create).not.toHaveBeenCalled()
 })
