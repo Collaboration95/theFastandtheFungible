@@ -1,5 +1,6 @@
 import { XRPL_LABEL, type PurchaseIntent, type Receipt, type PublicCandidate, type RunSnapshot } from './contracts/index.js'
 import { RLUSD_TESTNET_ISSUER, type Asset } from './contracts/asset.js'
+import { buyingLabels } from './execution-labels.js'
 
 export const settlementAssetLabel = (asset?: Asset) => !asset || asset === 'XRP' ? 'XRPL Testnet' : asset.issuer === RLUSD_TESTNET_ISSUER ? 'RLUSD (Testnet)' : asset.label
 
@@ -12,6 +13,8 @@ export const ENV = {
   simulatedReceipt: 'Simulated payment · no ledger entry',
   hosted: 'Shared XRPL Testnet demo · live answers, rule-based buying · no real value',
   hostedSimulated: 'Shared demo · simulated payments · fixture models · no real value',
+  // A status chip describes configuration; answer provenance belongs to the recorded run.
+  hostedConfigured: (testnet: boolean, buying: keyof typeof buyingLabels) => `Shared ${testnet ? 'XRPL Testnet demo' : 'demo · simulated payments'} · ${buyingLabels[buying]} · no real value`,
   writers: 'fictional writers and labelled team-authored notes',
   hostedWriters: 'team-authored writers',
   localSimulated: (models: string) => `Simulated demo · ${models} · no real value`,

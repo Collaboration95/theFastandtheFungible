@@ -21,6 +21,9 @@ it('formats ledger amounts, fingerprints and Singapore dates independently of th
 })
 
 it('keeps live, fixture and mixed provider modes truthful on either payment rail', () => {
+  expect(ENV.hostedConfigured(true, 'fixture')).toBe('Shared XRPL Testnet demo · rule-based buying · no real value')
+  expect(ENV.hostedConfigured(true, 'live')).toBe('Shared XRPL Testnet demo · model-judged buying · no real value')
+  expect(ENV.hostedConfigured(false, 'fixture')).toBe('Shared demo · simulated payments · rule-based buying · no real value')
   for (const [research, decision, label] of [
     ['fixture · extracts', 'fixture · rules', 'fixture models'],
     ['deepseek', 'fixture · rules', 'live answers, rule-based buying'],

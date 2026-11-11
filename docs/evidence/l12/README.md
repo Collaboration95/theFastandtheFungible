@@ -87,8 +87,10 @@ The UI subset attempt passed transfer at 290.1 KiB and score 94 but missed LCP a
 
 - JC: `src/hosted.ts`: re-export `money` as `minorText`; derive environment
   strings from `ENV`, retaining actual rail/provider and paused/offline/ended
-  state and ending every full/short label with “no real value”. Keep live
-  answers paired with rule-based buying when the decision provider is fixture.
+  state and ending every full/short label with “no real value”. Use
+  `ENV.hostedConfigured(testnet, buying)` for ready status, preserving #495:
+  configured buying alone does not establish an answer’s provenance. The
+  recorded judges’ corner retains its audited live-answer disclosure.
   The new judges’ corner caption changes “Recorded on this sandbox, 11 Nov”
   to “Recorded on this demo, 11 Nov 2026”, retaining its truthful disclosures.
   The `UC-key-reveal` footer link should read “Recorded walkthrough: writer

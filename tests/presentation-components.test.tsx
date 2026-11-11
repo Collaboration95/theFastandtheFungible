@@ -19,7 +19,7 @@ it('renders canonical labels for local simulated/Testnet, hosted, and receipt su
     expect(html).toContain(full); expect(html).toContain(short)
   }
   const status = { state: 'ready', remaining: { questions: 5, minor: 1000 }, labels: { rail: 'XRPL Testnet', models: 'live research · fixture purchase decisions' } } as Hosted['status']
-  expect(renderToStaticMarkup(<HostedEnv hosted={{ status }} />)).toContain(ENV.hosted)
+  expect(renderToStaticMarkup(<HostedEnv hosted={{ status }} />)).toContain(ENV.hostedConfigured(true, 'fixture'))
   const run = recording.run as unknown as RunSnapshot
   const receipt = run.receipts[0]
   const html = renderToStaticMarkup(<ReceiptSheet run={run} receipt={receipt} onClose={() => {}} />)
