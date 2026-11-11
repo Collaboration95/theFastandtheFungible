@@ -1,15 +1,17 @@
-.ra-sandbox { margin-top: 20px; border-top: 1px solid var(--ra-line, #d0d5dd); padding-top: 12px; color: var(--ra-text, #182230); }
+.ra-sandbox { margin-top: 20px; border-top: 1px solid var(--rule); padding-top: 12px; color: var(--ink); }
 .ra-sandbox > summary { cursor: pointer; font-size: 13px; min-height: 44px; align-content: center; text-decoration: underline; text-underline-offset: 3px; }
 .ra-sandbox-panel { padding: 16px 0; max-width: 100%; }
-.ra-sandbox-panel h2 { font-size: 20px; margin: 0 0 12px; }
+.ra-hjc .ra-sandbox-panel h2 { font-size: 20px; margin: 0 0 12px; }
 .ra-sandbox-panel h3 { font-size: 14px; margin: 24px 0 12px; }
 .ra-sandbox-panel p { font-size: 12px; line-height: 1.6; max-width: 72ch; }
-.ra-sandbox-label { color: #14613c; font-weight: 600; }
+.ra-sandbox-label { color: var(--ok); font-weight: 600; }
 .ra-sandbox-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
-.ra-sandbox-metrics > div { padding: 14px; border: 1px solid #d0d5dd; border-radius: 8px; background: #fff; }
+.ra-sandbox-metrics > div { padding: 14px; border: 1px solid var(--rule); border-radius: var(--radius-md); background: var(--surface); }
 .ra-sandbox-metrics dt { font-size: 12px; line-height: 1.5; }
 .ra-sandbox-metrics dd { font-size: 24px; font-variant-numeric: tabular-nums; font-weight: 600; margin: 8px 0 0; }
 .ra-sandbox-audit { font-size: 13px; margin: 0; }
-.ra-sandbox-audit > div { display: flex; gap: 16px; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e4e7ec; }
+.ra-sandbox-audit > div { display: flex; gap: 16px; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--rule); }
 .ra-sandbox-audit dd { margin: 0; font-variant-numeric: tabular-nums; font-weight: 600; }
 @media (max-width: 600px) { .ra-sandbox-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .ra-sandbox-metrics > div { padding: 10px; } .ra-sandbox-metrics dd { font-size: 22px; } }
+
+.ra-sandbox > summary:focus-visible { outline: var(--focus); outline-offset: 2px; border-radius: var(--radius-sm); }
