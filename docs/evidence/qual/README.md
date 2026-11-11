@@ -12,4 +12,24 @@ The A5 recorded modal plan buys the escrow explainer and no-show guide (S$0.80),
 
 Loosened: word-form topic matching includes buy/spend; product fixture scoring uses normalized forms. Display-only long requested facts close at half the fact words (minimum three), ignoring planner framing including between, with quantity and legacy strict safeguards. The stored coverage judgment and conflicts are preserved. Intended corpus/lead snapshots change; no gate, buy threshold, spending cap or leak budget changes.
 
-Dev-bank and clean-head gate results follow below after completion. See ../r10-presets/ for fresh live preset evidence and published-verifier results.
+Clean-head merge admission is published as the PR local-gate status; check:fast and gate run under the shared heavy lock. See ../r10-presets/ for fresh live preset evidence and published-verifier results.
+
+## Used-bank regression
+
+Fixture research/decisions, simulated settlement, same banks and scorer as R9-C; 109 runs per arm. Before main `bd52beff`; final implementation after.
+
+| Bank | N | Buy/cite | Key-fact leads | Negative purchases | Articles/buying run | Three buys | S$ spend | Median ask ms |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| v1 | 20 | 19 → 19 | 0 → 0 | 0 → 0 | 1.00 → 1.00 | 0 → 0 | 7.60 → 7.60 | 74.4 → 72.5 |
+| v3 | 20 | 20 → 20 | 18 → 18 | 0 → 0 | 1.45 → 1.40 | 1 → 1 | 11.60 → 11.20 | 102.2 → 79.7 |
+| v3-dev | 20 | 18 → 18 | 9 → 11 | 0 → 0 | 1.17 → 1.22 | 0 → 0 | 8.40 → 8.80 | 83.3 → 81.0 |
+| v3-negatives | 10 | 0 → 0 | 0 → 0 | 0 → 0 | 0.00 → 0.00 | 0 → 0 | 0.00 → 0.00 | 17.4 → 17.0 |
+| v5 | 20 | 20 → 20 | 18 → 18 | 0 → 0 | 1.25 → 1.15 | 1 → 1 | 10.00 → 9.20 | 77.6 → 69.1 |
+| v5-negatives | 10 | 0 → 0 | 0 → 0 | 0 → 0 | 0.00 → 0.00 | 0 → 0 | 0.00 → 0.00 | 21.0 → 13.8 |
+| uc | 3 | 2 → 2 | 0 → 0 | 0 → 0 | 1.50 → 1.50 | 0 → 0 | 1.60 → 1.60 | 139.9 → 139.9 |
+| uc-frozen | 3 | 2 → 2 | 0 → 0 | 0 → 0 | 1.50 → 1.50 | 0 → 0 | 1.60 → 1.60 | 142.8 → 147.1 |
+| presets | 3 | 3 → 3 | 0 → 0 | 0 → 0 | 1.33 → 1.00 | 0 → 0 | 1.60 → 1.20 | 125.7 → 94.6 |
+
+No lost results or key-fact leads. Zero gate violations and zero verifier failures in both arms. Strict UC policy changes: 0/6 (none). Strict full comparison: 26/109 identical. Metrics retain every changed lead/purchase, timing and raw misses. These are used development banks, never a new held-out result.
+
+Reproduce with `LLM_PROVIDER=fixture DECISION_PROVIDER=fixture SETTLEMENT_RAIL=simulated SEARCH_EMBEDDINGS=off LANGFUSE_ENABLED=0 sh /Users/speedpowermac/Documents/ChatGPT/tftf-wt/notes/review-nov10/heavy-lock.sh npx tsx docs/evidence/qual/dev-measure.ts <output-dir>`. The harness adds per-ask timing to the established K5 runner, without changing its scorer or bank list.
