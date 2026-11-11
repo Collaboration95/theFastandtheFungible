@@ -35,7 +35,7 @@ async function walk(page: Page, tab: string) {
   if (tab !== TABS[0]) await Promise.all([page.waitForEvent('load'), page.getByRole('combobox', { name: 'Recorded scenario' }).selectOption({ label: tab })])
   // Every replay now opens its run immediately, including simulated scenarios.
   const recording = recordingIndex.find(item => item.scenario === SCENARIOS[TABS.indexOf(tab as typeof TABS[number])])!
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(recording.question)
+  await expect(page.locator('#main:not(.demo-loading) > h1')).toHaveText(recording.question)
   expect(new URL(page.url()).searchParams.get('run')).toBe(recording.runId)
   const seen = new Set<string>()
   let ready = false
@@ -94,7 +94,7 @@ test('replay header reuses the app font without a second brand download', async 
   page.on('request', request => { if (request.resourceType() === 'font') fonts.push(request.url()) })
   await page.goto(`${base}/demo/`)
   // Count fonts after the replay renders, including when its app module loads lazily.
-  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  await expect(page.locator('#main:not(.demo-loading) > h1')).toBeVisible()
   await page.evaluate(() => document.fonts.ready)
   expect(await page.locator('.ra-hdr').evaluate(node => getComputedStyle(node).fontFamily)).toContain('Geist Variable')
   expect(fonts.filter(url => /geist-latin-wght-normal/.test(url))).toHaveLength(1)

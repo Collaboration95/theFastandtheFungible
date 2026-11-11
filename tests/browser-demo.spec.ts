@@ -77,7 +77,7 @@ test('static Pages UC3: draft, verified upgrade, refund, receipt, citation and W
     await expect(page.locator('.demo-shell > summary').getByText(/^Replay · simulated payments, recorded .* · fictional writers · no real value$/)).toBeVisible()
     await expect(page.locator('.demo-transactions')).toHaveCount(0)
     await page.goto(`http://127.0.0.1:${port}/theFastandtheFungible/demo/?scenario=UC1`)
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('Bank of Japan')
+    await expect(page.locator('#main:not(.demo-loading) > h1')).toContainText('Bank of Japan')
     await page.keyboard.press('ControlOrMeta+n')
     await page.getByRole('button', { name: /^Bank of Japan decision/ }).click()
     await page.getByRole('button', { name: /^Ask$/ }).click()
@@ -158,7 +158,7 @@ for (const width of [1440, 390]) test(`replay UI accessibility at ${width}`, asy
   await page.locator('.ra-cite').first().click();await capture('citation');await page.keyboard.press('Escape')
   await page.keyboard.press('w');await page.getByRole('tab',{name:'Ledger',exact:true}).click();await capture('ledger');await page.keyboard.press('Escape')
   await page.keyboard.press('ControlOrMeta+,');await expect(page.getByRole('heading',{name:'About this replay'})).toBeVisible();await capture('settings')
-  await page.goto(base+'?scenario=UC1');await expect(page.getByRole('heading',{level:1})).toContainText('Bank of Japan');await page.keyboard.press('ControlOrMeta+n');await capture('home')
+  await page.goto(base+'?scenario=UC1');await expect(page.locator('#main:not(.demo-loading) > h1')).toContainText('Bank of Japan');await page.keyboard.press('ControlOrMeta+n');await capture('home')
   await page.locator('.ra-presets button').first().click();await page.getByRole('button',{name:/^Ask/}).click();await page.getByRole('button',{name:'Start now'}).waitFor();await capture('plan')
   await page.getByRole('button',{name:'Start now'}).click();await expect(page).toHaveTitle(/Answer ready/,{timeout:45_000});await capture('decline')
   expect(errors).toEqual([]);writeFileSync(evidencePath(`ui-nov11/after/replay/audit-${width}.json`),JSON.stringify({mode:'replay',width,audit,errors},null,2))
@@ -219,9 +219,9 @@ test('replay shows the selected public question while its recording loads', asyn
   const server = spawn('python3', ['-u', '-m', 'http.server', '0', '--bind', '127.0.0.1', '--directory', root], { stdio: ['ignore', 'pipe', 'ignore'] })
   try {
     const [chunk] = await once(server.stdout!, 'data'), port = String(chunk).match(/port (\d+)/)?.[1]
-    const cases: { width: number; nav?: string; navWidth?: number; denied?: boolean }[] = [
+    const cases: { width: number; nav?: string; navWidth?: number; denied?: boolean; fontDenied?: boolean }[] = [
       { width: 1280 }, { width: 390 }, { width: 1280, nav: 'rail' },
-      { width: 1280, navWidth: 300 }, { width: 1280, navWidth: 9999 }, { width: 1280, denied: true },
+      { width: 1280, navWidth: 300 }, { width: 1280, navWidth: 9999 }, { width: 1280, denied: true }, { width: 390, fontDenied: true },
     ]
     for (const options of cases) {
       const page = await browser.newPage({ viewport: { width: options.width, height: 900 } })
@@ -233,6 +233,7 @@ test('replay shows the selected public question while its recording loads', asyn
         }
       }, options)
       let release!: () => void
+      if (options.fontDenied) await page.route(/geist-latin-wght-normal-replay[^/]*\.woff2$/, route => route.abort())
       const recording = new Promise<void>(resolve => { release = resolve })
       await page.route(/\/assets\/UC3-key-reveal-[^/]+\.js$/, async route => { await recording; await route.continue() })
       await page.routeWebSocket(/wss:\/\/.*/, ws => ws.close())

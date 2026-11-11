@@ -76,7 +76,7 @@ window.fetch = async (input, init) => {
 // The shared app loads afterward so it does not compete with the public question.
 await activeReady
 // Finish the question's font before handoff so its glyph area stays stable.
-await document.fonts.load('600 24px "Replay Geist Variable"', selected.question)
+await document.fonts.load('600 24px "Replay Geist Variable"', selected.question).catch(() => undefined)
 // Let the public question reach a paint before replacing the loading shell.
 // Even a cached recording must not erase the loading feedback in the same frame.
 await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
