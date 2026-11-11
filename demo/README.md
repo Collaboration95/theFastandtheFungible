@@ -55,3 +55,8 @@ The build stores repeated JSON subtrees once before gzip and encodes long upperc
 hex as binary base64, including the selected recording's transaction proof. The decoder restores
 independent copies with exactly the original field values. Unit tests round-trip
 all six recordings and three proof lists before any runtime schema or grant checks are applied.
+
+The build emits one stylesheet and inlines it in the HTML, including the lazy
+verifier's styles. This removes a blocking CSS request and avoids a second
+dynamic CSS download. Fonts and images retain their built asset URLs. The
+question's font is ready before app takeover, keeping its glyph area stable.

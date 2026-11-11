@@ -23,12 +23,12 @@ export default defineConfig({
           if (!asset || asset.type !== 'asset') throw Error(`Replay stylesheet missing: ${file}`)
           return typeof asset.source === 'string' ? asset.source : new TextDecoder().decode(asset.source)
         }
-        // Inline the initial styles to remove a blocking round trip. Disabled
-        // links mark them as present for Vite's dynamic CSS loader; no second fetch.
+        // One CSS asset (cssCodeSplit=false), inlined to remove a blocking trip.
+        // No dynamic CSS dependencies remain to download the styles a second time.
         html = html.replace(/<link\b[^>]*rel="stylesheet"[^>]*>/g, link => {
           const file = link.match(/href="[^"]*\/([^/]+\.css)"/)?.[1]
           if (!file) throw Error('Replay stylesheet URL missing')
-          return `${link.replace(/>$/, ' disabled>')}<style>${cssText(`assets/${file}`)}</style>`
+          return `<style data-replay-styles>${cssText(`assets/${file}`)}</style>`
         })
         const recordings = recordingIndex.map(({ scenario, runId, question, testnet }) => {
           const chunk = Object.values(bundle).find(item => item.type === 'chunk' && item.moduleIds.some(id => id.endsWith(`/demo/traces/${scenario}.json`)))
@@ -42,10 +42,6 @@ export default defineConfig({
           // Resolve the same scenario/run precedence as the entry, before its schema dependency arrives.
           { tag: 'script', children: `(${replayLoadingShell.toString()})(${JSON.stringify(recordings).replaceAll('<', '\\u003c')})` },
           { tag: 'link', attrs: { rel: 'modulepreload', crossorigin: true, href: `/theFastandtheFungible/demo/${app.fileName}` } },
-          ...[...app.viteMetadata?.importedCss ?? []].flatMap(file => [
-            { tag: 'style', children: cssText(file) },
-            { tag: 'link', attrs: { rel: 'stylesheet', disabled: true, href: `/theFastandtheFungible/demo/${file}` } },
-          ]),
         ] }
       },
     },
@@ -58,5 +54,5 @@ export default defineConfig({
   }],
   publicDir: false,
   resolve: { alias: [{ find: /^node:crypto$/, replacement: shim('node-crypto.ts') }, { find: /^ws$/, replacement: shim('ws.ts') }] },
-  build: { outDir: '../site/demo', emptyOutDir: true },
+  build: { outDir: '../site/demo', emptyOutDir: true, cssCodeSplit: false },
 })
