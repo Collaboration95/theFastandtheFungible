@@ -25,3 +25,12 @@ environment pill in browser-demo mode. Reduced-motion pacing is unchanged.
 
 L12 owns `site/demo/` rebuilds until its PR merges; FIN should rebuild after
 that merge when publishing. Build output is ignored and ships via site publishing.
+
+The entry indexes the six recordings by scenario, run ID and question. It downloads
+and validates only the selected recording; other recordings load when selected or
+opened from the app. There is no idle prefetch. Live hash checks use only that
+recording's transaction list. The header reuses the app's preloaded Geist font
+with `font-display: swap`, avoiding a second font request.
+The build stores repeated JSON subtrees once before gzip; the decoder restores
+independent copies with exactly the original field values. Unit tests round-trip
+all six recordings before any runtime schema or grant checks are applied.

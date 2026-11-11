@@ -47,7 +47,7 @@ test('static Pages UC3: draft, verified upgrade, refund, receipt, citation and W
     await spend.locator('.ra-spending-proof > summary').click()
     // Each key-reveal proof lists its own create and finish transactions; the refund links separately.
     await expect(page.getByRole('link', { name: 'tx', exact: true })).toHaveCount(4)
-    await expect(page.getByRole('link', { name: /^Refund tx [A-F0-9]{6}…[A-F0-9]{5}$/ })).toHaveCount(1)
+    await expect(page.getByRole('link', { name: /^Refund tx [A-F0-9]{8}…[A-F0-9]{8}$/ })).toHaveCount(1)
     await expect(page.locator('p:visible', { hasText: 'Refund signed by the writer. This demo writer agrees to refund; a real writer could refuse.' })).toHaveCount(1)
     await page.screenshot({ path: info.outputPath('uc3.png'), fullPage: true })
     await page.getByRole('button', { name: /Receipt/ }).first().click()
@@ -75,6 +75,7 @@ test('static Pages UC3: draft, verified upgrade, refund, receipt, citation and W
     await expect(page.getByRole('region', { name: /Payment: NotFinancialTimes/ })).toContainText('Verified')
     await expect(page.locator('.demo-shell > summary').getByText(/^Replay · simulated payments, recorded .* · fictional writers · no real value$/)).toBeVisible()
     await page.goto(`http://127.0.0.1:${port}/theFastandtheFungible/demo/?scenario=UC1`)
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Bank of Japan')
     await page.keyboard.press('ControlOrMeta+n')
     await page.getByRole('button', { name: /^Bank of Japan decision/ }).click()
     await page.getByRole('button', { name: /^Ask$/ }).click()
@@ -146,13 +147,16 @@ for (const width of [1440, 390]) test(`replay UI accessibility at ${width}`, asy
   const capture=async(state:string)=>{const result=await new AxeBuilder({page}).analyze();audit.push({state,violations:result.violations});await page.screenshot({path:evidencePath(`ui-nov11/after/replay/${state}-${width}.png`),fullPage:true});expect.soft(result.violations,state).toEqual([]);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),state).toBe(true)}
   const base=`http://127.0.0.1:${port}/theFastandtheFungible/demo/`
   await page.goto(base);await expect(page).toHaveTitle(/Answer ready/,{timeout:45_000});await capture('answer')
+  if(width===390)await page.locator('.demo-shell > summary').click()
+  await expect(page.getByRole('link',{name:'Ask your own question'})).toBeVisible()
   await expect(page.getByRole('link',{name:'Ask your own question'})).toHaveAttribute('href','https://ra-front-651013803640.asia-southeast1.run.app')
+  if(width===390)await page.locator('.demo-shell > summary').click()
   if(width===390){await page.locator('.ra-mobile-spend > button').click();await capture('mobile-spend')}
   await page.getByRole('button',{name:/Receipt/}).first().click();await capture('receipt');await page.keyboard.press('Escape')
   await page.locator('.ra-cite').first().click();await capture('citation');await page.keyboard.press('Escape')
   await page.keyboard.press('w');await page.getByRole('tab',{name:'Ledger',exact:true}).click();await capture('ledger');await page.keyboard.press('Escape')
   await page.keyboard.press('ControlOrMeta+,');await expect(page.getByRole('heading',{name:'About this replay'})).toBeVisible();await capture('settings')
-  await page.goto(base+'?scenario=UC1');await page.keyboard.press('ControlOrMeta+n');await capture('home')
+  await page.goto(base+'?scenario=UC1');await expect(page.getByRole('heading',{level:1})).toContainText('Bank of Japan');await page.keyboard.press('ControlOrMeta+n');await capture('home')
   await page.locator('.ra-presets button').first().click();await page.getByRole('button',{name:/^Ask/}).click();await page.getByRole('button',{name:'Start now'}).waitFor();await capture('plan')
   await page.getByRole('button',{name:'Start now'}).click();await expect(page).toHaveTitle(/Answer ready/,{timeout:45_000});await capture('decline')
   expect(errors).toEqual([]);writeFileSync(evidencePath(`ui-nov11/after/replay/audit-${width}.json`),JSON.stringify({mode:'replay',width,audit,errors},null,2))
@@ -171,7 +175,7 @@ test('scenario links open their run within ten seconds and keep compact, honest 
     await page.routeWebSocket(/wss:\/\/.*/, ws => ws.close())
     for (const width of [1280, 390]) {
       await page.setViewportSize({ width, height: 900 })
-      for (const scenario of ['', 'UC3-key-reveal', 'UC-key-reveal', 'UC3-testnet']) {
+      for (const scenario of ['', 'UC3-key-reveal', 'UC-key-reveal', 'UC3-testnet', 'UC1', 'UC2', 'UC3']) {
         await page.goto(`http://127.0.0.1:${port}/theFastandtheFungible/demo/${scenario ? `?scenario=${scenario}` : ''}`)
         const recording = JSON.parse(await (await import('node:fs/promises')).readFile(`demo/traces/${scenario || 'UC3-key-reveal'}.json`, 'utf8'))
         await expect(page.getByRole('heading', { level: 1 })).toHaveText(recording.run.question, { timeout: 10_000 })
@@ -189,4 +193,21 @@ test('scenario links open their run within ten seconds and keep compact, honest 
       }
     }
   } finally { server.kill('SIGTERM'); await once(server, 'exit') }
+})
+
+test('replay downloads only the requested recording, then loads another scenario on demand', async ({page}, info) => {
+ const root=info.outputPath('pages'); await mkdir(`${root}/theFastandtheFungible`,{recursive:true}); await cp('site',`${root}/theFastandtheFungible`,{recursive:true})
+ const server=spawn('python3',['-u','-m','http.server','0','--bind','127.0.0.1','--directory',root],{stdio:['ignore','pipe','ignore']})
+ try {
+  const [chunk]=await once(server.stdout!,'data'),port=String(chunk).match(/port (\d+)/)?.[1]
+  await page.routeWebSocket(/wss:\/\/.*/,ws=>ws.close())
+  const requests:string[]=[];page.on('request',r=>requests.push(new URL(r.url()).pathname))
+  const base=`http://127.0.0.1:${port}/theFastandtheFungible/demo/`
+  await page.goto(base);await expect(page.getByRole('heading',{level:1})).toContainText('Kestrel',{timeout:10_000})
+  expect(requests.filter(p=>/\/(?:UC1|UC2|UC3|UC3-testnet|UC-key-reveal)-[A-Za-z0-9_-]{8}\.js$/.test(p))).toEqual([])
+  expect(requests.filter(p=>/\/UC3-key-reveal-[\w-]+\.js$/.test(p))).toHaveLength(1)
+  await page.getByRole('combobox',{name:'Recorded scenario'}).selectOption('UC2')
+  await expect(page.getByRole('heading',{level:1})).toContainText("What's the analyst outlook",{timeout:10_000})
+  expect(requests.filter(p=>/\/UC2-[\w-]+\.js$/.test(p))).toHaveLength(1)
+ }finally{server.kill('SIGTERM');await once(server,'exit')}
 })

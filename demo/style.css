@@ -1,4 +1,6 @@
 /* Replay-only chrome: the site mark and workspace controls share the first row. */
+/* Reuse the app's preloaded, swap-enabled font; keep FIN's generated header intact. */
+html body, body .ra-hdr, body .ra-hdr-note, body .ra-hdr-note kbd { font-family: 'Geist Variable', system-ui, sans-serif; }
 body .ra-hdr nav { display: none; }
 body .ra-hdr-end { margin-left: auto; }
 #root .ra-top { z-index: 51; position: absolute; top: 0; right: 200px; height: 52px; min-height: 52px; padding: 0; border: 0; background: transparent; }
@@ -14,7 +16,7 @@ body .ra-hdr-end { margin-left: auto; }
 .demo-banner a { color: var(--ink); }
 .demo-banner summary { cursor: pointer; }
 .demo-banner select, .demo-banner button { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); padding: 4px 8px; min-height: 32px; max-width: 270px; }
-.demo-banner .demo-ask { display: none; }
+.demo-banner .demo-ask { white-space: nowrap; }
 .demo-install { white-space: nowrap; }
 .demo-install > div, .demo-tx-list { white-space: normal; position: absolute; right: 12px; top: 100%; width: min(600px,calc(100vw - 24px)); padding: 16px; background: var(--paper); border: 1px solid var(--rule); border-radius: var(--radius-md); box-shadow: var(--shadow-pop); }
 .demo-banner pre { margin: 0 0 12px; white-space: pre-wrap; overflow-wrap: anywhere; font: 12px/1.5 var(--f-mono); color: var(--ink); }
