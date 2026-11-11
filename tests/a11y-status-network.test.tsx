@@ -41,6 +41,11 @@ it('a remote 404 never selects simulated UI; an explicit hosted:false answer can
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(Response.json({ hosted: false })))
   expect(await detectHosted(1)).toEqual({ failed: false })
 })
+it('keeps older local servers compatible even when their 404 body is HTML', async () => {
+  vi.stubGlobal('location', { hostname: 'localhost', protocol: 'http:' })
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('<h1>Not found</h1>', { status: 404 })))
+  expect(await detectHosted(1)).toEqual({ failed: false })
+})
 it('uses a valid paused 503 status without falling back', async () => {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue(Response.json({ ...status, state: 'paused' }, { status: 503 })))
   expect((await detectHosted()).status?.state).toBe('paused')

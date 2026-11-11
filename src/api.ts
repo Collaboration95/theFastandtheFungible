@@ -196,9 +196,9 @@ export async function detectHosted(attempts = 3): Promise<{ status?: HostedDemoS
   for (let attempt = 0; attempt < attempts; attempt++) {
     try {
       const response = await fetch('/api/demo/status')
+      if (local && [404, 405].includes(response.status)) return { failed: false }
       const body: unknown = await response.json()
       if (typeof body === 'object' && body !== null && (body as { hosted?: unknown }).hosted === false) return { failed: false }
-      if (local && [404, 405].includes(response.status)) return { failed: false }
       const status = HostedDemoStatusSchema.safeParse(body)
       if (!status.success) throw new ApiError(response.status)
       if (status.data.csrfToken) hostedCsrf = status.data.csrfToken
