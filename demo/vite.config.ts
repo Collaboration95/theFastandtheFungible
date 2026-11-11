@@ -9,6 +9,16 @@ const shim = (file: string) => fileURLToPath(new URL(`../src/verify/shims/${file
 export default defineConfig({
   root: 'demo', base: '/theFastandtheFungible/demo/', plugins: [react(), {
     name: 'compressed-audited-replays', enforce: 'post',
+    transformIndexHtml: {
+      order: 'post',
+      handler(_html, { bundle }) {
+        const app = Object.values(bundle ?? {}).find(item => item.type === 'chunk' && item.facadeModuleId?.endsWith('/src/main.tsx'))
+        if (!app) return []
+        // Download the shared app while the replay entry validates its selected trace.
+        // Preloading does not execute it before the transport shim is installed.
+        return [{ tag: 'link', attrs: { rel: 'modulepreload', crossorigin: true, href: `/theFastandtheFungible/demo/${app.fileName}` } }]
+      },
+    },
     transform(_code, id) {
       if (!/[/\\]demo[/\\]traces[/\\]UC[^?]*\.json$/.test(id)) return
       // Keep raw evidence in Git; restore exactly the same JSON before schema validation.

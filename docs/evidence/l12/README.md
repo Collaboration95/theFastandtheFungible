@@ -19,7 +19,7 @@ Both 1280 × 900 and 390 × 900 viewports are captured with reduced motion:
 
 Before replay shots capture initial run load; after replay shots capture the
 completed recorded run. `after-receipt-*` and `after-writers-*` add accessibility
-coverage. `before-checks.json` and `after-checks.json` record overflow and serious/
+coverage. `after-hosted-writers-*` also shows the local hosted catalogue (12 cards, including fictional writers in their disclosure), the shared external icons and solid empty-state border; both widths have no overflow or serious/critical axe violations. `before-checks.json` and `after-checks.json` record overflow and serious/
 critical axe violations for each surface. Chrome is the bottom of the stacked
 site header and replay banner (the app controls share the site header).
 
@@ -28,7 +28,7 @@ S$0.40 and 0.04 XRP (40,000 drops), with no ledger amount for simulated receipts
 `TZ=America/New_York` checks the receipt still reads 11 Nov 2026, 15:06 SGT.
 Source AST checks cover src/ and demo/ renderers, including deliberately broken
 money and hash examples; recorded source prose and unit fixtures are excluded.
-Account addresses retain the separate 6…4 rule.
+Account addresses retain the separate 6…4 rule. Wire timestamps and owner wallet balances use the same shared helpers. The 390 px Wire panel has no overflow or serious/critical axe violations.
 
 ## Routed to the owning lanes
 
