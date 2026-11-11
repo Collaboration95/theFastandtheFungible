@@ -147,15 +147,18 @@ function repeatsPurchases(provider: DecisionProvider, input: Pick<DecideInput, '
   const own = metadataWords(candidate)
   if (topicWords(input.gap).some(word => !/^\d+$/.test(word) && !GENERIC.has(word) && own.has(word) && !named.has(word))) return false
   const namedIds = new Set(input.verifiedPurchases.flatMap(bought => identifiersIn(`${bought.title} ${bought.facets.join(' ')}`)).map(id => id.toLowerCase()))
-  const namedFamilies = new Set([...namedIds].map(identifierFamily))
+  const namedFamilies = new Set<string | undefined>([...namedIds].map(identifierFamily))
   const factFamilies = new Set(subjectFamilies(input.gap).map(group => group[0] as string))
   const factWords = new Set(topicWords(input.gap).filter(word => !GENERIC.has(word)))
   return !identifiersIn(candidate.title).some(id => {
     if (namedIds.has(id.toLowerCase())) return false
     const family = identifierFamily(id)
     // Related to the fact through its glossary family (TrustSet for an issued token) or a shared word (PermissionedDomainSet).
-    if (family ? !factFamilies.has(family) : !identifierWords(id).some(word => factWords.has(word))) return false
-    if (!family) return true
+    // R8-A3: a shared word that is the name of a family a purchase already covers adds nothing. "Which XRPL transactions
+    // finish or cancel an escrow?" bought the EscrowFinish and EscrowCancel references, then TokenEscrow only for its
+    // word "escrow". A word no family owns (PermissionedDomainSet's "domain") still counts.
+    if (!family) return identifierWords(id).some(word => factWords.has(word) && !namedFamilies.has(word))
+    if (!factFamilies.has(family)) return false
     // A fact that names the members it wants ("which transactions create and accept one") already got any of them
     // through the word check above; another member (CredentialDelete) is not its answer.
     if (asksForName(input.gap)) return ![...familyMemberWords(family)].some(word => factWords.has(word))

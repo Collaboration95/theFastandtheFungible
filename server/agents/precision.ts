@@ -13,7 +13,9 @@ export function entityPrecision(question: string, candidate: PublicCandidate, po
   const own = new Set(questionTerms(`${candidate.title} ${candidate.facets.join(' ')}`))
   const answerType = question.match(/\b(transaction|field|flag|header|scheme|permission|setting|reserve)s?\b/i)?.[1]
   const titleType = answerType && new RegExp(`\\b${answerType}s?\\b`, 'i').test(candidate.title) ? 2 : 0
-  const namedTransaction = /\b(?:which|what).*\btransaction\b/i.test(question) && candidate.facets.some(f => /\btransaction\b/i.test(f)) && /\b[A-Z][a-z]+(?:[A-Z][a-z]+)+\b/.test(candidate.title) ? 3 : 0
+  // R8-A3: "which transactions …" asks for named transactions as much as "which transaction …" does; the singular-only
+  // pattern gave the generic escrow explainer the lead over the EscrowFinish reference for a plural question.
+  const namedTransaction = /\b(?:which|what).*\btransactions?\b/i.test(question) && candidate.facets.some(f => /\btransactions?\b/i.test(f)) && /\b[A-Z][a-z]+(?:[A-Z][a-z]+)+\b/.test(candidate.title) ? 3 : 0
   const generic = new Set(['xrpl','xrp','ledger','payment','transaction','account','token','asset','field','type'])
   // R8-A2: the question's own words and the glossary's vocabulary for them count; a word that only a sibling
   // transaction name adds (create, finish, cancel from EscrowCreate/EscrowFinish/EscrowCancel for an escrow question;
