@@ -6,6 +6,10 @@ shot/voice-file IDs are retained. `s3b-refusal` now shows zero-question verifica
 from assembly, so the available cut is explicitly PARTIAL. No synthetic voice is
 produced. No media is committed.
 
+Use Node 22 (`.nvmrc`); current main's bundle budget checks the deployment runtime.
+On this Mac, prefix the commands below with `mise exec node@22 --` if the shell
+selects a different Node version.
+
 ```sh
 make video-record
 make video-record ARGS="--list"
