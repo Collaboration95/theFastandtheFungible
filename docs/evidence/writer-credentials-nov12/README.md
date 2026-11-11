@@ -95,6 +95,24 @@ requires an online lookup. The two generated Python schema snapshots were
 regenerated only after both published artifacts passed; no verifier logic or
 conformance expectation was changed. Report exports still omit observations too.
 
+### V3 hosted-export compatibility
+
+`hosted-v3-with-identity.json` supplements the local zero-budget probe with the
+existing committed hosted export `public/judge/hosted-run-nov11.receipts.json`
+(source commit `0f7a2c25`, run `953af12e-c87c-4c83-85f6-e172ad372bfe`, two
+real Testnet receipts). Only
+matching unsigned writer observations were added to its 12 candidates. Removing
+those observations reproduces the original parsed export exactly; no signed
+manifest, receipt, grant, audit event or anchor was changed. This is a local
+compatibility annotation of an existing export, not a new hosted question.
+
+Both published v1.1.1 CLIs also say **RESULT PASS** on this v3 file with `--ledger`:
+Python reports **46 passed, 0 failed, 2 skipped**; both pass **11/11 Testnet checks**
+and the audit anchor at validated ledger **22228575**. Complete outputs are in
+`published-python-hosted-v3.txt` and `published-ts-hosted-v3.txt`. The npm command
+ran from an empty temporary directory and resolved the released v1.1.1 binary,
+not a workspace executable. Writer identity remains an advisory online check.
+
 `check-unavailable-390.png` injects a synthetic `check_failed` catalogue response
 only to demonstrate failure copy. `ui-acceptance.json` records the distinction.
 Open Records now appears with the other operator writers in Writers; the remaining

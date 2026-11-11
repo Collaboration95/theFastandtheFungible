@@ -129,3 +129,6 @@ Protocol: [PermissionedDomain fields](https://xrpl.org/docs/references/protocol/
 published wheel and MCP CLI both accept a local export containing them (see the
 published-artifact outputs in this lane's evidence). Normal receipt/report exports
 continue to omit writer observations; no signed proof format changes.
+They also pass the existing hosted v3 export annotated only with matching advisory
+identities: 11/11 Testnet checks and the validated audit anchor pass in both CLIs.
+The evidence distinguishes this compatibility annotation from a new hosted run.
