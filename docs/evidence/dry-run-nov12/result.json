@@ -1,0 +1,2195 @@
+{
+  "observedAt": "2026-11-11T14:34:48.247Z",
+  "unsigned": true,
+  "submitted": false,
+  "results": [
+    {
+      "network": "Testnet",
+      "endpoint": "wss://s.altnet.rippletest.net:51233",
+      "flags": 2174353408,
+      "issuerLedger": 22244248,
+      "features": {
+        "Credentials": {
+          "enabled": true,
+          "name": "Credentials",
+          "supported": true
+        },
+        "DID": {
+          "enabled": true,
+          "name": "DID",
+          "supported": true
+        },
+        "PermissionedDomains": {
+          "enabled": true,
+          "name": "PermissionedDomains",
+          "supported": true
+        },
+        "TokenEscrow": {
+          "enabled": true,
+          "name": "TokenEscrow",
+          "supported": true
+        },
+        "MPTokensV1": {
+          "enabled": true,
+          "name": "MPTokensV1",
+          "supported": true
+        },
+        "Batch": {
+          "listed": false
+        }
+      },
+      "rlusd": {
+        "applied": false,
+        "engine_result": "tecNO_PERMISSION",
+        "engine_result_code": 139,
+        "engine_result_message": "No permission to perform requested operation.",
+        "ledger_index": 22244249,
+        "meta": {
+          "AffectedNodes": [
+            {
+              "ModifiedNode": {
+                "FinalFields": {
+                  "Account": "rshm7hcbFpKiYMKWzhCxmGUi8pd4Bf8Ppn",
+                  "Balance": "39959690",
+                  "Flags": 0,
+                  "OwnerCount": 1,
+                  "Sequence": 22128126
+                },
+                "LedgerEntryType": "AccountRoot",
+                "LedgerIndex": "C7D9F9DD58A1E1936171224F30D21F1F671DAB36E33CABC239726E0A1CF02D14",
+                "PreviousFields": {
+                  "Balance": "39959700",
+                  "Sequence": 22128125
+                },
+                "PreviousTxnID": "A722EB98545EB409D15831F060CEE9DD8CB9C78C921F9258D3CCA27D6FACB8AF",
+                "PreviousTxnLgrSeq": 22238845
+              }
+            }
+          ],
+          "TransactionIndex": 14,
+          "TransactionResult": "tecNO_PERMISSION"
+        },
+        "tx_json": {
+          "Account": "rshm7hcbFpKiYMKWzhCxmGUi8pd4Bf8Ppn",
+          "Amount": {
+            "currency": "524C555344000000000000000000000000000000",
+            "issuer": "rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV",
+            "value": "0.01"
+          },
+          "CancelAfter": 847726481,
+          "Condition": "A025802072CD6E8422C407FB6D098690F1130B7DED7EC2F7F5E1D30BD9D521F015363793810120",
+          "Destination": "rJDwaPFKQv45eQRxbRPpkCUZGvHMEtwPcg",
+          "Fee": "10",
+          "Sequence": 22128125,
+          "SigningPubKey": "",
+          "TransactionType": "EscrowCreate",
+          "TxnSignature": "",
+          "hash": "36A2D7824D0A3C82B0643483686D0F16AF18435A29B51C98F02C48B46892BCF0"
+        }
+      },
+      "reads": [
+        {
+          "request": {
+            "command": "server_info"
+          },
+          "result": {
+            "info": {
+              "build_version": "3.4.1",
+              "complete_ledgers": "12929081-22244247",
+              "hostid": "CURD",
+              "initial_sync_duration_us": "661882832",
+              "io_latency_ms": 1,
+              "jq_trans_overflow": "4036",
+              "last_close": {
+                "converge_time_s": 2,
+                "proposers": 6
+              },
+              "load_factor": 1,
+              "network_id": 1,
+              "peer_disconnects": "71682",
+              "peer_disconnects_resources": "117",
+              "peers": 124,
+              "ports": [
+                {
+                  "port": "2459",
+                  "protocol": [
+                    "peer"
+                  ]
+                },
+                {
+                  "port": "50051",
+                  "protocol": [
+                    "grpc"
+                  ]
+                }
+              ],
+              "pubkey_node": "n9K8mtp6bVXSamRmLw3US2mWKBc88Q1xfxu22Ltvt2hGSjGStcZ9",
+              "server_state": "full",
+              "server_state_duration_us": "810626016089",
+              "state_accounting": {
+                "connected": {
+                  "duration_us": "655658277",
+                  "transitions": "2"
+                },
+                "disconnected": {
+                  "duration_us": "1210322",
+                  "transitions": "2"
+                },
+                "full": {
+                  "duration_us": "810626016089",
+                  "transitions": "1"
+                },
+                "syncing": {
+                  "duration_us": "5014226",
+                  "transitions": "1"
+                },
+                "tracking": {
+                  "duration_us": "5",
+                  "transitions": "1"
+                }
+              },
+              "time": "2026-Nov-11 14:34:43.176968 UTC",
+              "uptime": 811287,
+              "validated_ledger": {
+                "age": 3,
+                "base_fee_xrp": 0.00001,
+                "hash": "49265B9C467921ADAD5635E86D5F547527B29E59ED34D57EF5B8924A3E26C00F",
+                "reserve_base_xrp": 1,
+                "reserve_inc_xrp": 0.2,
+                "seq": 22244247
+              },
+              "validation_quorum": 5
+            }
+          }
+        },
+        {
+          "request": {
+            "command": "ledger",
+            "ledger_index": "validated"
+          },
+          "result": {
+            "ledger": {
+              "account_hash": "109EAB2DA657422F1450CE58C25AB0D067D8C3CD8252C60EDAF3BA0FF2662E41",
+              "close_flags": 0,
+              "close_time": 847722881,
+              "close_time_human": "2026-Nov-11 14:34:41.000000000 UTC",
+              "close_time_iso": "2026-11-11T14:34:41Z",
+              "close_time_resolution": 10,
+              "closed": true,
+              "ledger_hash": "49265B9C467921ADAD5635E86D5F547527B29E59ED34D57EF5B8924A3E26C00F",
+              "ledger_index": 22244247,
+              "parent_close_time": 847722880,
+              "parent_hash": "F8110355A58884199B43BFE51DBC4A23DC517FA59BF0905852DC4ED246A0FC68",
+              "total_coins": "99999878440828380",
+              "transaction_hash": "DA29B00CF8EA6A64302B84EC0A642019EBE3818C84A4093E703564E5D8ECE742"
+            },
+            "ledger_hash": "49265B9C467921ADAD5635E86D5F547527B29E59ED34D57EF5B8924A3E26C00F",
+            "ledger_index": 22244247,
+            "validated": true
+          }
+        },
+        {
+          "request": {
+            "command": "feature"
+          },
+          "result": {
+            "features": {
+              "00C1FC4A53E60AB02C864641002B3172F38677E29C26C5406685179B37E1EDAC": {
+                "enabled": true,
+                "name": "RequireFullyCanonicalSig",
+                "supported": true
+              },
+              "03BDC0099C4E14163ADA272C1B6F6FABB448CC3E51F522F978041E4B57D9158C": {
+                "enabled": true,
+                "name": "fixNFTokenReserve",
+                "supported": true
+              },
+              "07D43DCE529B15A10827E5E04943B496762F9A88E3268269D69C44BE49E21104": {
+                "enabled": false,
+                "name": "Escrow",
+                "supported": true
+              },
+              "08DE7D96082187F6E6578530258C77FAABABE4C20474BDB82F04B021F1A68647": {
+                "enabled": false,
+                "name": "PayChan",
+                "supported": true
+              },
+              "0F48FF561C709540328F31F1C97FD512ACC8B4E42138A161CB0E21ECA292540B": {
+                "enabled": true,
+                "name": "PermissionDelegationV1_1",
+                "supported": true
+              },
+              "12523DF04B553A0B1AD74F42DDB741DE8DC06A03FC089A0EF197E2A87F1D8107": {
+                "enabled": true,
+                "name": "fixAMMOverflowOffer",
+                "supported": true
+              },
+              "138B968F25822EFBF54C00F97031221C47B1EAB8321D93C7C2AEAF85F04EC5DF": {
+                "enabled": true,
+                "name": "TokenEscrow",
+                "supported": true
+              },
+              "14A2B45E48A4A124D1BBA657AC7B0DC3D5EA8C256C89E8F0D8142D32960A7944": {
+                "enabled": true,
+                "name": "fixBatchV1_2",
+                "supported": true
+              },
+              "1562511F573A19AE9BD103B5D6B9E01B3B46805AEC5D3C4805C902B514399146": {
+                "enabled": false,
+                "name": "CryptoConditions",
+                "supported": true
+              },
+              "157D2D480E006395B76F948E3E07A45A05FE10230D88A7993C71F97AE4B1F2D1": {
+                "enabled": true,
+                "name": "Checks",
+                "supported": true
+              },
+              "15D61F0C6DB6A2F86BCF96F1E2444FEC54E705923339EC175BD3E517C8B3FF91": {
+                "enabled": true,
+                "name": "fixDisallowIncomingV1",
+                "supported": true
+              },
+              "1CB67D082CF7D9102412D34258CEDB400E659352D3B207348889297A6D90F5EF": {
+                "enabled": true,
+                "name": "Credentials",
+                "supported": true
+              },
+              "1D3463A5891F9E589C5AE839FFAC4A917CE96197098A1EF22304E1BC5B98A454": {
+                "enabled": false,
+                "name": "fix1528",
+                "supported": true
+              },
+              "1E7ED950F2F13C4F8E2A54103B74D57D5D298FFDBD005936164EE9E6484C438C": {
+                "enabled": true,
+                "name": "fixAMMv1_2",
+                "supported": true
+              },
+              "1F4AFA8FA1BC8827AD4C0F682C03A8B671DCDF6B5C4DE36D44243A684103EF88": {
+                "enabled": true,
+                "name": "HardenedValidations",
+                "supported": true
+              },
+              "2110E4A19966E2EF517C0A8C56A5F35099D7665B0BB89D7B126B30D50B86AAD5": {
+                "enabled": false,
+                "name": "ConfidentialTransfer",
+                "supported": true
+              },
+              "21B8D2F76F68E11E9C077A43BBBC394136E9987E99DDB73966DD68419467E431": {
+                "enabled": true,
+                "name": "fixCleanup3_2_0",
+                "supported": true
+              },
+              "25BA44241B3BD880770BFA4DA21C7180576831855368CBEC6A3154FDE4A7676E": {
+                "enabled": true,
+                "name": "fix1781",
+                "supported": true
+              },
+              "27CD95EE8E1E5A537FF2F89B6CEB7C622E78E9374EBD7DCBEDFAE21CD6F16E0A": {
+                "enabled": true,
+                "name": "fixReducedOffersV1",
+                "supported": true
+              },
+              "2BF037D90E1B676B17592A8AF55E88DB465398B4B597AE46EECEE1399AB05699": {
+                "enabled": false,
+                "name": "fixXChainRewardRounding",
+                "supported": true
+              },
+              "2CD5286D8D687E98B41102BDD797198E81EA41DF7BD104E6561FEB104EFF2561": {
+                "enabled": true,
+                "name": "fixTakerDryOfferRemoval",
+                "supported": true
+              },
+              "2E2FB9CF8A44EB80F4694D38AADAE9B8B7ADAFD2F092E10068E61C98C4F092B0": {
+                "enabled": true,
+                "name": "fixUniversalNumber",
+                "supported": true
+              },
+              "3012E8230864E95A58C60FD61430D7E1B4D3353195F2981DC12B0C7C0950FFAC": {
+                "enabled": true,
+                "name": "FlowCross",
+                "supported": true
+              },
+              "303ACB16CF8DBD3B5C34F131A9D19A7DE01AE05F480A8A682B869D1B4AAC8CFC": {
+                "enabled": true,
+                "name": "fixCleanup3_1_3",
+                "supported": true
+              },
+              "30CD365592B8EE40489BA01AE2F7555CAC9C983145871DC82A42A31CF5BAE7D9": {
+                "enabled": true,
+                "name": "DeletableAccounts",
+                "supported": true
+              },
+              "31E0DA76FB8FB527CADCDF0E61CB9C94120966328EFA9DCA202135BAF319C0BA": {
+                "enabled": true,
+                "name": "fixReducedOffersV2",
+                "supported": true
+              },
+              "3298D47E1F3A8A24FECAA30F699B8FE1DD234E072834BA099AD8180FFCE0FEC4": {
+                "enabled": true,
+                "name": "fixCleanup3_3_0",
+                "supported": true
+              },
+              "32A122F1352A4C7B3A6D790362CC34749C5E57FCE896377BFDC6CCD14F6CD627": {
+                "enabled": true,
+                "name": "NonFungibleTokensV1_1",
+                "supported": true
+              },
+              "32B8614321F7E070419115ABEAB1742EA20F3E3AF34432B5E2F474F8083260DC": {
+                "enabled": true,
+                "name": "fixTokenEscrowV1",
+                "supported": true
+              },
+              "3318EA0CF0755AF15DAC19F2B5C5BCBFF4B78BDD57609ACCAABE2C41309B051A": {
+                "enabled": true,
+                "name": "fixFillOrKill",
+                "supported": true
+              },
+              "35291ADD2D79EB6991343BDA0912269C817D0F094B02226C1C14AD2858962ED4": {
+                "enabled": true,
+                "name": "fixAMMv1_1",
+                "supported": true
+              },
+              "3CBC5C4E630A1B82380295CDA84B32B49DD066602E74E39B85EF64137FA65194": {
+                "enabled": true,
+                "name": "DepositPreauth",
+                "supported": true
+              },
+              "41765F664A8D67FF03DDB1C1A893DE6273690BA340A6C2B07C8D29D0DD013D3A": {
+                "enabled": true,
+                "name": "fixDirectoryLimit",
+                "supported": true
+              },
+              "42426C4D4F1009EE67080A9B7965B44656D7714D104A72F9B4369F97ABF044EE": {
+                "enabled": false,
+                "name": "FeeEscalation",
+                "supported": true
+              },
+              "42EEA5E28A97824821D4EF97081FE36A54E9593C6E4F20CBAE098C69D2E072DC": {
+                "enabled": false,
+                "name": "fix1373",
+                "supported": true
+              },
+              "452F5906C46D46F407883344BFDD90E672B672C5E9943DB4891E3A34FEEEB9DB": {
+                "enabled": true,
+                "name": "fixSTAmountCanonicalize",
+                "supported": true
+              },
+              "47C3002ABA31628447E8E9A8B315FAA935CE30183F9A9B86845E469CA2CDC3DF": {
+                "enabled": true,
+                "name": "DisallowIncoming",
+                "supported": true
+              },
+              "4C97EBA926031A7CF7D7B36FDE3ED66DDA5421192D63DE53FFB46E43B9DC8373": {
+                "enabled": false,
+                "name": "MultiSign",
+                "supported": true
+              },
+              "4F46DF03559967AC60F2EB272FEFE3928A7594A45FF774B87A7E540DB0F8F068": {
+                "enabled": true,
+                "name": "fixAmendmentMajorityCalc",
+                "supported": true
+              },
+              "532651B4FD58DF8922A49BA101AB3E996E5BFBF95A913B3E392504863E63B164": {
+                "enabled": false,
+                "name": "TickSize",
+                "supported": true
+              },
+              "565B90CA1AB2B9D42208ED10884188C64F9E19083DECB9634AAF06EB03299509": {
+                "enabled": false,
+                "name": "LendingProtocol",
+                "supported": true
+              },
+              "56B241D7A43D40354D02A9DC4C8DF5C7A1F930D92A9035C4E12291B3CA3E1C2B": {
+                "enabled": true,
+                "name": "Clawback",
+                "supported": true
+              },
+              "586480873651E106F1D6339B0C4A8945BA705A777F3F4524626FF1FC07EFE41D": {
+                "enabled": true,
+                "name": "MultiSignReserve",
+                "supported": true
+              },
+              "58BE9B5968C4DA7C59BA900961828B113E5490699B21877DEF9A31E9D0FE5D5F": {
+                "enabled": true,
+                "name": "fix1623",
+                "supported": true
+              },
+              "58E92F338758479C06084E1B6BA366BAD8F75E5329A7F0EEAFFFDA51E5106B7F": {
+                "enabled": false,
+                "name": "DynamicMPT",
+                "supported": true
+              },
+              "5D08145F0A4983F23AFFFF514E83FAD355C5ABFBB6CAB76FB5BC8519FF5F33BE": {
+                "enabled": true,
+                "name": "fix1515",
+                "supported": true
+              },
+              "5E9586DB3D765B4C5794658FB6BB385071E9838DF4016027E6E26820C8526724": {
+                "enabled": true,
+                "name": "fixAMMClawbackRounding",
+                "supported": true
+              },
+              "6143A27B71F7DAF9330ECA7C5EC3D54C8083A4FDEF7016737EEC06AB61E82EE0": {
+                "enabled": true,
+                "name": "fixIncludeKeyletFields",
+                "supported": true
+              },
+              "621A0B264970359869E3C0363A899909AAB7A887C8B73519E4ECF952D33258A8": {
+                "enabled": true,
+                "name": "fixPayChanRecipientOwnerDir",
+                "supported": true
+              },
+              "677E401A423E3708363A36BA8B3A7D019D21AC5ABD00387BDBEA6BDE4C91247E": {
+                "enabled": true,
+                "name": "PermissionedDEX",
+                "supported": true
+              },
+              "6781F8368C4771B83E8B821D88F580202BCB4228075297B19E4FDC5233F1EFDC": {
+                "enabled": false,
+                "name": "TrustSetAuth",
+                "supported": true
+              },
+              "67A34F2CF55BFC0F93AACD5B281413176FEE195269FA6D95219A2DF738671172": {
+                "enabled": true,
+                "name": "fix1513",
+                "supported": true
+              },
+              "6C92211186613F9647A89DFFBAB8F94C99D4C7E956D495270789128569177DA1": {
+                "enabled": false,
+                "name": "fix1512",
+                "supported": true
+              },
+              "7117E2EC2DBF119CA55181D69819F1999ECEE1A0225A7FD2B9ED47940968479C": {
+                "enabled": true,
+                "name": "fix1571",
+                "supported": true
+              },
+              "726F944886BCDF7433203787E93DD9AA87FAB74DFE3AF4785BA03BEFC97ADA1F": {
+                "enabled": true,
+                "name": "AMMClawback",
+                "supported": true
+              },
+              "73761231F7F3D94EC3D8C63D91BDD0D89045C6F71B917D1925C01253515A6669": {
+                "enabled": true,
+                "name": "fixNonFungibleTokensV1_2",
+                "supported": true
+              },
+              "740352F2412A9909880C23A559FCECEDA3BE2126FED62FC7660D628A06927F11": {
+                "enabled": true,
+                "name": "Flow",
+                "supported": true
+              },
+              "755C971C29971C9F20C6F080F2ED96F87884E40AD19554A5EBECDCEC8A1F77FE": {
+                "enabled": true,
+                "name": "fixEmptyDID",
+                "supported": true
+              },
+              "75A7E01C505DD5A179DFE3E000A9B6F1EDDEB55A12F95579A23E15B15DC8BE5A": {
+                "enabled": true,
+                "name": "ImmediateOfferKilled",
+                "supported": true
+              },
+              "763C37B352BE8C7A04E810F8E462644C45AFEAD624BF3894A08E5C917CF9FF39": {
+                "enabled": true,
+                "name": "fixEnforceNFTokenTrustline",
+                "supported": true
+              },
+              "7BB62DC13EC72B775091E9C71BF8CF97E122647693B50C5E87A80DFD6FCFAC50": {
+                "enabled": true,
+                "name": "fixPreviousTxnID",
+                "supported": true
+              },
+              "7CA70A7674A26FA517412858659EBC7EDEEF7D2D608824464E6FDEFD06854E14": {
+                "enabled": true,
+                "name": "fixAMMv1_3",
+                "supported": true
+              },
+              "81BD2619B6B3C8625AC5D0BC01DE17F06C3F0AB95C7C87C93715B87A4FD240D8": {
+                "enabled": false,
+                "name": "SingleAssetVault",
+                "supported": true
+              },
+              "83FD6594FF83C1D105BD2B41D7E242D86ECB4A8220BD9AF4DA35CB0F69E39B2A": {
+                "enabled": true,
+                "name": "fixFrozenLPTokenTransfer",
+                "supported": true
+              },
+              "86E83A7D2ECE3AD5FA87AB2195AE015C950469ABF0B72EAACED318F74886AE90": {
+                "enabled": false,
+                "name": "CryptoConditionsSuite",
+                "supported": true
+              },
+              "89308AF3B8B10B7192C4E613E1D2E4D9BA64B2EE2D5232402AE82A6A7220D953": {
+                "enabled": true,
+                "name": "fixQualityUpperBound",
+                "supported": true
+              },
+              "8CC0774A3BF66D1D22E76BBDA8E8A232E6B6313834301B3B23E8601196AE6455": {
+                "enabled": true,
+                "name": "AMM",
+                "supported": true
+              },
+              "8EC4304A06AF03BE953EA6EDA494864F6F3F30AA002BABA35869FBB8C6AE5D52": {
+                "enabled": true,
+                "name": "fixInvalidTxFlags",
+                "supported": true
+              },
+              "8F81B066ED20DAECA20DF57187767685EEF3980B228E0667A650BAF24426D3B4": {
+                "enabled": true,
+                "name": "fixCheckThreading",
+                "supported": true
+              },
+              "9196110C23EA879B4229E51C286180C7D02166DA712559F634372F5264D0EC59": {
+                "enabled": true,
+                "name": "fixInnerObjTemplate2",
+                "supported": true
+              },
+              "93E516234E35E08CA689FA33A6D38E103881F8DCB53023F728C307AA89D515A7": {
+                "enabled": true,
+                "name": "XRPFees",
+                "supported": true
+              },
+              "950AE2EA4654E47F04AA8739C0B214E242097E802FD372D24047A89AB1F5EC38": {
+                "enabled": true,
+                "name": "MPTokensV1",
+                "supported": true
+              },
+              "955DF3FA5891195A9DAEFA1DDC6BB244B545DDE1BAA84CBB25D5F12A8DA68A0C": {
+                "enabled": true,
+                "name": "TicketBatch",
+                "supported": true
+              },
+              "96FD2F293A519AE1DB6F8BED23E4AD9119342DA7CB6BAFD00953D16C54205D8B": {
+                "enabled": true,
+                "name": "PriceOracle",
+                "supported": true
+              },
+              "98433DD001A5737F773D74F8CA2A25A065089C73B2E611C760BAF369E4FECA76": {
+                "enabled": true,
+                "name": "fixCleanup3_4_0",
+                "supported": true
+              },
+              "98DECF327BF79997AEC178323AD51A830E457BFC6D454DAF3E46E5EC42DC619F": {
+                "enabled": true,
+                "name": "CheckCashMakesTrustLine",
+                "supported": true
+              },
+              "9F287AED3CDB50A7BD1ACEC24296A30C9B5230CCD136219317AC790E3B884377": {
+                "enabled": true,
+                "name": "BatchV1_1",
+                "supported": true
+              },
+              "A360E2BFD775A5B0DCE1C36C16DF31B72735A57584FD163655D2F9564F8E7AC8": {
+                "enabled": false,
+                "name": "LendingProtocolV1_1",
+                "supported": true
+              },
+              "A730EB18A9D4BB52502C898589558B4CCEB4BE10044500EE5581137A2E80E849": {
+                "enabled": true,
+                "name": "PermissionedDomains",
+                "supported": true
+              },
+              "AB8D932A5F338903FE5BCBD80B611FFED70839ABA3170E9CE01D947C0EDEDCF2": {
+                "enabled": true,
+                "name": "fixMPTDeliveredAmount",
+                "supported": true
+              },
+              "AE35ABDEFBDE520372B31C957020B34A7A4A9DC3115A69803A44016477C84D6E": {
+                "enabled": true,
+                "name": "fixNFTokenRemint",
+                "supported": true
+              },
+              "AF8DF7465C338AE64B1E937D6C8DA138C0D63AD5134A68792BBBE1F63356C422": {
+                "enabled": true,
+                "name": "FlowSortStrands",
+                "supported": true
+              },
+              "B2A4DB846F0891BF2C76AB2F2ACC8F5B4EC64437135C6E56F3F859DE5FFD5856": {
+                "enabled": true,
+                "name": "ExpandedSignerList",
+                "supported": true
+              },
+              "B32752F7DCC41FB86534118FC4EEC8F56E7BD0A7DB60FD73F93F257233C08E3A": {
+                "enabled": true,
+                "name": "fixEnforceNFTokenTrustlineV2",
+                "supported": true
+              },
+              "B4D44CC3111ADD964E846FC57760C8B50FFCD5A82C86A72756F6B058DDDF96AD": {
+                "enabled": false,
+                "name": "fix1201",
+                "supported": true
+              },
+              "B4E4F5D2D6FB84DF7399960A732309C9FD530EAE5941838160042833625A6076": {
+                "enabled": true,
+                "name": "NegativeUNL",
+                "supported": true
+              },
+              "B6B3EEDC0267AB50491FDC450A398AF30DBCD977CECED8BEF2499CAB5DAC19E2": {
+                "enabled": true,
+                "name": "fixRmSmallIncreasedQOffers",
+                "supported": true
+              },
+              "B9E739B8296B4A1BB29BE990B17D66E21B62A300A909F25AC55C22D6C72E1F9D": {
+                "enabled": false,
+                "name": "fix1523",
+                "supported": true
+              },
+              "BE1F90581635DBCEBFC4678C4B54FEDDC1A17B50FD02CFE765A4132A342126AC": {
+                "enabled": false,
+                "name": "Sponsor",
+                "supported": true
+              },
+              "C1CE18F2A268E6A849C27B3DE485006771B4C01B2FCEC4F18356FE92ECD6BB74": {
+                "enabled": true,
+                "name": "DynamicNFT",
+                "supported": true
+              },
+              "C393B3AEEBF575E475F0C60D5E4241B2070CC4D0EB6C4846B1A07508FAEFC485": {
+                "enabled": true,
+                "name": "fixInnerObjTemplate",
+                "supported": true
+              },
+              "C4483A1896170C66C098DEA5B0E024309C60DC960DE5F01CD7AF986AA3D9AD37": {
+                "enabled": true,
+                "name": "fixMasterKeyAsRegularKey",
+                "supported": true
+              },
+              "C7981B764EC4439123A86CC7CCBA436E9B3FF73B3F10A0AE51882E404522FC41": {
+                "enabled": true,
+                "name": "fixNFTokenPageLinks",
+                "supported": true
+              },
+              "C98D98EE9616ACD36E81FDEB8D41D349BF5F1B41DD64A0ABC1FE9AA5EA267E9C": {
+                "enabled": false,
+                "name": "XChainBridge",
+                "supported": true
+              },
+              "CA7C02118BA27599528543DFE77BA6838D1B0F43B447D4D7F53523CE6A0E9AC2": {
+                "enabled": true,
+                "name": "fix1543",
+                "supported": true
+              },
+              "CC5ABAE4F3EC92E94A59B1908C2BE82D2228B6485C00AFF8F22DF930D89C194E": {
+                "enabled": false,
+                "name": "SortedDirectories",
+                "supported": true
+              },
+              "D3456A862DC07E382827981CA02E21946E641877F19B8889031CC57FDCAC83E2": {
+                "enabled": true,
+                "name": "fixPayChanCancelAfter",
+                "supported": true
+              },
+              "DAF3A6EB04FA5DC51E8E4F23E9B7022B693EFA636F23F22664746C77B5786B23": {
+                "enabled": true,
+                "name": "DeepFreeze",
+                "supported": true
+              },
+              "DB432C3A09D9D5DFC7859F39AE5FF767ABC59AED0A9FB441E83B814D8946C109": {
+                "enabled": true,
+                "name": "DID",
+                "supported": true
+              },
+              "DC9CA96AEA1DCF83E527D1AFC916EFAF5D27388ECA4060A88817C1238CAEE0BF": {
+                "enabled": false,
+                "name": "EnforceInvariants",
+                "supported": true
+              },
+              "DF8B4536989BDACE3F934F29423848B9F1D76D09BE6A1FCFE7E7F06AA26ABEAD": {
+                "enabled": true,
+                "name": "fixRemoveNFTokenAutoTrustLine",
+                "supported": true
+              },
+              "E2E6F2866106419B88C50045ACE96368558C345566AC8F2BDF5A5B5587F0E6FA": {
+                "enabled": false,
+                "name": "fix1368",
+                "supported": true
+              },
+              "EE3CF852F0506782D05E65D49E5DCC3D16D50898CD1B646BAE274863401CC3CE": {
+                "enabled": true,
+                "name": "NFTokenMintOffer",
+                "supported": true
+              },
+              "F1ED6B4A411D8B872E65B9DCB4C8B100375B0DD3D62D07192E011D6D7F339013": {
+                "enabled": true,
+                "name": "fixTrustLinesToSelf",
+                "supported": true
+              },
+              "F64E1EABBE79D55B3BB82020516CEC2C582A98A6BFE20FBE9BB6A0D233418064": {
+                "enabled": true,
+                "name": "DepositAuth",
+                "supported": true
+              },
+              "FBD513F1B893AC765B78F250E6FFA6A11B573209D1842ADC787C850696741288": {
+                "enabled": true,
+                "name": "fix1578",
+                "supported": true
+              },
+              "FF2D1E13CF6D22427111B967BD504917F63A900CECD320D6FD3AC9FA90344631": {
+                "enabled": true,
+                "name": "fixPriceOracleOrder",
+                "supported": true
+              }
+            }
+          }
+        },
+        {
+          "request": {
+            "command": "account_info",
+            "account": "rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV",
+            "ledger_index": "validated"
+          },
+          "result": {
+            "account_data": {
+              "Account": "rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV",
+              "Balance": "99954691",
+              "Domain": "68747470733A2F2F726970706C652E636F6D2F",
+              "Flags": 2174353408,
+              "LedgerEntryType": "AccountRoot",
+              "OwnerCount": 22,
+              "PreviousTxnID": "6008C5E8F3ED48EBAFEEDC3534876143B6FE311D1A36014E85AF3CC8B60F1744",
+              "PreviousTxnLgrSeq": 22243637,
+              "Sequence": 611823,
+              "TickSize": 7,
+              "index": "DC5BBAC5661E91FD934E8E96419FCDE8086BB90DF2E4112D1BEB032E9908C649"
+            },
+            "account_flags": {
+              "allowTrustLineClawback": true,
+              "allowTrustLineLocking": false,
+              "defaultRipple": true,
+              "depositAuth": true,
+              "disableMasterKey": true,
+              "disallowIncomingCheck": false,
+              "disallowIncomingNFTokenOffer": false,
+              "disallowIncomingPayChan": false,
+              "disallowIncomingTrustline": false,
+              "disallowIncomingXRP": true,
+              "globalFreeze": false,
+              "noFreeze": false,
+              "passwordSpent": false,
+              "requireAuthorization": false,
+              "requireDestinationTag": true
+            },
+            "ledger_hash": "E27574A3D71BDEB41E4CE4AC35C75C3920E57207D69BE76B0B7D6A5162849FD3",
+            "ledger_index": 22244248,
+            "validated": true
+          }
+        },
+        {
+          "request": {
+            "command": "account_info",
+            "account": "rJDwaPFKQv45eQRxbRPpkCUZGvHMEtwPcg",
+            "ledger_index": "validated"
+          },
+          "result": {
+            "account_data": {
+              "Account": "rJDwaPFKQv45eQRxbRPpkCUZGvHMEtwPcg",
+              "Balance": "5998296",
+              "Flags": 0,
+              "LedgerEntryType": "AccountRoot",
+              "OwnerCount": 1,
+              "PreviousTxnID": "05E63A803D63E673A4E1687C97C5471C5E054C306EF4029B985B43AB9CE77AE3",
+              "PreviousTxnLgrSeq": 22128478,
+              "Sequence": 22128107,
+              "index": "A22219359ECC1C2943297C8676F825FE71B4CE14C4C4B0CBCB3E3A57FE86EF63"
+            },
+            "account_flags": {
+              "allowTrustLineClawback": false,
+              "allowTrustLineLocking": false,
+              "defaultRipple": false,
+              "depositAuth": false,
+              "disableMasterKey": false,
+              "disallowIncomingCheck": false,
+              "disallowIncomingNFTokenOffer": false,
+              "disallowIncomingPayChan": false,
+              "disallowIncomingTrustline": false,
+              "disallowIncomingXRP": false,
+              "globalFreeze": false,
+              "noFreeze": false,
+              "passwordSpent": false,
+              "requireAuthorization": false,
+              "requireDestinationTag": false
+            },
+            "ledger_hash": "E27574A3D71BDEB41E4CE4AC35C75C3920E57207D69BE76B0B7D6A5162849FD3",
+            "ledger_index": 22244248,
+            "validated": true
+          }
+        },
+        {
+          "request": {
+            "command": "simulate",
+            "tx_json": {
+              "TransactionType": "EscrowCreate",
+              "Account": "rshm7hcbFpKiYMKWzhCxmGUi8pd4Bf8Ppn",
+              "Destination": "rJDwaPFKQv45eQRxbRPpkCUZGvHMEtwPcg",
+              "Condition": "A025802072CD6E8422C407FB6D098690F1130B7DED7EC2F7F5E1D30BD9D521F015363793810120",
+              "CancelAfter": 847726481,
+              "Amount": {
+                "currency": "524C555344000000000000000000000000000000",
+                "issuer": "rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV",
+                "value": "0.01"
+              }
+            }
+          },
+          "result": {
+            "applied": false,
+            "engine_result": "tecNO_PERMISSION",
+            "engine_result_code": 139,
+            "engine_result_message": "No permission to perform requested operation.",
+            "ledger_index": 22244249,
+            "meta": {
+              "AffectedNodes": [
+                {
+                  "ModifiedNode": {
+                    "FinalFields": {
+                      "Account": "rshm7hcbFpKiYMKWzhCxmGUi8pd4Bf8Ppn",
+                      "Balance": "39959690",
+                      "Flags": 0,
+                      "OwnerCount": 1,
+                      "Sequence": 22128126
+                    },
+                    "LedgerEntryType": "AccountRoot",
+                    "LedgerIndex": "C7D9F9DD58A1E1936171224F30D21F1F671DAB36E33CABC239726E0A1CF02D14",
+                    "PreviousFields": {
+                      "Balance": "39959700",
+                      "Sequence": 22128125
+                    },
+                    "PreviousTxnID": "A722EB98545EB409D15831F060CEE9DD8CB9C78C921F9258D3CCA27D6FACB8AF",
+                    "PreviousTxnLgrSeq": 22238845
+                  }
+                }
+              ],
+              "TransactionIndex": 14,
+              "TransactionResult": "tecNO_PERMISSION"
+            },
+            "tx_json": {
+              "Account": "rshm7hcbFpKiYMKWzhCxmGUi8pd4Bf8Ppn",
+              "Amount": {
+                "currency": "524C555344000000000000000000000000000000",
+                "issuer": "rQhWct2fv4Vc4KRjRgMrxa8xPN9Zx9iLKV",
+                "value": "0.01"
+              },
+              "CancelAfter": 847726481,
+              "Condition": "A025802072CD6E8422C407FB6D098690F1130B7DED7EC2F7F5E1D30BD9D521F015363793810120",
+              "Destination": "rJDwaPFKQv45eQRxbRPpkCUZGvHMEtwPcg",
+              "Fee": "10",
+              "Sequence": 22128125,
+              "SigningPubKey": "",
+              "TransactionType": "EscrowCreate",
+              "TxnSignature": "",
+              "hash": "36A2D7824D0A3C82B0643483686D0F16AF18435A29B51C98F02C48B46892BCF0"
+            }
+          }
+        },
+        {
+          "request": {
+            "command": "simulate",
+            "tx_json": {
+              "TransactionType": "EscrowCreate",
+              "Account": "rshm7hcbFpKiYMKWzhCxmGUi8pd4Bf8Ppn",
+              "Destination": "rJDwaPFKQv45eQRxbRPpkCUZGvHMEtwPcg",
+              "Condition": "A025802072CD6E8422C407FB6D098690F1130B7DED7EC2F7F5E1D30BD9D521F015363793810120",
+              "CancelAfter": 847726481,
+              "Amount": {
+                "currency": "SGT",
+                "issuer": "rhto8NT62NUYYXUUuHzwLNq3A78eaNwUwx",
+                "value": "0.01"
+              }
+            }
+          },
+          "result": {
+            "applied": false,
+            "engine_result": "tesSUCCESS",
+            "engine_result_code": 0,
+            "engine_result_message": "The simulated transaction would have been applied.",
+            "ledger_index": 22244249,
+            "meta": {
+              "AffectedNodes": [
+                {
+                  "ModifiedNode": {
+                    "FinalFields": {
+                      "Flags": 0,
+                      "Owner": "rshm7hcbFpKiYMKWzhCxmGUi8pd4Bf8Ppn",
+                      "RootIndex": "42A3CC06A844A07F256B32122B173AB77DB1D948543D56495905763CAC794732"
+                    },
+                    "LedgerEntryType": "DirectoryNode",
+                    "LedgerIndex": "42A3CC06A844A07F256B32122B173AB77DB1D948543D56495905763CAC794732",
+                    "PreviousTxnID": "F1AA7E20676650FE60F0F0C006141FB9BB04BE276AB3804F1E5937425DB3A95F",
+                    "PreviousTxnLgrSeq": 22238843
+                  }
+                },
+                {
+                  "ModifiedNode": {
+                    "FinalFields": {
+                      "Flags": 0,
+                      "Owner": "rJDwaPFKQv45eQRxbRPpkCUZGvHMEtwPcg",
+                      "RootIndex": "4F0F7F68C0B691850002F76BE8FAAA389C209941EBAA7E3251B13ECD60EA8128"
+                    },
+                    "LedgerEntryType": "DirectoryNode",
+                    "LedgerIndex": "4F0F7F68C0B691850002F76BE8FAAA389C209941EBAA7E3251B13ECD60EA8128",
+                    "PreviousTxnID": "05E63A803D63E673A4E1687C97C5471C5E054C306EF4029B985B43AB9CE77AE3",
+                    "PreviousTxnLgrSeq": 22128478
+                  }
+                },
+                {
+                  "CreatedNode": {
+                    "LedgerEntryType": "Escrow",
+                    "LedgerIndex": "88993971BF07B1E602094B413C504A2794A60EE9F3AADB5E8BE7768D2B408C24",
+                    "NewFields": {
+                      "Account": "rshm7hcbFpKiYMKWzhCxmGUi8pd4Bf8Ppn",
+                      "Amount": {
+                        "currency": "SGT",
+                        "issuer": "rhto8NT62NUYYXUUuHzwLNq3A78eaNwUwx",
+                        "value": "0.01"
+                      },
+                      "CancelAfter": 847726481,
+                      "Condition": "A025802072CD6E8422C407FB6D098690F1130B7DED7EC2F7F5E1D30BD9D521F015363793810120",
+                      "Destination": "rJDwaPFKQv45eQRxbRPpkCUZGvHMEtwPcg",
+                      "Sequence": 22128125
+                    }
+                  }
+                },
+                {
+                  "ModifiedNode": {
+                    "FinalFields": {
+                      "Balance": {
+                        "currency": "SGT",
+                        "issuer": "rrrrrrrrrrrrrrrrrrrrBZbvji",
+                        "value": "9996.39"
+                      },
+                      "Flags": 2162688,
+                      "HighLimit": {
+                        "currency": "SGT",
+                        "issuer": "rhto8NT62NUYYXUUuHzwLNq3A78eaNwUwx",
+                        "value": "0"
+                      },
+                      "HighNode": "0",
+                      "LowLimit": {
+                        "currency": "SGT",
+                        "issuer": "rshm7hcbFpKiYMKWzhCxmGUi8pd4Bf8Ppn",
+                        "value": "1000000"
+                      },
+                      "LowNode": "0"
+                    },
+                    "LedgerEntryType": "RippleState",
+                    "LedgerIndex": "8AF2D46C8D7568EA305CF0E6CDF0ADF4DFD6B712980076F3292DADD8F6AC1FE5",
+                    "PreviousFields": {
+                      "Balance": {
+                        "currency": "SGT",
+                        "issuer": "rrrrrrrrrrrrrrrrrrrrBZbvji",
+                        "value": "9996.4"
+                      }
+                    },
+                    "PreviousTxnID": "43FA9418F033D19A54B53F17A5352DD4A145542A196C03DBDE28F75D59CF68DF",
+                    "PreviousTxnLgrSeq": 22128476
+                  }
+                },
+                {
+                  "ModifiedNode": {
+                    "LedgerEntryType": "AccountRoot",
+                    "LedgerIndex": "A22219359ECC1C2943297C8676F825FE71B4CE14C4C4B0CBCB3E3A57FE86EF63",
+                    "PreviousTxnID": "05E63A803D63E673A4E1687C97C5471C5E054C306EF4029B985B43AB9CE77AE3",
+                    "PreviousTxnLgrSeq": 22128478
+                  }
+                },
+                {
+                  "ModifiedNode": {
+                    "FinalFields": {
+                      "Flags": 0,
+                      "Owner": "rhto8NT62NUYYXUUuHzwLNq3A78eaNwUwx",
+                      "RootIndex": "BD395F1878F1F6BD52B427935DE7AF82DB50A24BA9A6881AB8EA3300B3E2C18E"
+                    },
+                    "LedgerEntryType": "DirectoryNode",
+                    "LedgerIndex": "BD395F1878F1F6BD52B427935DE7AF82DB50A24BA9A6881AB8EA3300B3E2C18E",
+                    "PreviousTxnID": "05E63A803D63E673A4E1687C97C5471C5E054C306EF4029B985B43AB9CE77AE3",
+                    "PreviousTxnLgrSeq": 22128478
+                  }
+                },
+                {
+                  "ModifiedNode": {
+                    "FinalFields": {
+                      "Account": "rshm7hcbFpKiYMKWzhCxmGUi8pd4Bf8Ppn",
+                      "Balance": "39959690",
+                      "Flags": 0,
+                      "OwnerCount": 2,
+                      "Sequence": 22128126
+                    },
+                    "LedgerEntryType": "AccountRoot",
+                    "LedgerIndex": "C7D9F9DD58A1E1936171224F30D21F1F671DAB36E33CABC239726E0A1CF02D14",
+                    "PreviousFields": {
+                      "Balance": "39959700",
+                      "OwnerCount": 1,
+                      "Sequence": 22128125
+                    },
+                    "PreviousTxnID": "A722EB98545EB409D15831F060CEE9DD8CB9C78C921F9258D3CCA27D6FACB8AF",
+                    "PreviousTxnLgrSeq": 22238845
+                  }
+                }
+              ],
+              "TransactionIndex": 14,
+              "TransactionResult": "tesSUCCESS"
+            },
+            "tx_json": {
+              "Account": "rshm7hcbFpKiYMKWzhCxmGUi8pd4Bf8Ppn",
+              "Amount": {
+                "currency": "SGT",
+                "issuer": "rhto8NT62NUYYXUUuHzwLNq3A78eaNwUwx",
+                "value": "0.01"
+              },
+              "CancelAfter": 847726481,
+              "Condition": "A025802072CD6E8422C407FB6D098690F1130B7DED7EC2F7F5E1D30BD9D521F015363793810120",
+              "Destination": "rJDwaPFKQv45eQRxbRPpkCUZGvHMEtwPcg",
+              "Fee": "10",
+              "Sequence": 22128125,
+              "SigningPubKey": "",
+              "TransactionType": "EscrowCreate",
+              "TxnSignature": "",
+              "hash": "F5C3A2DA1A7CCA033CFAF80ACE2A797E6467100A0CB2C8BFB4EDC4145D3ABDF0"
+            }
+          }
+        },
+        {
+          "request": {
+            "command": "simulate",
+            "tx_json": {
+              "TransactionType": "EscrowFinish",
+              "Account": "rJDwaPFKQv45eQRxbRPpkCUZGvHMEtwPcg",
+              "Owner": "rshm7hcbFpKiYMKWzhCxmGUi8pd4Bf8Ppn",
+              "OfferSequence": 1,
+              "Condition": "A025802072CD6E8422C407FB6D098690F1130B7DED7EC2F7F5E1D30BD9D521F015363793810120",
+              "Fulfillment": "A02280200101010101010101010101010101010101010101010101010101010101010101"
+            }
+          },
+          "result": {
+            "applied": false,
+            "engine_result": "tecNO_TARGET",
+            "engine_result_code": 138,
+            "engine_result_message": "Target account does not exist.",
+            "ledger_index": 22244249,
+            "meta": {
+              "AffectedNodes": [
+                {
+                  "ModifiedNode": {
+                    "FinalFields": {
+                      "Account": "rJDwaPFKQv45eQRxbRPpkCUZGvHMEtwPcg",
+                      "Balance": "5997946",
+                      "Flags": 0,
+                      "OwnerCount": 1,
+                      "Sequence": 22128108
+                    },
+                    "LedgerEntryType": "AccountRoot",
+                    "LedgerIndex": "A22219359ECC1C2943297C8676F825FE71B4CE14C4C4B0CBCB3E3A57FE86EF63",
+                    "PreviousFields": {
+                      "Balance": "5998296",
+                      "Sequence": 22128107
+                    },
+                    "PreviousTxnID": "05E63A803D63E673A4E1687C97C5471C5E054C306EF4029B985B43AB9CE77AE3",
+                    "PreviousTxnLgrSeq": 22128478
+                  }
+                }
+              ],
+              "TransactionIndex": 15,
+              "TransactionResult": "tecNO_TARGET"
+            },
+            "tx_json": {
+              "Account": "rJDwaPFKQv45eQRxbRPpkCUZGvHMEtwPcg",
+              "Condition": "A025802072CD6E8422C407FB6D098690F1130B7DED7EC2F7F5E1D30BD9D521F015363793810120",
+              "Fee": "350",
+              "Fulfillment": "A02280200101010101010101010101010101010101010101010101010101010101010101",
+              "OfferSequence": 1,
+              "Owner": "rshm7hcbFpKiYMKWzhCxmGUi8pd4Bf8Ppn",
+              "Sequence": 22128107,
+              "SigningPubKey": "",
+              "TransactionType": "EscrowFinish",
+              "TxnSignature": "",
+              "hash": "AD6DB25D9A97124A22E96291E1E68EF81A8F8E14B41B8D9FD5E14EBCAE613095"
+            }
+          }
+        }
+      ],
+      "control": {
+        "applied": false,
+        "engine_result": "tesSUCCESS",
+        "engine_result_code": 0,
+        "engine_result_message": "The simulated transaction would have been applied.",
+        "ledger_index": 22244249,
+        "meta": {
+          "AffectedNodes": [
+            {
+              "ModifiedNode": {
+                "FinalFields": {
+                  "Flags": 0,
+                  "Owner": "rshm7hcbFpKiYMKWzhCxmGUi8pd4Bf8Ppn",
+                  "RootIndex": "42A3CC06A844A07F256B32122B173AB77DB1D948543D56495905763CAC794732"
+                },
+                "LedgerEntryType": "DirectoryNode",
+                "LedgerIndex": "42A3CC06A844A07F256B32122B173AB77DB1D948543D56495905763CAC794732",
+                "PreviousTxnID": "F1AA7E20676650FE60F0F0C006141FB9BB04BE276AB3804F1E5937425DB3A95F",
+                "PreviousTxnLgrSeq": 22238843
+              }
+            },
+            {
+              "ModifiedNode": {
+                "FinalFields": {
+                  "Flags": 0,
+                  "Owner": "rJDwaPFKQv45eQRxbRPpkCUZGvHMEtwPcg",
+                  "RootIndex": "4F0F7F68C0B691850002F76BE8FAAA389C209941EBAA7E3251B13ECD60EA8128"
+                },
+                "LedgerEntryType": "DirectoryNode",
+                "LedgerIndex": "4F0F7F68C0B691850002F76BE8FAAA389C209941EBAA7E3251B13ECD60EA8128",
+                "PreviousTxnID": "05E63A803D63E673A4E1687C97C5471C5E054C306EF4029B985B43AB9CE77AE3",
+                "PreviousTxnLgrSeq": 22128478
+              }
+            },
+            {
+              "CreatedNode": {
+                "LedgerEntryType": "Escrow",
+                "LedgerIndex": "88993971BF07B1E602094B413C504A2794A60EE9F3AADB5E8BE7768D2B408C24",
+                "NewFields": {
+                  "Account": "rshm7hcbFpKiYMKWzhCxmGUi8pd4Bf8Ppn",
+                  "Amount": {
+                    "currency": "SGT",
+                    "issuer": "rhto8NT62NUYYXUUuHzwLNq3A78eaNwUwx",
+                    "value": "0.01"
+                  },
+                  "CancelAfter": 847726481,
+                  "Condition": "A025802072CD6E8422C407FB6D098690F1130B7DED7EC2F7F5E1D30BD9D521F015363793810120",
+                  "Destination": "rJDwaPFKQv45eQRxbRPpkCUZGvHMEtwPcg",
+                  "Sequence": 22128125
+                }
+              }
+            },
+            {
+              "ModifiedNode": {
+                "FinalFields": {
+                  "Balance": {
+                    "currency": "SGT",
+                    "issuer": "rrrrrrrrrrrrrrrrrrrrBZbvji",
+                    "value": "9996.39"
+                  },
+                  "Flags": 2162688,
+                  "HighLimit": {
+                    "currency": "SGT",
+                    "issuer": "rhto8NT62NUYYXUUuHzwLNq3A78eaNwUwx",
+                    "value": "0"
+                  },
+                  "HighNode": "0",
+                  "LowLimit": {
+                    "currency": "SGT",
+                    "issuer": "rshm7hcbFpKiYMKWzhCxmGUi8pd4Bf8Ppn",
+                    "value": "1000000"
+                  },
+                  "LowNode": "0"
+                },
+                "LedgerEntryType": "RippleState",
+                "LedgerIndex": "8AF2D46C8D7568EA305CF0E6CDF0ADF4DFD6B712980076F3292DADD8F6AC1FE5",
+                "PreviousFields": {
+                  "Balance": {
+                    "currency": "SGT",
+                    "issuer": "rrrrrrrrrrrrrrrrrrrrBZbvji",
+                    "value": "9996.4"
+                  }
+                },
+                "PreviousTxnID": "43FA9418F033D19A54B53F17A5352DD4A145542A196C03DBDE28F75D59CF68DF",
+                "PreviousTxnLgrSeq": 22128476
+              }
+            },
+            {
+              "ModifiedNode": {
+                "LedgerEntryType": "AccountRoot",
+                "LedgerIndex": "A22219359ECC1C2943297C8676F825FE71B4CE14C4C4B0CBCB3E3A57FE86EF63",
+                "PreviousTxnID": "05E63A803D63E673A4E1687C97C5471C5E054C306EF4029B985B43AB9CE77AE3",
+                "PreviousTxnLgrSeq": 22128478
+              }
+            },
+            {
+              "ModifiedNode": {
+                "FinalFields": {
+                  "Flags": 0,
+                  "Owner": "rhto8NT62NUYYXUUuHzwLNq3A78eaNwUwx",
+                  "RootIndex": "BD395F1878F1F6BD52B427935DE7AF82DB50A24BA9A6881AB8EA3300B3E2C18E"
+                },
+                "LedgerEntryType": "DirectoryNode",
+                "LedgerIndex": "BD395F1878F1F6BD52B427935DE7AF82DB50A24BA9A6881AB8EA3300B3E2C18E",
+                "PreviousTxnID": "05E63A803D63E673A4E1687C97C5471C5E054C306EF4029B985B43AB9CE77AE3",
+                "PreviousTxnLgrSeq": 22128478
+              }
+            },
+            {
+              "ModifiedNode": {
+                "FinalFields": {
+                  "Account": "rshm7hcbFpKiYMKWzhCxmGUi8pd4Bf8Ppn",
+                  "Balance": "39959690",
+                  "Flags": 0,
+                  "OwnerCount": 2,
+                  "Sequence": 22128126
+                },
+                "LedgerEntryType": "AccountRoot",
+                "LedgerIndex": "C7D9F9DD58A1E1936171224F30D21F1F671DAB36E33CABC239726E0A1CF02D14",
+                "PreviousFields": {
+                  "Balance": "39959700",
+                  "OwnerCount": 1,
+                  "Sequence": 22128125
+                },
+                "PreviousTxnID": "A722EB98545EB409D15831F060CEE9DD8CB9C78C921F9258D3CCA27D6FACB8AF",
+                "PreviousTxnLgrSeq": 22238845
+              }
+            }
+          ],
+          "TransactionIndex": 14,
+          "TransactionResult": "tesSUCCESS"
+        },
+        "tx_json": {
+          "Account": "rshm7hcbFpKiYMKWzhCxmGUi8pd4Bf8Ppn",
+          "Amount": {
+            "currency": "SGT",
+            "issuer": "rhto8NT62NUYYXUUuHzwLNq3A78eaNwUwx",
+            "value": "0.01"
+          },
+          "CancelAfter": 847726481,
+          "Condition": "A025802072CD6E8422C407FB6D098690F1130B7DED7EC2F7F5E1D30BD9D521F015363793810120",
+          "Destination": "rJDwaPFKQv45eQRxbRPpkCUZGvHMEtwPcg",
+          "Fee": "10",
+          "Sequence": 22128125,
+          "SigningPubKey": "",
+          "TransactionType": "EscrowCreate",
+          "TxnSignature": "",
+          "hash": "F5C3A2DA1A7CCA033CFAF80ACE2A797E6467100A0CB2C8BFB4EDC4145D3ABDF0"
+        }
+      },
+      "finish": {
+        "applied": false,
+        "engine_result": "tecNO_TARGET",
+        "engine_result_code": 138,
+        "engine_result_message": "Target account does not exist.",
+        "ledger_index": 22244249,
+        "meta": {
+          "AffectedNodes": [
+            {
+              "ModifiedNode": {
+                "FinalFields": {
+                  "Account": "rJDwaPFKQv45eQRxbRPpkCUZGvHMEtwPcg",
+                  "Balance": "5997946",
+                  "Flags": 0,
+                  "OwnerCount": 1,
+                  "Sequence": 22128108
+                },
+                "LedgerEntryType": "AccountRoot",
+                "LedgerIndex": "A22219359ECC1C2943297C8676F825FE71B4CE14C4C4B0CBCB3E3A57FE86EF63",
+                "PreviousFields": {
+                  "Balance": "5998296",
+                  "Sequence": 22128107
+                },
+                "PreviousTxnID": "05E63A803D63E673A4E1687C97C5471C5E054C306EF4029B985B43AB9CE77AE3",
+                "PreviousTxnLgrSeq": 22128478
+              }
+            }
+          ],
+          "TransactionIndex": 15,
+          "TransactionResult": "tecNO_TARGET"
+        },
+        "tx_json": {
+          "Account": "rJDwaPFKQv45eQRxbRPpkCUZGvHMEtwPcg",
+          "Condition": "A025802072CD6E8422C407FB6D098690F1130B7DED7EC2F7F5E1D30BD9D521F015363793810120",
+          "Fee": "350",
+          "Fulfillment": "A02280200101010101010101010101010101010101010101010101010101010101010101",
+          "OfferSequence": 1,
+          "Owner": "rshm7hcbFpKiYMKWzhCxmGUi8pd4Bf8Ppn",
+          "Sequence": 22128107,
+          "SigningPubKey": "",
+          "TransactionType": "EscrowFinish",
+          "TxnSignature": "",
+          "hash": "AD6DB25D9A97124A22E96291E1E68EF81A8F8E14B41B8D9FD5E14EBCAE613095"
+        }
+      }
+    },
+    {
+      "network": "Mainnet",
+      "endpoint": "wss://s1.ripple.com",
+      "flags": 2174353408,
+      "issuerLedger": 108262328,
+      "features": {
+        "Credentials": {
+          "name": "Credentials",
+          "enabled": true,
+          "supported": true
+        },
+        "DID": {
+          "name": "DID",
+          "enabled": true,
+          "supported": true
+        },
+        "PermissionedDomains": {
+          "name": "PermissionedDomains",
+          "enabled": true,
+          "supported": true
+        },
+        "TokenEscrow": {
+          "name": "TokenEscrow",
+          "enabled": true,
+          "supported": true
+        },
+        "MPTokensV1": {
+          "name": "MPTokensV1",
+          "enabled": true,
+          "supported": true
+        },
+        "Batch": {
+          "name": "Batch",
+          "enabled": false,
+          "supported": false
+        }
+      },
+      "rlusd": {
+        "applied": false,
+        "engine_result": "tecNO_PERMISSION",
+        "engine_result_code": 139,
+        "engine_result_message": "No permission to perform requested operation.",
+        "ledger_index": 108262329,
+        "meta": {
+          "AffectedNodes": [
+            {
+              "ModifiedNode": {
+                "FinalFields": {
+                  "Account": "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh",
+                  "Balance": "56786636989",
+                  "Flags": 1703936,
+                  "OwnerCount": 1,
+                  "RegularKey": "rBmVUQNF6tJy4cLvoKdPXb4BNqKBk5JY1Y",
+                  "Sequence": 44197,
+                  "TransferRate": 1220000000
+                },
+                "LedgerEntryType": "AccountRoot",
+                "LedgerIndex": "2B6AC232AA4C4BE41BF49D2459FA4A0347E1B543A4C92FCEE0821C0201E2E9A8",
+                "PreviousFields": {
+                  "Balance": "56786636999",
+                  "Sequence": 44196
+                },
+                "PreviousTxnID": "1A70791B27997CA17DE9DC3E9301269B4F6E55AFFACE5B77A30E08990CBA956C",
+                "PreviousTxnLgrSeq": 107893293
+              }
+            }
+          ],
+          "TransactionIndex": 435,
+          "TransactionResult": "tecNO_PERMISSION"
+        },
+        "tx_json": {
+          "Account": "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh",
+          "Amount": {
+            "currency": "524C555344000000000000000000000000000000",
+            "issuer": "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+            "value": "0.01"
+          },
+          "CancelAfter": 847726481,
+          "Condition": "A025802072CD6E8422C407FB6D098690F1130B7DED7EC2F7F5E1D30BD9D521F015363793810120",
+          "Destination": "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+          "Fee": "10",
+          "Sequence": 44196,
+          "SigningPubKey": "",
+          "TransactionType": "EscrowCreate",
+          "TxnSignature": "",
+          "hash": "064EA8684BFC0A766F4FE1591DBD4455CA50150C9FB4CCFA189F61E224C357AC"
+        }
+      },
+      "reads": [
+        {
+          "request": {
+            "command": "server_info"
+          },
+          "result": {
+            "info": {
+              "complete_ledgers": "32570-108262328",
+              "load_factor": 1,
+              "time": "2026-Nov-11 14:34:46.605760 UTC",
+              "uptime": 297218,
+              "clio_version": "2.8.0",
+              "libxrpl_version": "3.3.0",
+              "validated_ledger": {
+                "age": 5,
+                "hash": "3DF9205DE5DB66BCA27B005DFFE84B38522AA95C404FFFAA2F6CA778F551E62F",
+                "seq": 108262328,
+                "base_fee_xrp": 0.00001,
+                "reserve_base_xrp": 1,
+                "reserve_inc_xrp": 0.2
+              },
+              "cache": {
+                "size": 20270614,
+                "is_enabled": true,
+                "is_full": true,
+                "latest_ledger_seq": 108262328,
+                "object_hit_rate": 0.9719186425209045,
+                "successor_hit_rate": 0.5789052248001099
+              },
+              "validation_quorum": 28,
+              "rippled_version": "3.4.1",
+              "network_id": 0
+            },
+            "validated": true
+          }
+        },
+        {
+          "request": {
+            "command": "ledger",
+            "ledger_index": "validated"
+          },
+          "result": {
+            "ledger_hash": "3DF9205DE5DB66BCA27B005DFFE84B38522AA95C404FFFAA2F6CA778F551E62F",
+            "ledger_index": 108262328,
+            "validated": true,
+            "ledger": {
+              "account_hash": "BBFD154C306F1E55E0A4D6487940C84FB6807D40F8656061F1D04A0161C6E5A7",
+              "close_flags": 0,
+              "close_time": 847722881,
+              "close_time_human": "2026-Nov-11 14:34:41.000000000 UTC",
+              "close_time_resolution": 10,
+              "close_time_iso": "2026-11-11T14:34:41Z",
+              "ledger_hash": "3DF9205DE5DB66BCA27B005DFFE84B38522AA95C404FFFAA2F6CA778F551E62F",
+              "parent_close_time": 847722880,
+              "parent_hash": "518661EB7B66E86399E88E544F86305EA9F0DCC4866980B6582EF420792EEF34",
+              "total_coins": "99985556792145272",
+              "transaction_hash": "E9D9E17D574F21A35CD57598563202E3E9CC2C9F15559A2BAD8AF059146B0FF5",
+              "ledger_index": 108262328,
+              "closed": true
+            }
+          }
+        },
+        {
+          "request": {
+            "command": "feature"
+          },
+          "result": {
+            "features": {
+              "00C1FC4A53E60AB02C864641002B3172F38677E29C26C5406685179B37E1EDAC": {
+                "name": "RequireFullyCanonicalSig",
+                "enabled": true,
+                "supported": true
+              },
+              "0285B7E5E08E1A8E4C15636F0591D87F73CB6A7B6452A932AD72BBC8E5D1CBE3": {
+                "name": "fixNFTokenDirV1",
+                "enabled": false,
+                "supported": false
+              },
+              "03BDC0099C4E14163ADA272C1B6F6FABB448CC3E51F522F978041E4B57D9158C": {
+                "name": "fixNFTokenReserve",
+                "enabled": true,
+                "supported": true
+              },
+              "07D43DCE529B15A10827E5E04943B496762F9A88E3268269D69C44BE49E21104": {
+                "name": "Escrow",
+                "enabled": true,
+                "supported": true
+              },
+              "08DE7D96082187F6E6578530258C77FAABABE4C20474BDB82F04B021F1A68647": {
+                "name": "PayChan",
+                "enabled": true,
+                "supported": true
+              },
+              "0F48FF561C709540328F31F1C97FD512ACC8B4E42138A161CB0E21ECA292540B": {
+                "name": "PermissionDelegationV1_1",
+                "enabled": true,
+                "supported": true
+              },
+              "12523DF04B553A0B1AD74F42DDB741DE8DC06A03FC089A0EF197E2A87F1D8107": {
+                "name": "fixAMMOverflowOffer",
+                "enabled": true,
+                "supported": true
+              },
+              "138B968F25822EFBF54C00F97031221C47B1EAB8321D93C7C2AEAF85F04EC5DF": {
+                "name": "TokenEscrow",
+                "enabled": true,
+                "supported": true
+              },
+              "1562511F573A19AE9BD103B5D6B9E01B3B46805AEC5D3C4805C902B514399146": {
+                "name": "CryptoConditions",
+                "enabled": true,
+                "supported": true
+              },
+              "157D2D480E006395B76F948E3E07A45A05FE10230D88A7993C71F97AE4B1F2D1": {
+                "name": "Checks",
+                "enabled": true,
+                "supported": true
+              },
+              "15D61F0C6DB6A2F86BCF96F1E2444FEC54E705923339EC175BD3E517C8B3FF91": {
+                "name": "fixDisallowIncomingV1",
+                "enabled": true,
+                "supported": true
+              },
+              "1CB67D082CF7D9102412D34258CEDB400E659352D3B207348889297A6D90F5EF": {
+                "name": "Credentials",
+                "enabled": true,
+                "supported": true
+              },
+              "1D3463A5891F9E589C5AE839FFAC4A917CE96197098A1EF22304E1BC5B98A454": {
+                "name": "fix1528",
+                "enabled": true,
+                "supported": true
+              },
+              "1E7ED950F2F13C4F8E2A54103B74D57D5D298FFDBD005936164EE9E6484C438C": {
+                "name": "fixAMMv1_2",
+                "enabled": true,
+                "supported": true
+              },
+              "1F4AFA8FA1BC8827AD4C0F682C03A8B671DCDF6B5C4DE36D44243A684103EF88": {
+                "name": "HardenedValidations",
+                "enabled": true,
+                "supported": true
+              },
+              "2110E4A19966E2EF517C0A8C56A5F35099D7665B0BB89D7B126B30D50B86AAD5": {
+                "name": "ConfidentialTransfer",
+                "enabled": false,
+                "supported": true
+              },
+              "21B8D2F76F68E11E9C077A43BBBC394136E9987E99DDB73966DD68419467E431": {
+                "name": "fixCleanup3_2_0",
+                "enabled": true,
+                "supported": true
+              },
+              "25BA44241B3BD880770BFA4DA21C7180576831855368CBEC6A3154FDE4A7676E": {
+                "name": "fix1781",
+                "enabled": true,
+                "supported": true
+              },
+              "267624F8F744C4A4F1B5821A7D54410BCEBABE987F0172EE89E5FC4B6EDBC18A": {
+                "name": "fixBatchInnerSigs",
+                "enabled": false,
+                "supported": false
+              },
+              "27CD95EE8E1E5A537FF2F89B6CEB7C622E78E9374EBD7DCBEDFAE21CD6F16E0A": {
+                "name": "fixReducedOffersV1",
+                "enabled": true,
+                "supported": true
+              },
+              "2BF037D90E1B676B17592A8AF55E88DB465398B4B597AE46EECEE1399AB05699": {
+                "name": "fixXChainRewardRounding",
+                "enabled": false,
+                "supported": true
+              },
+              "2CD5286D8D687E98B41102BDD797198E81EA41DF7BD104E6561FEB104EFF2561": {
+                "name": "fixTakerDryOfferRemoval",
+                "enabled": true,
+                "supported": true
+              },
+              "2E2FB9CF8A44EB80F4694D38AADAE9B8B7ADAFD2F092E10068E61C98C4F092B0": {
+                "name": "fixUniversalNumber",
+                "enabled": true,
+                "supported": true
+              },
+              "3012E8230864E95A58C60FD61430D7E1B4D3353195F2981DC12B0C7C0950FFAC": {
+                "name": "FlowCross",
+                "enabled": true,
+                "supported": true
+              },
+              "303ACB16CF8DBD3B5C34F131A9D19A7DE01AE05F480A8A682B869D1B4AAC8CFC": {
+                "name": "fixCleanup3_1_3",
+                "enabled": true,
+                "supported": true
+              },
+              "30CD365592B8EE40489BA01AE2F7555CAC9C983145871DC82A42A31CF5BAE7D9": {
+                "name": "DeletableAccounts",
+                "enabled": true,
+                "supported": true
+              },
+              "31E0DA76FB8FB527CADCDF0E61CB9C94120966328EFA9DCA202135BAF319C0BA": {
+                "name": "fixReducedOffersV2",
+                "enabled": true,
+                "supported": true
+              },
+              "3298D47E1F3A8A24FECAA30F699B8FE1DD234E072834BA099AD8180FFCE0FEC4": {
+                "name": "fixCleanup3_3_0",
+                "enabled": true,
+                "supported": true
+              },
+              "32A122F1352A4C7B3A6D790362CC34749C5E57FCE896377BFDC6CCD14F6CD627": {
+                "name": "NonFungibleTokensV1_1",
+                "enabled": true,
+                "supported": true
+              },
+              "32B8614321F7E070419115ABEAB1742EA20F3E3AF34432B5E2F474F8083260DC": {
+                "name": "fixTokenEscrowV1",
+                "enabled": true,
+                "supported": true
+              },
+              "3318EA0CF0755AF15DAC19F2B5C5BCBFF4B78BDD57609ACCAABE2C41309B051A": {
+                "name": "fixFillOrKill",
+                "enabled": true,
+                "supported": true
+              },
+              "35291ADD2D79EB6991343BDA0912269C817D0F094B02226C1C14AD2858962ED4": {
+                "name": "fixAMMv1_1",
+                "enabled": true,
+                "supported": true
+              },
+              "36799EA497B1369B170805C078AEFE6188345F9B3E324C21E9CA3FF574E3C3D6": {
+                "name": "fixNFTokenNegOffer",
+                "enabled": false,
+                "supported": false
+              },
+              "3C43D9A973AA4443EF3FC38E42DD306160FBFFDAB901CD8BAA15D09F2597EB87": {
+                "name": "NonFungibleTokensV1",
+                "enabled": false,
+                "supported": false
+              },
+              "3CBC5C4E630A1B82380295CDA84B32B49DD066602E74E39B85EF64137FA65194": {
+                "name": "DepositPreauth",
+                "enabled": true,
+                "supported": true
+              },
+              "41765F664A8D67FF03DDB1C1A893DE6273690BA340A6C2B07C8D29D0DD013D3A": {
+                "name": "fixDirectoryLimit",
+                "enabled": true,
+                "supported": true
+              },
+              "42426C4D4F1009EE67080A9B7965B44656D7714D104A72F9B4369F97ABF044EE": {
+                "name": "FeeEscalation",
+                "enabled": true,
+                "supported": true
+              },
+              "42EEA5E28A97824821D4EF97081FE36A54E9593C6E4F20CBAE098C69D2E072DC": {
+                "name": "fix1373",
+                "enabled": true,
+                "supported": true
+              },
+              "452F5906C46D46F407883344BFDD90E672B672C5E9943DB4891E3A34FEEEB9DB": {
+                "name": "fixSTAmountCanonicalize",
+                "enabled": true,
+                "supported": true
+              },
+              "47C3002ABA31628447E8E9A8B315FAA935CE30183F9A9B86845E469CA2CDC3DF": {
+                "name": "DisallowIncoming",
+                "enabled": true,
+                "supported": true
+              },
+              "4C97EBA926031A7CF7D7B36FDE3ED66DDA5421192D63DE53FFB46E43B9DC8373": {
+                "name": "MultiSign",
+                "enabled": true,
+                "supported": true
+              },
+              "4F46DF03559967AC60F2EB272FEFE3928A7594A45FF774B87A7E540DB0F8F068": {
+                "name": "fixAmendmentMajorityCalc",
+                "enabled": true,
+                "supported": true
+              },
+              "532651B4FD58DF8922A49BA101AB3E996E5BFBF95A913B3E392504863E63B164": {
+                "name": "TickSize",
+                "enabled": true,
+                "supported": true
+              },
+              "565B90CA1AB2B9D42208ED10884188C64F9E19083DECB9634AAF06EB03299509": {
+                "name": "LendingProtocol",
+                "enabled": false,
+                "supported": true
+              },
+              "56B241D7A43D40354D02A9DC4C8DF5C7A1F930D92A9035C4E12291B3CA3E1C2B": {
+                "name": "Clawback",
+                "enabled": true,
+                "supported": true
+              },
+              "586480873651E106F1D6339B0C4A8945BA705A777F3F4524626FF1FC07EFE41D": {
+                "name": "MultiSignReserve",
+                "enabled": true,
+                "supported": true
+              },
+              "58BE9B5968C4DA7C59BA900961828B113E5490699B21877DEF9A31E9D0FE5D5F": {
+                "name": "fix1623",
+                "enabled": true,
+                "supported": true
+              },
+              "58CAABE561CD53D8EC9BD3EFDFD70E092B40F80F221430004603F7ECEFFEA56B": {
+                "name": "fixDelegateV1_1",
+                "enabled": false,
+                "supported": false
+              },
+              "58E92F338758479C06084E1B6BA366BAD8F75E5329A7F0EEAFFFDA51E5106B7F": {
+                "name": "DynamicMPT",
+                "enabled": false,
+                "supported": true
+              },
+              "5D08145F0A4983F23AFFFF514E83FAD355C5ABFBB6CAB76FB5BC8519FF5F33BE": {
+                "name": "fix1515",
+                "enabled": true,
+                "supported": true
+              },
+              "5E9586DB3D765B4C5794658FB6BB385071E9838DF4016027E6E26820C8526724": {
+                "name": "fixAMMClawbackRounding",
+                "enabled": true,
+                "supported": true
+              },
+              "6143A27B71F7DAF9330ECA7C5EC3D54C8083A4FDEF7016737EEC06AB61E82EE0": {
+                "name": "fixIncludeKeyletFields",
+                "enabled": true,
+                "supported": true
+              },
+              "621A0B264970359869E3C0363A899909AAB7A887C8B73519E4ECF952D33258A8": {
+                "name": "fixPayChanRecipientOwnerDir",
+                "enabled": true,
+                "supported": true
+              },
+              "677E401A423E3708363A36BA8B3A7D019D21AC5ABD00387BDBEA6BDE4C91247E": {
+                "name": "PermissionedDEX",
+                "enabled": true,
+                "supported": true
+              },
+              "6781F8368C4771B83E8B821D88F580202BCB4228075297B19E4FDC5233F1EFDC": {
+                "name": "TrustSetAuth",
+                "enabled": true,
+                "supported": true
+              },
+              "67A34F2CF55BFC0F93AACD5B281413176FEE195269FA6D95219A2DF738671172": {
+                "name": "fix1513",
+                "enabled": true,
+                "supported": true
+              },
+              "6C92211186613F9647A89DFFBAB8F94C99D4C7E956D495270789128569177DA1": {
+                "name": "fix1512",
+                "enabled": true,
+                "supported": true
+              },
+              "7117E2EC2DBF119CA55181D69819F1999ECEE1A0225A7FD2B9ED47940968479C": {
+                "name": "fix1571",
+                "enabled": true,
+                "supported": true
+              },
+              "726F944886BCDF7433203787E93DD9AA87FAB74DFE3AF4785BA03BEFC97ADA1F": {
+                "name": "AMMClawback",
+                "enabled": true,
+                "supported": true
+              },
+              "73761231F7F3D94EC3D8C63D91BDD0D89045C6F71B917D1925C01253515A6669": {
+                "name": "fixNonFungibleTokensV1_2",
+                "enabled": true,
+                "supported": true
+              },
+              "740352F2412A9909880C23A559FCECEDA3BE2126FED62FC7660D628A06927F11": {
+                "name": "Flow",
+                "enabled": true,
+                "supported": true
+              },
+              "755C971C29971C9F20C6F080F2ED96F87884E40AD19554A5EBECDCEC8A1F77FE": {
+                "name": "fixEmptyDID",
+                "enabled": true,
+                "supported": true
+              },
+              "75A7E01C505DD5A179DFE3E000A9B6F1EDDEB55A12F95579A23E15B15DC8BE5A": {
+                "name": "ImmediateOfferKilled",
+                "enabled": true,
+                "supported": true
+              },
+              "763C37B352BE8C7A04E810F8E462644C45AFEAD624BF3894A08E5C917CF9FF39": {
+                "name": "fixEnforceNFTokenTrustline",
+                "enabled": true,
+                "supported": true
+              },
+              "7BB62DC13EC72B775091E9C71BF8CF97E122647693B50C5E87A80DFD6FCFAC50": {
+                "name": "fixPreviousTxnID",
+                "enabled": true,
+                "supported": true
+              },
+              "7CA70A7674A26FA517412858659EBC7EDEEF7D2D608824464E6FDEFD06854E14": {
+                "name": "fixAMMv1_3",
+                "enabled": true,
+                "supported": true
+              },
+              "81BD2619B6B3C8625AC5D0BC01DE17F06C3F0AB95C7C87C93715B87A4FD240D8": {
+                "name": "SingleAssetVault",
+                "enabled": false,
+                "supported": true
+              },
+              "83FD6594FF83C1D105BD2B41D7E242D86ECB4A8220BD9AF4DA35CB0F69E39B2A": {
+                "name": "fixFrozenLPTokenTransfer",
+                "enabled": true,
+                "supported": true
+              },
+              "86E83A7D2ECE3AD5FA87AB2195AE015C950469ABF0B72EAACED318F74886AE90": {
+                "name": "CryptoConditionsSuite",
+                "enabled": false,
+                "supported": true
+              },
+              "89308AF3B8B10B7192C4E613E1D2E4D9BA64B2EE2D5232402AE82A6A7220D953": {
+                "name": "fixQualityUpperBound",
+                "enabled": true,
+                "supported": true
+              },
+              "894646DD5284E97DECFE6674A6D6152686791C4A95F8C132CCA9BAF9E5812FB6": {
+                "name": "Batch",
+                "enabled": false,
+                "supported": false
+              },
+              "8CC0774A3BF66D1D22E76BBDA8E8A232E6B6313834301B3B23E8601196AE6455": {
+                "name": "AMM",
+                "enabled": true,
+                "supported": true
+              },
+              "8EC4304A06AF03BE953EA6EDA494864F6F3F30AA002BABA35869FBB8C6AE5D52": {
+                "name": "fixInvalidTxFlags",
+                "enabled": true,
+                "supported": true
+              },
+              "8F81B066ED20DAECA20DF57187767685EEF3980B228E0667A650BAF24426D3B4": {
+                "name": "fixCheckThreading",
+                "enabled": true,
+                "supported": true
+              },
+              "9178256A980A86CF3D70D0260A7DA6402AAFE43632FDBCB88037978404188871": {
+                "name": "OwnerPaysFee",
+                "enabled": false,
+                "supported": false
+              },
+              "9196110C23EA879B4229E51C286180C7D02166DA712559F634372F5264D0EC59": {
+                "name": "fixInnerObjTemplate2",
+                "enabled": true,
+                "supported": true
+              },
+              "93E516234E35E08CA689FA33A6D38E103881F8DCB53023F728C307AA89D515A7": {
+                "name": "XRPFees",
+                "enabled": true,
+                "supported": true
+              },
+              "950AE2EA4654E47F04AA8739C0B214E242097E802FD372D24047A89AB1F5EC38": {
+                "name": "MPTokensV1",
+                "enabled": true,
+                "supported": true
+              },
+              "955DF3FA5891195A9DAEFA1DDC6BB244B545DDE1BAA84CBB25D5F12A8DA68A0C": {
+                "name": "TicketBatch",
+                "enabled": true,
+                "supported": true
+              },
+              "96FD2F293A519AE1DB6F8BED23E4AD9119342DA7CB6BAFD00953D16C54205D8B": {
+                "name": "PriceOracle",
+                "enabled": true,
+                "supported": true
+              },
+              "98DECF327BF79997AEC178323AD51A830E457BFC6D454DAF3E46E5EC42DC619F": {
+                "name": "CheckCashMakesTrustLine",
+                "enabled": true,
+                "supported": true
+              },
+              "9F287AED3CDB50A7BD1ACEC24296A30C9B5230CCD136219317AC790E3B884377": {
+                "name": "BatchV1_1",
+                "enabled": true,
+                "supported": true
+              },
+              "A360E2BFD775A5B0DCE1C36C16DF31B72735A57584FD163655D2F9564F8E7AC8": {
+                "name": "LendingProtocolV1_1",
+                "enabled": false,
+                "supported": false
+              },
+              "A730EB18A9D4BB52502C898589558B4CCEB4BE10044500EE5581137A2E80E849": {
+                "name": "PermissionedDomains",
+                "enabled": true,
+                "supported": true
+              },
+              "AB8D932A5F338903FE5BCBD80B611FFED70839ABA3170E9CE01D947C0EDEDCF2": {
+                "name": "fixMPTDeliveredAmount",
+                "enabled": true,
+                "supported": true
+              },
+              "AE35ABDEFBDE520372B31C957020B34A7A4A9DC3115A69803A44016477C84D6E": {
+                "name": "fixNFTokenRemint",
+                "enabled": true,
+                "supported": true
+              },
+              "AE6AB9028EEB7299EBB03C7CBCC3F2A4F5FBE00EA28B8223AA3118A0B436C1C5": {
+                "name": "PermissionDelegation",
+                "enabled": false,
+                "supported": false
+              },
+              "AF8DF7465C338AE64B1E937D6C8DA138C0D63AD5134A68792BBBE1F63356C422": {
+                "name": "FlowSortStrands",
+                "enabled": true,
+                "supported": true
+              },
+              "B2A4DB846F0891BF2C76AB2F2ACC8F5B4EC64437135C6E56F3F859DE5FFD5856": {
+                "name": "ExpandedSignerList",
+                "enabled": true,
+                "supported": true
+              },
+              "B32752F7DCC41FB86534118FC4EEC8F56E7BD0A7DB60FD73F93F257233C08E3A": {
+                "name": "fixEnforceNFTokenTrustlineV2",
+                "enabled": true,
+                "supported": true
+              },
+              "B4D44CC3111ADD964E846FC57760C8B50FFCD5A82C86A72756F6B058DDDF96AD": {
+                "name": "fix1201",
+                "enabled": true,
+                "supported": true
+              },
+              "B4E4F5D2D6FB84DF7399960A732309C9FD530EAE5941838160042833625A6076": {
+                "name": "NegativeUNL",
+                "enabled": true,
+                "supported": true
+              },
+              "B6B3EEDC0267AB50491FDC450A398AF30DBCD977CECED8BEF2499CAB5DAC19E2": {
+                "name": "fixRmSmallIncreasedQOffers",
+                "enabled": true,
+                "supported": true
+              },
+              "B9E739B8296B4A1BB29BE990B17D66E21B62A300A909F25AC55C22D6C72E1F9D": {
+                "name": "fix1523",
+                "enabled": true,
+                "supported": true
+              },
+              "BE1F90581635DBCEBFC4678C4B54FEDDC1A17B50FD02CFE765A4132A342126AC": {
+                "name": "Sponsor",
+                "enabled": false,
+                "supported": true
+              },
+              "BE2D87DF21B690ED1497B593FDC013CC04276302380B1BD50A033DCF8DEFB2EB": {
+                "name": "MPTokensV2",
+                "enabled": false,
+                "supported": false
+              },
+              "C1CE18F2A268E6A849C27B3DE485006771B4C01B2FCEC4F18356FE92ECD6BB74": {
+                "name": "DynamicNFT",
+                "enabled": true,
+                "supported": true
+              },
+              "C393B3AEEBF575E475F0C60D5E4241B2070CC4D0EB6C4846B1A07508FAEFC485": {
+                "name": "fixInnerObjTemplate",
+                "enabled": true,
+                "supported": true
+              },
+              "C4483A1896170C66C098DEA5B0E024309C60DC960DE5F01CD7AF986AA3D9AD37": {
+                "name": "fixMasterKeyAsRegularKey",
+                "enabled": true,
+                "supported": true
+              },
+              "C7981B764EC4439123A86CC7CCBA436E9B3FF73B3F10A0AE51882E404522FC41": {
+                "name": "fixNFTokenPageLinks",
+                "enabled": true,
+                "supported": true
+              },
+              "C98D98EE9616ACD36E81FDEB8D41D349BF5F1B41DD64A0ABC1FE9AA5EA267E9C": {
+                "name": "XChainBridge",
+                "enabled": false,
+                "supported": true
+              },
+              "CA7C02118BA27599528543DFE77BA6838D1B0F43B447D4D7F53523CE6A0E9AC2": {
+                "name": "fix1543",
+                "enabled": true,
+                "supported": true
+              },
+              "CC5ABAE4F3EC92E94A59B1908C2BE82D2228B6485C00AFF8F22DF930D89C194E": {
+                "name": "SortedDirectories",
+                "enabled": true,
+                "supported": true
+              },
+              "D3456A862DC07E382827981CA02E21946E641877F19B8889031CC57FDCAC83E2": {
+                "name": "fixPayChanCancelAfter",
+                "enabled": true,
+                "supported": true
+              },
+              "D8ED3BE0B2673496CB49DE8B5588C8805DF7B1DE203F38FE0367ACE703D36C0F": {
+                "name": "InvariantsV1_1",
+                "enabled": false,
+                "supported": false
+              },
+              "DAF3A6EB04FA5DC51E8E4F23E9B7022B693EFA636F23F22664746C77B5786B23": {
+                "name": "DeepFreeze",
+                "enabled": true,
+                "supported": true
+              },
+              "DB432C3A09D9D5DFC7859F39AE5FF767ABC59AED0A9FB441E83B814D8946C109": {
+                "name": "DID",
+                "enabled": true,
+                "supported": true
+              },
+              "DC9CA96AEA1DCF83E527D1AFC916EFAF5D27388ECA4060A88817C1238CAEE0BF": {
+                "name": "EnforceInvariants",
+                "enabled": true,
+                "supported": true
+              },
+              "DF8B4536989BDACE3F934F29423848B9F1D76D09BE6A1FCFE7E7F06AA26ABEAD": {
+                "name": "fixRemoveNFTokenAutoTrustLine",
+                "enabled": true,
+                "supported": true
+              },
+              "E2E6F2866106419B88C50045ACE96368558C345566AC8F2BDF5A5B5587F0E6FA": {
+                "name": "fix1368",
+                "enabled": true,
+                "supported": true
+              },
+              "EE3CF852F0506782D05E65D49E5DCC3D16D50898CD1B646BAE274863401CC3CE": {
+                "name": "NFTokenMintOffer",
+                "enabled": true,
+                "supported": true
+              },
+              "F1ED6B4A411D8B872E65B9DCB4C8B100375B0DD3D62D07192E011D6D7F339013": {
+                "name": "fixTrustLinesToSelf",
+                "enabled": true,
+                "supported": true
+              },
+              "F64E1EABBE79D55B3BB82020516CEC2C582A98A6BFE20FBE9BB6A0D233418064": {
+                "name": "DepositAuth",
+                "enabled": true,
+                "supported": true
+              },
+              "FBD513F1B893AC765B78F250E6FFA6A11B573209D1842ADC787C850696741288": {
+                "name": "fix1578",
+                "enabled": true,
+                "supported": true
+              },
+              "FF2D1E13CF6D22427111B967BD504917F63A900CECD320D6FD3AC9FA90344631": {
+                "name": "fixPriceOracleOrder",
+                "enabled": true,
+                "supported": true
+              }
+            },
+            "ledger_hash": "3DF9205DE5DB66BCA27B005DFFE84B38522AA95C404FFFAA2F6CA778F551E62F",
+            "ledger_index": 108262328,
+            "validated": true
+          }
+        },
+        {
+          "request": {
+            "command": "account_info",
+            "account": "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+            "ledger_index": "validated"
+          },
+          "result": {
+            "account_data": {
+              "Account": "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+              "Balance": "99560794",
+              "Domain": "68747470733A2F2F726970706C652E636F6D2F",
+              "Flags": 2174353408,
+              "LedgerEntryType": "AccountRoot",
+              "OwnerCount": 19,
+              "PreviousTxnID": "A730D98576F6BEE671E75EBFE5215B1F6C8399670EA792EBC92C98A322020344",
+              "PreviousTxnLgrSeq": 108262265,
+              "Sequence": 89926603,
+              "index": "383BB05FBB110F9BE530B75C44DF100F86C5600F0F146593D3E7133FD1C99FF2"
+            },
+            "ledger_hash": "3DF9205DE5DB66BCA27B005DFFE84B38522AA95C404FFFAA2F6CA778F551E62F",
+            "ledger_index": 108262328,
+            "validated": true,
+            "account_flags": {
+              "defaultRipple": true,
+              "depositAuth": true,
+              "disableMasterKey": true,
+              "disallowIncomingXRP": true,
+              "globalFreeze": false,
+              "noFreeze": false,
+              "passwordSpent": false,
+              "requireAuthorization": false,
+              "requireDestinationTag": true,
+              "disallowIncomingNFTokenOffer": false,
+              "disallowIncomingCheck": false,
+              "disallowIncomingPayChan": false,
+              "disallowIncomingTrustline": false,
+              "allowTrustLineClawback": true,
+              "allowTrustLineLocking": false
+            }
+          }
+        },
+        {
+          "request": {
+            "command": "account_info",
+            "account": "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+            "ledger_index": "validated"
+          },
+          "result": {
+            "account_data": {
+              "Account": "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+              "Balance": "99560794",
+              "Domain": "68747470733A2F2F726970706C652E636F6D2F",
+              "Flags": 2174353408,
+              "LedgerEntryType": "AccountRoot",
+              "OwnerCount": 19,
+              "PreviousTxnID": "A730D98576F6BEE671E75EBFE5215B1F6C8399670EA792EBC92C98A322020344",
+              "PreviousTxnLgrSeq": 108262265,
+              "Sequence": 89926603,
+              "index": "383BB05FBB110F9BE530B75C44DF100F86C5600F0F146593D3E7133FD1C99FF2"
+            },
+            "ledger_hash": "3DF9205DE5DB66BCA27B005DFFE84B38522AA95C404FFFAA2F6CA778F551E62F",
+            "ledger_index": 108262328,
+            "validated": true,
+            "account_flags": {
+              "defaultRipple": true,
+              "depositAuth": true,
+              "disableMasterKey": true,
+              "disallowIncomingXRP": true,
+              "globalFreeze": false,
+              "noFreeze": false,
+              "passwordSpent": false,
+              "requireAuthorization": false,
+              "requireDestinationTag": true,
+              "disallowIncomingNFTokenOffer": false,
+              "disallowIncomingCheck": false,
+              "disallowIncomingPayChan": false,
+              "disallowIncomingTrustline": false,
+              "allowTrustLineClawback": true,
+              "allowTrustLineLocking": false
+            }
+          }
+        },
+        {
+          "request": {
+            "command": "simulate",
+            "tx_json": {
+              "TransactionType": "EscrowCreate",
+              "Account": "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh",
+              "Destination": "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+              "Condition": "A025802072CD6E8422C407FB6D098690F1130B7DED7EC2F7F5E1D30BD9D521F015363793810120",
+              "CancelAfter": 847726481,
+              "Amount": {
+                "currency": "524C555344000000000000000000000000000000",
+                "issuer": "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+                "value": "0.01"
+              }
+            }
+          },
+          "result": {
+            "applied": false,
+            "engine_result": "tecNO_PERMISSION",
+            "engine_result_code": 139,
+            "engine_result_message": "No permission to perform requested operation.",
+            "ledger_index": 108262329,
+            "meta": {
+              "AffectedNodes": [
+                {
+                  "ModifiedNode": {
+                    "FinalFields": {
+                      "Account": "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh",
+                      "Balance": "56786636989",
+                      "Flags": 1703936,
+                      "OwnerCount": 1,
+                      "RegularKey": "rBmVUQNF6tJy4cLvoKdPXb4BNqKBk5JY1Y",
+                      "Sequence": 44197,
+                      "TransferRate": 1220000000
+                    },
+                    "LedgerEntryType": "AccountRoot",
+                    "LedgerIndex": "2B6AC232AA4C4BE41BF49D2459FA4A0347E1B543A4C92FCEE0821C0201E2E9A8",
+                    "PreviousFields": {
+                      "Balance": "56786636999",
+                      "Sequence": 44196
+                    },
+                    "PreviousTxnID": "1A70791B27997CA17DE9DC3E9301269B4F6E55AFFACE5B77A30E08990CBA956C",
+                    "PreviousTxnLgrSeq": 107893293
+                  }
+                }
+              ],
+              "TransactionIndex": 435,
+              "TransactionResult": "tecNO_PERMISSION"
+            },
+            "tx_json": {
+              "Account": "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh",
+              "Amount": {
+                "currency": "524C555344000000000000000000000000000000",
+                "issuer": "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+                "value": "0.01"
+              },
+              "CancelAfter": 847726481,
+              "Condition": "A025802072CD6E8422C407FB6D098690F1130B7DED7EC2F7F5E1D30BD9D521F015363793810120",
+              "Destination": "rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De",
+              "Fee": "10",
+              "Sequence": 44196,
+              "SigningPubKey": "",
+              "TransactionType": "EscrowCreate",
+              "TxnSignature": "",
+              "hash": "064EA8684BFC0A766F4FE1591DBD4455CA50150C9FB4CCFA189F61E224C357AC"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
