@@ -68,7 +68,7 @@ a duplicate two-decimal formatter, an alternative hash helper and a raw timestam
 
 ## Validation
 
-Node **22.23.4** production build: initial JS **158,144 B**, limit **170,000 B**,
+Node **22.23.4** production build: initial JS **158,311 B**, limit **170,000 B**,
 using the unchanged deploy calculation in `scripts/bundle-budget.mjs`.
 Focused formatting, key-ledger and proof-page tests passed (32 tests before
 adding rendered checks). No gate, money cap, leak threshold or test assertion
