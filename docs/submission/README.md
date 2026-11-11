@@ -68,7 +68,7 @@ If the form has a free-text notes field, paste this (about 70 words):
 > Try it in your browser, nothing to install (13–19 Nov, shared XRPL Testnet
 > sandbox, no real value): https://ra-front-651013803640.asia-southeast1.run.app
 > · No clone, one line (Node ≥ 22.13):
-> `npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-mcp-1.1.0.tgz try --testnet`
+> `npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz try --testnet`
 > ends with six Testnet links and `RESULT PASS`. Recorded run:
 > https://collaboration95.github.io/theFastandtheFungible/demo/ · Live ledger
 > check: https://collaboration95.github.io/theFastandtheFungible/ledger/ ·
@@ -88,7 +88,7 @@ grep -rn '{{' docs/submission/ --include='*.md' --include='*.html'
 |---|---|---|---|
 | `{{VIDEO_URL}}` | the unlisted video link | owner, after recording | form, README links line (video slot comment); the deck reads `VIDEO_URL` in `scripts/facts.mjs` |
 
-Filled: the release (v1.1.0), the writer first-try time
+Filled: the release (v1.1.1), the writer first-try time
 (<!--f:writer_s-->33.9<!--/f--> s, J3 [#389](https://github.com/Collaboration95/theFastandtheFungible/pull/389)),
 the held-out result (<!--f:heldout_line-->v5 blind held-out: 16/20 bought and cited, 0/10 off-topic purchases (run once, 11 Nov, on XRPL Testnet: fixture research and decision models with answers written offline, team-authored writers)<!--/f-->),
 the hosted URL (above) and Q&A Q13, which now states the true filing count

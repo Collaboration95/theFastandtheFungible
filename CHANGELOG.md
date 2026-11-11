@@ -13,6 +13,45 @@ the MCP Registry; that is an owner step tracked in #265.
 
 ## Unreleased
 
+## v1.1.1 — 11 Nov 2026
+
+Patch release on v1.1.0 with the fixes from the round-9 mock judges (#472, #473, #474, #475), judge-facing changes first. XRPL Testnet with faucet funds or the hosted demo's test-funds sponsor; nothing here uses real money. Packages are GitHub release assets only (not on npm, PyPI or the MCP Registry), and the Mac DMGs are unsigned.
+
+### What a judge will notice
+
+- **The first click buys one article and leads with the answer** (#473). On the live sandbox, which plans with the live model, the RLUSD escrow preset buys 1 article (S$0.40; v1.1.0 bought 3 for S$1.20) and leads with "…blocked until its issuer enables AllowTrustLineLocking." The x402 402 question is now the first preset. "How much" questions buy the article that names the fee and lead with it ("423 drops"); "Which XRPL validators are run by Singapore banks?" buys nothing.
+- **The plan you confirm is the plan that runs** (#473). On the sandbox, the run uses the plan shown in the 5 s modal (it used to re-plan at start) and shows it as the first step of Show work.
+- **Every exported receipt verifies** (#472). The export of "If my agent pays for an article and the writer never reveals the key, what happens to my money?" showed "6 of 34 checks failed" in Verify on XRPL: it carried free articles that had no writer-signed delivery proof. Such articles are now dropped like a failed read, so they never reach an answer or a receipt. That export shape now passes with the published wheel (50 passed, 0 failed) and the TypeScript CLI, and a release cannot ship unless both verify a hosted export that exercises this case.
+- **A paid run with no answer says so** (#472): "Bought 2 articles; neither gave a citable answer to this question." replaces "Why nothing was bought", with a notice that names the reason.
+- **It answers questions about itself** (#475). Three team-written product explainers (how it decides what to buy; how the writer gets paid and what stops an agent reading without paying; what a writer earns per sale) mean those questions buy one article (S$0.40) each and lead with the answer. One of them had bought 2–3 articles (S$0.80–1.20) with no answer. Off-topic chat (a recipe, the Sun) gets one fixed line pointing back to what it researches. The Writers tab says "None yet" when you have bought nothing and, on the sandbox, shows how many sales each writer made there.
+- **The sandbox no longer says "paused" when it is only slow** (#474). A status check that took over 1.5 s (a slow XRPL Testnet lookup) used to show the paused page; uptime checks no longer fill the visitor-session table; and the Open Records writer gets its own signing key on deploy, so its free sources stay citable.
+- **MCP labels name who wrote the sources** (this release). The zero-clone MCP printed "Fixture models and fictional writers" even when every cited source was a team-authored explainer. Each result now names the writers behind its citations and purchases: "Fixture models · team-authored writers", "… · fictional writers", or both; a writer the bundle does not know is called unverified, never fictional. With no cited source the line reads "Fixture models · fictional and team-authored writers".
+
+### Changed
+
+- "Still unanswered" never repeats a fact the lead already answers (#472, #473).
+- A model fallback names its reason (no passage matched closely enough, timeout, error, cap, invalid output, unavailable) in the event log and the answer notice (#472).
+- Refusal proofs say how buying was decided ("rule-based buying" or "model-judged buying") instead of "fixture models" (#472).
+- Up to 6 questions a minute may start from one network on the sandbox (was 3; two judges on one network were refused). Daily per-address limits (60 questions, S$120) and every budget are unchanged (#473).
+- The topic check treats "pay", "paid" and "payment" (and "buy", "bought") as one word, and a fact named only by a broad predicate ("what is final") passes on two named subject words (#475). Development banks (fixture models, used data, not held out): 0 negative purchases.
+- Corpus: 182 sourced explainers (was 179) and 255 paid articles (was 252), labelled team-authored (#475).
+- Hosted guard: qualifies the API per Host and re-checks it in the background, failing closed after 60 s without a good answer; the uptime check returns to a 60 s period (#474).
+- Every install and verify line (README, install guide, SDK and MCP guides, Export menu, site, submission pack) pins v1.1.1.
+
+### Fixed
+
+- One very long word in a writer's passage no longer stalls choosing the answer's lead: a 47,000-character token took 3.9 s, now 8 ms. The rule that skips sentences naming a source file now starts a match only where a word starts; over 566,505 corpus sentences and generated strings it decides exactly as before.
+
+### Corrected
+
+- v1.1.0's purchase bullets (#460, #464, #467) were measured on development banks with the fixture planner, where the presets matched. On the hosted demo, which plans with the live model, the RLUSD preset bought 3 articles (S$1.20) and led with a generic sentence. The v1.1.0 entry below now says so; #473 fixes that path.
+
+### Known limits
+
+- The live decision model (OpenAI) was not measured on these questions; the sandbox decides with the rule-based model.
+- The account-reserves preset can still buy up to 3 articles (within budget) on some fresh live plans.
+- H8-18's corpus sentence is unchanged (see v1.1.0).
+
 ## v1.1.0 — 11 Nov 2026
 
 Finals release: everything since v1.0.2 (8 Nov), judge-facing changes first. XRPL Testnet with faucet funds or the hosted demo's test-funds sponsor; nothing here uses real money. Packages are GitHub release assets only (not on npm, PyPI or the MCP Registry), and the Mac DMGs are unsigned.
@@ -21,7 +60,7 @@ Finals release: everything since v1.0.2 (8 Nov), judge-facing changes first. XRP
 
 - **A live sandbox with nothing to install** (#432, #438, #441, #454, #458, #461): https://ra-front-651013803640.asia-southeast1.run.app, open 13–19 Nov 2026. Each visitor gets 5 questions a day and up to S$2.00 of test funds per question; one environment chip says what is live (DeepSeek answers) and what is rule-based (purchase decisions). It restarts itself after an unplanned VM reboot of an already-checked release.
 - **Receipts from the sandbox verify with the published tools.** The v1.0.2 verifier said `FAIL anchor binding` on hosted exports because it cannot recompute the newer answer commitment. Every verify instruction (README, install guide, Export menu, deck, site) now pins v1.1.0, and a release can no longer ship unless its packed Python wheel and packed TypeScript CLI both verify fresh hosted-mode exports and a committed real hosted export ([evidence](docs/evidence/hosted-export-nov11/README.md)).
-- **It buys the right article, and fewer of them** (#460, #464): a question's trailing "on Testnet" or "on XRPL" no longer outranks its subject, so "What does an x402 402 response contain…?" buys the article titled with that question; "Which XRPL amendment and issuer flag does token escrow need?" buys the TokenEscrow (XLS-85) article, not the generic escrow explainer; a further article is bought only when it adds part of the fact asked for (the escrow-condition question buys 1 article instead of 3); payment words such as "pay" or "buy" no longer discard a working plan; product questions get cited research instead of a chat reply.
+- **It buys the right article, and fewer of them** (#460, #464): a question's trailing "on Testnet" or "on XRPL" no longer outranks its subject, so "What does an x402 402 response contain…?" buys the article titled with that question; "Which XRPL amendment and issuer flag does token escrow need?" buys the TokenEscrow (XLS-85) article, not the generic escrow explainer; a further article is bought only when it adds part of the fact asked for (the escrow-condition question buys 1 article instead of 3); payment words such as "pay" or "buy" no longer discard a working plan; product questions get cited research instead of a chat reply. *Corrected in v1.1.1:* this and the next bullet were measured with the fixture planner. On the hosted demo, which plans with the live model, the RLUSD escrow preset bought 3 articles (S$1.20) and led with a generic EscrowCreate sentence until #473.
 - **Plural questions find their article** (#467): "Which XRPL amendment lets escrows hold issued tokens?" buys the TokenEscrow (XLS-85) article first (keyword search now folds plurals, so "escrows" matches "escrow"); "EscrowFinish vs EscrowCancel" leads with a cited sentence answering one side; "which transactions" buys the named transaction references, not the generic explainer.
 - **The answer leads with the fact you asked for** (#429, #442, #450): a cited extract comes first, it names the thing asked for, and an unrelated sentence never leads.
 - **A cleaner answer view** (#462): the lead is never an apology or a cut-off fragment, notices name the real reason (for example the spending guard, not "planner unavailable"), the waiting card says how many questions are ahead, the Writers tab lists the team writer first and folds the fictional demo writers, run duration matches after a reload, and a skip link reaches the question box.

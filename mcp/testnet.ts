@@ -1,4 +1,5 @@
 import { TEST_SGD_LABEL } from '../shared/contracts/asset.js'
+import { FIXTURE_WRITERS_LABEL } from '../shared/writer-label.js'
 import { homedir } from 'node:os'
 import { resolve, isAbsolute } from 'node:path'
 import { provision, isolatedEnv } from '../scripts/testnet-wallets.js'
@@ -18,7 +19,7 @@ export const reasonClass = (error: unknown) => {
   return 'network_unavailable'
 }
 
-const FIXTURE = 'Fixture models and fictional writers'
+const FIXTURE = FIXTURE_WRITERS_LABEL
 /**
  * Provisions (or reuses) faucet wallets and returns engine-only environment overrides. The parent
  * process environment is never mutated and operator caps are never touched (hard gate 2).

@@ -1,9 +1,9 @@
 # Python SDK
 
-[Release v1.1.0](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.1.0): release · not yet on npm/PyPI/MCP Registry. Install without cloning.
+[Release v1.1.1](https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.1.1): release · not yet on npm/PyPI/MCP Registry. Install without cloning.
 
 ```sh
-pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-1.1.0-py3-none-any.whl
+pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-1.1.1-py3-none-any.whl
 ```
 
 
@@ -25,7 +25,7 @@ $env:MCP_MAX_BUDGET_MINOR="200"; $env:MCP_DAILY_CAP_MINOR="500"
 Then, in the same terminal on any platform:
 
 ```sh
-npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-mcp-1.1.0.tgz app --port 6400
+npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz app --port 6400
 ```
 
 Keep it running. This uses fixture models, fictional writers and SIMULATED payments (no real value). Caps authorize up to S$2 per ask and S$5 gross per UTC day. For XRPL Testnet append `--testnet`; for TEST-SGD (stand-in for RLUSD, no real value) also append `--iou`. Cold IOU setup can take about two minutes. Use another port if 6400 is busy.
@@ -36,14 +36,14 @@ Terminal 2, create an isolated environment:
 
 ```sh
 python3 -m venv .venv
-.venv/bin/python -m pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-1.1.0-py3-none-any.whl
+.venv/bin/python -m pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-1.1.1-py3-none-any.whl
 ```
 
 Windows PowerShell equivalent:
 
 ```powershell
 py -3 -m venv .venv
-.venv/Scripts/python.exe -m pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0/researchagent-1.1.0-py3-none-any.whl
+.venv/Scripts/python.exe -m pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-1.1.1-py3-none-any.whl
 ```
 
 Save this as `ask.py`:

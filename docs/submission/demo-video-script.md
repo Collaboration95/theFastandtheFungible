@@ -25,7 +25,7 @@ the markers that keep them in sync are hidden.
    report `"state":"ready"`. If it is not up yet, record shots 2–3 in the zero-clone app
    instead (`npx -y $TGZ app --testnet --open`, same question) and caption them
    "Local app, no clone" instead of "Live sandbox".
-2. **The release exists.** `gh release view v1.1.0` lists `researchagent-mcp-1.1.0.tgz`
+2. **The release exists.** `gh release view v1.1.1` lists `researchagent-mcp-1.1.1.tgz`
    and the Python wheel.
 3. **The public site is current.** <https://collaboration95.github.io/theFastandtheFungible/ledger/>
    shows "Testnet ledger" with readable operation names, and
@@ -34,8 +34,8 @@ the markers that keep them in sync are hidden.
 4. **A fresh, private terminal and browser.** Light theme, 18 pt terminal font,
    1920×1080, no bookmarks bar, window title hidden. Run these off camera:
    ```sh
-   export REL=https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.0
-   export TGZ=$REL/researchagent-mcp-1.1.0.tgz
+   export REL=https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1
+   export TGZ=$REL/researchagent-mcp-1.1.1.tgz
    export npm_config_cache=$(mktemp -d)   # empty npm cache: what a judge gets
    export XDG_STATE_HOME=$(mktemp -d)     # fresh faucet wallets, mode 0600, never printed
    clear
@@ -172,8 +172,8 @@ Times are the target; the assembled draft in
 - **Type:**
   ```sh
   python3 -m venv ra && . ra/bin/activate
-  pip install -q $REL/researchagent-1.1.0-py3-none-any.whl
-  curl -sLO https://raw.githubusercontent.com/Collaboration95/theFastandtheFungible/v1.1.0/docs/evidence/lane-b3/UC3.receipts.json
+  pip install -q $REL/researchagent-1.1.1-py3-none-any.whl
+  curl -sLO https://raw.githubusercontent.com/Collaboration95/theFastandtheFungible/v1.1.1/docs/evidence/lane-b3/UC3.receipts.json
   researchagent verify UC3.receipts.json --ledger
   ```
   Ends `PASS testnet 12/12 (read-only, s.altnet)` and `RESULT PASS`.

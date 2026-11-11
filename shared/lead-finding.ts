@@ -222,7 +222,9 @@ export function rankLeadSentences(question: string, claims: Claim[], delivered?:
     if (answerBoilerplate(text)) return skip(text, claim, ci, si)
     // A clause that continues an earlier sentence ("which reveals the secret", "and the writer…") is not an answer on its own.
     if (FRAGMENT_START.test(text) || POINTS_BACK.test(text)) return skip(text, claim, ci, si)
-    if (/^(?:This (?:article|note|guide|source)\b|This is a team-authored|This team-authored|The implementation record|For a reader assessing|For an? .*integration|I recommend|Test missing|This is an integration recommendation|Reproduction requires|The four .*entries|Some .*examples use different headers|See\b|Code:|Sources?:)|(?:[\w-]+\/)+[\w.-]+\.(?:ts|md|tsx)\b/i.test(text)) return skip(text, claim, ci, si)
+    // A path match may start only where a word starts: the leftmost match is the same, and one long token
+    // (an untrusted 47,000-character passage) is scanned once instead of once per character (3.9 s → ms).
+    if (/^(?:This (?:article|note|guide|source)\b|This is a team-authored|This team-authored|The implementation record|For a reader assessing|For an? .*integration|I recommend|Test missing|This is an integration recommendation|Reproduction requires|The four .*entries|Some .*examples use different headers|See\b|Code:|Sources?:)|(?<![\w-])(?:[\w-]+\/)+[\w.-]+\.(?:ts|md|tsx)\b/i.test(text)) return skip(text, claim, ci, si)
     const overlap = terms.filter(term => tokens.includes(term)).length
     const semanticOverlap = expanded.filter(term => tokens.includes(term)).length
     const identifier = /\b(?:[A-Z][a-z]+){2,}\b|\b[a-z]+[A-Z][A-Za-z]+\b|\b[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+\b/.test(text)
