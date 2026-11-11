@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { readFileSync } from 'node:fs'
 import bank from '../eval/questions/bank.v1.json'
+import xrplBank from '../eval/questions/judge-xrpl.v3.json'
 import fixture from './fixtures/ledger-check/rpc.json'
 import { feeSettings, issuerFact, ledgerKind, ledgerReadTime, readLedgerFact, readPayer, SHARED_PAYER } from '../src/ledger-check'
 import { PUBLIC_LEDGER_ENDPOINTS, publicRead } from '../src/ledger-rpc'
@@ -11,6 +12,11 @@ describe('ledger check subjects', () => {
     const questions = bank.questions.slice(0, 20)
     expect(questions).toHaveLength(20)
     for (const q of questions) expect(ledgerKind(q.question), q.id).toBeUndefined()
+  })
+  it('shows only relevant facts across 20 XRPL judge-bank questions', () => {
+    const expected: Record<string, string> = { V01: 'fee', V10: 'fee' }
+    expect(xrplBank.questions).toHaveLength(20)
+    for (const q of xrplBank.questions) expect(ledgerKind(q.question), q.id).toBe(expected[q.id])
   })
   it.each([
     ['Can RLUSD be escrowed on XRPL?', 'rlusd-escrow'], ['Does the RLUSD issuer permit escrow?', 'rlusd-escrow'],
