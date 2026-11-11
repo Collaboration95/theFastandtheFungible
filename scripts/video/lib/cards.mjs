@@ -51,7 +51,7 @@ export function closeCardHtml({ lockup, repo }) {
     p.lede{font-size:30px;line-height:1.45;color:var(--muted);max-width:1060px;margin:0 0 52px}
     p.url{font:500 36px 'Geist Mono',monospace;color:var(--ink);margin:0 0 40px}</style>
     <div class="wrap"><img src="${pathToFileURL(lockup)}" alt="ResearchAgent"><h1>Paid on delivery. Proven on the ledger.</h1>
-    <p class="lede">It answers from free sources first, then pays writers for the articles it is still missing, over x402 on the XRP Ledger, inside a budget you set. A model recommends; only policy code can pay.</p>
+    <p class="lede">It answers from free sources first, then pays writers for the articles it is still missing, over x402 on the XRP Ledger, inside a budget you set. Only policy code can pay.</p>
     <p class="url" style="font-size:25px">Sandbox: ra-front-651013803640.asia-southeast1.run.app<br>Replay: collaboration95.github.io/theFastandtheFungible/demo/<br>${repo}</p><span class="pill"><span class="dot"></span>XRPL Testnet only · no real value</span></div>`
 }
 
