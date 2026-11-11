@@ -31,14 +31,16 @@ and validates only the selected recording; other recordings load when selected o
 opened from the app. There is no idle prefetch. Live hash checks use only that
 recording's transaction list. When in-app navigation changes runs, the old live
 ledger sockets close and its proof panel is removed; only the newly displayed
-Testnet run starts a check. The header reuses the app's preloaded Geist font
-with `font-display: swap`, avoiding a second font request.
-Replay money, hashes and commands use a 14 KiB subset of the same variable
-Geist Mono (all weights retained); other characters fall back to the app's
-complete font. The font's SIL OFL is in `fonts/LICENSE`. To reproduce it with
+Testnet run starts a check. The header and app share a preloaded 20 KB subset
+of variable Geist with `font-display: swap`, avoiding a second font request.
+Replay money, hashes and commands use a 14 KB subset of the same variable
+Geist Mono. Both retain all weights, outlines and line metrics; other characters
+fall back to the app's complete fonts. The SIL OFLs are in `fonts/LICENSE-geist`
+and `fonts/LICENSE`. To reproduce them with
 FontTools and Brotli installed:
 
 ```sh
+pyftsubset node_modules/@fontsource-variable/geist/files/geist-latin-wght-normal.woff2 --output-file=demo/fonts/geist-latin-wght-normal-replay.woff2 --flavor=woff2 --unicodes=U+0020-007E,U+00A0,U+00B7,U+00D7,U+2010-205F,U+2190-21FF,U+2212,U+2264-2265,U+FEFF,U+FFFD --layout-features='*' --no-recalc-timestamp
 pyftsubset node_modules/@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2 --output-file=demo/fonts/geist-mono-replay.woff2 --flavor=woff2 --unicodes=U+0020-007E,U+00A0,U+00B7,U+2026,U+FEFF,U+FFFD --layout-features='*' --no-recalc-timestamp
 ```
 

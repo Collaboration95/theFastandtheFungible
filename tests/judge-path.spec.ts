@@ -98,6 +98,8 @@ test('replay header reuses the app font without a second brand download', async 
   await page.evaluate(() => document.fonts.ready)
   expect(await page.locator('.ra-hdr').evaluate(node => getComputedStyle(node).fontFamily)).toContain('Geist Variable')
   expect(fonts.filter(url => /geist-latin-wght-normal/.test(url))).toHaveLength(1)
+  expect(fonts.find(url => /geist-latin-wght-normal/.test(url))).toMatch(/geist-latin-wght-normal-replay-/)
+  expect(await page.evaluate(() => document.fonts.check('500 16px "Replay Geist Variable"'))).toBe(true)
   expect(fonts.some(url => url.includes('/brand/'))).toBe(false)
 })
 

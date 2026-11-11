@@ -1,11 +1,12 @@
 /* Replay-only chrome: the site mark and workspace controls share the first row. */
+@font-face { font-family: 'Replay Geist Variable'; font-style: normal; font-weight: 100 900; font-display: swap; src: url('./fonts/geist-latin-wght-normal-replay.woff2') format('woff2'); unicode-range: U+0020-007E,U+00A0,U+00B7,U+00D7,U+2010-205F,U+2190-21FF,U+2212,U+2264-2265,U+FEFF,U+FFFD; }
 /* Preserve Geist Mono's variable weights; the full app font covers other scripts on demand. */
 @font-face { font-family: 'Replay Geist Mono'; font-style: normal; font-weight: 100 900; font-display: swap; src: url('./fonts/geist-mono-replay.woff2') format('woff2'); unicode-range: U+0020-007E,U+00A0,U+00B7,U+2026,U+FEFF,U+FFFD; }
-html:root { --f-mono: 'Replay Geist Mono', 'Geist Mono Variable', monospace; }
+html:root { --f-ui: 'Replay Geist Variable', 'Geist Variable', system-ui, sans-serif; --f-mono: 'Replay Geist Mono', 'Geist Mono Variable', monospace; }
 .demo-skip { position: absolute; top: 8px; left: 16px; z-index: 100; padding: 12px; background: var(--paper); color: var(--ink); transform: translateY(-200%); }
 .demo-skip:focus { transform: none; }
 /* Reuse the app's preloaded, swap-enabled font; keep FIN's generated header intact. */
-html body, body .ra-hdr, body .ra-hdr-note, body .ra-hdr-note kbd { font-family: 'Geist Variable', system-ui, sans-serif; }
+html body, body .ra-hdr, body .ra-hdr-note, body .ra-hdr-note kbd { font-family: var(--f-ui); }
 body .ra-hdr nav { display: none; }
 body .ra-hdr-end { margin-left: auto; }
 #root .ra-top { z-index: 51; position: absolute; top: 0; right: 200px; height: 52px; min-height: 52px; padding: 0; border: 0; background: transparent; }
