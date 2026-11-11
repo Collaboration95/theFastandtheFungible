@@ -13,7 +13,7 @@ import { articleCount, candidateOf, citationKey, plainVerdict } from '../format'
 import Icon from './Icon'
 import { VERDICT_WORDS } from '../../shared/refusal-proof.js'
 import { VERDICT_LABEL } from '../copy'
-import { answerBoilerplate, leadFinding, remainingClaims } from '../../shared/lead-finding.js'
+import { answerBoilerplate, leadFinding, missingQualifiers, remainingClaims } from '../../shared/lead-finding.js'
 import { FACT_STATUS, factsSummary } from '../../shared/coverage.js'
 
 export function getValidatedAnswer(run: RunSnapshot, answer?: AnswerData): AnswerData | undefined {
@@ -48,9 +48,11 @@ export function citationNumbersFor(claims: Claim[]): Map<string, number> {
 export const citationNumbers = (answers: AnswerData[]): Map<string, number> => citationNumbersFor(answers.flatMap(answer => answer.claims))
 /** A finding ends in terminal punctuation, so the superscript that follows never reads as an exponent (58.5%¹). */
 /** A finding reads as a sentence: closing punctuation, and a capital when an extract starts mid-sentence ("prompt injection
- * cannot…", "the only supported…", H5). Identifiers keep their case: only a plain lowercase word is capitalised, never x402 or tesSUCCESS. */
+ * cannot…", "the only supported…", "key-reveal escrow makes…", H5, R8 D2). Identifiers keep their case: only a plain lowercase
+ * word (or hyphenated words) is capitalised, never x402, tesSUCCESS or a command such as npm or rippled. */
+const KEEP_LOWER = new Set(['rippled', 'xrpl', 'npm', 'npx', 'pnpm', 'pip', 'curl', 'wget', 'git'])
 export const finding = (text: string) => {
-  const trimmed = text.trim().replace(/^([a-z]+)(?=[\s,;:])/, word => word[0].toUpperCase() + word.slice(1))
+  const trimmed = text.trim().replace(/^[a-z]+(?:-[a-z]+)*(?=[\s,;:])/, word => KEEP_LOWER.has(word.split('-')[0]) ? word : word[0].toUpperCase() + word.slice(1))
   return /[.!?…]["')\]”’]*$/.test(trimmed) ? trimmed : `${trimmed}.`
 }
 
@@ -73,6 +75,8 @@ export default function Answer({ run, onCitation, view, compare, onCompare, repo
   const lead = summary.lead ?? []
   const leadText = lead.map(item => item.text).join(' ')
   const context = summary.conclusion.startsWith(leadText) ? summary.conclusion.slice(leadText.length).trim() : summary.conclusion
+  // The sources answered the question in general and never name a place or period it qualified ("… in Singapore"): say so.
+  const unnamed = lead.length ? missingQualifiers(run.question, lead.flatMap(item => delivered.filter(content => item.claim.citations.some(ref => sameSource(content, ref))).map(content => `${content.title} ${content.body}`))) : []
   const added = answer.claims.filter(c => !baseline?.claims.some(b => b.text === c.text))
   const dropped = baseline?.claims.filter(c => !answer.claims.some(b => b.text === c.text)) ?? []
   const hasPaidEvidence = answer.claims.some(claim => claim.citations.some(ref => candidateOf(run, ref)?.tier === 'PAID'))
@@ -87,7 +91,8 @@ export default function Answer({ run, onCitation, view, compare, onCompare, repo
   return <>
     <section className="ra-verdict" aria-label="Research answer">
       <div className="ra-answer-heading"><h2 className="ra-caption">{run.phase === 'STOPPED' ? 'Partial answer · stopped' : run.phase === 'FAILED' ? 'Partial answer · interrupted' : draft ? hasPaidEvidence ? 'Draft · verified evidence' : 'Draft · free sources only' : 'Lead finding'}</h2>{report}</div>
-      {lead.length ? <p className="ra-vtext">{lead.map(item => <span key={item.text}>{finding(findingText(item.text))}{cites(item.claim)}{' '}</span>)}</p> : <p>No concise finding could be selected from the verified evidence.</p>}
+      {lead.length ? <p className="ra-vtext">{lead.map(item => <span key={item.text}>{finding(findingText(item.text))}{cites(item.claim)}{' '}</span>)}</p> : <p className="ra-note ra-lead-none">The sources don’t state this in one sentence. What they say is below.</p>}
+      {unnamed.length > 0 && <p className="ra-note ra-lead-note">The cited sources don’t mention {unnamed.join(' or ')}.</p>}
       {context && <p>{findingText(context)}</p>}
       <AnchorStatus run={run} />
     </section>

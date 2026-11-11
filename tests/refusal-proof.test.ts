@@ -151,23 +151,36 @@ it('renders a safe, complete public page and a self-contained card', async () =>
   expect(JSON.parse(Buffer.from(saved, 'base64').toString())).toEqual(JSON.parse(JSON.stringify(proof.snapshot.bundle)))
 })
 
-it('says one thing about the checks: the same total before and after the browser check, and what it skips', async () => {
+it('says one thing about the checks: "N passed · K not checked", never "7 of 9 passed" in green, and what it skips', async () => {
   const store = open()
   const { proof } = await new RefusalProofs(store).create(declinedRun(store), { hosted: false, principal: 'operator' })
   const { passed, skipped, total } = proof.snapshot.verification
   expect(passed + skipped).toBe(total)
+  expect(skipped).toBeGreaterThan(0)
   const text = (html: string) => html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ')
   const page = text(renderProofPage(proof.snapshot, { mode: 'page', origin: 'https://demo.example', nonce: 'N0NCE' }))
-  expect(page).toContain(`Checks ${passed} of ${total} checks passed when shared · ${skipped} more need the ledger or a writer lookup; the browser check below runs the ledger ones`)
-  expect(page).not.toMatch(/Checked when shared|\d+ checks passed (?!when shared)/)
-  // The button's result names the same total, and says which checks it skips rather than counting them as passed.
+  expect(page).toContain(`Checks ${passed} passed · ${skipped} not checked yet: they need the ledger or a writer lookup. The browser check below runs the ledger ones`)
+  // A skipped check is not a failure and is not counted as a pass: no "7 of 9 checks passed" reading as two failures (H8-15).
+  expect(page).not.toMatch(/\d+ of \d+ checks passed/)
+  // The button's result keeps the same total, says "N passed · K not checked" when something is skipped, and names what it skips.
   const script = renderProofPage(proof.snapshot, { mode: 'page', nonce: 'N0NCE' }).match(/<script type="module"[^>]*>([\s\S]*)<\/script>/)![1]
-  expect(script).toContain("passed === total ? 'All ' + total + ' checks passed' : passed + ' of ' + total + ' checks passed'")
+  expect(script).toContain("passed === total ? 'All ' + total + ' checks passed' : passed + ' passed · ' + skipped.length + ' not checked'")
   expect(script).toContain("' Skipped here: ' + skipped.join(' and ')")
   expect(script).toContain("failed + ' of ' + total + ' checks failed'")
+  // With nothing skipped the count is stated once, plainly.
+  expect(text(renderProofPage({ ...proof.snapshot, verification: { ...proof.snapshot.verification, passed: total, skipped: 0 } }, { mode: 'page', nonce: 'N0NCE' }))).toContain(`Checks All ${total} checks passed when shared`)
   // The card (no browser check on it) states the count without pointing at a button that is not there.
-  expect(text(renderProofPage(proof.snapshot, { mode: 'card' }))).toContain(`${passed} of ${total} checks passed when shared · ${skipped} more need the ledger or a writer lookup`)
+  expect(text(renderProofPage(proof.snapshot, { mode: 'card' }))).toContain(`${passed} passed · ${skipped} not checked yet: they need the ledger or a writer lookup`)
   expect(text(renderProofPage(proof.snapshot, { mode: 'card' }))).not.toContain('the browser check below')
+})
+
+it('shows times in Singapore time, with the machine-readable time kept in UTC', async () => {
+  const store = open()
+  const { proof } = await new RefusalProofs(store).create(declinedRun(store), { hosted: false, principal: 'operator', now: Date.parse('2026-11-11T06:35:00Z') })
+  const page = renderProofPage({ ...proof.snapshot, askedAt: '2026-11-11T16:05:00Z' }, { mode: 'page', nonce: 'N0NCE' })
+  expect(page).toContain('<time datetime="2026-11-11T16:05:00.000Z">12 Nov 2026, 00:05 SGT</time>')
+  expect(page).toContain('<time datetime="2026-11-11T06:35:00.000Z">11 Nov 2026, 14:35 SGT</time>')
+  expect(page).not.toMatch(/\d{2}:\d{2} UTC/)
 })
 
 it('keeps the environment chip on a phone, in a short form, and never links a downloaded card to a page that is not there', async () => {

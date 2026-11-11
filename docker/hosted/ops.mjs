@@ -240,8 +240,7 @@ try {
   const bundleDir=join(scratch,'docker/hosted')
   if (!dry) {
     writeFileSync(join(bundleDir,'secrets.map'),secretMap.map(([n,s])=>`${n}=${s}`).join('\n')+'\n',{mode:0o600})
-    // RA_COMMIT names the release for the API container, so an operator resume can record it as qualified.
-    writeFileSync(join(bundleDir,'images'),[...Object.entries(digests).filter(([n])=>n!=='front').map(([n,v])=>`${n.toUpperCase()}_IMAGE=${v}`),`RA_COMMIT=${sha}`].join('\n')+'\n',{mode:0o600})
+    writeFileSync(join(bundleDir,'images'),Object.entries(digests).filter(([n])=>n!=='front').map(([n,v])=>`${n.toUpperCase()}_IMAGE=${v}`).join('\n')+'\n',{mode:0o600})
     writeFileSync(join(scratch,'bundle.b64'),execFileSync('tar',['-czf','-','-C',bundleDir,'compose.yaml','update.sh','env.template','secrets.map','images']).toString('base64'))
   }
   const metadata=[`ra-registry=${registry}`,`ra-commit=${sha}`,`ra-origin=${origin}`].join(',')

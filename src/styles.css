@@ -114,6 +114,10 @@ a { color: var(--ink); text-underline-offset: 3px; }
 .ra-nav-resize::after { content: ""; position: absolute; top: 0; bottom: 0; left: 3px; width: 2px; background: transparent;  }
 .ra-nav-resize:hover::after, .ra-nav-resize:focus-visible::after, .ra-nav.is-resizing .ra-nav-resize::after { background: var(--ink); }
 .ra-nav-resize:focus-visible { outline: none; }
+.ra-skip { position: absolute; left: var(--space-3); top: -64px; z-index: 1000; padding: 10px var(--space-4); border-radius: var(--radius-sm); background: var(--ink); color: #fff; font-size: 14px; font-weight: 600; text-decoration: none; }
+.ra-skip:focus { top: var(--space-2); outline: var(--focus); outline-offset: 2px; }
+/* The skip link's landing place takes focus without a ring around the whole page. */
+main[tabindex="-1"]:focus { outline: none; }
 .ra-nav.is-resizing { user-select: none; }
 .ra-app:has(.ra-nav.is-resizing) { cursor: col-resize; }
 
@@ -274,7 +278,7 @@ dialog { color: var(--ink); }
 /* Once per visit: the questions slide out from under the composer with a small settle wiggle. */
 
 .ra-preset b { flex: none; width: 220px; font-weight: 600; color: var(--ink); }
-.ra-preset span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
+.ra-preset span { min-width: 0; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; color: var(--muted); }
 .ra-preset.is-on { background: var(--hover); }
 .ra-preset.is-on b { color: var(--ink); }
 
@@ -628,8 +632,10 @@ details[open]:not(.ra-export) > summary::before { transform: translateY(-4px) ro
   .ra-chip { font-size: 12px; padding: var(--space-1); }
   .ra-top .ra-modes li:not(.is-sim):not(.is-fallback) { display: none; }
   .ra-comp-row { flex-wrap: wrap; gap: var(--space-2); }
-  .ra-preset b { width: auto; flex: 1; }
-  .ra-preset span { display: none; }
+  /* The label over the question, which clamps to two lines (it used to be hidden on a phone). */
+  .ra-preset { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .ra-preset b { width: auto; flex: none; }
+  .ra-preset span { width: 100%; }
   .ra-writers-view { padding: var(--space-4); }
   .ra-main-views button, .ra-command-trigger { padding: 6px; font-size: 12px; } .ra-bc, .ra-btn-sm { min-height: 44px; } .ra-bought-rows { grid-template-columns: 112px minmax(0, 1fr); } .ra-passage,.ra-mobile-spend-sheet { inset: auto 0 0; margin: 0; width: 100%; height: auto; max-height: 88dvh; border-radius: var(--radius-md) 10px 0 0; }.ra-mobile-spend-sheet { overflow: auto; }.ra-mobile-spend-sheet header { display: flex; justify-content: space-between; align-items: center; }.ra-cite { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }.ra-why-table { font-size: 12px; }.ra-why-table td,.ra-why-table th { padding: var(--space-2) var(--space-1); }.ra-rep .ra-link { min-height: 44px; }.ra-export { position: static; }.ra-export > div { right: 16px; } .owner-settings { grid-template-columns: 1fr; } .owner-settings nav { flex-direction: row; flex-wrap: wrap; } .owner-caps { grid-template-columns: 1fr; } .ra-export .ra-btn { min-height: 44px; } .ra-export > summary { min-height: 44px; }
   .ra-vtext sup .ra-cite, .ra-claim sup .ra-cite { position: relative; min-width: 20px; min-height: 0; height: auto; display: inline; }

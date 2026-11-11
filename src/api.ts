@@ -6,29 +6,36 @@ const runPath = (runId: string) => `/runs/${encodeURIComponent(runId)}`
 
 /** A failed request: the HTTP status and, for the hosted gateway, its short error code. Never the raw body. */
 export class ApiError extends Error {
-  constructor(readonly status: number, readonly code?: string, readonly retryAfter?: number) { super(`ResearchAgent request failed (HTTP ${status})`) }
+  /** `detail` is the server's own one-sentence reason, kept only for the routes whose messages are fixed copy (proof of refusal). */
+  constructor(readonly status: number, readonly code?: string, readonly retryAfter?: number, readonly detail?: string) { super(`ResearchAgent request failed (HTTP ${status})`) }
 }
 // Hosted gateway session (server-authoritative). Local and desktop never set it, so their requests are unchanged.
 let hostedCsrf: string | undefined
 export const isHostedSession = () => hostedCsrf !== undefined
 const CODE = /^[a-z][a-z_]{1,39}$/
-async function failure(response: Response): Promise<ApiError> {
-  // Do not reflect arbitrary server error bodies (which may contain secrets): only a short known-shape code.
-  let code: string | undefined
-  try { const body = await response.json() as { error?: unknown; code?: unknown }; const value = typeof body.code === 'string' ? body.code : body.error; if (typeof value === 'string' && CODE.test(value)) code = value } catch { /* not JSON */ }
+async function failure(response: Response, keepDetail = false): Promise<ApiError> {
+  // Do not reflect arbitrary server error bodies (which may contain secrets): only a short known-shape code, and the
+  // server's message only where the caller says that route's messages are fixed copy.
+  let code: string | undefined, detail: string | undefined
+  try {
+    const body = await response.json() as { error?: unknown; code?: unknown; message?: unknown }
+    const value = typeof body.code === 'string' ? body.code : body.error
+    if (typeof value === 'string' && CODE.test(value)) code = value
+    if (keepDetail && code && typeof body.message === 'string' && body.message.length <= 300) detail = body.message
+  } catch { /* not JSON */ }
   const after = Number(response.headers?.get?.('Retry-After'))
-  return new ApiError(response.status, code, Number.isFinite(after) && after > 0 ? after : undefined)
+  return new ApiError(response.status, code, Number.isFinite(after) && after > 0 ? after : undefined, detail)
 }
-type Send = { body?: unknown; method?: 'GET' | 'POST' | 'DELETE'; signal?: AbortSignal; key?: string }
-async function send(path: string, { body, method = body === undefined ? 'GET' : 'POST', signal, key }: Send, retried = false): Promise<Response> {
+type Send = { body?: unknown; method?: 'GET' | 'POST' | 'DELETE'; signal?: AbortSignal; key?: string; keepDetail?: boolean }
+async function send(path: string, { body, method = body === undefined ? 'GET' : 'POST', signal, key, keepDetail }: Send, retried = false): Promise<Response> {
   const headers: Record<string, string> = {}
   if (body !== undefined) headers['Content-Type'] = 'application/json'
   if (hostedCsrf !== undefined && method !== 'GET') { headers['X-CSRF-Token'] = hostedCsrf; if (key) headers['Idempotency-Key'] = key }
   const response = await fetch(path, { method, ...(Object.keys(headers).length ? { headers } : {}), ...(body === undefined ? {} : { body: JSON.stringify(body) }), ...(signal ? { signal } : {}) })
   if (response.ok) return response
-  const error = await failure(response)
+  const error = await failure(response, keepDetail)
   // A hosted session can expire (24 h): the gateway issues a new cookie, so fetch its token once and repeat the same request.
-  if (hostedCsrf !== undefined && !retried && error.status === 403 && error.code === 'csrf_denied') { await getDemoStatus(); return send(path, { body, method, signal, key }, true) }
+  if (hostedCsrf !== undefined && !retried && error.status === 403 && error.code === 'csrf_denied') { await getDemoStatus(); return send(path, { body, method, signal, key, keepDetail }, true) }
   throw error
 }
 async function request(path: string, body?: unknown, signal?: AbortSignal, key?: string): Promise<unknown> {
@@ -165,6 +172,7 @@ const HostedDemoStatusSchema = z.object({
   links: z.object({ repo: z.string().max(500), deck: z.string().max(500), video: z.string().max(500), progress: z.string().max(500), replay: z.string().max(500) }),
   csrfToken: z.string().max(200).optional(),
   queue: z.array(z.object({ runId: z.string(), position: z.number().int().nonnegative().nullable(), expiresAt: z.string() })).max(16).optional(),
+  wait: z.object({ ahead: z.number().int().nonnegative().max(1000), own: z.boolean() }).optional(),
 })
 export type HostedDemoStatus = z.infer<typeof HostedDemoStatusSchema>
 export async function getDemoStatus(signal?: AbortSignal): Promise<HostedDemoStatus> {
@@ -200,5 +208,5 @@ export type RefusalProof = z.infer<typeof RefusalProofSchema>
 export const getRefusalProof = async (runId: string, signal?: AbortSignal): Promise<RefusalStatus> => RefusalStatusSchema.parse(await request(`/api${runPath(runId)}/proof`, undefined, signal))
 /** Creates the public snapshot, or returns the one already made for this run. Needs the visitor's explicit click. */
 export async function createRefusalProof(runId: string): Promise<RefusalProof> {
-  return z.object({ proof: RefusalProofSchema }).parse(await (await send(`/api${runPath(runId)}/proof`, { method: 'POST' })).json()).proof
+  return z.object({ proof: RefusalProofSchema }).parse(await (await send(`/api${runPath(runId)}/proof`, { method: 'POST', keepDetail: true })).json()).proof
 }

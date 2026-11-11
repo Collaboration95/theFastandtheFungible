@@ -20,13 +20,15 @@ export function refusalProofRouter(context: ApiContext, options: { hosted: boole
   }
   const found = (id: string) => (PROOF_ID.test(id) ? proofs.get(id) : undefined)
 
-  router.get('/api/runs/:id/proof', (req, res) => {
+  router.get('/api/runs/:id/proof', async (req, res) => {
     const runId = String(req.params.id)
     let run
     try { run = store.getRun(runId) } catch { res.status(404).json({ error: 'Run not found.' }); return }
     const proof = proofs.forRun(runId)
-    const eligibility = refusalEligibility(run)
-    res.json({ eligible: eligibility.ok, ...(eligibility.ok ? {} : { code: eligibility.code, message: eligibility.message }), ...(proof ? { proof: { id: proof.id, path: `/proof/${proof.id}`, createdAt: proof.createdAt } } : {}) })
+    // The same checks the POST makes, so the button is offered only for a run that can really be shared. A run whose
+    // receipts cannot be packaged says why here, instead of failing after the visitor has clicked.
+    const blocked = proof ? (() => { const e = refusalEligibility(run); return e.ok ? undefined : { code: e.code, message: e.message } })() : await proofs.preflight(runId)
+    res.json({ eligible: !blocked, ...(blocked ? { code: blocked.code, message: blocked.message } : {}), ...(proof ? { proof: { id: proof.id, path: `/proof/${proof.id}`, createdAt: proof.createdAt } } : {}) })
   })
   router.post('/api/runs/:id/proof', async (req, res) => {
     const runId = String(req.params.id)

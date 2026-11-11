@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { allowanceText, hostedLinks, HOSTED_DAILY_QUESTIONS, HOSTED_ENDS, questionCap, minorText, type HomeState, type Hosted } from '../../hosted'
+import { allowanceText, hostedLinks, HOSTED_DAILY_QUESTIONS, HOSTED_ENDS, questionCap, minorText, waitCopy, type HomeState, type Hosted } from '../../hosted'
 
 const Out = ({ href, children }: { href: string; children: ReactNode }) => <a href={href} target="_blank" rel="noopener noreferrer">{children}<span className="ra-sr"> (opens in a new tab)</span></a>
 
@@ -52,11 +52,11 @@ export function HostedComposerNote({ hosted, state }: { hosted: Hosted; state: H
   </p>
 }
 
-/** Shown in place of the composer while another run holds the shared demo: someone else's, or the visitor's own last answer still anchoring (H5). */
-export function HostedWaiting({ onCancel }: { onCancel: () => void }) {
+/** Shown in place of the composer while a run holds the shared demo: another visitor's, or the visitor's own last answer still being anchored. Says which, and for how long. */
+export function HostedWaiting({ hosted, onCancel }: { hosted: Hosted; onCancel: () => void }) {
   return <section className="ra-hwait" role="status" aria-label="Waiting for a turn">
     <span className="ra-spin" aria-hidden="true" />
-    <div><h2>Waiting for a turn on the shared demo</h2><p>The demo answers one question at a time and is still finishing the previous one, which can be your own while its record is written to the ledger. Yours starts automatically; nothing is reserved or spent until then.</p></div>
+    <div><h2>Waiting for a turn on the shared demo</h2><p>{waitCopy(hosted.status)} Nothing is reserved or spent until then.</p></div>
     <button type="button" className="ra-btn" onClick={onCancel}>Cancel</button>
   </section>
 }

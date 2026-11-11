@@ -16,6 +16,8 @@ export type DemoStatus = {
   remaining: { questions: number; minor: number }; labels: { models: string; rail: string };
   links: { repo: string; deck: string; video: string; progress: string; replay: string };
   csrfToken?: string; queue?: { runId: string; position: number | null; expiresAt: string }[]
+  /** Who a new question would wait for: how many are ahead of it, and whether the asker's own last run is among them. */
+  wait?: { ahead: number; own: boolean }
 }
 const REPO = 'https://github.com/Collaboration95/theFastandtheFungible', PAGES = 'https://collaboration95.github.io/theFastandtheFungible'
 /** The environment indicator's model words. A fixture decision model is a substitution (hard gate 5): it is named here,
@@ -47,7 +49,7 @@ export function hostedRouter(context: ApiContext, config: Config, limits: Hosted
   router.get('/api/demo/status', async (_req,res) => {
     const principal = res.locals.hostedSession.principal
     const own = ownHistory(principal).map(r => limits.forRun(r.runId)!).filter(h => queue.position(h.run_id!) !== null)
-    res.json({ ...await status(principal), csrfToken: res.locals.hostedSession.csrf, queue: own.map(h => ({ runId: h.run_id!, position: queue.position(h.run_id!), expiresAt: new Date(h.created+LIMITS.queueMs).toISOString() })) })
+    res.json({ ...await status(principal), csrfToken: res.locals.hostedSession.csrf, queue: own.map(h => ({ runId: h.run_id!, position: queue.position(h.run_id!), expiresAt: new Date(h.created+LIMITS.queueMs).toISOString() })), wait: { ahead: queue.depth, own: own.length > 0 } })
   })
   let writerCache: { at: number; value: Promise<unknown> } | undefined
   router.get('/api/writers/status',async (_req,res) => {

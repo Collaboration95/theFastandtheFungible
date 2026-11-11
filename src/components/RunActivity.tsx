@@ -24,7 +24,10 @@ export default function RunActivity({ run, actualTerminal, onStop, stopping, onS
   const { paid: bought, refunded } = purchaseCounts(run)
   const firstDraft = run.events.find(e => e.type === 'FREE_DRAFT' && typeof e.data?.elapsedMs === 'number')
   const start = firstDraft ? Date.parse(firstDraft.at) - Number(firstDraft.data!.elapsedMs) : run.events[0] ? Date.parse(run.events[0].at) : undefined
-  const elapsed = start !== undefined ? Math.max(0, (Date.parse(run.events.at(-1)!.at) - start) / 1000) : 0
+  // The run ends at its DONE (or STOPPED) event. Anchoring on the ledger lands seconds later and is reported by its own line, so the time
+  // reads the same live and after a reload ("Done in 16.3 s" never becomes "24.6 s", R8 H8-14).
+  const ended = [...run.events].reverse().find(event => event.type === 'DONE' || event.type === 'STOPPED') ?? run.events.at(-1)
+  const elapsed = start !== undefined && ended ? Math.max(0, (Date.parse(ended.at) - start) / 1000) : 0
   const took = import.meta.env.MODE === 'browser-demo' && elapsed > 120 ? 'a replay with the 2 min wait skipped' : elapsed >= 1 ? `${elapsed.toFixed(1)} s` : elapsed > 0 ? 'under 1 s' : 'an unrecorded duration'
   // "Paid for" is the same count as "bought" in the sources strip (purchaseCounts). The net cost drops out on a phone, where the spend line above already says it.
   const net = money(Math.max(0, run.spentMinor - (run.refundedMinor ?? 0)))

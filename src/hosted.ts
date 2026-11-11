@@ -44,6 +44,17 @@ export function environment(status: HostedDemoStatus, connection?: Hosted['conne
   } as const
 }
 
+/** Who a visitor is waiting for, and for how long. Plain facts, no blame: a first-time visitor is told about another visitor, a returning one
+ * about their own last question; the demo runs one question at a time and a run takes about 20 to 55 seconds. */
+export function waitCopy(status: HostedDemoStatus): string {
+  const { ahead = 0, own = false } = status.wait ?? {}
+  if (own) return 'Your previous question is still being finished: its record is being written to the ledger. Yours starts right after, usually within a minute.'
+  if (ahead <= 0) return 'Yours starts automatically in a moment.'
+  return `${ahead === 1 ? 'Another visitor’s question is' : `${ahead} other visitors’ questions are`} ahead of yours. ${ahead === 1 ? 'That usually takes under a minute' : 'That usually takes a minute or two'}, and yours starts automatically.`
+}
+/** The waiting card on a queued run: how many questions are ahead of it. */
+export const aheadText = (ahead: number) => ahead === 1 ? '1 question ahead of yours' : `${ahead} questions ahead of yours`
+
 export const minorText = (minor: number) => `S$${(minor / 100).toFixed(2)}`
 export function allowanceText(status: HostedDemoStatus) {
   const { questions } = status.remaining

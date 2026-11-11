@@ -34,9 +34,6 @@ services:
       APP_DB: /state/api/app.db
       REPORT_DIR: /state/api/reports
       HOSTED_CONTROL_PATH: /state/control.json
-      # The release this container runs (from the deployed images file). `hosted-control resume`
-      # records it as the operator-qualified release that arms the guarded auto-resume.
-      RA_COMMIT: ${RA_COMMIT:-}
     depends_on: {publisher: {condition: service_healthy}}
     volumes: ["${HOSTED_STATE_PATH:-/srv/researchagent}:/state"]
   web:
