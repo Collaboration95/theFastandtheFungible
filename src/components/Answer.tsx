@@ -80,8 +80,9 @@ export default function Answer({ run, onCitation, view, compare, onCompare, repo
   // The conclusion opens with the lead, capitalised as a sentence since QUAL (H9-13); answers stored earlier open with it verbatim.
   const opening = [leadLine(lead.map(item => item.text)), leadText].find(text => summary.conclusion.startsWith(text))
   const context = opening !== undefined ? summary.conclusion.slice(opening.length).trim() : summary.conclusion
-  // H9-10: "Still unanswered" never lists what the lead above answers (the same rule the server applies).
-  const openGaps = openGapsAfterLead(run.question, { lead, openGaps: answer.openGaps })
+  // Planned answers share the stored judgment with the checklist and trace. Legacy snapshots retain H9-10's lead rule.
+  const facts = factsSummary(run, answer.version)
+  const openGaps = facts ? facts.facts.filter(fact => fact.status !== 'supported').map(fact => ({ text: fact.text.replace(/\s*&\s*/g, ' and ') })) : openGapsAfterLead(run.question, { lead, openGaps: answer.openGaps })
   // The sources answered the question in general and never name a place or period it qualified ("… in Singapore"): say so.
   const unnamed = lead.length ? missingQualifiers(run.question, lead.flatMap(item => delivered.filter(content => item.claim.citations.some(ref => sameSource(content, ref))).map(content => `${content.title} ${content.body}`))) : []
   const added = answer.claims.filter(c => !baseline?.claims.some(b => b.text === c.text))

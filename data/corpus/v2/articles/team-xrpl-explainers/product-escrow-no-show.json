@@ -4,7 +4,7 @@
   "publisherSlug": "team-xrpl-explainers",
   "writerSlug": "team-xrpl-explainers",
   "title": "How do I recover funds when a writer never reveals the escrow key?",
-  "publishedAt": "2026-11-12",
+  "publishedAt": "2026-11-10",
   "tier": "PAID",
   "priceMinor": 40,
   "abstract": "Sourced guide to how do I recover funds when a writer never reveals the escrow key. Includes evidence limits.",
@@ -28,11 +28,11 @@
       "accessedAt": "2026-11-10"
     }
   ],
-  "body": "The buyer's money stays locked if the writer never reveals the key; after CancelAfter the buyer can recover escrow principal by cancellation with EscrowCancel. Expiry permits cancellation but does not automatically return funds. [1] [2]\n\nXRPL conditional escrow uses PREIMAGE-SHA-256. EscrowCreate supplies a Condition and the expiry window; EscrowFinish supplies the matching Fulfillment, which reveals the secret. FinishAfter, when present, sets the earliest release time. CancelAfter sets the expiration boundary. The timing checks use ledger close time rather than the buyer laptop clock, so a visible countdown alone does not establish eligibility. [1] [2]\n\nIf the writer never completes delivery, policy waits for the validated deadline and submits cancellation of the original object. Anyone may submit an eligible EscrowCancel, but the locked principal returns to the escrow owner, not the caller who happens to submit it. Creating, finishing or canceling an escrow consumes XRP transaction fees; cancellation does not refund those fees. [1] [2]\n\nAuthor interpretation: first reconcile the original escrow and its terminal history. A missing object without complete history does not prove cancellation or release. Once a successful finish has released payment, the old escrow cannot be canceled; a subsequent quality dispute requires a separate writer-signed refund. ResearchAgent preserves the original intent and transaction identity during recovery instead of charging again for an uncertain outcome. Sources accessed 10 November 2026. [1] [2]",
+  "body": "According to ResearchAgent documentation, the buyer's money stays locked if the writer never reveals the key; after CancelAfter the buyer can recover escrow principal by cancellation with EscrowCancel. Expiry permits cancellation but does not automatically return funds. [1] [2]\n\nXRPL conditional escrow uses PREIMAGE-SHA-256. EscrowCreate supplies a Condition and the expiry window; EscrowFinish supplies the matching Fulfillment, which reveals the secret. FinishAfter, when present, sets the earliest release time. CancelAfter sets the expiration boundary. The timing checks use ledger close time rather than the buyer laptop clock, so a visible countdown alone does not establish eligibility. [1] [2]\n\nIf the writer never completes delivery, policy waits for the validated deadline and submits cancellation of the original object. Anyone may submit an eligible EscrowCancel, but the locked principal returns to the escrow owner, not the caller who happens to submit it. Creating, finishing or canceling an escrow consumes XRP transaction fees; cancellation does not refund those fees. [1] [2]\n\nAuthor interpretation: first reconcile the original escrow and its terminal history. A missing object without complete history does not prove cancellation or release. Once a successful finish has released payment, the old escrow cannot be canceled; a subsequent quality dispute requires a separate writer-signed refund. ResearchAgent preserves the original intent and transaction identity during recovery instead of charging again for an uncertain outcome. Sources accessed 10 November 2026. [1] [2]",
   "passages": [
     {
       "id": "p1",
-      "text": "The buyer's money stays locked if the writer never reveals the key; after CancelAfter the buyer can recover escrow principal by cancellation with EscrowCancel. Expiry permits cancellation but does not automatically return funds. [1] [2]"
+      "text": "According to ResearchAgent documentation, the buyer's money stays locked if the writer never reveals the key; after CancelAfter the buyer can recover escrow principal by cancellation with EscrowCancel. Expiry permits cancellation but does not automatically return funds. [1] [2]"
     },
     {
       "id": "p2",

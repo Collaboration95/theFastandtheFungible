@@ -467,7 +467,11 @@ async function decideRound(input: DecideInput): Promise<DecisionRound> {
   // make an ineligible article eligible.
   const titled = (row: DecisionRound['rows'][number]) => titledWithQuestion(input.question, row.candidate) || namesWholeQuestion(input, row.candidate) ? 1 : 0
   // The current frozen fact is more precise than a broad question mentioning several protocol subjects.
-  const factTitle = (row: DecisionRound['rows'][number]) => input.requirement && isProtocolQuery(input.question) && titleMatches(input.gap, row.candidate.title) ? 1 : 0
+  const factTitles = new Map<DecisionRound['rows'][number], number>()
+  const factTitle = (row: DecisionRound['rows'][number]) => {
+    if (!factTitles.has(row)) factTitles.set(row, input.requirement && isProtocolQuery(input.question) && titleMatches(input.gap, row.candidate.title) ? 1 : 0)
+    return factTitles.get(row)!
+  }
   // H9-06: a "how much" question first prefers a title naming what it measures (fee, cost, reserve, price), more so with
   // the answer's unit (XRP drops, SGD): "EscrowFinish fulfillment fees: XRP drops and SGD prices" before the key-reveal
   // delivery note for "How much does one key-reveal purchase cost in XRPL network fees?".

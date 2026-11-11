@@ -2765,7 +2765,7 @@
             "id": "product-escrow-no-show",
             "verdict": "BUY",
             "value": 0.357,
-            "reason": "Expected missing facts per S$ 1.323 >= 0.500; spending policy clears."
+            "reason": "Expected missing facts per S$ 1.322 >= 0.500; spending policy clears."
           },
           {
             "id": "team-x402",
@@ -3272,7 +3272,7 @@
             "id": "product-escrow-no-show",
             "verdict": "BUY",
             "value": 0.358,
-            "reason": "Expected missing facts per S$ 1.328 >= 0.500; spending policy clears."
+            "reason": "Expected missing facts per S$ 1.327 >= 0.500; spending policy clears."
           },
           {
             "id": "team-x402",
@@ -3377,7 +3377,7 @@
     ],
     "spentMinor": 40,
     "lead": [
-      "The buyer's money stays locked if the writer never reveals the key; after CancelAfter the buyer can recover escrow principal by cancellation with EscrowCancel."
+      "the buyer's money stays locked if the writer never reveals the key; after CancelAfter the buyer can recover escrow principal by cancellation with EscrowCancel."
     ],
     "openGaps": [
       "Whether a payment made by an agent for an article is final once sent or can be reversed",
@@ -3585,7 +3585,7 @@
           {
             "id": "product-escrow-no-show",
             "verdict": "BUY",
-            "value": 0.509,
+            "value": 0.508,
             "reason": "Expected missing facts per S$ 1.883 >= 0.500; spending policy clears. Prefers the article whose title matches the question."
           },
           {
@@ -3643,7 +3643,7 @@
     ],
     "spentMinor": 40,
     "lead": [
-      "The buyer's money stays locked if the writer never reveals the key; after CancelAfter the buyer can recover escrow principal by cancellation with EscrowCancel."
+      "the buyer's money stays locked if the writer never reveals the key; after CancelAfter the buyer can recover escrow principal by cancellation with EscrowCancel."
     ],
     "openGaps": [
       "Whether a payment made by an agent for an article is final once sent or can be reversed",
@@ -3909,7 +3909,7 @@
     ],
     "spentMinor": 40,
     "lead": [
-      "The buyer's money stays locked if the writer never reveals the key; after CancelAfter the buyer can recover escrow principal by cancellation with EscrowCancel."
+      "the buyer's money stays locked if the writer never reveals the key; after CancelAfter the buyer can recover escrow principal by cancellation with EscrowCancel."
     ],
     "openGaps": [
       "Whether a payment made by an agent for an article is final once sent or can be reversed",
@@ -4118,7 +4118,7 @@
             "id": "product-escrow-no-show",
             "verdict": "BUY",
             "value": 0.51,
-            "reason": "Expected missing facts per S$ 1.889 >= 0.500; spending policy clears."
+            "reason": "Expected missing facts per S$ 1.888 >= 0.500; spending policy clears."
           },
           {
             "id": "mp-boj-hike-digest",
@@ -4782,6 +4782,2009 @@
             "verdict": "SKIP_LOW_VALUE",
             "value": 0.071,
             "reason": "The article title and topics do not cover the requested subject."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "after-reserves",
+    "wording": "modal",
+    "question": "How much XRP reserve does an agent wallet need, and how much does each open escrow or trust line add?",
+    "bought": [
+      "xrpl-reserves"
+    ],
+    "spentMinor": 40,
+    "lead": [
+      "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings."
+    ],
+    "openGaps": [],
+    "conclusion": "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings. The reserve is held separately from the money the wallet intends to send. Base reserve supports the account's existence; owner reserve constrains ledger objects. Removing an object can release its reserve requirement. Treating every XRP in a balance as transferable would therefore confuse several distinct accounting concepts. A wallet with enough principal for a purchase may still lack room for the escrow object or transaction fee. Reserves are not payments to validators, and the documentation permits reserved XRP to pay transaction costs.",
+    "facts": {
+      "answered": 4,
+      "total": 4,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "Current XRPL base account reserve in XRP, with date",
+          "status": "supported"
+        },
+        {
+          "id": "r2",
+          "text": "Current XRPL owner reserve per object in XRP, with date",
+          "status": "supported"
+        },
+        {
+          "id": "r3",
+          "text": "How much each open escrow adds to an agent wallet's XRP reserve",
+          "status": "supported"
+        },
+        {
+          "id": "r4",
+          "text": "How much each trust line adds to an agent wallet's XRP reserve",
+          "status": "supported"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "complete",
+      "line": "4 of 4 answered",
+      "judge": "fixture · metadata-fixture"
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "Current XRPL base account reserve in XRP, with date"
+      },
+      {
+        "id": "r2",
+        "text": "Current XRPL owner reserve per object in XRP, with date"
+      },
+      {
+        "id": "r3",
+        "text": "How much each open escrow adds to an agent wallet's XRP reserve"
+      },
+      {
+        "id": "r4",
+        "text": "How much each trust line adds to an agent wallet's XRP reserve"
+      }
+    ],
+    "coverage": {
+      "answerVersion": 2,
+      "judge": "fixture · metadata-fixture",
+      "entries": [
+        {
+          "requirementId": "r1",
+          "status": "supported",
+          "claimIds": [
+            "evidence-[\"xrpl-reserves\",\"v2\",\"p1\"]"
+          ]
+        },
+        {
+          "requirementId": "r2",
+          "status": "supported",
+          "claimIds": [
+            "evidence-[\"xrpl-reserves\",\"v2\",\"p1\"]"
+          ]
+        },
+        {
+          "requirementId": "r3",
+          "status": "supported",
+          "claimIds": [
+            "evidence-[\"xrpl-reserves\",\"v2\",\"p1\"]"
+          ]
+        },
+        {
+          "requirementId": "r4",
+          "status": "supported",
+          "claimIds": [
+            "evidence-[\"xrpl-reserves\",\"v2\",\"p1\"]"
+          ]
+        }
+      ]
+    },
+    "coverageEvent": {
+      "answerVersion": 2,
+      "answered": 4,
+      "total": 4,
+      "judge": "fixture · metadata-fixture"
+    },
+    "plan": {
+      "restatement": "The XRP reserve an agent wallet needs on the XRP Ledger and how much each open escrow or trust line adds.",
+      "subqueries": [
+        "XRPL base reserve requirement account 2026",
+        "XRPL owner reserve per escrow trust line",
+        "XRPL reserve requirements escrow trust line agent wallet"
+      ]
+    },
+    "stopReason": "complete",
+    "phase": "DONE",
+    "decisions": [
+      {
+        "round": 1,
+        "gap": "Current XRPL base account reserve in XRP, with date",
+        "selected": "xrpl-reserves",
+        "rows": [
+          {
+            "id": "team-asset-provisioning",
+            "verdict": "BUY",
+            "value": 0.207,
+            "reason": "Expected missing facts per S$ 0.766 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "xrpl-reserves",
+            "verdict": "BUY",
+            "value": 0.54,
+            "reason": "Expected missing facts per S$ 2.002 >= 0.500; spending policy clears. Prefers the article whose title matches the question."
+          },
+          {
+            "id": "team-rlusd",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.38,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "xrpl-tx-trustset",
+            "verdict": "BUY",
+            "value": 0.527,
+            "reason": "Expected missing facts per S$ 1.953 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "team-fees",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.386,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "xrpl-tx-escrowcreate",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.523,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "team-credentials",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.368,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "team-x402",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.28,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "xrpl-trust-lines",
+            "verdict": "BUY",
+            "value": 0.526,
+            "reason": "Expected missing facts per S$ 1.948 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "xrpl-tx-ledgerstatefix",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.453,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "xrpl-tx-accountdelete",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.452,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "xrpl-tx-accountset",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.447,
+            "reason": "The article title and topics do not cover the requested subject."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "after-credentials",
+    "wording": "modal",
+    "question": "What does an XRPL Credential prove, and which transactions create and accept one?",
+    "bought": [
+      "xrpl-tx-credentialaccept",
+      "xrpl-tx-credentialcreate"
+    ],
+    "spentMinor": 80,
+    "lead": [
+      "CredentialAccept records the subject account's acceptance of a credential issued to it.",
+      "CredentialCreate issues a provisional on-ledger credential to a subject account."
+    ],
+    "openGaps": [
+      "What an XRPL Credential proves and who issues it"
+    ],
+    "conclusion": "CredentialAccept records the subject account's acceptance of a credential issued to it. CredentialCreate issues a provisional on-ledger credential to a subject account. The issuer, subject and CredentialType identify the credential being accepted. The subject normally must accept the credential before permission checks can rely on it. An expired or deleted credential cannot establish a current permission merely because it once appeared in history. Trust depends on the issuer and purpose; a credential does not certify every article or grant universal payment-service approval.",
+    "facts": {
+      "answered": 3,
+      "total": 4,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "What an XRPL Credential proves and who issues it",
+          "status": "missing"
+        },
+        {
+          "id": "r2",
+          "text": "Which XRPL transaction creates a Credential",
+          "status": "supported"
+        },
+        {
+          "id": "r3",
+          "text": "Which XRPL transaction accepts a Credential",
+          "status": "supported"
+        },
+        {
+          "id": "r4",
+          "text": "How CredentialAccept completes the credential lifecycle",
+          "status": "supported"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "round-limit",
+      "line": "3 of 4 answered · three-round limit reached",
+      "judge": "fixture · metadata-fixture"
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "What an XRPL Credential proves and who issues it"
+      },
+      {
+        "id": "r2",
+        "text": "Which XRPL transaction creates a Credential"
+      },
+      {
+        "id": "r3",
+        "text": "Which XRPL transaction accepts a Credential"
+      },
+      {
+        "id": "r4",
+        "text": "How CredentialAccept completes the credential lifecycle"
+      }
+    ],
+    "coverage": {
+      "answerVersion": 3,
+      "judge": "fixture · metadata-fixture",
+      "entries": [
+        {
+          "requirementId": "r1",
+          "status": "missing"
+        },
+        {
+          "requirementId": "r2",
+          "status": "supported",
+          "claimIds": [
+            "evidence-[\"xrpl-tx-credentialcreate\",\"v1\",\"p1\"]"
+          ]
+        },
+        {
+          "requirementId": "r3",
+          "status": "supported",
+          "claimIds": [
+            "evidence-[\"xrpl-tx-credentialaccept\",\"v1\",\"p1\"]"
+          ]
+        },
+        {
+          "requirementId": "r4",
+          "status": "supported",
+          "claimIds": [
+            "evidence-[\"xrpl-tx-credentialaccept\",\"v1\",\"p1\"]",
+            "evidence-[\"xrpl-tx-credentialaccept\",\"v1\",\"p2\"]"
+          ]
+        }
+      ]
+    },
+    "coverageEvent": {
+      "answerVersion": 3,
+      "answered": 3,
+      "total": 4,
+      "judge": "fixture · metadata-fixture"
+    },
+    "plan": {
+      "restatement": "What an XRPL Credential proves and which transactions create and accept one.",
+      "subqueries": [
+        "XRPL Credential ledger object what it proves",
+        "XRPL CredentialCreate CredentialAccept transactions",
+        "XRPL credentials documentation"
+      ]
+    },
+    "stopReason": "round-limit",
+    "phase": "DONE",
+    "decisions": [
+      {
+        "round": 1,
+        "gap": "What an XRPL Credential proves and who issues it",
+        "selected": "xrpl-tx-credentialaccept",
+        "rows": [
+          {
+            "id": "team-credentials",
+            "verdict": "BUY",
+            "value": 0.403,
+            "reason": "Expected missing facts per S$ 1.494 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "xrpl-tx-credentialdelete",
+            "verdict": "BUY",
+            "value": 0.527,
+            "reason": "Expected missing facts per S$ 1.951 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "product-writer-credentials",
+            "verdict": "BUY",
+            "value": 0.528,
+            "reason": "Expected missing facts per S$ 1.955 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "team-verification",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.081,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "xrpl-tx-credentialaccept",
+            "verdict": "BUY",
+            "value": 0.526,
+            "reason": "Expected missing facts per S$ 1.949 >= 0.500; spending policy clears. Prefers the title or topics naming the requested entity; then value per dollar."
+          },
+          {
+            "id": "xrpl-tx-credentialcreate",
+            "verdict": "BUY",
+            "value": 0.526,
+            "reason": "Expected missing facts per S$ 1.948 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "team-readiness",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.053,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "team-x402",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.071,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "team-rlusd",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.023,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "xrpl-concept-credential-type",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.475,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "xrpl-standard-xls-70",
+            "verdict": "BUY",
+            "value": 0.388,
+            "reason": "Expected missing facts per S$ 1.436 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "team-recovery",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.015,
+            "reason": "The article title and topics do not cover the requested subject."
+          }
+        ]
+      },
+      {
+        "round": 2,
+        "gap": "What an XRPL Credential proves and who issues it",
+        "rows": [
+          {
+            "id": "team-credentials",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.403,
+            "reason": "Its title and topics name no part of the requested fact that a bought article does not already name."
+          },
+          {
+            "id": "xrpl-tx-credentialdelete",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.527,
+            "reason": "Its title and topics name no part of the requested fact that a bought article does not already name."
+          },
+          {
+            "id": "product-writer-credentials",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.528,
+            "reason": "Its title and topics name no part of the requested fact that a bought article does not already name."
+          },
+          {
+            "id": "team-verification",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.081,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "xrpl-tx-credentialaccept",
+            "verdict": "SKIP_REWRITE",
+            "value": 0.029,
+            "reason": "Already acquired or a rewrite of existing evidence."
+          },
+          {
+            "id": "xrpl-tx-credentialcreate",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.527,
+            "reason": "Its title and topics name no part of the requested fact that a bought article does not already name."
+          },
+          {
+            "id": "team-readiness",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.053,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "team-x402",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.071,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "team-rlusd",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.023,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "xrpl-concept-credential-type",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.475,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "xrpl-standard-xls-70",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.388,
+            "reason": "Its title and topics name no part of the requested fact that a bought article does not already name."
+          },
+          {
+            "id": "team-recovery",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.015,
+            "reason": "The article title and topics do not cover the requested subject."
+          }
+        ]
+      },
+      {
+        "round": 3,
+        "gap": "Which XRPL transaction creates a Credential",
+        "selected": "xrpl-tx-credentialcreate",
+        "rows": [
+          {
+            "id": "team-credentials",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.403,
+            "reason": "Its title and topics name no part of the requested fact that a bought article does not already name."
+          },
+          {
+            "id": "xrpl-tx-credentialdelete",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.527,
+            "reason": "Its title and topics name no part of the requested fact that a bought article does not already name."
+          },
+          {
+            "id": "product-writer-credentials",
+            "verdict": "BUY",
+            "value": 0.528,
+            "reason": "Expected missing facts per S$ 1.957 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "team-verification",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.081,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "xrpl-tx-credentialaccept",
+            "verdict": "SKIP_REWRITE",
+            "value": 0.029,
+            "reason": "Already acquired or a rewrite of existing evidence."
+          },
+          {
+            "id": "xrpl-tx-credentialcreate",
+            "verdict": "BUY",
+            "value": 0.527,
+            "reason": "Expected missing facts per S$ 1.950 >= 0.500; spending policy clears. Prefers the title or topics naming the requested entity; then value per dollar."
+          },
+          {
+            "id": "team-readiness",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.105,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "team-x402",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.071,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "team-rlusd",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.023,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "xrpl-concept-credential-type",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.475,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "xrpl-standard-xls-70",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.388,
+            "reason": "Its title and topics name no part of the requested fact that a bought article does not already name."
+          },
+          {
+            "id": "team-recovery",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.015,
+            "reason": "The article title and topics do not cover the requested subject."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "after-x402",
+    "wording": "modal",
+    "question": "What does an x402 402 response contain, and can my agent pay it with XRP on Testnet?",
+    "bought": [
+      "product-x402-response"
+    ],
+    "spentMinor": 40,
+    "lead": [
+      "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
+      "An agent can pay a 402 in XRP on Testnet, network xrpl:1."
+    ],
+    "openGaps": [],
+    "conclusion": "An HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. An agent can pay a 402 in XRP on Testnet, network xrpl:1. The XRPL exact scheme quotes a native XRP Payment in integer drops, and ResearchAgent's writers accept exactly that. A successful HTTP response can include PAYMENT-RESPONSE with settlement details. A 402 challenge is an offer to pay; it does not itself authorize spending.",
+    "facts": {
+      "answered": 3,
+      "total": 3,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "What fields an x402 402 response contains, including payment requirements",
+          "status": "supported"
+        },
+        {
+          "id": "r2",
+          "text": "Whether x402 supports paying with XRP",
+          "status": "supported"
+        },
+        {
+          "id": "r3",
+          "text": "Whether x402 payments can run on XRPL Testnet",
+          "status": "supported"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "complete",
+      "line": "3 of 3 answered",
+      "judge": "fixture · metadata-fixture"
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "What fields an x402 402 response contains, including payment requirements"
+      },
+      {
+        "id": "r2",
+        "text": "Whether x402 supports paying with XRP"
+      },
+      {
+        "id": "r3",
+        "text": "Whether x402 payments can run on XRPL Testnet"
+      }
+    ],
+    "coverage": {
+      "answerVersion": 2,
+      "judge": "fixture · metadata-fixture",
+      "entries": [
+        {
+          "requirementId": "r1",
+          "status": "supported",
+          "claimIds": [
+            "evidence-[\"product-x402-response\",\"v2\",\"p1\"]"
+          ]
+        },
+        {
+          "requirementId": "r2",
+          "status": "supported",
+          "claimIds": [
+            "evidence-[\"product-x402-response\",\"v2\",\"p1\"]"
+          ]
+        },
+        {
+          "requirementId": "r3",
+          "status": "supported",
+          "claimIds": [
+            "evidence-[\"product-x402-response\",\"v2\",\"p1\"]"
+          ]
+        }
+      ]
+    },
+    "coverageEvent": {
+      "answerVersion": 2,
+      "answered": 3,
+      "total": 3,
+      "judge": "fixture · metadata-fixture"
+    },
+    "plan": {
+      "restatement": "What an x402 402 response contains and whether an agent can pay it with XRP on Testnet.",
+      "subqueries": [
+        "x402 402 response contents payment requirements",
+        "x402 XRP payment support Testnet",
+        "x402 protocol payment header scheme network asset"
+      ]
+    },
+    "stopReason": "complete",
+    "phase": "DONE",
+    "decisions": [
+      {
+        "round": 1,
+        "gap": "What fields an x402 402 response contains, including payment requirements",
+        "selected": "product-x402-response",
+        "rows": [
+          {
+            "id": "team-x402",
+            "verdict": "BUY",
+            "value": 0.409,
+            "reason": "Expected missing facts per S$ 1.514 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "product-x402-response",
+            "verdict": "BUY",
+            "value": 0.274,
+            "reason": "Expected missing facts per S$ 1.016 >= 0.500; spending policy clears. Prefers the article whose title matches the question."
+          },
+          {
+            "id": "xrpl-x402",
+            "verdict": "BUY",
+            "value": 0.396,
+            "reason": "Expected missing facts per S$ 1.468 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "product-accept-x402-xrp",
+            "verdict": "BUY",
+            "value": 0.509,
+            "reason": "Expected missing facts per S$ 1.885 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "c5-x402-facilitator-verify-settle",
+            "verdict": "BUY",
+            "value": 0.33,
+            "reason": "Expected missing facts per S$ 1.221 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "c5-ap2-agent-payments-protocol",
+            "verdict": "BUY",
+            "value": 0.229,
+            "reason": "Expected missing facts per S$ 0.849 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "team-delivery",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.032,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "team-rlusd",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.016,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "team-fees",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.16,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "c5-xrpl-testnet-servers",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.026,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "product-x402-xrpl-settlement",
+            "verdict": "BUY",
+            "value": 0.5,
+            "reason": "Expected missing facts per S$ 1.853 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "c5-xrpl-destination-tag",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.324,
+            "reason": "The article title and topics do not cover the requested subject."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "after-injection",
+    "wording": "modal",
+    "question": "How can I stop a prompt-injected AI agent from draining its wallet?",
+    "bought": [
+      "product-prompt-injection"
+    ],
+    "spentMinor": 40,
+    "lead": [
+      "prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments."
+    ],
+    "openGaps": [],
+    "conclusion": "Prompt injection cannot increase spending authorization: the user budget is the only authorization, and deterministic policy code buys while the language model cannot sign payments. Policy enforces the admitted budget, source limit, wallet daily authority and one charge per intent. Untrusted article text cannot change those limits, choose signing keys or turn a research instruction into additional wallet authority.",
+    "facts": {
+      "answered": 1,
+      "total": 1,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "Sourced guidance on securing agent payments against prompt injection",
+          "status": "supported"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "complete",
+      "line": "1 of 1 answered",
+      "judge": "fixture · metadata-fixture"
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "Sourced guidance on securing agent payments against prompt injection"
+      }
+    ],
+    "coverage": {
+      "answerVersion": 2,
+      "judge": "fixture · metadata-fixture",
+      "entries": [
+        {
+          "requirementId": "r1",
+          "status": "supported",
+          "claimIds": [
+            "evidence-[\"product-prompt-injection\",\"v1\",\"p1\"]"
+          ]
+        }
+      ]
+    },
+    "coverageEvent": {
+      "answerVersion": 2,
+      "answered": 1,
+      "total": 1,
+      "judge": "fixture · metadata-fixture"
+    },
+    "plan": {
+      "restatement": "How to prevent a prompt-injected AI agent from draining its wallet.",
+      "subqueries": [
+        "prevent prompt injection AI agent draining wallet",
+        "AI agent wallet spending limits policy controls prompt injection",
+        "x402 agent payment security prompt injection safeguards"
+      ]
+    },
+    "stopReason": "complete",
+    "phase": "DONE",
+    "decisions": [
+      {
+        "round": 1,
+        "gap": "Sourced guidance on securing agent payments against prompt injection",
+        "selected": "product-prompt-injection",
+        "rows": [
+          {
+            "id": "product-prompt-injection",
+            "verdict": "BUY",
+            "value": 0.429,
+            "reason": "Expected missing facts per S$ 1.588 >= 0.500; spending policy clears. Prefers the article whose title matches the question."
+          },
+          {
+            "id": "team-recovery",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.004,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "xrpl-spending",
+            "verdict": "BUY",
+            "value": 0.412,
+            "reason": "Expected missing facts per S$ 1.526 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "team-readiness",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.003,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "product-spending-budgets",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.384,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "team-credentials",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.003,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "team-delivery",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.032,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "product-mcp-paid-tool",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.017,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "c5-ap2-agent-payments-protocol",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.35,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "team-fees",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.009,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "xrpl-multisign",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.169,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "xrpl-trust-lines",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.017,
+            "reason": "The article title and topics do not cover the requested subject."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "after-submitters",
+    "wording": "modal",
+    "question": "What's the difference between EscrowFinish and EscrowCancel, and who can submit each one?",
+    "bought": [
+      "xrpl-escrow"
+    ],
+    "spentMinor": 40,
+    "lead": [
+      "EscrowFinish releases escrowed funds when its requirements are satisfied; EscrowCancel returns expired escrowed funds to the sender.",
+      "Any account may submit EscrowFinish or EscrowCancel; funds go only to the destination or back to the owner."
+    ],
+    "openGaps": [
+      "How the two transactions differ in effect and authorization"
+    ],
+    "conclusion": "EscrowFinish releases escrowed funds when its requirements are satisfied; EscrowCancel returns expired escrowed funds to the sender. Any account may submit EscrowFinish or EscrowCancel; funds go only to the destination or back to the owner. Expiration alone does not submit that cancellation transaction.",
+    "facts": {
+      "answered": 2,
+      "total": 3,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "What EscrowFinish does and who can submit it on the XRPL",
+          "status": "supported"
+        },
+        {
+          "id": "r2",
+          "text": "What EscrowCancel does and who can submit it on the XRPL",
+          "status": "supported"
+        },
+        {
+          "id": "r3",
+          "text": "How the two transactions differ in effect and authorization",
+          "status": "missing"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "no-eligible-purchase",
+      "line": "2 of 3 answered · no source worth buying for the rest",
+      "judge": "fixture · metadata-fixture"
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "What EscrowFinish does and who can submit it on the XRPL"
+      },
+      {
+        "id": "r2",
+        "text": "What EscrowCancel does and who can submit it on the XRPL"
+      },
+      {
+        "id": "r3",
+        "text": "How the two transactions differ in effect and authorization"
+      }
+    ],
+    "coverage": {
+      "answerVersion": 2,
+      "judge": "fixture · metadata-fixture",
+      "entries": [
+        {
+          "requirementId": "r1",
+          "status": "supported",
+          "claimIds": [
+            "evidence-[\"xrpl-escrow\",\"v2\",\"p1\"]"
+          ]
+        },
+        {
+          "requirementId": "r2",
+          "status": "supported",
+          "claimIds": [
+            "evidence-[\"xrpl-escrow\",\"v2\",\"p1\"]"
+          ]
+        },
+        {
+          "requirementId": "r3",
+          "status": "missing"
+        }
+      ]
+    },
+    "coverageEvent": {
+      "answerVersion": 2,
+      "answered": 2,
+      "total": 3,
+      "judge": "fixture · metadata-fixture"
+    },
+    "plan": {
+      "restatement": "The difference between XRPL EscrowFinish and EscrowCancel transactions and who is authorized to submit each.",
+      "subqueries": [
+        "XRPL EscrowFinish EscrowCancel difference who can submit",
+        "XRPL escrow transaction types finish cancel authorization"
+      ]
+    },
+    "stopReason": "no-eligible-purchase",
+    "phase": "DONE",
+    "decisions": [
+      {
+        "round": 1,
+        "gap": "What EscrowFinish does and who can submit it on the XRPL",
+        "selected": "xrpl-escrow",
+        "rows": [
+          {
+            "id": "team-fees",
+            "verdict": "BUY",
+            "value": 0.287,
+            "reason": "Expected missing facts per S$ 1.062 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "xrpl-tx-escrowcancel",
+            "verdict": "BUY",
+            "value": 0.402,
+            "reason": "Expected missing facts per S$ 1.488 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "team-recovery",
+            "verdict": "BUY",
+            "value": 0.355,
+            "reason": "Expected missing facts per S$ 1.313 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "xrpl-tx-escrowcreate",
+            "verdict": "BUY",
+            "value": 0.264,
+            "reason": "Expected missing facts per S$ 0.978 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "xrpl-tx-escrowfinish",
+            "verdict": "BUY",
+            "value": 0.4,
+            "reason": "Expected missing facts per S$ 1.480 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "team-credentials",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.078,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "xrpl-escrow",
+            "verdict": "BUY",
+            "value": 0.518,
+            "reason": "Expected missing facts per S$ 1.918 >= 0.500; spending policy clears. Prefers the title or topics naming the requested entity; then value per dollar."
+          },
+          {
+            "id": "team-rlusd",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.148,
+            "reason": "Value is below the model threshold."
+          },
+          {
+            "id": "team-verification",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.048,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "product-escrow-no-show",
+            "verdict": "BUY",
+            "value": 0.362,
+            "reason": "Expected missing facts per S$ 1.340 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "team-x402",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.042,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "c5-xrpl-token-escrow-xls85",
+            "verdict": "BUY",
+            "value": 0.217,
+            "reason": "Expected missing facts per S$ 0.805 >= 0.500; spending policy clears."
+          }
+        ]
+      },
+      {
+        "round": 2,
+        "gap": "How the two transactions differ in effect and authorization",
+        "rows": [
+          {
+            "id": "team-fees",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.143,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "xrpl-tx-escrowcancel",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.02,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "team-recovery",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.018,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "xrpl-tx-escrowcreate",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.013,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "xrpl-tx-escrowfinish",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.02,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "team-credentials",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.008,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "xrpl-escrow",
+            "verdict": "SKIP_REWRITE",
+            "value": 0.001,
+            "reason": "Already acquired or a rewrite of existing evidence."
+          },
+          {
+            "id": "team-rlusd",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.007,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "team-verification",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.005,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "product-escrow-no-show",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.018,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "team-x402",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.004,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "c5-xrpl-token-escrow-xls85",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.011,
+            "reason": "The article title and topics do not cover the requested subject."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "after-no-show",
+    "wording": "modal",
+    "question": "If my agent pays for an article and the writer never reveals the key, what happens to my money?",
+    "bought": [
+      "product-escrow-no-show"
+    ],
+    "spentMinor": 40,
+    "lead": [
+      "the buyer's money stays locked if the writer never reveals the key; after CancelAfter the buyer can recover escrow principal by cancellation with EscrowCancel."
+    ],
+    "openGaps": [],
+    "conclusion": "The buyer's money stays locked if the writer never reveals the key; after CancelAfter the buyer can recover escrow principal by cancellation with EscrowCancel. EscrowCreate supplies a Condition and the expiry window; EscrowFinish supplies the matching Fulfillment, which reveals the secret. If the writer never completes delivery, policy waits for the validated deadline and submits cancellation of the original object. Anyone may submit an eligible EscrowCancel, but the locked principal returns to the escrow owner, not the caller who happens to submit it. Once a successful finish has released payment, the old escrow cannot be canceled; a subsequent quality dispute requires a separate writer-signed refund.",
+    "facts": {
+      "answered": 3,
+      "total": 3,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "How the payment is held in an XRPL escrow until the writer reveals the key",
+          "status": "supported"
+        },
+        {
+          "id": "r2",
+          "text": "What happens to the funds if the writer never reveals the key, including any refund or timeout",
+          "status": "supported"
+        },
+        {
+          "id": "r3",
+          "text": "Whether the buyer can recover the payment when the key is not revealed",
+          "status": "supported"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "complete",
+      "line": "3 of 3 answered",
+      "judge": "fixture · metadata-fixture"
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "How the payment is held in an XRPL escrow until the writer reveals the key"
+      },
+      {
+        "id": "r2",
+        "text": "What happens to the funds if the writer never reveals the key, including any refund or timeout"
+      },
+      {
+        "id": "r3",
+        "text": "Whether the buyer can recover the payment when the key is not revealed"
+      }
+    ],
+    "coverage": {
+      "answerVersion": 2,
+      "judge": "fixture · metadata-fixture",
+      "entries": [
+        {
+          "requirementId": "r1",
+          "status": "supported",
+          "claimIds": [
+            "evidence-[\"product-escrow-no-show\",\"v2\",\"p1\"]"
+          ]
+        },
+        {
+          "requirementId": "r2",
+          "status": "supported",
+          "claimIds": [
+            "evidence-[\"product-escrow-no-show\",\"v2\",\"p1\"]"
+          ]
+        },
+        {
+          "requirementId": "r3",
+          "status": "supported",
+          "claimIds": [
+            "evidence-[\"product-escrow-no-show\",\"v2\",\"p1\"]",
+            "evidence-[\"product-escrow-no-show\",\"v2\",\"p2\"]"
+          ]
+        }
+      ]
+    },
+    "coverageEvent": {
+      "answerVersion": 2,
+      "answered": 3,
+      "total": 3,
+      "judge": "fixture · metadata-fixture"
+    },
+    "plan": {
+      "restatement": "What happens to the payment if a writer never reveals the key after an agent pays for an article.",
+      "subqueries": [
+        "XRPL escrow key reveal payment writer never publishes key",
+        "XRPL escrow refund if condition not fulfilled timeout",
+        "x402 paywalled article escrow key reveal refund"
+      ]
+    },
+    "stopReason": "complete",
+    "phase": "DONE",
+    "decisions": [
+      {
+        "round": 1,
+        "gap": "How the payment is held in an XRPL escrow until the writer reveals the key",
+        "selected": "product-escrow-no-show",
+        "rows": [
+          {
+            "id": "team-recovery",
+            "verdict": "BUY",
+            "value": 0.432,
+            "reason": "Expected missing facts per S$ 1.601 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "product-escrow-no-show",
+            "verdict": "BUY",
+            "value": 0.559,
+            "reason": "Expected missing facts per S$ 2.070 >= 0.500; spending policy clears. Prefers the article whose title matches the question."
+          },
+          {
+            "id": "team-fees",
+            "verdict": "BUY",
+            "value": 0.407,
+            "reason": "Expected missing facts per S$ 1.508 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "xrpl-escrow",
+            "verdict": "BUY",
+            "value": 0.55,
+            "reason": "Expected missing facts per S$ 2.036 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "team-rlusd",
+            "verdict": "BUY",
+            "value": 0.364,
+            "reason": "Expected missing facts per S$ 1.349 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "xrpl-tx-escrowcreate",
+            "verdict": "BUY",
+            "value": 0.524,
+            "reason": "Expected missing facts per S$ 1.940 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "xrpl-tx-escrowcancel",
+            "verdict": "BUY",
+            "value": 0.525,
+            "reason": "Expected missing facts per S$ 1.944 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "team-delivery",
+            "verdict": "BUY",
+            "value": 0.394,
+            "reason": "Expected missing facts per S$ 1.458 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "xrpl-tx-escrowfinish",
+            "verdict": "BUY",
+            "value": 0.518,
+            "reason": "Expected missing facts per S$ 1.917 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "team-credentials",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.36,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "team-x402",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.24,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "product-writer-paid",
+            "verdict": "BUY",
+            "value": 0.457,
+            "reason": "Expected missing facts per S$ 1.692 >= 0.500; spending policy clears."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "after-RLUSD-1",
+    "wording": "modal",
+    "question": "Can an XRPL escrow hold RLUSD today, and what must the issuer enable before a buyer can lock it?",
+    "bought": [
+      "team-rlusd"
+    ],
+    "spentMinor": 40,
+    "lead": [
+      "Not today: an XRPL escrow can hold official RLUSD only after its issuer enables AllowTrustLineLocking, and the RLUSD issuer had not enabled it on Mainnet or Testnet when the team checked on 11 November 2026."
+    ],
+    "openGaps": [],
+    "conclusion": "Not today: an XRPL escrow can hold official RLUSD only after its issuer enables AllowTrustLineLocking, and the RLUSD issuer had not enabled it on Mainnet or Testnet when the team checked on 11 November 2026. The TokenEscrow amendment (XLS-85), which lets an escrow hold issued tokens, is already enabled on both networks, so the issuer flag is the remaining blocker. Only the issuer can set that flag, with an AccountSet transaction; a buyer or writer cannot set it for them. An issuer can change its flags later, so check the issuer account on the intended network before relying on this answer. The issuer is separate from buyer and writer. Cancellation checks the buyer's returned balance delta.",
+    "facts": {
+      "answered": 2,
+      "total": 2,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "Whether XRPL escrow can hold RLUSD today, with the date",
+          "status": "supported"
+        },
+        {
+          "id": "r2",
+          "text": "What the RLUSD issuer must enable before a buyer can lock it in escrow",
+          "status": "supported"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "complete",
+      "line": "2 of 2 answered",
+      "judge": "fixture · metadata-fixture"
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "Whether XRPL escrow can hold RLUSD today, with the date"
+      },
+      {
+        "id": "r2",
+        "text": "What the RLUSD issuer must enable before a buyer can lock it in escrow"
+      }
+    ],
+    "coverage": {
+      "answerVersion": 2,
+      "judge": "fixture · metadata-fixture",
+      "entries": [
+        {
+          "requirementId": "r1",
+          "status": "supported",
+          "claimIds": [
+            "evidence-[\"team-rlusd\",\"v4\",\"p1\"]",
+            "evidence-[\"team-rlusd\",\"v4\",\"p4\"]",
+            "evidence-[\"team-rlusd\",\"v4\",\"p2\"]"
+          ]
+        },
+        {
+          "requirementId": "r2",
+          "status": "supported",
+          "claimIds": [
+            "evidence-[\"team-rlusd\",\"v4\",\"p1\"]",
+            "evidence-[\"team-rlusd\",\"v4\",\"p4\"]",
+            "evidence-[\"team-rlusd\",\"v4\",\"p2\"]"
+          ]
+        }
+      ]
+    },
+    "coverageEvent": {
+      "answerVersion": 2,
+      "answered": 2,
+      "total": 2,
+      "judge": "fixture · metadata-fixture"
+    },
+    "plan": {
+      "restatement": "Whether XRPL escrows can hold RLUSD today and what the issuer must enable before a buyer can lock it.",
+      "subqueries": [
+        "XRPL escrow RLUSD token support",
+        "XRPL escrow token escrow amendment issuer enable",
+        "XRPL RLUSD escrow requirements issuer"
+      ]
+    },
+    "stopReason": "complete",
+    "phase": "DONE",
+    "decisions": [
+      {
+        "round": 1,
+        "gap": "Whether XRPL escrow can hold RLUSD today, with the date",
+        "selected": "team-rlusd",
+        "rows": [
+          {
+            "id": "xrpl-tx-escrowcreate",
+            "verdict": "BUY",
+            "value": 0.393,
+            "reason": "Expected missing facts per S$ 1.454 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "team-fees",
+            "verdict": "BUY",
+            "value": 0.281,
+            "reason": "Expected missing facts per S$ 1.039 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "team-rlusd",
+            "verdict": "BUY",
+            "value": 0.385,
+            "reason": "Expected missing facts per S$ 1.425 >= 0.500; spending policy clears. Prefers the article whose title matches the question."
+          },
+          {
+            "id": "xrpl-tx-escrowcancel",
+            "verdict": "BUY",
+            "value": 0.392,
+            "reason": "Expected missing facts per S$ 1.452 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "team-recovery",
+            "verdict": "BUY",
+            "value": 0.229,
+            "reason": "Expected missing facts per S$ 0.847 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "xrpl-tx-escrowfinish",
+            "verdict": "BUY",
+            "value": 0.389,
+            "reason": "Expected missing facts per S$ 1.439 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "team-credentials",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.11,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "xrpl-escrow",
+            "verdict": "BUY",
+            "value": 0.383,
+            "reason": "Expected missing facts per S$ 1.419 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "product-escrow-no-show",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.12,
+            "reason": "Value is below the model threshold."
+          },
+          {
+            "id": "team-asset-provisioning",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.193,
+            "reason": "Value is below the model threshold."
+          },
+          {
+            "id": "c5-xrpl-token-escrow-xls85",
+            "verdict": "BUY",
+            "value": 0.355,
+            "reason": "Expected missing facts per S$ 1.316 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "team-verification",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.072,
+            "reason": "The article title and topics do not cover the requested subject."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "after-reserves-repeat",
+    "wording": "modal",
+    "question": "How much XRP reserve does an agent wallet need, and how much does each open escrow or trust line add?",
+    "bought": [
+      "xrpl-reserves"
+    ],
+    "spentMinor": 40,
+    "lead": [
+      "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings."
+    ],
+    "openGaps": [],
+    "conclusion": "An XRPL wallet needs a base reserve of 1 XRP plus an owner reserve of 0.2 XRP for each object it owns, such as an escrow, offer or trust line, at current Mainnet settings. The reserve is held separately from the money the wallet intends to send. Base reserve supports the account's existence; owner reserve constrains ledger objects. Removing an object can release its reserve requirement. Treating every XRP in a balance as transferable would therefore confuse several distinct accounting concepts. A wallet with enough principal for a purchase may still lack room for the escrow object or transaction fee. Reserves are not payments to validators, and the documentation permits reserved XRP to pay transaction costs.",
+    "facts": {
+      "answered": 4,
+      "total": 4,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "XRPL base account reserve requirement, with current figures",
+          "status": "supported"
+        },
+        {
+          "id": "r2",
+          "text": "XRPL owner reserve added per open escrow",
+          "status": "supported"
+        },
+        {
+          "id": "r3",
+          "text": "XRPL owner reserve added per trust line",
+          "status": "supported"
+        },
+        {
+          "id": "r4",
+          "text": "How escrows and trust lines count toward an agent wallet's total XRP reserve",
+          "status": "supported"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "complete",
+      "line": "4 of 4 answered",
+      "judge": "fixture · metadata-fixture"
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "XRPL base account reserve requirement, with current figures"
+      },
+      {
+        "id": "r2",
+        "text": "XRPL owner reserve added per open escrow"
+      },
+      {
+        "id": "r3",
+        "text": "XRPL owner reserve added per trust line"
+      },
+      {
+        "id": "r4",
+        "text": "How escrows and trust lines count toward an agent wallet's total XRP reserve"
+      }
+    ],
+    "coverage": {
+      "answerVersion": 2,
+      "judge": "fixture · metadata-fixture",
+      "entries": [
+        {
+          "requirementId": "r1",
+          "status": "supported",
+          "claimIds": [
+            "evidence-[\"xrpl-reserves\",\"v2\",\"p1\"]"
+          ]
+        },
+        {
+          "requirementId": "r2",
+          "status": "supported",
+          "claimIds": [
+            "evidence-[\"xrpl-reserves\",\"v2\",\"p1\"]"
+          ]
+        },
+        {
+          "requirementId": "r3",
+          "status": "supported",
+          "claimIds": [
+            "evidence-[\"xrpl-reserves\",\"v2\",\"p1\"]"
+          ]
+        },
+        {
+          "requirementId": "r4",
+          "status": "supported",
+          "claimIds": [
+            "evidence-[\"xrpl-reserves\",\"v2\",\"p1\"]",
+            "evidence-[\"xrpl-reserves\",\"v2\",\"p3\"]"
+          ]
+        }
+      ]
+    },
+    "coverageEvent": {
+      "answerVersion": 2,
+      "answered": 4,
+      "total": 4,
+      "judge": "fixture · metadata-fixture"
+    },
+    "plan": {
+      "restatement": "The XRP reserve an agent wallet needs on the XRP Ledger and how much each open escrow or trust line adds.",
+      "subqueries": [
+        "XRPL base reserve account reserve requirement",
+        "XRPL owner reserve per escrow trust line",
+        "XRPL reserve requirements agent wallet escrows trust lines"
+      ]
+    },
+    "stopReason": "complete",
+    "phase": "DONE",
+    "decisions": [
+      {
+        "round": 1,
+        "gap": "XRPL base account reserve requirement, with current figures",
+        "selected": "xrpl-reserves",
+        "rows": [
+          {
+            "id": "team-asset-provisioning",
+            "verdict": "BUY",
+            "value": 0.219,
+            "reason": "Expected missing facts per S$ 0.811 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "xrpl-tx-trustset",
+            "verdict": "BUY",
+            "value": 0.53,
+            "reason": "Expected missing facts per S$ 1.964 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "xrpl-reserves",
+            "verdict": "BUY",
+            "value": 0.545,
+            "reason": "Expected missing facts per S$ 2.019 >= 0.500; spending policy clears. Prefers the article whose title matches the question."
+          },
+          {
+            "id": "xrpl-trust-lines",
+            "verdict": "BUY",
+            "value": 0.533,
+            "reason": "Expected missing facts per S$ 1.973 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "team-fees",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.392,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "team-rlusd",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.193,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "xrpl-tx-escrowcreate",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.263,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "team-credentials",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.186,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "xrpl-tx-ledgerstatefix",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.228,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "team-x402",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.094,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "basis-asian-central-banks-vs-the-fed-diverging-policy-paths",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.001,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "load-reserve-margins-and-capacity-auctions-lessons-from-2025",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.055,
+            "reason": "The article title and topics do not cover the requested subject."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "after-x402-repeat",
+    "wording": "modal",
+    "question": "What does an x402 402 response contain, and can my agent pay it with XRP on Testnet?",
+    "bought": [
+      "product-x402-response"
+    ],
+    "spentMinor": 40,
+    "lead": [
+      "an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE.",
+      "An agent can pay a 402 in XRP on Testnet, network xrpl:1."
+    ],
+    "openGaps": [],
+    "conclusion": "An HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. An agent can pay a 402 in XRP on Testnet, network xrpl:1. The XRPL exact scheme quotes a native XRP Payment in integer drops, and ResearchAgent's writers accept exactly that. A successful HTTP response can include PAYMENT-RESPONSE with settlement details. A 402 challenge is an offer to pay; it does not itself authorize spending.",
+    "facts": {
+      "answered": 2,
+      "total": 2,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "What fields an x402 402 response contains, including payment requirements",
+          "status": "supported"
+        },
+        {
+          "id": "r2",
+          "text": "Whether x402 supports paying with XRP, and on which networks including Testnet",
+          "status": "supported"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "complete",
+      "line": "2 of 2 answered",
+      "judge": "fixture · metadata-fixture"
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "What fields an x402 402 response contains, including payment requirements"
+      },
+      {
+        "id": "r2",
+        "text": "Whether x402 supports paying with XRP, and on which networks including Testnet"
+      }
+    ],
+    "coverage": {
+      "answerVersion": 2,
+      "judge": "fixture · metadata-fixture",
+      "entries": [
+        {
+          "requirementId": "r1",
+          "status": "supported",
+          "claimIds": [
+            "evidence-[\"product-x402-response\",\"v2\",\"p1\"]"
+          ]
+        },
+        {
+          "requirementId": "r2",
+          "status": "supported",
+          "claimIds": [
+            "evidence-[\"product-x402-response\",\"v2\",\"p1\"]"
+          ]
+        }
+      ]
+    },
+    "coverageEvent": {
+      "answerVersion": 2,
+      "answered": 2,
+      "total": 2,
+      "judge": "fixture · metadata-fixture"
+    },
+    "plan": {
+      "restatement": "What an x402 402 response contains and whether an agent can pay it with XRP on Testnet.",
+      "subqueries": [
+        "x402 402 response contents payment requirements",
+        "x402 XRP payment support Testnet",
+        "x402 protocol payment header scheme network asset"
+      ]
+    },
+    "stopReason": "complete",
+    "phase": "DONE",
+    "decisions": [
+      {
+        "round": 1,
+        "gap": "What fields an x402 402 response contains, including payment requirements",
+        "selected": "product-x402-response",
+        "rows": [
+          {
+            "id": "team-x402",
+            "verdict": "BUY",
+            "value": 0.415,
+            "reason": "Expected missing facts per S$ 1.536 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "product-x402-response",
+            "verdict": "BUY",
+            "value": 0.275,
+            "reason": "Expected missing facts per S$ 1.020 >= 0.500; spending policy clears. Prefers the article whose title matches the question."
+          },
+          {
+            "id": "xrpl-x402",
+            "verdict": "BUY",
+            "value": 0.398,
+            "reason": "Expected missing facts per S$ 1.473 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "product-accept-x402-xrp",
+            "verdict": "BUY",
+            "value": 0.511,
+            "reason": "Expected missing facts per S$ 1.892 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "c5-x402-facilitator-verify-settle",
+            "verdict": "BUY",
+            "value": 0.331,
+            "reason": "Expected missing facts per S$ 1.226 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "c5-ap2-agent-payments-protocol",
+            "verdict": "BUY",
+            "value": 0.23,
+            "reason": "Expected missing facts per S$ 0.853 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "team-delivery",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.033,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "team-rlusd",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.016,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "team-fees",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.162,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "c5-xrpl-testnet-servers",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.026,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "product-x402-xrpl-settlement",
+            "verdict": "BUY",
+            "value": 0.502,
+            "reason": "Expected missing facts per S$ 1.859 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "c5-xrpl-destination-tag",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.326,
+            "reason": "The article title and topics do not cover the requested subject."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "after-RLUSD-2",
+    "wording": "modal",
+    "question": "Can an XRPL escrow hold RLUSD today, and what must the issuer enable before a buyer can lock it?",
+    "bought": [
+      "team-rlusd"
+    ],
+    "spentMinor": 40,
+    "lead": [
+      "Not today: an XRPL escrow can hold official RLUSD only after its issuer enables AllowTrustLineLocking, and the RLUSD issuer had not enabled it on Mainnet or Testnet when the team checked on 11 November 2026."
+    ],
+    "openGaps": [],
+    "conclusion": "Not today: an XRPL escrow can hold official RLUSD only after its issuer enables AllowTrustLineLocking, and the RLUSD issuer had not enabled it on Mainnet or Testnet when the team checked on 11 November 2026. The TokenEscrow amendment (XLS-85), which lets an escrow hold issued tokens, is already enabled on both networks, so the issuer flag is the remaining blocker. Only the issuer can set that flag, with an AccountSet transaction; a buyer or writer cannot set it for them. An issuer can change its flags later, so check the issuer account on the intended network before relying on this answer. The issuer is separate from buyer and writer. Cancellation checks the buyer's returned balance delta.",
+    "facts": {
+      "answered": 3,
+      "total": 3,
+      "facts": [
+        {
+          "id": "r1",
+          "text": "Whether XRPL escrow can hold RLUSD today, with the enabling amendment and date",
+          "status": "supported"
+        },
+        {
+          "id": "r2",
+          "text": "What the RLUSD issuer must enable before a buyer can lock RLUSD in escrow",
+          "status": "supported"
+        },
+        {
+          "id": "r3",
+          "text": "Any issuer-side settings or flags required for token escrow on XRPL",
+          "status": "supported"
+        }
+      ],
+      "foundFree": false,
+      "stopReason": "complete",
+      "line": "3 of 3 answered",
+      "judge": "fixture · metadata-fixture"
+    },
+    "requirements": [
+      {
+        "id": "r1",
+        "text": "Whether XRPL escrow can hold RLUSD today, with the enabling amendment and date"
+      },
+      {
+        "id": "r2",
+        "text": "What the RLUSD issuer must enable before a buyer can lock RLUSD in escrow"
+      },
+      {
+        "id": "r3",
+        "text": "Any issuer-side settings or flags required for token escrow on XRPL"
+      }
+    ],
+    "coverage": {
+      "answerVersion": 2,
+      "judge": "fixture · metadata-fixture",
+      "entries": [
+        {
+          "requirementId": "r1",
+          "status": "supported",
+          "claimIds": [
+            "evidence-[\"team-rlusd\",\"v4\",\"p1\"]",
+            "evidence-[\"team-rlusd\",\"v4\",\"p4\"]",
+            "evidence-[\"team-rlusd\",\"v4\",\"p2\"]"
+          ]
+        },
+        {
+          "requirementId": "r2",
+          "status": "supported",
+          "claimIds": [
+            "evidence-[\"team-rlusd\",\"v4\",\"p1\"]",
+            "evidence-[\"team-rlusd\",\"v4\",\"p4\"]",
+            "evidence-[\"team-rlusd\",\"v4\",\"p2\"]"
+          ]
+        },
+        {
+          "requirementId": "r3",
+          "status": "supported",
+          "claimIds": [
+            "evidence-[\"team-rlusd\",\"v4\",\"p1\"]",
+            "evidence-[\"team-rlusd\",\"v4\",\"p4\"]"
+          ]
+        }
+      ]
+    },
+    "coverageEvent": {
+      "answerVersion": 2,
+      "answered": 3,
+      "total": 3,
+      "judge": "fixture · metadata-fixture"
+    },
+    "plan": {
+      "restatement": "Whether XRPL escrows can hold RLUSD today and what the issuer must enable before a buyer can lock it.",
+      "subqueries": [
+        "XRPL escrow RLUSD token support",
+        "XRPL escrow token escrow amendment issuer requirements",
+        "RLUSD issuer enable token escrow XRPL"
+      ]
+    },
+    "stopReason": "complete",
+    "phase": "DONE",
+    "decisions": [
+      {
+        "round": 1,
+        "gap": "Whether XRPL escrow can hold RLUSD today, with the enabling amendment and date",
+        "selected": "team-rlusd",
+        "rows": [
+          {
+            "id": "xrpl-tx-escrowcreate",
+            "verdict": "BUY",
+            "value": 0.393,
+            "reason": "Expected missing facts per S$ 1.455 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "team-fees",
+            "verdict": "BUY",
+            "value": 0.285,
+            "reason": "Expected missing facts per S$ 1.054 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "team-rlusd",
+            "verdict": "BUY",
+            "value": 0.412,
+            "reason": "Expected missing facts per S$ 1.526 >= 0.500; spending policy clears. Prefers the article whose title matches the question."
+          },
+          {
+            "id": "xrpl-tx-escrowcancel",
+            "verdict": "BUY",
+            "value": 0.392,
+            "reason": "Expected missing facts per S$ 1.453 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "team-recovery",
+            "verdict": "BUY",
+            "value": 0.232,
+            "reason": "Expected missing facts per S$ 0.859 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "xrpl-tx-escrowfinish",
+            "verdict": "BUY",
+            "value": 0.389,
+            "reason": "Expected missing facts per S$ 1.440 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "c5-xrpl-token-escrow-xls85",
+            "verdict": "BUY",
+            "value": 0.39,
+            "reason": "Expected missing facts per S$ 1.445 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "team-credentials",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.111,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "xrpl-escrow",
+            "verdict": "BUY",
+            "value": 0.384,
+            "reason": "Expected missing facts per S$ 1.421 >= 0.500; spending policy clears."
+          },
+          {
+            "id": "team-asset-provisioning",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.195,
+            "reason": "Value is below the model threshold."
+          },
+          {
+            "id": "team-verification",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.073,
+            "reason": "The article title and topics do not cover the requested subject."
+          },
+          {
+            "id": "product-escrow-no-show",
+            "verdict": "SKIP_LOW_VALUE",
+            "value": 0.12,
+            "reason": "Value is below the model threshold."
           }
         ]
       }

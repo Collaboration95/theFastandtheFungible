@@ -69,7 +69,8 @@ const memoByText = <T>(compute: (text: string) => T, { entries = 512, maxLength 
 const matchingGroups = memoByText((query: string) => {
   // Safety vocabulary with an intervening source adjective still names prompt injection. This changes vocabulary,
   // not the original words or their overlap denominator ("malicious document instructions", for example).
-  const normalized = phraseText(query.replace(/\b(?:malicious|untrusted)\s+(?:\w+\s+){0,2}(?:instructions|content)\b/gi, 'prompt injection'))
+  const safety = /\b(?:malicious|untrusted)\s+(?:\w+\s+){0,2}(?:instructions|content)\b/i.test(query)
+  const normalized = phraseText(`${query}${safety ? ' prompt injection' : ''}`)
   return Object.freeze(PROTOCOL_GLOSSARY.filter(group => (group[0] !== 'did' || /\bDID(?:Set|Delete)?\b/.test(query) || /decentralized identifier/i.test(query)) && group.some(p => phraseIn(normalized, p))))
 })
 /** topicWords of a query-side text, shared and frozen; topicWords itself still returns a fresh array. */

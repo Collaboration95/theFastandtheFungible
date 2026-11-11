@@ -2,11 +2,13 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { fixtureCoverage } from '../server/agents/requirements.js'
 import { leadFinding } from '../shared/lead-finding.js'
+import { subjectFamilies } from '../shared/relevance.js'
 import { runLiveShaped, type LiveQuestion, type LiveShapedResult } from './fixtures/r9-live-shaped.js'
 
 // Six fresh local live plans, then question paraphrases with those plans retained.
 // These are used development cases, not MJ10's deleted raw sessions or a blind bank.
 const recorded: LiveQuestion[] = JSON.parse(readFileSync('tests/fixtures/r10-routed-plans.json', 'utf8')).questions
+const recordedAfter: LiveQuestion[] = JSON.parse(readFileSync('tests/fixtures/r10-routed-after-plans.json', 'utf8')).questions
 const rlusd: LiveQuestion = JSON.parse(readFileSync('tests/fixtures/r10-live-plans.json', 'utf8')).questions.find((q: LiveQuestion) => q.id === 'XRPL1-1')
 const rlusdWordings = [rlusd.question, 'Can RLUSD be locked in an XRPL escrow now, and which issuer flag is needed?', 'What issuer permission does RLUSD need for token escrow on XRPL?']
 const wordings: Record<string, string[]> = {
@@ -17,7 +19,7 @@ const wordings: Record<string, string[]> = {
   submitters: [recorded[4].question, 'How do EscrowFinish and EscrowCancel differ, and which accounts may submit them?', 'Compare EscrowFinish with EscrowCancel and explain who is allowed to submit each.'],
   'no-show': [recorded[5].question, 'How can a buyer recover money if an article writer never reveals the key?', 'What happens to locked payment when the writer fails to deliver the decryption key?'],
 }
-const questions = [...recorded.flatMap(q => wordings[q.id].map((question, i) => ({ ...q, id: `${q.id}-${i}`, question, requirementsBy: i ? 'fixture paraphrase · recorded plan retained' : 'DeepSeek · deepseek-flash (recorded)' }))), ...rlusdWordings.map((question, i) => ({ ...rlusd, id: `rlusd-${i}`, question, requirementsBy: i ? 'fixture paraphrase · recorded plan retained' : 'DeepSeek · deepseek-flash (recorded)' }))]
+const questions = [...recorded.flatMap(q => wordings[q.id].map((question, i) => ({ ...q, id: `${q.id}-${i}`, question, requirementsBy: i ? 'fixture paraphrase · recorded plan retained' : 'DeepSeek · deepseek-flash (recorded)' }))), ...rlusdWordings.map((question, i) => ({ ...rlusd, id: `rlusd-${i}`, question, requirementsBy: i ? 'fixture paraphrase · recorded plan retained' : 'DeepSeek · deepseek-flash (recorded)' })), ...recordedAfter]
 let results: LiveShapedResult[]
 beforeAll(async () => {
   vi.stubEnv('SEARCH_EMBEDDINGS', 'off')
@@ -88,6 +90,15 @@ describe('round-10 routed questions, three wordings each', () => {
       expect(r.plan).toEqual(plan)
     }
   })
+  it('preserves purchases and coverage agreement on all ten fresh after plans', () => {
+    for (const q of recordedAfter) {
+      const r = results.find(r => r.id === q.id)!
+      expect(r.bought, q.id).toEqual(q.observed.bought)
+      expect(r.spentMinor, q.id).toBe(q.observed.spentMinor)
+      expect(r.lead.length, q.id).toBeGreaterThan(0)
+      checkAgreement(r)
+    }
+  })
 })
 
 const before: { evidence: { text: string }[] }[] = JSON.parse(readFileSync('docs/evidence/qual/r10-routed-before.json', 'utf8'))
@@ -99,6 +110,9 @@ it.each(['What an XRPL Credential proves', 'What XRPL Credentials attest to', 'W
 })
 it('does not remove the empty-lead state when the delivered claims lack an answer', () => {
   expect(leadFinding(wordings.injection[0], [], [])).toEqual([])
+})
+it.each(['malicious Credential instructions', 'untrusted credential content'])('safety vocabulary retains the original named subject: %s', text => {
+  expect(subjectFamilies(text).map(family => family[0])).toEqual(expect.arrayContaining(['credential', 'prompt injection']))
 })
 it.each(['Who can submit EscrowCancel?', 'Which accounts may submit EscrowCancel?', 'Eligible submitters for EscrowCancel'])('a different transaction or recipient cannot establish submitter eligibility: %s', text => {
   for (const passage of ['Any account may submit EscrowFinish. [1]', 'EscrowCancel returns principal to the owner. [1]']) {

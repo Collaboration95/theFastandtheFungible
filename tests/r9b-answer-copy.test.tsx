@@ -61,8 +61,19 @@ describe('H9-03: the offline writer is labelled, with its reason', () => {
 })
 
 describe('H9-10: "Still unanswered" never repeats what the lead answers', () => {
+  it.each(['missing', 'partial', 'conflicting'] as const)('a planned %s fact remains visible beside the stored counter', status => {
+    const run = structuredClone(ucRuns.UC2)
+    const answer = run.answers.at(-1)!
+    // The legacy lead matcher would close this restated question. A stored judgment has stronger authority.
+    run.checkpoint = { ...run.checkpoint, requirements: [{ id: 'r1', text: run.question }], coverage: [{ answerVersion: answer.version, judge: 'fixture', entries: [{ requirementId: 'r1', status }] }] }
+    const container = view(run)
+    expect(container.textContent).toContain('0 of 1 answered')
+    expect([...container.querySelectorAll('.ra-answer-context li')].map(li => li.textContent)).toContain(run.question)
+  })
   it('drops a gap that restates the question when the lead answers it', () => {
     const run = structuredClone(ucRuns.UC2)
+    delete run.checkpoint.requirements
+    delete run.checkpoint.coverage
     const answer = run.answers.at(-1)!
     run.answers[run.answers.length - 1] = { ...answer, openGaps: [{ text: run.question }, { text: 'An unrelated missing fact about tide tables' }] }
     const container = view(run)
