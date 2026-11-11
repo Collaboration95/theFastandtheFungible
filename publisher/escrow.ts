@@ -3,8 +3,8 @@ import { ledgerInvoiceId } from '../shared/x402.js'
 import { escrowAsset } from '../server/escrow-asset.js'
 import { canonicalJson } from '../shared/manifest.js'
 import { encryptDelivery } from '../shared/key-reveal.js'
-import { XrplPayer, BeforeSignError, type DryRun } from '../server/xrpl.js'
-import { fulfillmentFor } from '../shared/escrow.js'
+import { XrplPayer, BeforeSignError } from '../server/xrpl.js'
+import { conditionFor, fulfillmentFor } from '../shared/escrow.js'
 import { Wallet, decode, hashes } from 'xrpl'
 import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
@@ -69,7 +69,7 @@ export async function lockEscrow(blob: string, invoice: string, articleId: strin
 }
 
 /** Writer alone holds K. Persist the exact finish blob before any network submission. */
-const reveals = new WeakMap<PublisherJournal, Map<string, Promise<{finishHash: string; dryRun?: DryRun}>>>()
+const reveals = new WeakMap<PublisherJournal, Map<string, Promise<{finishHash: string; ledgerPreCheck?: boolean}>>>()
 export function revealEscrow(quote: EscrowQuote, createBlob: string, keys: PublisherKeys, ledger: Ledger, journal: PublisherJournal) {
   let active = reveals.get(journal)
   if (!active) { active = new Map(); reveals.set(journal, active) }
@@ -99,15 +99,25 @@ async function revealOnce(quote: EscrowQuote, createBlob: string, keys: Publishe
   if (!finish) {
     await lockEscrow(createBlob, invoice, quote.terms.articleId, quote.terms.version, ledger, journal)
     const sent = await payer.escrow({ TransactionType: 'EscrowFinish', Owner: quote.terms.payer, OfferSequence: Number(decode(createBlob).Sequence), Condition: quote.terms.condition, Fulfillment: fulfillmentFor(privateState.secret) }, 0,
-      s => journal.saveKeyReveal(invoice, { ...privateState, finish: s })!,
+      s => journal.saveKeyReveal(invoice, { ...privateState, finish: { ...s, ledgerPreCheck: true } })!,
       s => ledger.request({ command: 'submit', tx_blob: s.txBlob }),
-      async () => { if (await ledgerTime(ledger) + 30 >= quote.terms.cancelAfter) throw new BeforeSignError('Writer reveal window closed; key was not signed') },
-      undefined, { lastLedgerOffset: 5, requireDryRunSuccess: true })
+      async () => {
+        // Run inside the wallet queue, even when lockEscrow reused a durable grant.
+        // An unfinished, uncancelled escrow still exists in the validated ledger.
+        // These reads contain neither K nor its fulfillment; never simulate a finish.
+        const t = quote.terms
+        const object = (await ledger.request({ command: 'ledger_entry', escrow: { owner: t.payer, seq: Number(decode(createBlob).Sequence) }, ledger_index: 'validated' })).result.node
+        if (!object || object.Account !== t.payer || object.Destination !== payer.address || object.Destination !== t.payTo ||
+          !matchesAmount(object.Amount, t.amount, t.asset) || object.Condition !== t.condition || object.Condition !== conditionFor(privateState.secret) ||
+          object.CancelAfter !== t.cancelAfter || object.FinishAfter !== undefined) throw new BeforeSignError('Writer escrow pre-check failed; key was not signed')
+        if (await ledgerTime(ledger) + 30 >= t.cancelAfter) throw new BeforeSignError('Writer reveal window closed; key was not signed')
+      },
+      undefined, { lastLedgerOffset: 5 })
     finish = sent.submission
     await sent.sent
   } else {
     const found = await lookupTx(ledger, finish.txHash)
     if (found.state !== 'validated') await ledger.request({ command: 'submit', tx_blob: finish.txBlob })
   }
-  return { finishHash: finish.txHash, ...(finish.dryRun ? { dryRun: finish.dryRun } : {}) }
+  return { finishHash: finish.txHash, ...(finish.ledgerPreCheck ? { ledgerPreCheck: true } : {}) }
 }

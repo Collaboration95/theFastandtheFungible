@@ -136,8 +136,19 @@ it('writer retries return the persisted finish without a second transaction', as
   const header = encodeHeader('PAYMENT-SIGNATURE', { x402Version: 2, accepted: { scheme: 'escrow-v1', network: 'xrpl:1', asset: 'XRP', amount: e.quote.terms.amount, payTo: e.quote.terms.payTo, maxTimeoutSeconds: 120, extra: { invoiceId: escrowInvoice(e.quote.terms), areFeesSponsored: false } }, payload: { signedTxBlob: create.txBlob } })
   for (let n = 0; n < 2; n++) {
     const response = await s.client.paidGet(s.store.getIntent('escrow-one')!.paidPath!, header)
-    expect(response.delivery).toEqual({ finishHash: e.publicStatus.finishHash, dryRun: { state: 'accepted', code: 'tesSUCCESS', ledgerIndex: expect.any(Number), elapsedMs: expect.any(Number) } })
+    expect(response.delivery).toEqual({ finishHash: e.publicStatus.finishHash, ledgerPreCheck: true })
   }
+  // Reopen the writer's durable journal to model a process restart. The report
+  // belongs to the persisted signature; a retry must not sign or infer a new one.
+  const { PublisherJournal } = await import('../publisher/journal.js')
+  const { revealEscrow } = await import('../publisher/escrow.js')
+  const recovered = new PublisherJournal(s.journal.path)
+  try {
+    const sign = vi.spyOn(Wallet.prototype, 'sign')
+    const result = await revealEscrow(e.quote, create.txBlob, { publicKey: s.writer.publicKey, privateKey: s.writer.privateKey, wallet: s.writer.classicAddress, simulated: false }, s.c.ledger, recovered)
+    expect(result).toEqual({ finishHash: e.publicStatus.finishHash, ledgerPreCheck: true })
+    expect(sign).not.toHaveBeenCalled()
+  } finally { recovered.close() }
   expect(s.c.txs.size).toBe(2)
 })
 

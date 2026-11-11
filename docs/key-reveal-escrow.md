@@ -58,6 +58,23 @@ K before returning its quote, and the exact signed finish before submit. Retries
 reuse those blobs. An expired writer signature is not replaced by a second
 principal purchase: the buyer can cancel the original object after its deadline.
 
+Before signing a new finish, the writer uses a **read-only ledger pre-check;
+the key is never sent before the signed finish**. Inside the wallet queue it
+re-reads the validated escrow: it must still exist (finished or cancelled objects
+are absent), belong to the quoted payer, pay this writer, and match the quoted
+amount, CancelAfter and Condition. The writer also derives the Condition locally
+from K and compares it with the ledger, and requires validated
+`close_time + 30 s < CancelAfter`. Failure means no signature.
+LastLedgerSequence stays at current + 5. The production path never simulates a
+finish, including a dummy finish;
+only submission of the persisted signed finish sends its fulfillment to RPC.
+Buyer EscrowCreate, EscrowCancel and AccountSet anchor simulations remain unchanged.
+The RPC wrapper rejects any simulate request containing a Fulfillment field.
+Show work reports: “Ledger pre-check · escrow found, condition matches · read-only,
+key not sent” (writer-reported). This is a snapshot check, not a guarantee that a
+later submitted transaction will validate. The report is persisted with the signed
+finish so a lost response or restart can replay the original pre-check evidence.
+
 Recovery verifies the escrow object or searches validated terminal history; an
 absent object without terminal history stays pending. It persists the validated
 reveal before decrypting. A crash after create, observed reveal or stored grant
@@ -142,7 +159,7 @@ No mainnet support is claimed.
   guarantees one charge per policy intent, not control of arbitrary wallet activity.
 - Conditional finish costs more than a Payment. For our 36-byte encoded
   fulfillment, rippled's minimum is 350 drops (`10 × (33 + floor(36/16))`),
-  measured by [unsigned simulate](evidence/dry-run-nov12/README.md).
+  measured with a public dummy fulfillment by [unsigned simulate](evidence/dry-run-nov12/README.md).
   We pay 423: the xrpl.js formula uses fractional `33 + 36/16` and its 1.2×
   cushion gives `ceil(12 × (33 + 36/16)) = 423`. The buyer pays 12 drops to
   lock; the writer pays 423 to reveal. Signing fees stay unchanged, with a
