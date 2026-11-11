@@ -6,10 +6,11 @@ import { spawn, type ChildProcess } from 'node:child_process'
 import { once } from 'node:events'
 import { mkdir, cp } from 'node:fs/promises'
 import AxeBuilder from '@axe-core/playwright'
+import recordingIndex from '../demo/recording-index.json'
 
 const TAG = 'https://github.com/Collaboration95/theFastandtheFungible/releases/tag/v1.1.1'
-const SIMULATED: Record<string, RegExp> = { 'Plain payment': /^Malaysia packaging lead times/, 'Simulated: decline': /^Bank of Japan decision/, 'Simulated: buy': /^Kestrel–TSMC outlook/, 'Simulated: refund': /^Malaysia packaging lead times/ }
-const TABS = ['Key reveal (start here)', 'Plain payment', 'Writer no-show', 'Simulated: decline', 'Simulated: buy', 'Simulated: refund'] as const
+const TABS = ['Key reveal + refund (start here)', 'Plain payment', 'Writer never reveals: money back', 'Simulated: decline', 'Simulated: buy', 'Simulated: refund'] as const
+const SCENARIOS = ['UC3-key-reveal', 'UC3-testnet', 'UC-key-reveal', 'UC1', 'UC2', 'UC3']
 let server: ChildProcess, base: string
 
 // eslint-disable-next-line no-empty-pattern -- Playwright requires a destructured first argument.
@@ -32,12 +33,10 @@ async function walk(page: Page, tab: string) {
   await page.goto(`${base}/demo/`)
   // The scenario picker reloads the replay with the chosen recording.
   if (tab !== TABS[0]) await Promise.all([page.waitForEvent('load'), page.getByRole('combobox', { name: 'Recorded scenario' }).selectOption({ label: tab })])
-  // The payment and simulated replays wait for the judge to pick their recorded question.
-  if (SIMULATED[tab]) {
-    await page.getByRole('button', { name: SIMULATED[tab] }).click()
-    await page.getByRole('button', { name: /^Ask$/ }).click()
-    await page.getByRole('button', { name: 'Start now' }).click()
-  }
+  // Every replay now opens its run immediately, including simulated scenarios.
+  const recording = recordingIndex.find(item => item.scenario === SCENARIOS[TABS.indexOf(tab as typeof TABS[number])])!
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(recording.question)
+  expect(new URL(page.url()).searchParams.get('run')).toBe(recording.runId)
   const seen = new Set<string>()
   let ready = false
   for (let second = 0; second < 60 && !ready; second++) {
