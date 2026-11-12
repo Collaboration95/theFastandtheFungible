@@ -10,7 +10,7 @@ Policy reserves the prompt budget before signing, as before. The scoped payer us
 
 ## Evidence
 
-`node --import tsx scripts/spikes/e-delegated-product.mjs` uses the actual local API and writer on OFFSET=800 (9588/9590), fresh accounts, fixture models, XRP key-reveal settlement. Visitor seed never enters the server environment. This is HTTP product evidence plus a jsdom wallet test, not a hosted or real-browser signing acceptance claim. `e-delegated.json` and `e-delegated-receipt.json` retain hashes and receipt export. Initial JS size will be checked by the unchanged Node 22 build gate.
+`node --import tsx scripts/spikes/e-delegated-product.mjs` uses the actual local API and writer on OFFSET=800 (9588/9590), fresh accounts, fixture models, XRP key-reveal settlement. Visitor seed never enters the server environment. This is HTTP product evidence; the separate Chromium component probe below tests browser signing with a stubbed identity API. No hosted acceptance is claimed. `e-delegated.json` and `e-delegated-receipt.json` retain hashes and receipt export. Initial JS size will be checked by the unchanged Node 22 build gate.
 
 Visitor `rGPU4UK4KzrMyfPtXBwdun9ibgNEGTEKhD`; agent `r4qQ5cqgPsjUL5pE5paSKYv33KeifpQWWH`. One purchase: 40 minor units, 16064 ms (provisioning excluded). After revocation: 0 minor units, 0 grants.
 
@@ -22,6 +22,18 @@ Visitor `rGPU4UK4KzrMyfPtXBwdun9ibgNEGTEKhD`; agent `r4qQ5cqgPsjUL5pE5paSKYv33Ke
 | product create | tesSUCCESS | [4947D76B32F7798EA94D2E220F947F0C1C2141C3DA1997705D1980A1AEC489EA](https://testnet.xrpl.org/transactions/4947D76B32F7798EA94D2E220F947F0C1C2141C3DA1997705D1980A1AEC489EA) |
 | product writer finish | tesSUCCESS | [22BCFDBE83ED5A646568F0BDDB710202293DFA5D372A0631B7DEB0174F66B485](https://testnet.xrpl.org/transactions/22BCFDBE83ED5A646568F0BDDB710202293DFA5D372A0631B7DEB0174F66B485) |
 | visitor revoke | tesSUCCESS | [E581EC14CAB91125CD771D545A9BAEAAADC051A54B1495F6C6256E9B245611EC](https://testnet.xrpl.org/transactions/E581EC14CAB91125CD771D545A9BAEAAADC051A54B1495F6C6256E9B245611EC) |
+
+## Browser wallet probe
+
+`node scripts/spikes/f-browser-wallet.mjs` starts the actual wallet component through Vite on an ephemeral port in Chromium 153.0.8010.12. It creates a fresh visitor wallet in the browser, obtains real faucet XRP, signs and validates an EscrowCreate-only DelegateSet, and revokes it with empty Permissions. Connection took 17,623 ms; connection plus revocation took 27,887 ms in this one observation. The browser and Vite server close at completion.
+
+This is a development browser build with a stubbed public identity HTTP boundary, not a full browser purchase or hosted acceptance. The stub verifies the real signature and permits only address/publicKey/signature fields. Node checks only the saved network and a seed-present boolean; it never retrieves the visitor seed. Ledger objects prove the grant exists after connect and is removed after revoke. `f-browser-wallet.json` preserves public transactions and metadata.
+
+| Step | Validated result | Hash |
+|---|---|---|
+| browser faucet funding | tesSUCCESS | [4E9AFEE523F1A4DC649E9D96F24DF276E28279AEB4E4B4F989CC84FB05C9352C](https://testnet.xrpl.org/transactions/4E9AFEE523F1A4DC649E9D96F24DF276E28279AEB4E4B4F989CC84FB05C9352C) |
+| browser grant | tesSUCCESS | [FFFA63323D85D081A3A5958E3221B9C36BF0C32A9037AE731623F8982ECB0BA6](https://testnet.xrpl.org/transactions/FFFA63323D85D081A3A5958E3221B9C36BF0C32A9037AE731623F8982ECB0BA6) |
+| browser revoke | tesSUCCESS | [1A4C2DDAD632C8346A05ADB5303F30A61ED8D03084C4887AD45741114CDE89E4](https://testnet.xrpl.org/transactions/1A4C2DDAD632C8346A05ADB5303F30A61ED8D03084C4887AD45741114CDE89E4) |
 
 ## Local checks
 
