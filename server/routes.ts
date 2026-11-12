@@ -1,3 +1,4 @@
+import { audienceMiddleware, operatorSessionRouter } from './hosted/audience.js'
 import { publicFeedRouter } from './api/feed.js'
 import { writeSse, endSse, sseBufferedBytes } from './api/sse.js'
 import { writersRouter } from './api/writers.js'
@@ -72,6 +73,7 @@ async function createConfiguredApi(options: ApiOptions = {}) {
   const app = express()
   app.disable('x-powered-by')
   app.use((_req, res, next) => { res.set('Cache-Control', 'no-store'); res.set('X-Content-Type-Options', 'nosniff'); next() })
+  if (config.AUDIENCE_COUNTS === '1') { app.use(operatorSessionRouter(config)); app.use(audienceMiddleware(config)) }
   const streams = new Map<string, Set<Response>>()
   const snapshotTimers = new Map<string, ReturnType<typeof setTimeout>>()
   const lastSnapshot = new Map<string, number>()

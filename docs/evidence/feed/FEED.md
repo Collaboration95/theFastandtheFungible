@@ -68,3 +68,39 @@ location forwarding one API Cache-Control header (JSON max-age=2; SSE no-store).
 Their general API locations currently inherit another no-store header. Buffering
 is already disabled. This lane cannot edit `docker/hosted/**`; API-level cache
 and stream contracts are tested locally. See the dated builder-feedback entry.
+
+## External and internal counts
+
+`AUDIENCE_COUNTS=1` enables request attribution and the operator endpoint (default
+off). `OPERATOR_TOKEN` is unset by default. It is never returned, logged or stored
+in the run database. Authenticate `POST /api/operator/session` with an operator
+bearer to set a signed, Secure, HttpOnly, SameSite=Strict cookie lasting 24 hours.
+A direct operator bearer tags hosted calls before Authorization is stripped by
+the hosted session guard. Local Store/API scripts default internal; remote
+operator scripts must use the operator cookie/token. Existing spend, host,
+session ownership and CSRF checks still apply independently.
+
+`/api/demo/stats` retains the original all-run fields for compatibility and adds
+`all`, `external` and `unclassified`. Each breakdown retains all six recorded
+violation counters and `stoppedBeforeAnswer`. Legacy runs with no classification
+remain in all; they are never inferred to be visitors. Headline metrics select
+external only when its question count is non-zero. The audit UI labels its all-run
+scope explicitly. Counts still use the original admitted Testnet population
+since 11 Nov; local non-hosted databases are not this hosted scoreboard.
+
+Reproduce: `npx vitest run tests/run-audience.test.ts tests/scoreboard-audience.test.tsx tests/hosted-stats.test.ts`.
+Tests cover old/unknown runs, local defaults, external and all totals, signed and
+tampered cookies, spoofed headers, and both headline-selection cases.
+
+Operator setup (token supplied securely by the operator; never paste it into an
+issue or request URL): send an authenticated POST to `/api/operator/session`,
+then use the returned cookie in that browser. The token is not a spending
+credential. A local API bearer is independently checked by the existing admission
+guard, so local operators must retain their ordinary API authorization too.
+
+The operator secret is also covered by telemetry redaction; the regression test
+checks both the endpoint response/cookie and the shared log masker.
+
+Step 1 clean-head verification: Node 22.23.4; check:fast passed (279 files,
+3,093 tests); local gate passed 20/20. Initial JS: 159,242 B gzip against
+170,000 B. The feed is a separate 1.75 KB gzip JS chunk.

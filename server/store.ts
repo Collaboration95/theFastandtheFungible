@@ -1,3 +1,4 @@
+import { runAudience } from './hosted/audience.js'
 import { probeMetadata } from './agents/precision.js'
 import { hostedExecution } from './hosted/execution.js'
 import { pastRunSummaries } from './history-query.js'
@@ -78,6 +79,7 @@ export class Store {
       CREATE TABLE IF NOT EXISTS wallet_control (id INTEGER PRIMARY KEY CHECK(id=1), paused INTEGER NOT NULL);
       CREATE TABLE IF NOT EXISTS mcp_requests (key TEXT PRIMARY KEY, question TEXT NOT NULL, run_id TEXT UNIQUE NOT NULL, budget INTEGER NOT NULL, day TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS answer_anchors (head TEXT PRIMARY KEY, run_id TEXT NOT NULL, json TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS run_audience (run_id TEXT PRIMARY KEY, audience TEXT NOT NULL CHECK(audience IN ('internal','external')));
       CREATE TABLE IF NOT EXISTS runs (id TEXT PRIMARY KEY, json TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS events (id INTEGER PRIMARY KEY AUTOINCREMENT, run_id TEXT NOT NULL REFERENCES runs(id), json TEXT NOT NULL);
       CREATE INDEX IF NOT EXISTS events_run_id ON events(run_id,id);
@@ -197,6 +199,7 @@ export class Store {
       phase: 'SEARCH', stopped: false, round: 0, candidates: [], contents: [], answers: [], decisions: [], intents: [], receipts: [], grants: [], events: [], checkpoint: {}, reportStatus: 'NONE',
       labels: labels ?? { research: 'fixture', decision: 'fixture', publisher: 'local', settlement: 'SIMULATED SGD · no real funds' } })
     this.prepare('INSERT INTO runs VALUES (?,?)').run(run.runId, JSON.stringify(run))
+    this.prepare('INSERT INTO run_audience VALUES (?,?)').run(run.runId, runAudience.getStore() ?? 'internal')
     return run
   }
   createRun(question: string, budgetMinor: number, labels?: ModeLabels): RunSnapshot {
