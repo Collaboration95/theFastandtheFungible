@@ -1,4 +1,4 @@
-// One explicit offline migration for the diagnosed DestinationTag fixture collision.
+// One explicit offline migration for the diagnosed paid-fixture collision.
 // Never reruns model calls, edits scores, or mutates the failed attempt.
 import 'dotenv/config'
 import {cpSync,existsSync,readFileSync,writeFileSync,mkdirSync} from 'node:fs'
@@ -15,8 +15,8 @@ if(existsSync(to))throw Error('Recovery target must be new; failed attempt stays
 const saved=JSON.parse(readFileSync(join(from,'results.json'),'utf8'))
 process.env.LEDGER_REPORT_DIR=join(from,'ledger-reports')
 const corpus=await loadWriterCorpus(undefined,{allowMini:false})
-const oldArticle=JSON.parse(readFileSync(oldFile,'utf8')),changed='c5-xrpl-destination-tag'
-if(oldArticle.articleId!==changed)throw Error('Only diagnosed DestinationTag fixture is supported')
+const oldArticle=JSON.parse(readFileSync(oldFile,'utf8')),changed=oldArticle.articleId
+if(!['c5-xrpl-destination-tag','c5-xrpl-crypto-condition-type'].includes(changed))throw Error('Only diagnosed fixtures are supported')
 const hash=(value:unknown)=>createHash('sha256').update(JSON.stringify(value)).digest('hex')
 const statics={...corpus,articles:corpus.articles.filter(a=>a.publisherSlug!=='ledger-analytics')}
 const oldCorpus=validateWriterCorpus({...statics,articles:statics.articles.map(a=>a.articleId===changed?oldArticle:a)})
@@ -34,7 +34,7 @@ const results=saved.results.map((result:{id:string;arm:string;runId:string;viola
 })
 const identity={...saved.identity,corpusSha256:hash(statics),sourceCommit:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim()}
 mkdirSync(to,{recursive:true});cpSync(from,to,{recursive:true})
-const recovery={reason:'Unchanged strict oracle; DestinationTag paid fixture public-answer phrase collision corrected with distinct wording and unique canary. Original failed attempt retained.',from,priorIdentity:saved.identity,identity,retainedPairs:results.length,priorViolations:saved.results.filter((r:{violations:unknown[]})=>r.violations.length).map((r:{id:string;arm:string;runId:string;violations:unknown[]})=>({id:r.id,arm:r.arm,runId:r.runId,violations:r.violations})),assertions:['Only the diagnosed static fixture changed','No retained run bought, read or received a grant for that fixture','Every retained run and its complete SSE observations passed the unchanged auditor','All scores, run IDs and task keys retained']}
+const recovery={reason:'Unchanged strict oracle; Paid fixture public-answer phrase collision corrected with distinct wording and unique canary. Original failed attempt retained.',from,priorIdentity:saved.identity,identity,retainedPairs:results.length,priorViolations:saved.results.filter((r:{violations:unknown[]})=>r.violations.length).map((r:{id:string;arm:string;runId:string;violations:unknown[]})=>({id:r.id,arm:r.arm,runId:r.runId,violations:r.violations})),assertions:['Only the diagnosed static fixture changed','No retained run bought, read or received a grant for that fixture','Every retained run and its complete SSE observations passed the unchanged auditor','All scores, run IDs and task keys retained']}
 atomicJson(join(to,'results.json'),{...saved,identity,results,recovery})
 writeFileSync(join(to,'recovery.json'),JSON.stringify(recovery,null,2)+'\n')
 console.log(JSON.stringify({retainedPairs:results.length,originalViolations:recovery.priorViolations.length,newViolations:0,identity}))

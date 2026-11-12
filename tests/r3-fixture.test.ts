@@ -16,3 +16,11 @@ it('removes the observed public-answer collisions in the paid fixture while reta
   expect(()=>assertNoLeaks([{kind:'actual premium bytes',raw,grants:[]}],corpus(article))).toThrow('before its run/version grant')
  }
 })
+
+it('retains strict markers after the observed crypto-condition public-answer collision',()=>{
+ const a=JSON.parse(readFileSync('data/corpus/v2/articles/team-xrpl-explainers/c5-xrpl-crypto-condition-type.json','utf8')) as Article
+ for(const raw of ['is the previously supplied preimage sha 256 crypto','conditions are met the escrow object is destroyed'])expect(()=>assertNoLeaks([{kind:'public',raw,grants:[]}],corpus(a))).not.toThrow()
+ expect(a.body).toContain(canary(a.articleId))
+ expect(()=>assertNoLeaks([{kind:'paid',raw:a.passages[2].text,grants:[]}],corpus(a))).toThrow()
+ expect(()=>assertNoLeaks([{kind:'canary',raw:canary(a.articleId),grants:[]}],corpus(a))).toThrow()
+})
