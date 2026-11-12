@@ -10,6 +10,9 @@ The questions are grouped by three judge personas from our practice panels:
 **R**, a Ripple DevRel / XRPL engineer; **P**, a payments or
 fintech operator; **Y**, a YC-style partner. Their hardest questions come first.
 
+One hosted run where the browser check shows all five gates held: featured preset 2,
+`421bae3d`, 12 Nov. Its numbers below are separate from the earlier preset-3 paid-answer card.
+
 ## Numbers card (memorise these)
 
 | Number | What it is | Label | Source |
@@ -30,7 +33,7 @@ fintech operator; **Y**, a YC-style partner. Their hardest questions come first.
 | **<!--f:writer_s-->33.9<!--/f--> s** | `init` + `publish`: Markdown folder → writer Credential validated on Testnet | generated starter note, public faucet, one measurement | [#389](https://github.com/Collaboration95/theFastandtheFungible/pull/389) |
 | **0** | gate-audit violations: 10 runs, 568 observations | fresh-set eval, simulated payments, 3 Nov | [scorecard](../numbers.md#synthetic-corpus-scorecard-3-nov) |
 | **93.15%** | gross article spend that bought a fact in the final answer (CI 81.25–100.00) | LIVE decisions, fixture research, simulated payments | [fresh-results.json](../../eval/scorecard/fresh-results.json) |
-| **<!--f:prs-->299<!--/f--> / <!--f:releases-->15<!--/f-->** | PRs merged into `main` since <!--f:since-->21 Sep<!--/f--> / published releases | counted at <!--f:sha-->8c6b9018<!--/f--> on <!--f:as_of-->12 Nov 2026<!--/f--> | [facts.json](facts.json), [progress page](https://collaboration95.github.io/theFastandtheFungible/progress/) |
+| **<!--f:prs-->304<!--/f--> / <!--f:releases-->15<!--/f-->** | PRs merged into `main` since <!--f:since-->21 Sep<!--/f--> / published releases | counted at <!--f:sha-->88c3a00b<!--/f--> on <!--f:as_of-->12 Nov 2026<!--/f--> | [facts.json](facts.json), [progress page](https://collaboration95.github.io/theFastandtheFungible/progress/) |
 | **Held-out <!--f:heldout-->16/20<!--/f-->; <!--f:offtopic-->0/10<!--/f--> off-topic buys** | <!--f:heldout_line-->v5 blind held-out: 16/20 bought and cited, 0/10 off-topic purchases (run once, 11 Nov, on XRPL Testnet: fixture research and decision models with answers written offline, team-authored writers)<!--/f-->; the key fact leads the answer in <!--f:answers_it-->7/20<!--/f-->; 0 gate violations. Dev (not held-out): v1 <!--f:dev_v1-->16/20<!--/f-->, v3 <!--f:dev_v3-->7/20<!--/f--> | as stated | [evidence](../evidence/v5-heldout/README.md) |
 | **SingHacks baseline** | <!--f:singhacks_then-->At SingHacks a language model proposed each purchase and a person approved every quote before payment; payment was a fixture by default, with optional Testnet settlement.<!--/f--> | tag `hackathon-baseline` (7 Sep commit) | [prototype README](https://github.com/Collaboration95/theFastandtheFungible/blob/hackathon-baseline/prototypes/ResearchAgent/README.md) |
 
@@ -96,7 +99,7 @@ and they agree on every test vector."
 
 **Say:** "Use one hosted run on 12 Nov: HOSTED-12 bought one article with four passages for S$0.40, or 40,000 Testnet drops at the fixed demo rate, not FX. No refunds. It took 65.8 seconds from admission/Start to Done, excluding planning and the five-second confirmation modal. Buyer create 12 drops, writer finish 423, buyer anchor another 12. Model cost is unmeasured: usage was not retained. The old US$0.0026 belongs to a different synthetic evaluation, not this question."
 
-**Behind it:** [HOSTED-12 evidence and ledger links](evidence/hosted-answer-nov12/README.md): one hosted DEPLOY-3 run, live DeepSeek plan/final writing, rule-based buying; initial draft fixture, keyword fallback, team-authored writer, real Testnet XRP, no real value. Two initial recorded gaps, none in the final answer; no independent quality score or generalization. Published v1.1.1 wheel: 27 passed / 0 failed / 2 skipped, Testnet 6/6; browser 26/0/2. Paid-read telemetry absent: gate 1 Not checked, gates 2–5 Held. In the recorded unsigned probe rippled autofilled 10 + 350: rippled's own minimum is 360 for those shapes. Signing fees stay 12 + 423 and can vary with load/fulfillment size. [Probe](../evidence/dry-run-nov12/README.md). US$0.0026: 3 Nov live decisions/coverage, fixture research, simulated payments, [numbers](../numbers.md#synthetic-corpus-scorecard-3-nov).
+**Behind it:** [HOSTED-12 evidence and ledger links](evidence/hosted-answer-nov12/README.md): one hosted DEPLOY-3 run, live DeepSeek plan/final writing, rule-based buying; initial draft fixture, keyword fallback, team-authored writer, real Testnet XRP, no real value. Two initial recorded gaps, none in the final answer; no independent quality score or generalization. Published v1.1.1 wheel: 27 passed / 0 failed / 2 skipped, Testnet 6/6; browser 26/0/2. In this earlier DEPLOY-3 sample, paid-read telemetry is absent: gate 1 Not checked, gates 2–5 Held. The featured preset-2 run has all five Held; its counts are separate. In the recorded unsigned probe rippled autofilled 10 + 350: rippled's own minimum is 360 for those shapes. Signing fees stay 12 + 423 and can vary with load/fulfillment size. [Probe](../evidence/dry-run-nov12/README.md). US$0.0026: 3 Nov live decisions/coverage, fixture research, simulated payments, [numbers](../numbers.md#synthetic-corpus-scorecard-3-nov).
 
 ### 7. Why TEST-SGD and not RLUSD?
 

@@ -185,7 +185,7 @@ td.was { color: var(--muted); }
   </div>
   <p class="cap" style="margin-top:18px">Check the recorded receipts in the judges’ corner — no question used.</p>
   <div class="cmdline" style="margin-top:24px"><span class="p">$</span> <!--f:try_line-->npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz try --testnet<!--/f--></div>
-  <div class="src"><span>SingHacks finals · Ripple track · Swiss Pavilion, SFF · 18 Nov 2026 · facts as of <!--f:as_of-->12 Nov 2026<!--/f--> at <!--f:sha-->8c6b9018<!--/f--></span><span class="n mono">github.com/Collaboration95/theFastandtheFungible</span></div>
+  <div class="src"><span>SingHacks finals · Ripple track · Swiss Pavilion, SFF · 18 Nov 2026 · facts as of <!--f:as_of-->12 Nov 2026<!--/f--> at <!--f:sha-->88c3a00b<!--/f--></span><span class="n mono">github.com/Collaboration95/theFastandtheFungible</span></div>
   <aside class="notes">
     <p><b>Criteria:</b> Reachability (25%) first: three ways in on the first page, none needing an install. Sets the honesty frame for every other criterion.</p>
     <p><b>Say:</b> ResearchAgent is research with a wallet. It answers from free sources, then buys the articles it is missing straight from the writer, over x402 on the XRP Ledger, inside your budget. Everything runs on XRPL Testnet, and you can try it in the live sandbox until 19 November.</p>
@@ -206,12 +206,12 @@ td.was { color: var(--muted); }
     <tr><td class="k">Identity</td><td class="was">No operator credential domain</td><td>Three accepted Testnet writer Credentials; one Testnet Permissioned Domain for identity display</td></tr>
   </table>
   <div class="stats" style="margin-top:36px">
-    <div class="stat"><b><!--f:prs-->299<!--/f--></b><span>pull requests merged since <!--f:since-->21 Sep<!--/f--></span></div>
+    <div class="stat"><b><!--f:prs-->304<!--/f--></b><span>pull requests merged since <!--f:since-->21 Sep<!--/f--></span></div>
     <div class="stat"><b><!--f:releases-->15<!--/f--></b><span>releases, v0.1.0 to <!--f:release-->v1.1.1<!--/f--></span></div>
     <div class="stat"><b><!--f:transactions-->61<!--/f--></b><span>Testnet transactions you can re-check live on our ledger page</span></div>
     <div class="stat"><b><!--f:vectors-->224<!--/f--></b><span>receipt test vectors; two verifiers, written separately, agree on all</span></div>
   </div>
-  <div class="src"><span>Counted at <!--f:sha-->8c6b9018<!--/f--> on <!--f:as_of-->12 Nov 2026<!--/f--> (git and gh queries in site/progress/data.json) · “At SingHacks” is the 19–20 Sep event build (e16435a3)</span><span class="n"></span></div>
+  <div class="src"><span>Counted at <!--f:sha-->88c3a00b<!--/f--> on <!--f:as_of-->12 Nov 2026<!--/f--> (git and gh queries in site/progress/data.json) · “At SingHacks” is the 19–20 Sep event build (e16435a3)</span><span class="n"></span></div>
   <aside class="notes">
     <p><b>Criteria:</b> all six; this is the organisers’ “progress since SingHacks” requirement. Strongest for Technical depth (who may spend) and Creativity (key reveal).</p>
     <p><b>Say:</b> At SingHacks a language model proposed each purchase, a person approved every quote, and payment was simulated by default. Since then: policy code buys, writers are paid by key reveal, refunds happen on the ledger, and anyone can verify a receipt offline. The old deck line about people approving purchases was wrong; do not repeat it.</p>
@@ -354,24 +354,23 @@ td.was { color: var(--muted); }
 <!-- 7 · Verify -->
 <section class="slide" data-title="Verify it">
   <div class="crit">Technical depth</div>
-  <h1>Verify a recorded run. No question used.</h1>
+  <h1>One hosted run. All five gates held.</h1>
   <div class="cols" style="grid-template-columns:1fr 1fr;gap:64px;margin-top:44px">
     <div>
-      <figure style="margin:0"><img style="width:100%;max-height:540px;object-fit:contain" src="../../evidence/judges-corner/verified-1280.png" alt="Local browser acceptance checking a recorded hosted Testnet bundle"><figcaption class="cap">Local acceptance UI checking a recorded hosted Testnet bundle against public nodes. Pass and not-checked groups are separate.</figcaption></figure>
-      <p class="cap" style="margin-top:22px">Open the hosted root → Check our work without asking a question → Run the checks. No research admission; needs the page, receipt file and public node.</p>
+      <figure style="margin:0"><img style="width:100%;max-height:540px;object-fit:contain" src="assets/hosted-judges-corner.png" alt="DEPLOY-5 public browser verification: all five gate rows Passed; identity not checked"><figcaption class="cap">Hosted browser, 12 Nov · DEPLOY-5 · recorded preset 2. All five gates Passed (Held); identity skips remain. No question used.</figcaption></figure>
+      <p class="cap" style="margin-top:22px">Home → Verify → Run the checks. No question used; public-node reads. Pass, not checked, pending and unavailable stay separate.</p>
     </div>
     <ul class="points" style="margin-top:4px">
-      <li><b>Two verifiers, written separately</b>: TypeScript, and Python’s standard library. They agree on all <!--f:vectors-->224<!--/f--> shared vectors: <!--f:vectors_golden-->19<!--/f--> must pass and <!--f:vectors_tampered-->205<!--/f--> tampered ones must fail.</li>
-      <li><b><!--f:transactions-->61<!--/f--> Testnet transactions</b> are re-checked live, read-only, every time our public ledger page loads.</li>
-      <li><b>Once its anchor validates:</b> a completed Testnet answer can be checked against the ledger, even when nothing was bought.</li>
-      <li><b>Persist before submit.</b> Recovery reuses the persisted transaction; replacement requires ledger-proven failure or expiry; a missing one is <i>pending</i>, not failed.</li>
-      <li><b>Exact delivery.</b> Partial payments are refused before submit; amount, currency and issuer are checked after.</li>
-      <li>Untrusted model output cannot authorize a purchase; deterministic policy enforces spending limits.</li>
+      <li><b>12 Nov · featured run 421bae3d.</b> Browser check: all five gates Held. Grant <!--f:featured_grant-->1953<!--/f--> precedes paid reads <!--f:featured_reads-->1954–1957<!--/f-->.</li>
+      <li><b>Browser / published TS:</b> <!--f:featured_browser-->24<!--/f--> passed, <!--f:featured_failed-->0<!--/f--> failed, 2 not checked/skipped. <b>Published Python wheel:</b> <!--f:featured_wheel-->25<!--/f--> passed, <!--f:featured_failed-->0<!--/f--> failed, 2 skipped. Testnet 6/6 each.</li>
+      <li><b><!--f:featured_seconds-->31.1<!--/f--> s Start→Done</b>, excluding planning/modal; 1 article, S$<!--f:featured_spend-->0.40<!--/f-->, no refund. Model cost unmeasured.</li>
+      <li>Live answers, rule-based buying; initial fixture draft, keyword fallback, team-authored writer. Testnet, no real value.</li>
+      <li>One recorded run. Identity/origin skips remain; this does not prove article quality or every future run.</li>
     </ul>
   </div>
-  <div class="src"><span>Output: docs/submission/evidence/v1.1.1/ · v1.1.1 wheel, committed hosted export, 11 Nov · tests/fixtures/receipt-conformance/ · the /ledger/ page</span><span class="n"></span></div>
+  <div class="src"><span>Featured: docs/evidence/hosted-export-nov12/ · run 421bae3d · anchor ledger 22255402 · historical terminal retained only in notes</span><span class="n"></span></div>
   <aside class="notes">      <div class="term" style="font-size:18px" data-evidence="docs/submission/evidence/v1.1.1/verify-python.txt">
-        <div class="dim"># Python, no Node: a receipt the live sandbox exported</div>
+        <div class="dim"># Historical 11 Nov export, not the featured 12 Nov run: Python, no Node</div>
         <div><span class="p">$</span> pip install …/v1.1.1/researchagent-1.1.1-py3-none-any.whl</div>
         <div><span class="p">$</span> researchagent verify receipts.json --ledger</div>
         <div class="ok">PASS checks: 46 passed, 0 failed, 2 skipped</div>
@@ -382,7 +381,7 @@ td.was { color: var(--muted); }
       </div>
 
     <p><b>Criteria:</b> Technical depth (20%): testing, security and safeguards. Reachability: the verifier is a separate install in another language.</p>
-    <p><b>Say:</b> Don’t trust us, verify it. Two verifiers, written separately, one in Python with no Node, re-check every receipt against the ledger. The browser key check reads successful validated create and finish transactions and hashes the decoded key bytes. It trusts public-node data, not a full node in your browser. Missing data is pending; unavailable reads are not a pass.</p>
+    <p><b>Say:</b> One hosted run where the browser check shows all five gates held. The featured preset-2 run is 421bae3d on 12 Nov: 31.1 s, one S$0.40 article; browser/TS 24/0/2, wheel 25/0/2, Testnet 6/6. The original 11 Nov terminal above remains historical. Don’t trust us, verify it. Two verifiers, written separately, one in Python with no Node, re-check every receipt against the ledger. The browser key check reads successful validated create and finish transactions and hashes the decoded key bytes. It trusts public-node data, not a full node in your browser. Missing data is pending; unavailable reads are not a pass.</p>
   </aside>
 </section>
 
@@ -429,25 +428,25 @@ td.was { color: var(--muted); }
   <div class="src"><span>docs/submission/evidence/hosted-answer-nov12/ · <a href="https://testnet.xrpl.org/transactions/CB872E5FEF205F8E31BB522A57EF5CFCC7F815DE4770F29A9856EA1F724E04A6">CB872E5F… create</a> · <a href="https://testnet.xrpl.org/transactions/EF66F5C9FD1DE68E8167189CF4FAF5DB94ABD3FA561C65F9D4DACA8828177930">EF66F5C9… finish</a> · <a href="https://testnet.xrpl.org/transactions/EC4ABD3FBCAFC035E71D5BA74C01529D9AA52D45D9A228896A24BD8C44187EF6">EC4ABD3F… anchor</a> · docs/evidence/dry-run-nov12/</span><span class="n"></span></div>
   <aside class="notes">
     <p><b>Criteria:</b> Feasibility (20%): cost, performance, infrastructure readiness, reliability and operations.</p>
-    <p><b>Say:</b> HOSTED-12 bought one article with four passages. Read the before/after, actual cost and time with its own receipts. The separate synthetic chaos evidence had zero double charges; that is a measured result, not a universal guarantee. This is one hosted DEPLOY-3 run on 12 Nov; its timing excludes planning and the confirmation modal. Its export lacks paid-read telemetry: gate 1 is Not checked, gates 2–5 Held. Do not generalize. Model cost was not retained. Recovery reuses the persisted transaction; replacement needs ledger-proven failure or expiry. Fees vary; the unsigned dummy finish only measured autofill, not delivery.</p>
+    <p><b>Say:</b> HOSTED-12 bought one article with four passages. Read the before/after, actual cost and time with its own receipts. The separate synthetic chaos evidence had zero double charges; that is a measured result, not a universal guarantee. This is one hosted DEPLOY-3 run on 12 Nov; its timing excludes planning and the confirmation modal. This earlier DEPLOY-3 export lacks paid-read telemetry: its gate 1 is Not checked, gates 2–5 Held. The separate featured preset-2 run on slide 7 has all five Held; do not mix the runs. Do not generalize. Model cost was not retained. Recovery reuses the persisted transaction; replacement needs ledger-proven failure or expiry. Fees vary; the unsigned dummy finish only measured autofill, not delivery.</p>
   </aside>
 </section>
 
 <!-- 10 · UX -->
 <section class="slide" data-title="UX and design">
   <div class="crit">UX and design</div>
-  <h1>Why it bought. What it ran. Check the key.</h1>
+  <h1>Recorded answer. Payment and delivery.</h1>
   <div class="shots">
     <figure style="margin:0">
       <img class="shot main" src="assets/ux-answer.png" alt="The hosted demo after an XRPL Testnet run on an x402 question: the answer leads with the PAYMENT-REQUIRED and PAYMENT-SIGNATURE headers, and the payment card shows S$0.80 net of a S$2.00 budget for two articles, each paid by key reveal, with the answer anchored on XRPL">
-      <figcaption class="cap">Historical capture: actual model label · payment steps with ledger links</figcaption>
+      <figcaption class="cap">11 Nov build · historical hosted answer · actual model label and payment links</figcaption>
     </figure>
     <figure style="margin:0">
       <img class="shot zoom" src="assets/ux-payment.png" alt="A payment row: the team-authored article 'What does an x402 402 Payment Required response contain?', paid by key reveal, with its four steps: payment locked in escrow, writer released the key, key matches the escrow lock, article unlocked">
-      <figcaption class="cap">One bought article: paid by key reveal.</figcaption>
+      <figcaption class="cap">Same 11 Nov take: paid by key reveal.</figcaption>
     </figure>
   </div>
-  <div class="src"><span>One live run on the hosted demo, 11 Nov (docs/evidence/hosted-export-nov11/) · XRPL Testnet · live answers, rule-based buying, team-authored writers · captured by hosted-shots.mjs, unedited</span><span class="n"></span></div>
+  <div class="src"><span>11 Nov hosted build, before #510 · docs/evidence/hosted-export-nov11/ · Testnet · live answers, rule-based buying · team-authored · unedited</span><span class="n"></span></div>
   <aside class="notes">
     <p><b>Criteria:</b> UX and design (10%): how agent actions, payments and on-chain transactions are communicated. The rubric asks for exactly this card.</p>
     <p><b>Say:</b> Read the actual lead. Do not claim every answer is complete or always leads with the key fact. The payment card is the hero: net spend against budget, each escrow step with its transaction, and the key check. When a promise breaks, the refund says why and who signed it; the replay shows one. One environment indicator, not a stamp on every row.</p>
@@ -520,7 +519,7 @@ td.was { color: var(--muted); }
       <div class="person"><b>Guruprasath</b><span>Product and engineering since SingHacks: plans the work, directs the coding agents and owns the merge gate.</span></div>
       <div class="person"><b>Miul</b><span>SingHacks build: the research-plan contracts, quote binding and the first test harness.</span></div>
       <div class="person"><b>Andrew Nguyen</b><span>Before SingHacks: the idea briefs and data sources.</span></div>
-      <div class="person" style="border-bottom:1px solid var(--rule)"><b style="font-size:26px">How we build</b><span>Coding agents work in parallel lanes; every merge passes one local gate of tests and the five hard gates. <!--f:prs-->299<!--/f--> pull requests since <!--f:since-->21 Sep<!--/f-->.</span></div>
+      <div class="person" style="border-bottom:1px solid var(--rule)"><b style="font-size:26px">How we build</b><span>Coding agents work in parallel lanes; every merge passes one local gate of tests and the five hard gates. <!--f:prs-->304<!--/f--> pull requests since <!--f:since-->21 Sep<!--/f-->.</span></div>
     </div>
     <table class="links">
       <tr><th>Check it yourself</th><th></th></tr>

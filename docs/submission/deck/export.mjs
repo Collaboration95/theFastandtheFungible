@@ -1,17 +1,14 @@
 // Export the SingHacks finals deck to PDF, plus one PNG per slide for a visual check.
 //   node docs/submission/deck/export.mjs                  → docs/submission/ResearchAgent-SFF-deck.pdf
 //                                                           and scratch/deck-png/slide-NN.png (ignored)
-//   node docs/submission/deck/export.mjs --refresh-shots  → first re-captures slide 10's two product
-//                                                           shots and the README hero
-//                                                           (docs/media/readme-answer.png) from ONE
-//                                                           live run on the hosted demo
-//                                                           (hosted-shots.mjs: uses one visitor
-//                                                           question, Testnet test funds), then exports
+//   node docs/submission/deck/export.mjs --refresh-shots → imports the original public-view browser
+//                                                           captures after REDEPLOYED; zero questions.
+//                                                           Keeps historical answer imagery labelled.
 //   node docs/submission/deck/export.mjs --replay-shots   → offline fallback: the same shots from the
 //                                                           /demo/ replay of the recorded Testnet run
 //   node docs/submission/deck/export.mjs --no-png         → PDF only
-// Offline: fonts come from node_modules (@fontsource-variable), images from the repo. Since 11 Nov the shots
-// come from a live hosted XRPL key-reveal run (--refresh-shots). --replay-shots instead uses the /demo/ replay
+// Offline: fonts come from node_modules (@fontsource-variable), images from the repo. Historical answer shots come from the 11 Nov hosted run.
+// --refresh-shots updates only public views from the shared browser, with a pinned capture manifest. --replay-shots instead uses the /demo/ replay
 // build of the current app (src/), served by Vite on an ephemeral loopback port: a recorded XRPL Testnet run
 // with fictional writers, light theme, 2x, with every non-loopback request blocked.
 // Fails, without replacing the PDF, if: a fact marker is stale (run `node scripts/facts.mjs`), any
