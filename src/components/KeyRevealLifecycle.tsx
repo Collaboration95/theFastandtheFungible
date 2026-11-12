@@ -65,13 +65,14 @@ type LifecycleProps = {
   testnet?: boolean
   /** The recorded replay: the writer is fictional. */
   replay?: boolean
+  checkOnly?: boolean
   verify?: typeof verifyKeyOnLedger
 }
 export default function KeyRevealLifecycle(props: LifecycleProps) {
   // A proof belongs to these hashes only. A changed payment remounts the check, including any in-flight lookup.
   return <Lifecycle key={`${props.testnet}:${props.escrow.createHash}:${props.escrow.finishHash}`} {...props} />
 }
-function Lifecycle({ escrow: e, testnet = false, replay = import.meta.env.MODE === 'browser-demo', verify = verifyKeyOnLedger }: LifecycleProps) {
+function Lifecycle({ escrow: e, checkOnly = false, testnet = false, replay = import.meta.env.MODE === 'browser-demo', verify = verifyKeyOnLedger }: LifecycleProps) {
   const [now, setNow] = useState(Date.now)
   const [check, setCheck] = useState<KeyCheck | 'checking'>()
   const id = useId(), alive = useRef(true)
@@ -92,8 +93,8 @@ function Lifecycle({ escrow: e, testnet = false, replay = import.meta.env.MODE =
     const result = await verify({ create: e.createHash, finish: e.finishHash }).catch((): KeyCheck => ({ status: 'unreachable' }))
     if (alive.current) setCheck(result)
   }
-  return <div className="ra-key-reveal" aria-labelledby={id}>
-    <p id={id} className="ra-caption">{pending ? "Payment held until the writer releases the key" : e.state === 'CANCELLED' ? 'Funds returned' : 'Payment unlocked by the writer’s key'}</p>
+  return <div className="ra-key-reveal" aria-labelledby={checkOnly ? undefined : id}>
+    {!checkOnly && <><p id={id} className="ra-caption">{pending ? "Payment held until the writer releases the key" : e.state === 'CANCELLED' ? 'Funds returned' : 'Payment unlocked by the writer’s key'}</p>
     <ol>
       {e.createHash && <li>{e.state === 'PREPARED' ? 'Locking payment in escrow · awaiting confirmation' : 'Payment locked in escrow'} <Tx hash={e.createHash} /></li>}
       {e.finishHash && <li>Writer released the key <Tx hash={e.finishHash} /></li>}
@@ -102,20 +103,20 @@ function Lifecycle({ escrow: e, testnet = false, replay = import.meta.env.MODE =
       {e.decryptVerified === false && <li>The article couldn’t be unlocked. It won’t be used.</li>}
       {pending && <li>{remaining > 0 ? `Auto-refund available in ${remaining} s if the writer doesn’t release the key` : 'Waiting for the ledger to return your funds'}<small>Funds return only after the ledger confirms cancellation.</small></li>}
       {e.state === 'CANCELLED' && <li>Writer didn’t release the key · funds returned <Tx hash={e.cancelHash} /></li>}
-    </ol>
+    </ol></>}
     {checkable && <div className="ra-key-check">
       {!settled && <button type="button" className="ra-btn ra-key-check-btn" onClick={() => void run()} disabled={check === 'checking'} aria-describedby={check ? undefined : `${id}-note`}>
         <KeyLock />{check === 'checking' ? 'Checking the ledger…' : check ? 'Check again' : 'Check the key yourself'}
       </button>}
-      {!check && <small id={`${id}-note`} className="ra-key-check-hint">Browser key check has not run. Recompute the lock from the public XRPL Testnet ledger.</small>}
+      {!check && <small id={`${id}-note`} className="ra-key-check-hint">Browser key check has not run. Recompute the lock from the public ledger.</small>}
       <div role="status" aria-live="polite">{typeof check === 'object' && <KeyCheckResult check={check} escrow={e} replay={replay} />}</div>
     </div>}
-    {checkable && e.state === 'RELEASED' && <LedgerReceipt create={e.createHash!} finish={e.finishHash!} />}
-    <details><summary>Technical details</summary>
+    {!checkOnly && checkable && e.state === 'RELEASED' && <LedgerReceipt create={e.createHash!} finish={e.finishHash!} />}
+    {!checkOnly && <details><summary>Technical details</summary>
       <p>{ENV.testnet}</p><p>Key-reveal escrow</p>
       <p>CancelAfter: {e.cancelAfter}. EscrowFinish publishes the key{e.revealLedger ? ` in ledger ${e.revealLedger}` : ''}.</p>
       {e.keyVerified === true && <p>sha256(K) = Condition <Icon name="check" size={16} /></p>}
       {e.decryptVerified === true && <p>ciphertext decrypts <Icon name="check" size={16} /></p>}
-    </details>
+    </details>}
   </div>
 }

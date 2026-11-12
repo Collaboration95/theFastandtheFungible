@@ -10,7 +10,7 @@ it('keeps simulation labels usable when private mode refuses storage', () => {
   vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('storage disabled') })
   vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('storage disabled') })
   render(<EnvIndicator labels={exampleRun.labels} />)
-  const trigger = screen.getByRole('button', { name: /^Simulated demo · fixture models · no real value/ })
+  const trigger = screen.getByRole('button', { name: /^Simulated payments/ })
   fireEvent.click(trigger)
   expect(screen.getByText('Simulated payment · no ledger entry')).toBeTruthy()
   fireEvent.click(screen.getByRole('button', { name: 'Got it' }))
@@ -59,7 +59,7 @@ it('does not auto-open after remount while a preset or question already holds fo
     render(<EnvIndicator labels={exampleRun.labels} />)
     act(() => { vi.runAllTimers() })
     expect(screen.queryByRole('region', { name: "What’s real here" })).toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: /^Simulated demo · fixture models · no real value/ }))
+    fireEvent.click(screen.getByRole('button', { name: /^Simulated payments/ }))
     expect(screen.getByRole('region', { name: "What’s real here" })).toBeTruthy()
   } finally { preset.remove(); vi.useRealTimers() }
 })

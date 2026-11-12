@@ -66,7 +66,8 @@ describe('the row', () => {
     expect(row.textContent).toContain('RESULT PASS')
     expect(row.textContent).toContain('84.2 seconds; 2 of 4 cold runs exceeded 90 seconds (one Mac, 7 Nov)')
     expect(row.textContent).not.toContain('75 seconds')
-    expect(row.textContent).toContain('XRPL Testnet only, no real value')
+    expect(row.textContent).not.toContain('no real value')
+    expect(row.textContent).toContain('Needs Node 22.13 or later')
     expect(screen.getByRole('navigation', { name: 'Project links' })).toBeTruthy()
   })
   it('copies each line exactly, then says it did', async () => {

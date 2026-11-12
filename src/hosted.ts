@@ -2,9 +2,9 @@
 import { createContext, useContext } from 'react'
 import { ApiError, type HostedDemoStatus } from './api'
 import { EXAMPLE_PROOF_URL, RELEASE_TAG, releaseBase } from '../shared/links'
-import { buyingLabels } from '../shared/execution-labels'
+import { POLICY_RULES } from './copy'
 import recordedRun from '../shared/judge-run.json'
-import { ENV, money as minorText } from '../shared/presentation'
+import { ENV } from '../shared/presentation'
 export { money as minorText } from '../shared/presentation'
 
 export type Hosted = { status: HostedDemoStatus; connection?: 'offline' | 'unreachable' }
@@ -115,7 +115,7 @@ export function hostedLinks(hosted: Hosted) {
 export const JUDGE_RUN = {
   bundleUrl: recordedRun.bundleUrl,
   // Final answer and decision providers are pinned by the committed bundle in the caption regression test.
-  caption: `Recorded on this demo, ${recordedRun.recordedOn} · XRPL Testnet · live answers, ${buyingLabels.fixture} · team-authored writers · no real value. ${recordedRun.summary}`,
+  caption: `Recorded on this demo, ${recordedRun.recordedOn} · XRPL Testnet · live answers, ${POLICY_RULES} · team-authored writers · no real value. ${recordedRun.summary}`,
   /** Its EscrowFinish: the writer publishes the article key in the Fulfillment field, and the escrow's lock is that key's hash. */
   keyTx: recordedRun.keyTx,
 } as const

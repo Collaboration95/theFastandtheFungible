@@ -24,7 +24,7 @@ it('pins the recorded caption to the final answer and audited decision providers
   const decisions = bundle.audit.entries.filter((entry: { kind: string }) => entry.kind === 'decision')
   expect(decisions.length).toBeGreaterThan(0)
   expect(decisions.every((entry: { data: { provider: string } }) => entry.data.provider === 'fixture')).toBe(true)
-  expect(JUDGE_RUN.caption).toBe('Recorded on this demo, 12 Nov 2026 · XRPL Testnet · live answers, rule-based buying · team-authored writers · no real value. One hosted run, 12 Nov · browser check shows all five gates held · 31.1 s Start→Done · 1 article · S$0.40 · no refund')
+  expect(JUDGE_RUN.caption).toBe('Recorded on this demo, 12 Nov 2026 · XRPL Testnet · live answers, Policy rules · team-authored writers · no real value. One hosted run, 12 Nov · browser check shows all five gates held · 31.1 s Start→Done · 1 article · S$0.40 · no refund')
 })
 
 const status = (patch: Partial<HostedDemoStatus> = {}): HostedDemoStatus => ({

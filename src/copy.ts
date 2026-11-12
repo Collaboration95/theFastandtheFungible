@@ -5,3 +5,6 @@ export const VERDICT_LABEL = {
 } satisfies Record<DecisionRow['verdict'], string>
 export const REFUND_LABEL = { pending: 'Refund requested', refunded: 'Refunded', refused: 'Refund refused' } as const
 export const BUDGET_LABEL = { question: 'Budget', default: 'Default budget', article: 'Per-article limit', daily: 'Daily limit' } as const
+
+/** Presentation label only; receipt and provider identities stay verbatim. */
+export const POLICY_RULES = 'Policy rules'

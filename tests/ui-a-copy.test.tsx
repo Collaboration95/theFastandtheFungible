@@ -45,7 +45,7 @@ it('an empty extractive draft without a fallback event does not assert a provide
 it('a single short badge retains the full provenance in a disclosure', () => {
   const publisher = 'ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet'
   const { container } = render(<WriterProvenance publisher={publisher} />)
-  expect(screen.getByText('Team-authored · Testnet')).toBeTruthy()
+  expect(screen.getByText('Team-authored')).toBeTruthy()
   expect(container.querySelector('details')?.open).toBe(false)
   expect(container.querySelector('details > p')?.textContent).toBe(publisher)
 })
@@ -58,5 +58,5 @@ it('the composer proof button opens the existing corner without submitting a que
   const corner = document.querySelector<HTMLDetailsElement>('.ra-hwork')!
   expect(corner.open).toBe(true)
   expect(onAsk).not.toHaveBeenCalled()
-  expect(within(corner).getByText('Check our work · recorded run and ledger')).toBeTruthy()
+  expect(within(corner).getByText('Check our work')).toBeTruthy()
 })

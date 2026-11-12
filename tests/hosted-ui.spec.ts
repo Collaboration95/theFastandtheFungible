@@ -53,7 +53,7 @@ test('first visit: orientation, the visitor’s own question first, one environm
   await expect(page.getByRole('dialog')).toHaveCount(0)
   await expect(page.getByRole('list', { name: 'How it works' }).getByRole('listitem')).toHaveCount(3)
   await expect(page.getByRole('group', { name: 'Demo questions' }).getByRole('button')).toHaveCount(3)
-  await expect(page.getByText('5 of 5 questions left today · test funds only')).toBeVisible()
+  await expect(page.getByText('5 of 5 questions left today')).toBeVisible()
   await expect(page.getByText('Don’t enter personal or confidential information.', { exact: false })).toBeVisible()
   // Budget control: hosted questions hold at most S$2.00 of test funds.
   await page.locator('.ra-budget-chip').click()
@@ -62,7 +62,7 @@ test('first visit: orientation, the visitor’s own question first, one environm
   await expect(budget.getByRole('spinbutton', { name: 'Custom budget (S$)' })).toHaveAttribute('max', '2')
   await page.keyboard.press('Escape')
   // One environment indicator; details on demand, and nothing else says SIMULATED on Home.
-  const pill = page.getByRole('button', { name: 'Shared demo · simulated payments · rule-based buying · no real value' })
+  const pill = page.getByRole('button', { name: 'Simulated payments' })
   await expect(pill).toBeVisible()
   await expect(page.locator('main')).not.toContainText('SIMULATED')
   await pill.click()
@@ -174,7 +174,7 @@ test('paused, ended, used-up, on-hold and offline each say what happened and wha
   control({ admissionsPaused: true, spendingPaused: true })
   await page.goto('/')
   const card = page.locator('.ra-hstate')
-  await expect(card).toContainText('The shared Testnet demo is paused. No new purchases will start. You can still view your receipts or watch the recorded walkthrough.')
+  await expect(card).toContainText('The shared demo is paused. No new purchases will start. You can still view your receipts or watch the recorded walkthrough.')
   // A demo that cannot take a question shows the state card and its links, with no composer or examples to tempt a click.
   await expect(page.getByRole('button', { name: /^Ask/ })).toHaveCount(0)
   await expect(question(page)).toHaveCount(0)
@@ -277,7 +277,7 @@ test('hosted budgets render a smaller server-authoritative question cap', async 
   const { context, page } = await visitor(browser)
   await statusAs(page, status => ({ ...status, questionCapMinor: 100 }))
   await page.goto('/')
-  await expect(page.getByText('Up to S$1.00 in test funds')).toBeVisible()
+  await expect(page.getByText('Up to S$1.00 per question')).toBeVisible()
   await expect(page.locator('.ra-budget-chip')).toContainText('1.00')
   await page.locator('.ra-budget-chip').click()
   const slider = page.getByRole('dialog', { name: 'Budget' }).getByRole('spinbutton')

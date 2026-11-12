@@ -83,8 +83,8 @@ export default function Ask({ onAsk, busy = false, settlement, above, universalM
           ? <BudgetPopover value={chosen} onChange={setBudget} disabled={disabled || browserDemo} max={budgetMax} />
           : <button type="button" className="ra-budget-chip" onClick={onSettings} title={`${BUDGET_LABEL.default} · change it in Settings`}>{universalMinor === 0 ? 'Free' : money(universalMinor)}</button>}
         <button className="ra-ask" type="submit" disabled={disabled || !question.trim()}>{askLabel ?? (budgetMinor === 0 ? 'Ask free' : 'Ask')}</button>
+        {hosted && <button type="button" className="ra-btn ra-home-verify" onClick={verifyRecorded}>Verify a recorded run, no question used</button>}
       </div>
-      {hosted && <button type="button" className="ra-btn ra-home-verify" onClick={verifyRecorded}>Verify a recorded run, no question used</button>}
       {composerNote}
       {error && <div className="ra-comp-foot"><span className="ra-err" role="alert">{error}</span></div>}
     </form>}

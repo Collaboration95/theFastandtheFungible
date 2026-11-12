@@ -65,14 +65,14 @@ describe('hosted environment chip', () => {
 
   it('names the rail and models, opens details on demand and closes back to the chip', () => {
     const trigger = chip({ status: status() })
-    expect(trigger.getAttribute('aria-label')).toBe('Shared XRPL Testnet demo · rule-based buying · no real value')
+    expect(trigger.getAttribute('aria-label')).toBe('XRPL Testnet')
     expect(screen.queryByRole('region', { name: 'About this demo' })).toBeNull()
     fireEvent.click(trigger)
     const details = screen.getByRole('region', { name: 'About this demo' })
     expect(trigger.getAttribute('aria-expanded')).toBe('true')
-    expect(details.textContent).toContain('Shared XRPL Testnet demo')
+    expect(details.textContent).toContain('one sponsor wallet on the XRPL Testnet')
     expect(details.textContent).toContain('Paid over x402 on XRPL Testnet.')
-    expect(details.textContent).toContain('What to buy is decided by fixed offline rules')
+    expect(details.textContent).toContain('Policy rules decide purchases deterministically')
     expect(details.textContent).toContain('Up to S$2.00 of test funds per question, 5 questions a day, one at a time. Today: 4 left.')
     fireEvent.click(within(details).getByRole('button', { name: 'Close' }))
     expect(screen.queryByRole('region', { name: 'About this demo' })).toBeNull()
@@ -81,9 +81,9 @@ describe('hosted environment chip', () => {
   it('says simulated payments and fixture models plainly, and live models when both are live', () => {
     fireEvent.click(chip({ status: status({ labels: { models: 'fixture models', rail: 'Simulated payments · no real value' } }) }))
     let details = screen.getByRole('region', { name: 'About this demo' })
-    expect(details.textContent).toContain('Shared demo · simulated payments')
+    expect(details.textContent).toContain('Simulated payments')
     expect(details.textContent).toContain('Simulated: no ledger transactions. Receipts say so.')
-    expect(details.textContent).toContain('Fixture models: offline extracts and rules')
+    expect(details.textContent).toContain('Offline extracts write the answers.')
     cleanup()
     fireEvent.click(chip({ status: status({ labels: { models: 'deepseek · openai decisions', rail: 'Shared XRPL Testnet demo · no real value' } }) }))
     details = screen.getByRole('region', { name: 'About this demo' })
@@ -97,7 +97,7 @@ describe('hosted environment chip', () => {
     cleanup()
     const offline = chip({ status: status(), connection: 'offline' })
     expect(offline.className).toContain('is-off')
-    expect(offline.getAttribute('aria-label')).toBe('Shared XRPL Testnet demo · offline · no real value')
+    expect(offline.getAttribute('aria-label')).toBe('XRPL Testnet')
   })
 })
 

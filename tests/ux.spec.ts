@@ -10,9 +10,11 @@ test('UX-1: honest labels, UC1/2/3 money, receipts, reflow and recovery', async 
   const shot = async (name: string) => { await page.screenshot({ path: `${dir}/${name}.jpg`, type: 'jpeg', quality: 65, animations: 'disabled' }) }
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('/?pace=real')
-  const env = page.getByRole('button', { name: /Simulated demo · fixture models · no real value/ })
+  const env = page.getByRole('button', { name: /^Simulated payments$/ })
   await expect(env).toBeVisible()
   const pop = page.getByRole('region', { name: "What’s real here" })
+  await expect(pop).toBeHidden()
+  await env.click()
   await expect(pop).toBeVisible()
   for (const label of ['fictional writers and labelled team-authored notes', 'Simulated payment · no ledger entry', 'Keyword search only', 'Offline rules']) await expect(pop).toContainText(label)
   await page.keyboard.press('Escape')
@@ -47,10 +49,10 @@ test('UX-1: honest labels, UC1/2/3 money, receipts, reflow and recovery', async 
   })
   const labels = { indicators: await page.locator('.ra-env-trigger:visible').count(), rawText: await count(), receipt: 0 }
   expect(labels.indicators).toBe(1)
-  // The canonical pill names both simulated payments and fixture models;
+  // The quiet chip names simulated payments; provider details are in its popover.
   // the mandatory refund rail and unanchored simulated label remain (#366).
   await expect(env).toBeVisible()
-  expect(labels.rawText).toBe(4)
+  expect(labels.rawText).toBe(3)
   await leak.getByRole('button', { name: 'Receipt' }).click()
   const receipt = page.getByRole('dialog', { name: 'Receipt', exact: true })
   await expect(receipt).toContainText('None (simulated)')
