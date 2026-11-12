@@ -4,8 +4,9 @@ import { createHash } from 'node:crypto'
 import { rows } from './state.mjs'
 const receipts = rows('data/evidence/testnet-1000/receipts.jsonl')
 const journalPath = process.argv.includes('--journal') ? process.argv[process.argv.indexOf('--journal') + 1] : '/tmp/researchagent-testnet-1000/rpc.jsonl'
+const rpc = existsSync(journalPath) ? rows(journalPath) : []
 if (existsSync(journalPath)) {
-  const rpc = rows(journalPath), ledgers = new Map(rpc.filter(e => e.kind === 'validated').map(e => [e.hash, e.ledger]))
+  const ledgers = new Map(rpc.filter(e => e.kind === 'validated').map(e => [e.hash, e.ledger]))
   writeFileSync('data/evidence/testnet-1000/funding.json', JSON.stringify({ network: 'xrpl-testnet', source: 'TestnetProvisioner faucet buyer, then persisted signed XRP top-ups', payments: rpc.filter(e => e.kind === 'submit' && e.type === 'Payment').map(e => ({ hash: e.hash, ledger: ledgers.get(e.hash) ?? null })), rpcRetries: rpc.filter(e => e.kind === 'retry' || e.kind === 'funding-retry') }, null, 2) + '\n')
 }
 const success = receipts.filter(r => r.outcome === 'success')
@@ -18,6 +19,18 @@ const proof = existsSync(proofPath) ? JSON.parse(readFileSync(proofPath, 'utf8')
 if (proof && proof.receiptsSha256 !== createHash('sha256').update(readFileSync('data/evidence/testnet-1000/receipts.jsonl')).digest('hex')) proof.success = false
 const summary = { network: 'xrpl-testnet', count: receipts.length, successes: success.length, successRate: receipts.length ? success.length / receipts.length : 0, totalSpentDrops: success.reduce((n, r) => n + BigInt(r.amountDrops), 0n).toString(), createMs: percentiles('createMs'), finishMs: percentiles('finishMs'), endToEndMs: percentiles('endToEndMs'), failures: Object.fromEntries([...new Set(receipts.filter(r => r.outcome !== 'success').map(r => r.failureCause))].map(c => [c, receipts.filter(r => r.failureCause === c).length])), independentlyVerified: proof?.receipts === receipts.length && proof?.success ? proof.verified : 0 }
 writeFileSync('data/evidence/testnet-1000/summary.json', JSON.stringify(summary, null, 2) + '\n')
+// The feed consumes this explicit public projection; application delivery is a local observation.
+if (receipts.length && summary.independentlyVerified === receipts.length && rpc.length) {
+  const validated = new Map(rpc.filter(e => e.kind === 'validated').map(e => [e.hash, e.at]))
+  const article = JSON.parse(readFileSync('data/corpus/v2/articles/team-xrpl-explainers/aml.json', 'utf8'))
+  const feedRows = success.map(r => {
+    const created = validated.get(r.createHash), finished = validated.get(r.finishHash)
+    if (r.resourceId !== article.articleId || !Number.isFinite(created) || !Number.isFinite(finished) || finished < created) throw Error('Feed requires matching resource metadata and validated timing observations')
+    return { id: createHash('sha256').update(r.intentId).digest('hex').slice(0, 24), time: new Date(created).toISOString(), topic: 'Agent payments', resourceTitle: article.title, writer: 'Team-authored XRPL explainers', priceMinor: r.priceMinor, createHash: r.createHash, createLedger: r.createLedger, finishHash: r.finishHash, keyCheck: 'match', gate: 'verified', state: 'finished', settlementSeconds: (finished - created) / 1000 }
+  }).sort((a, b) => b.time.localeCompare(a.time))
+  const label = `${receipts.length.toLocaleString('en-US')} recorded purchases. Ledger independently checked; delivery observed locally.`
+  writeFileSync('data/evidence/testnet-1000/feed.json', `{"schema":"public-feed-v1","label":${JSON.stringify(label)},"rows":[\n${feedRows.map(row => JSON.stringify(row)).join(',\n')}\n]}\n`)
+}
 const seconds = value => value === null ? 'unmeasured' : (value / 1000).toFixed(3) + ' s'
 const table = ['createMs', 'finishMs', 'endToEndMs'].map(key => `| ${key} | ${seconds(summary[key].p50)} | ${seconds(summary[key].p90)} | ${seconds(summary[key].p99)} |`).join('\n')
 const sample = success.slice(0, 5).map(r => `- ${r.intentId}: [create ${r.createHash}](https://testnet.xrpl.org/transactions/${r.createHash}), [finish ${r.finishHash}](https://testnet.xrpl.org/transactions/${r.finishHash}).`).join('\n')
@@ -71,6 +84,8 @@ No premium bytes leave the product Store before the grant; every receipt include
 ## Receipt schema for the feed
 
 [receipts.jsonl](../../../data/evidence/testnet-1000/receipts.jsonl) is UTF-8 JSONL, one complete terminal purchase per line, completion order, below 2 MB. Consumers should ignore an incomplete trailing line while a run is active, deduplicate by intentId, and count outcome=success. [summary.json](../../../data/evidence/testnet-1000/summary.json) is a derived aggregate.
+
+[feed.json](../../../data/evidence/testnet-1000/feed.json) is the separate public-feed-v1 projection consumed by /api/feed/recorded. Its 1,000 rows use team-authored writer badges; its label distinguishes independent ledger checks from locally observed delivery. time is the first observed create validation, and settlementSeconds spans observed create to finish validation. The report regenerates this export only with a matching successful independent verification and the private hash-only timing journal.
 
 | Fields | Meaning |
 |---|---|

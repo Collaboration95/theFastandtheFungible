@@ -51,6 +51,8 @@ No premium bytes leave the product Store before the grant; every receipt include
 
 [receipts.jsonl](../../../data/evidence/testnet-1000/receipts.jsonl) is UTF-8 JSONL, one complete terminal purchase per line, completion order, below 2 MB. Consumers should ignore an incomplete trailing line while a run is active, deduplicate by intentId, and count outcome=success. [summary.json](../../../data/evidence/testnet-1000/summary.json) is a derived aggregate.
 
+[feed.json](../../../data/evidence/testnet-1000/feed.json) is the separate public-feed-v1 projection consumed by /api/feed/recorded. Its 1,000 rows use team-authored writer badges; its label distinguishes independent ledger checks from locally observed delivery. time is the first observed create validation, and settlementSeconds spans observed create to finish validation. The report regenerates this export only with a matching successful independent verification and the private hash-only timing journal.
+
 | Fields | Meaning |
 |---|---|
 | schemaVersion, network | 1, xrpl-testnet |
