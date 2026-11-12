@@ -1,0 +1,48 @@
+{
+  "status": "WIP owner stop; no further tests or gates",
+  "accepted": 393,
+  "target": 400,
+  "excludedFailedProviderTasks": 7,
+  "pairedSmokeAttempts": 80,
+  "accountedExposureUsd": 1.3053041159999985,
+  "costs": {
+    "reserved": 0.29741249999999997,
+    "actual": 1.0078916159999984,
+    "missingUsage": 22,
+    "calls": 2155,
+    "inputTokens": 6258916,
+    "outputTokens": 493804
+  },
+  "totalCeilingUsd": 2.17,
+  "newExposureAllowanceUsd": 1.5,
+  "noRetryCallsAdmitted": true,
+  "continuationPreparation": "Interrupted during the offline re-audit; incomplete copy retained as scratch/r3-provider-resume-interrupted. Original scratch/r3-real-400 remains immutable. Resume prepares a new copy, retaining all 393 accepted results and retrying only seven failed tasks.",
+  "balanceChecks": [
+    {
+      "checkedAt": "2026-11-12T15:45:31.410Z",
+      "is_available": false
+    },
+    {
+      "checkedAt": "2026-11-12T15:50:31.452Z",
+      "is_available": false
+    },
+    {
+      "checkedAt": "2026-11-12T15:55:31.384Z",
+      "is_available": false
+    },
+    {
+      "checkedAt": "2026-11-12T16:00:31.406Z",
+      "is_available": false
+    },
+    {
+      "checkedAt": "2026-11-12T16:05:31.340Z",
+      "is_available": false
+    },
+    {
+      "checkedAt": "2026-11-12T16:10:31.316Z",
+      "is_available": true
+    }
+  ],
+  "resumeCommand": "PATH=\"$HOME/.local/share/mise/installs/node/22.23.4/bin:$PATH\" CORPUS_PROFILE=real FREE_TIER=public-docs LEDGER_ANALYTICS=1 EMBEDDING_PROVIDER=local DECISION_PROVIDER=fixture R3_MODEL_CAP_USD=2.17 R3_REQUIRE_PROVIDER_SUCCESS=1 R3_COST_LEDGER=/Users/speedpowermac/.t3/worktrees/tftf/t3-4c545eab-22e21714495ce309/scratch/r3-model-cost.json sh -c 'node --import tsx eval/r3-resume-provider.ts scratch/r3-real-400 scratch/r3-provider-resume && R3_OUT=scratch/r3-provider-resume npm run eval:r3'",
+  "onSubsequentInterruption": "After migration succeeds, repeat only R3_OUT=scratch/r3-provider-resume npm run eval:r3 with the same environment, source HEAD and cumulative ledger."
+}

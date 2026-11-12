@@ -1,5 +1,7 @@
 # Real-profile paired evaluation — pending provider balance
 
+**WIP: stopped at owner request to preserve Codex quota; no retries admitted.** The continuation preparation was interrupted during its offline audit. `r3-real-200/WIP-RESUME.json` contains the exact resume command and retained ledger. No further tests or gates were run.
+
 **393/400 accepted arm/question results · 7 paid tasks pending · 935/935 eligible citations valid · 0 eligible gate violations.**
 
 The provider balance check at 2026-11-12 15:40:31 UTC returned `is_available=false`, US$0.00. Five-minute polls retained the pause. At 16:08 UTC the owner reported replenishment and authorized resumption with a lower budget to preserve the shared hosted-demo account. This lane added no credit. Failed calls do not count as evaluation results. Only the seven excluded tasks will resume; 393 valid records remain unchanged.
