@@ -1559,3 +1559,10 @@ Chromium creates the visitor key, obtains faucet XRP, binds public proof through
 - **Workaround:** refuse reserved Batch signing on a visitor-scoped payer, matching the existing early Batch refusal. Own-wallet plus Batch holdback remains unsupported until visitor co-signing transport is implemented.
 - **Suggested fix:** document every signing entry point when adding durable Batch recovery, including scoped-account authorization.
 - **Severity / mainnet impact:** medium integration boundary; no affected transaction or Mainnet write was observed.
+
+### 2026-11-12 — Browser probe cache entered repository-wide lint (observed tooling)
+
+- **Evidence:** `scripts/spikes/f-browser-wallet.mjs` and `g-browser-product.mjs` originally placed generated Vite dependency caches under `scratch/`. `check:fast` at clean wallet head `ec3d5722` then linted those ignored, generated dependency files and failed with 880 errors. No application source lint error was reported.
+- **Workaround:** give each probe an operating-system temporary cache directory and remove it after Vite closes. Preserve the failed log and previous generated cache outside the checkout; lint configuration and assertions are unchanged.
+- **Suggested fix:** standalone browser examples should isolate generated caches from source globs and clean up in their finalizer.
+- **Severity / mainnet impact:** low local verification friction; no ledger behavior or Mainnet operation.
