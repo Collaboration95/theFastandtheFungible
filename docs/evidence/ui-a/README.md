@@ -16,7 +16,7 @@ These are browser viewport checks, not physical-device evidence or a deployed re
 
 The repeatable tests use the committed no-show replay, a synthetic writers response with 24 demo sales, and a layout-only long publisher label. The label is applied to a candidate in memory solely to reproduce the clipping case; signed content and receipts are unchanged. The home Verify response is replaced with a committed simulated UC2 receipt bundle for offline layout checks. These screenshots do not establish a new Testnet payment or new paid-read telemetry.
 
-Separately, the shared preview opened the actual committed `public/judge/hosted-run-nov11.receipts.json` and checked it against the public Testnet node: **45 passed · 2 not checked**, gate 1 Not checked and gates 2–5 Passed. `after-live-recorded-verify-390.png` shows the result; `before-hosted-verify-390.png` is the supplied WALK-1 screenshot (historical hosted deployment, not the local baseline). No new question, payment, provider call or ledger write was made for that check.
+After rebasing onto the new featured proof from PR #511, the shared preview opened the actual committed `public/judge/hosted-run-nov12.receipts.json` and checked it against the public Testnet node: **24 passed · 2 not checked**, all five gates Passed and expanded by default. `after-live-recorded-verify-*.png` show the result; `live-recorded-verify.json` retains the exact headlines and technical text. The earlier Nov 11 recording had 45 passed and 2 not checked, with gate 1 Not checked. `before-hosted-verify-390.png` is the supplied WALK-1 screenshot (historical hosted deployment, not the local baseline). No new question, payment, provider call or ledger write was made for that check.
 
 ## Layout-shift regression
 
@@ -24,7 +24,7 @@ The first locked gate found UC2 replay CLS **0.052649** against the unchanged **
 
 ## Bundle
 
-Node 22.23.4 manifest traversal, including static imports: **158,315 → 158,782 bytes gzip**, below the task’s **160,000 B** limit. Optional verifier/gates stay lazy. The repository’s existing 170,000-byte gate was not changed; the UI-A browser test separately enforces the stricter 160,000-byte requirement.
+Node 22.23.4 manifest traversal, including static imports: **158,315 → 158,900 bytes gzip**, below the task’s **160,000 B** limit. Optional verifier/gates stay lazy. The repository’s existing 170,000-byte gate was not changed; the UI-A browser test separately enforces the stricter 160,000-byte requirement.
 
 ## Reproduce
 

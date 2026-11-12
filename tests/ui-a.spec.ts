@@ -9,6 +9,7 @@ const bundle = JSON.parse(readFileSync('docs/evidence/round4-j1/replays/simulate
 const provenance = 'ResearchAgent builders · XRPL explainers (team-authored) · team-authored explainer · sources cited · not an independent writer · Testnet'
 const status = { questionCapMinor: 200, state: 'ready', csrfToken: 'layout-only', queue: [], capabilities: { ask: true, scope: true, history: true, receipts: true, pdf: false, settings: false, faultControls: false }, remaining: { questions: 5, minor: 1000 }, labels: { models: 'fixture models', rail: 'Shared XRPL Testnet demo · no real value' }, links: { repo: 'https://github.com/Collaboration95/theFastandtheFungible', deck: '', video: '', progress: '', replay: '' } }
 const before = process.env.UI_A_BEFORE === '1'
+const recordedBundlePath = before ? '/judge/hosted-run-nov11.receipts.json' : JSON.parse(readFileSync('shared/judge-run.json', 'utf8')).bundleUrl
 for (const width of [1280, 390]) test(`UI-A fixes at ${width}`, async ({ page }) => {
   await page.setViewportSize({ width, height: width === 390 ? 844 : 800 })
   const run = structuredClone(trace.run)
@@ -24,7 +25,7 @@ for (const width of [1280, 390]) test(`UI-A fixes at ${width}`, async ({ page })
     if (path === '/api/runs') return route.fulfill({ json: [] })
     if (path === '/api/writers/earnings') return route.fulfill({ json: { scope: 'Your purchases and trust come from your retained history. Sales on this demo since 11 Nov include all visitors.', writers: [{ slug: 'team-builder-notes', publisherSlug: 'team-builder-notes', name: 'ResearchAgent builders · Build notes (team-authored)', authorship: 'Team-authored', articleCount: 24, articles: [], priceRange: [40, 40], sales: [], trust: [], demoSales: 24 }] } })
     if (path.endsWith('/events')) return route.fulfill({ contentType: 'text/event-stream', body: '' })
-    if (path.endsWith('/receipts.json') || path === '/judge/hosted-run-nov11.receipts.json') return route.fulfill({ json: bundle })
+    if (path.endsWith('/receipts.json') || path === recordedBundlePath) return route.fulfill({ json: bundle })
     if (path.startsWith('/runs/')) return route.fulfill({ json: run })
     if (path.startsWith('/api/')) return route.fulfill({ status: 404, json: {} })
     if (new URL(route.request().url()).hostname !== '127.0.0.1') return route.abort()
