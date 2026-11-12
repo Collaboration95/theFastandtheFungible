@@ -25,7 +25,7 @@ for(const arm of ['free','paid']){
   const run=store.getRun(result.runId),q=questions.get(result.id)!,answer=run.answers.at(-1)
   const spans=run.contents.flatMap(c=>c.spans.map(s=>s.text))
   const goldPresent=q.requested?q.requested.every(f=>spans.some(s=>factHolds(f,s))):Boolean(q.gold&&spans.some(s=>s.toLowerCase().includes(q.gold!.toLowerCase())))
-  const taxonomy=result.correct?'correct':result.violations.length?'gate-failure':q.stratum==='historical-out-of-profile'?'excluded-historical-source':result.phase!=='DONE'?'run-failed-or-stopped':!answer?'no-answer':!result.liveOnly?'model-substitution':goldPresent?'answer-or-lead-mismatch':'gold-not-in-accessible-spans'
+  const taxonomy=result.violations.length?'gate-failure':result.correct?'correct':q.stratum==='historical-out-of-profile'?'excluded-historical-source':result.phase!=='DONE'?'run-failed-or-stopped':!answer?'no-answer':!result.liveOnly?'model-substitution':goldPresent?'answer-or-lead-mismatch':'gold-not-in-accessible-spans'
   rows.push({id:result.id,arm,runId:run.runId,taxonomy,goldPresent,answerProvider:answer?.provider,purchases:run.receipts.length,purchaseAmountsMinor:run.receipts.map(r=>r.amountMinor),intents:run.intents.map(i=>({resourceId:i.resourceId,status:i.status,amountMinor:i.amountMinor})),fallbackLabels:run.events.filter(e=>e.type==='MODEL_FALLBACK'||e.type==='ERROR').map(e=>e.label),sources:run.contents.map(c=>({resourceId:c.resourceId,version:c.version})),claims:answer?.claims.length||0,unresolvedCitations:answer?.claims.flatMap(c=>c.citations).filter(c=>!resolveCitation(c,run.contents)).length||0})
  }}finally{store.close()}
 }

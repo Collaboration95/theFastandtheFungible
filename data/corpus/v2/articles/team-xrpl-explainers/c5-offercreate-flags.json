@@ -1,6 +1,6 @@
 {
   "articleId": "c5-offercreate-flags",
-  "version": "v1",
+  "version": "v2",
   "publisherSlug": "team-xrpl-explainers",
   "writerSlug": "team-xrpl-explainers",
   "title": "Which OfferCreate flags control passive, immediate-or-cancel, fill-or-kill and sell orders on XRPL?",
@@ -26,23 +26,23 @@
       "accessedAt": "2026-11-11"
     }
   ],
-  "body": "According to the XRPL OfferCreate reference, four flags change how an order trades: tfPassive, tfImmediateOrCancel, tfFillOrKill and tfSell. Each is a bit set in the Flags field of the OfferCreate transaction. [1]\n\ntfPassive (0x00010000) means the offer does not consume offers that exactly match it, only offers that cross it; this makes it possible to set up offers that peg the exchange rate at a specific value. tfImmediateOrCancel (0x00020000) treats the offer as an Immediate or Cancel order: no Offer entry is placed in the order books, and the transaction trades as much as it can by consuming existing offers when it is processed. [1]\n\ntfFillOrKill (0x00040000) also places no Offer entry in the order books, and it cancels the offer if it cannot be fully filled at the time of execution; by default the owner must receive the full TakerPays amount. tfSell (0x00080000) exchanges the entire TakerGets amount, even if that means obtaining more than the TakerPays amount in exchange. [1]\n\nAuthor interpretation: use tfFillOrKill when an agent needs all-or-nothing execution, tfImmediateOrCancel when a partial fill is acceptable and nothing should rest on the book, tfPassive for maker-style quotes, and tfSell when the amount sold matters more than the amount received. A submitted OfferCreate is not proof of a trade; read the validated result before treating an order as filled. Sources accessed 11 November 2026. [1]",
+  "body": "OfferCreate supports four named trading-mode bits: tfPassive, tfImmediateOrCancel, tfFillOrKill and tfSell. Encode the selected bits in Flags. Their purposes differ, so an agent must choose its execution requirements before building the transaction. The OfferCreate reference specifies both the bit values and their consequences. [1]\n\nWith tfPassive (0x00010000), a matching price does not trigger immediate consumption; the offer trades against crossing prices. With tfImmediateOrCancel (0x00020000), execution can consume available liquidity immediately, including a partial fill. Any unfilled remainder does not become a standing order-book entry. Select this mode when the agent accepts partial execution but should leave nothing resting. [1]\n\ntfFillOrKill (0x00040000) requires all-or-nothing execution. Insufficient liquidity for the required complete fill cancels the order, and no remainder rests in the order book. The default complete-fill requirement refers to receiving TakerPays. tfSell (0x00080000) instead prioritizes exchanging all of TakerGets, allowing the proceeds to exceed TakerPays. [1]\n\nAuthor interpretation: define whether the agent requires a complete fill, accepts a partial fill, seeks a passive quote or prioritizes the quantity sold. Match that intent to the appropriate flag rather than assuming all OfferCreate submissions behave alike. Submission alone establishes no successful trade; reconcile the validated outcome before updating the agent’s inventory. Documentation consulted on 11 November 2026. [1]\n\nSCENARIO_PAID_CANARY_c5-offercreate-flags_9F13",
   "passages": [
     {
       "id": "p1",
-      "text": "According to the XRPL OfferCreate reference, four flags change how an order trades: tfPassive, tfImmediateOrCancel, tfFillOrKill and tfSell. Each is a bit set in the Flags field of the OfferCreate transaction. [1]"
+      "text": "OfferCreate supports four named trading-mode bits: tfPassive, tfImmediateOrCancel, tfFillOrKill and tfSell. Encode the selected bits in Flags. Their purposes differ, so an agent must choose its execution requirements before building the transaction. The OfferCreate reference specifies both the bit values and their consequences. [1]"
     },
     {
       "id": "p2",
-      "text": "tfPassive (0x00010000) means the offer does not consume offers that exactly match it, only offers that cross it; this makes it possible to set up offers that peg the exchange rate at a specific value. tfImmediateOrCancel (0x00020000) treats the offer as an Immediate or Cancel order: no Offer entry is placed in the order books, and the transaction trades as much as it can by consuming existing offers when it is processed. [1]"
+      "text": "With tfPassive (0x00010000), a matching price does not trigger immediate consumption; the offer trades against crossing prices. With tfImmediateOrCancel (0x00020000), execution can consume available liquidity immediately, including a partial fill. Any unfilled remainder does not become a standing order-book entry. Select this mode when the agent accepts partial execution but should leave nothing resting. [1]"
     },
     {
       "id": "p3",
-      "text": "tfFillOrKill (0x00040000) also places no Offer entry in the order books, and it cancels the offer if it cannot be fully filled at the time of execution; by default the owner must receive the full TakerPays amount. tfSell (0x00080000) exchanges the entire TakerGets amount, even if that means obtaining more than the TakerPays amount in exchange. [1]"
+      "text": "tfFillOrKill (0x00040000) requires all-or-nothing execution. Insufficient liquidity for the required complete fill cancels the order, and no remainder rests in the order book. The default complete-fill requirement refers to receiving TakerPays. tfSell (0x00080000) instead prioritizes exchanging all of TakerGets, allowing the proceeds to exceed TakerPays. [1]"
     },
     {
       "id": "p4",
-      "text": "Author interpretation: use tfFillOrKill when an agent needs all-or-nothing execution, tfImmediateOrCancel when a partial fill is acceptable and nothing should rest on the book, tfPassive for maker-style quotes, and tfSell when the amount sold matters more than the amount received. A submitted OfferCreate is not proof of a trade; read the validated result before treating an order as filled. Sources accessed 11 November 2026. [1]"
+      "text": "Author interpretation: define whether the agent requires a complete fill, accepts a partial fill, seeks a passive quote or prioritizes the quantity sold. Match that intent to the appropriate flag rather than assuming all OfferCreate submissions behave alike. Submission alone establishes no successful trade; reconcile the validated outcome before updating the agent’s inventory. Documentation consulted on 11 November 2026. [1]"
     }
   ],
   "factMenu": {
