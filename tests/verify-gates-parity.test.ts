@@ -70,6 +70,8 @@ for (const [name, path] of Object.entries({ hosted: 'public/judge/hosted-run-nov
     expect([rows[0].status === 'Broken', rows[1].status === 'Broken', rows[2].status === 'Broken']).toEqual([
       stats.audit.readBeforeGrant > 0, stats.audit.buyWithoutPolicy > 0 || stats.audit.overBudget > 0, stats.audit.duplicateIntent > 0 || stats.audit.receiptWithoutIntent > 0,
     ])
+    expect(stats.stoppedBeforeAnswer).toBe(0)
+    expect(stats.audit.unanchored).toBe(0)
     expect(stats.anchored).toBe(1) // P4's fifth predicate remains separate from hard gate 5 (labels).
     if (tamper === 'original') expect(rows.map(r => r.status)).toEqual(['Not checked', 'Held', 'Held', 'Held', 'Held'])
   })
