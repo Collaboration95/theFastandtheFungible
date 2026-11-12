@@ -13,7 +13,7 @@
 | Total article spend | S$0.00 | S$20.40 |
 | Median article spend per question, including zero | S$0.00 | S$0.00 |
 | Latency p50 / p90 | 6.447 s / 10.767 s | 6.932 s / 12.630 s |
-| Planner substitutions / writer fallback events / final fixture answers | 0 / 109 / 102 | 6 / 117 / 111 |
+| Planner substitutions / writer fallback events / fixture answer revisions | 0 / 109 / 102 | 6 / 117 / 111 |
 
 Free docs alone answered 15.5%; paid notes lifted it to 25.0% at S$0.00 median spend.
 
@@ -74,7 +74,7 @@ The following categories are mutually exclusive, in the diagnostic precedence im
 | answer-or-lead-mismatch | 47 | 35 |
 | gate-failure | 0 | 0 |
 
-Per-run IDs, receipt counts, prices, intent statuses, source identities, fallback reasons and diagnoses are retained in `r3-real-200/diagnoses.json`. Answered means at least one requested fact matched; correct means all requested facts matched. Historical fact needles must occur in a claim and its cited accessible span. Protocol gold uses the existing first-two-sentence lead phrase check with accessible citations. This is phrase scoring, not expert semantic grading. Citation counts are references, including repeats, rather than unique source counts. Valid citation means accessible-span resolution plus the auditor’s grant checks; URLs were not independently checked for current availability. The original verified-purchase scorer remains in each result as `paidGoldScore`. Live-only correctness uses the full arm denominator while excluding planner substitutions, writer fallbacks and final fixture answers.
+Per-run IDs, receipt counts, prices, intent statuses, source identities, fallback reasons and diagnoses are retained in `r3-real-200/diagnoses.json`. Answered means at least one requested fact matched; correct means all requested facts matched. Historical fact needles must occur in a claim and its cited accessible span. Protocol gold uses the existing first-two-sentence lead phrase check with accessible citations. This is phrase scoring, not expert semantic grading. Citation counts are references, including repeats, rather than unique source counts. Valid citation means accessible-span resolution plus the auditor’s grant checks; URLs were not independently checked for current availability. Fixture-answer counts include every stored answer revision, not only the final answer. The original verified-purchase scorer remains in each result as `paidGoldScore`. Live-only correctness uses the full arm denominator while excluding planner substitutions, writer fallbacks and any fixture answer revision.
 
 ## Smoke, provenance and reproduction
 
