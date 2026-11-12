@@ -17,7 +17,7 @@ export const PublisherSchema = z.object({
 }).refine(p => p.synthetic || p.verification?.status === 'unverified', { message: 'Author-supplied writers must be labelled unverified writer' })
 /** For an independent writer, writer = publisher (same slug). */
 export const WriterSchema = z.object({ slug, name: z.string().min(1), publisherSlug: slug, bio: z.string().min(1), voice: z.string().min(1) })
-export const PassageSchema = z.object({ id: z.string().regex(/^[A-Za-z0-9._-]+$/), heading: z.string().optional(), text: z.string().min(1) })
+export const PassageSchema = z.object({ id: z.string().regex(/^[A-Za-z0-9._-]+$/), heading: z.string().optional(), url: z.string().url().regex(/^https:\/\//).optional(), anchor: z.string().optional(), headingPath: z.array(z.string()).optional(), text: z.string().min(1) })
 /** `articleId` is globally unique across publishers: citations bind by resourceId (= articleId) + version only. */
 export const ArticleSchema = z.object({
   articleId: z.string().regex(/^[A-Za-z0-9._-]+$/), version: z.string().min(1), publisherSlug: slug, writerSlug: slug,

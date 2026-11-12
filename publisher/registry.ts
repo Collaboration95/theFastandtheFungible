@@ -1,3 +1,4 @@
+import { PUBLIC_DOCS_PUBLISHERS } from './writers/public-docs.js'
 // Every publisher in one process (#122): roster, keys and one search index each.
 import { localWriterEnv } from './local-writers.js'
 import { createHash } from 'node:crypto'
@@ -43,7 +44,7 @@ export async function buildRegistry(corpus: WriterCorpus, options: { rail: Rail;
     // configured Testnet signer for its free delivery proofs, without a payment.
     if (publisher.slug === 'open-records' && !env[seedEnvName(publisher.slug)]) env[seedEnvName(publisher.slug)] = env.XRPL_PUBLISHER_GRID_OPERATORS_REPORT_SEED
     const keys = options.rail === 'simulated' || articles.some(a => a.tier === 'PAID') || env[seedEnvName(publisher.slug)]
-      ? publisherKeys(publisher.slug, options.rail, env) : undefined
+      ? publisherKeys(publisher.slug, options.rail, env) : PUBLIC_DOCS_PUBLISHERS.has(publisher.slug) ? keysFromSeed(generateSeed({algorithm:'ed25519'}), false) : undefined
     return {
       publisher: keys ? { ...publisher, wallet: keys.wallet, pubKey: keys.publicKey }
         : { ...publisher, wallet: env[seedEnvName(publisher.slug).replace(/_SEED$/, '_ADDRESS')]

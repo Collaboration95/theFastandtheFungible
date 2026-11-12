@@ -98,7 +98,7 @@ test('every product path keeps the entire unit suite, chaos and key-reveal guara
   const perf = full.find(step => step.id === 'browser-perf')
   assert.equal(perf.cpus, MAX_CPUS); assert.deepEqual(perf.deps, ['browser-app'])
   assert.ok(full.find(step => step.id === 'browser-app').args.includes('--grep-invert'))
-  assert.deepEqual(full.find(step => step.id === 'desktop-build').deps, ['browser-app'])
+  assert.deepEqual(full.find(step => step.id === 'desktop-build').deps, ['browser-hosted'])
 })
 
 test('actual rename retains old executable path, unstaged/untracked paths and unknown base', async () => fixture(async ({ root, write, commit }) => {

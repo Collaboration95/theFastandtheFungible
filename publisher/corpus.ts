@@ -1,3 +1,4 @@
+import { loadPublicDocs } from './writers/public-docs.js'
 import { localWriterRegistrations } from '../server/local-writer-discovery.js'
 import { loadLocalWriters } from './local-writers.js'
 import { existsSync } from 'node:fs'
@@ -26,8 +27,10 @@ const asList = (value: unknown, key: string): unknown[] => Array.isArray(value) 
  */
 export async function loadWriterCorpus(root = dataDirectory, options: { allowMini?: boolean } = {}): Promise<WriterCorpus> {
   const roster = await jsonFiles(new URL('writers/', root))
-  const articles = (await jsonFiles(new URL('corpus/v2/', root))).flatMap(file => asList(file, 'articles'))
+  let articles = (await jsonFiles(new URL('corpus/v2/', root))).flatMap(file => asList(file, 'articles'))
     .filter(item => item && typeof item === 'object' && 'articleId' in item)
+  const docs = root === dataDirectory && process.env.FREE_TIER === 'public-docs' ? await loadPublicDocs(new URL('corpus/public-docs/', root)) : undefined
+  if (docs) articles = articles.filter(a => (a as {tier:string}).tier !== 'FREE')
   if (roster.length) {
     const publishers = roster.map(file => {
       const { writers: _w, topics: _t, publisher, ...rest } = file as Record<string, unknown>
@@ -39,8 +42,8 @@ export async function loadWriterCorpus(root = dataDirectory, options: { allowMin
     if (!articles.length) console.warn('Writer articles not generated yet (#120); serving the roster with no articles')
     const active = new Set(localWriterRegistrations().map(w => w.slug))
     const local = root === dataDirectory ? (await loadLocalWriters()).filter(c => !active.has(c.publishers[0].slug)) : []
-    return validateWriterCorpus({ publishers: [...publishers, ...local.flatMap(c => c.publishers)],
-      writers: [...writers, ...local.flatMap(c => c.writers)], articles: [...articles, ...local.flatMap(c => c.articles)] })
+    return validateWriterCorpus({ publishers: [...publishers, ...(docs?.publishers ?? []), ...local.flatMap(c => c.publishers)],
+      writers: [...writers, ...(docs?.writers ?? []), ...local.flatMap(c => c.writers)], articles: [...articles, ...(docs?.articles ?? []), ...local.flatMap(c => c.articles)] })
   }
   if (options.allowMini === false || !existsSync(miniCorpusFile)) throw new Error('No writer roster in data/writers/')
   console.warn('Writer corpus not generated yet; serving the mini corpus (SYNTHETIC test fixture)')

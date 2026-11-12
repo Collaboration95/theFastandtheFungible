@@ -111,7 +111,7 @@ export function makeSteps(route, cpuBudget = MAX_CPUS) {
   }
   if (route.desktop) {
     add('desktop-loader', process.execPath, ['scripts/local-gate-smoke.mjs', 'loader'])
-    add('desktop-build', process.execPath, ['scripts/local-gate-smoke.mjs', 'build'], 2, route.app ? ['browser-app'] : ['unit'], 600000)
+    add('desktop-build', process.execPath, ['scripts/local-gate-smoke.mjs', 'build'], 2, route.app ? ['browser-hosted'] : ['unit'], 600000)
   }
   return steps
 }
