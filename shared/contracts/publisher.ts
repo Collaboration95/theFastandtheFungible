@@ -1,3 +1,4 @@
+import { SettlementTimingSchema } from './settlement-timing.js'
 import { SourceIdentitySchema } from '../source-identity.js'
 import { EscrowStatusSchema } from './escrow.js'
 import { z } from 'zod'
@@ -22,7 +23,7 @@ export const QuoteRequestSchema = z.object({ source: SourceIdentitySchema.option
  * InvoiceID), contentDigest = the manifest root, expiresAt = now + maxTimeoutSeconds.
  */
 export const QuoteSchema = QuoteRequestSchema.extend({ quoteId: z.string(), quoteHash: z.string(), amountMinor: z.number().int().nonnegative(), currency: z.literal('SGD'), expiresAt: z.string(), contentDigest: z.string(), payment: PaymentRequirementSchema.optional() })
-export const ReceiptSchema = z.object({ source: SourceIdentitySchema.optional(), escrow: EscrowStatusSchema.optional(), receiptId: z.string(), intentId: z.string(), runId: z.string(), resourceId: z.string(), version: z.string(), amountMinor: z.number().int().nonnegative(), currency: z.literal('SGD'), settledAt: z.string(), label: SettlementLabelSchema, xrpl: LedgerProofSchema.extend({ explorerUrl: z.string() }).optional() })
+export const ReceiptSchema = z.object({ timing: SettlementTimingSchema.optional(), source: SourceIdentitySchema.optional(), escrow: EscrowStatusSchema.optional(), receiptId: z.string(), intentId: z.string(), runId: z.string(), resourceId: z.string(), version: z.string(), amountMinor: z.number().int().nonnegative(), currency: z.literal('SGD'), settledAt: z.string(), label: SettlementLabelSchema, xrpl: LedgerProofSchema.extend({ explorerUrl: z.string() }).optional() })
 export type QuoteRequest = z.infer<typeof QuoteRequestSchema>
 export type Quote = z.infer<typeof QuoteSchema>
 export type Receipt = z.infer<typeof ReceiptSchema>

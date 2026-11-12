@@ -10,7 +10,7 @@ import { lookupTx, simulatedLedgerIndex, simulatedPayerWallet, testnetLedger, va
 
 /** A signed payment, persisted before it is ever submitted so a restart can find it by hash. */
 export type DryRun = { state: 'accepted' | 'refused' | 'unavailable'; code?: string; ledgerIndex?: number; elapsedMs: number }
-export type Submission = { txHash: string; txBlob: string; lastLedgerSequence: number; dryRun?: DryRun; ledgerPreCheck?: boolean }
+export type Submission = { txHash: string; txBlob: string; lastLedgerSequence: number; writerTiming?: { lockProvenAt: string; finishSubmittedAt: string }; dryRun?: DryRun; ledgerPreCheck?: boolean }
 export type PaymentOutcome =
   | { state: 'success'; ledgerIndex: number }
   | { state: 'failed'; result: string }
