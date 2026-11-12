@@ -260,7 +260,7 @@ async function createConfiguredApi(options: ApiOptions = {}) {
   // 200 {hosted:false} instead of a 404, so the browser console stays clean (the hosted gateway serves its own status above).
   if (!hosted) app.get('/api/connect', (_req,res) => res.json(connectionDetails(config)))
   if (!hosted) app.get('/api/demo/status', (_req, res) => res.json({ hosted: false }))
-  app.get(['/health', '/api/health'], (_req, res) => res.json({ status: 'ok', ...(config.CORPUS_PROFILE === 'real' ? {corpusProfile:'real'} : {}), answerRatings: config.ANSWER_RATINGS === '1', labels: { ...labels, ...(['faucet_unavailable', 'validation_timeout', 'wallet_cache_unavailable', 'network_unavailable'].includes(process.env.RA_TESTNET_FALLBACK ?? '') ? { testnetFallback: process.env.RA_TESTNET_FALLBACK } : {}) }, faults: faultsAvailable }))
+  app.get(['/health', '/api/health'], (_req, res) => res.json({ status: 'ok', ...(config.CORPUS_PROFILE === 'real' ? {corpusProfile:'real'} : {}), answerRatings: config.ANSWER_RATINGS === '1', embeddings: config.EMBEDDING_PROVIDER === 'local' ? 'local' : config.SEARCH_EMBEDDINGS === 'live' ? 'cloudflare' : 'off', labels: { ...labels, ...(['faucet_unavailable', 'validation_timeout', 'wallet_cache_unavailable', 'network_unavailable'].includes(process.env.RA_TESTNET_FALLBACK ?? '') ? { testnetFallback: process.env.RA_TESTNET_FALLBACK } : {}) }, faults: faultsAvailable }))
 
   if (faultsAvailable) app.post('/api/demo/faults', async (req, res) => {
     z.object({ failNextDelivery: z.literal(true) }).parse(req.body)

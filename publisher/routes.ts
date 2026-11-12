@@ -197,7 +197,7 @@ export function createPublisherApp(config: PublisherConfig = {}) {
   }
   app.get('/health', async (_req, res) => {
     await writersReady
-    res.json({ status: 'ok', publisher: 'local', settlement: label })
+    res.json({ status: 'ok', publisher: 'local', settlement: label, embeddings: localEmbedder ? 'local' : 'off' })
   })
   app.get('/w/:slug/facilitator/supported', (req, res) => {
     res.json({ kinds: [{ x402Version: 2, scheme: 'exact', network: X402_NETWORK, assets: assetFor(req.params.slug) === 'XRP' ? ['XRP'] : [assetFor(req.params.slug), 'XRP'] }, ...(escrowEnabled(req.params.slug) ? [{ x402Version: 2, scheme: 'escrow-v1', network: X402_NETWORK }] : [])], extensions: [], signers: {}, label })

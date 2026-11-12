@@ -1,9 +1,31 @@
 import { describe, expect, it } from 'vitest'
 // @ts-expect-error deterministic builder has no declaration file
-import { passagesFrom, anchor, publicPage } from '../scripts/build-public-docs.mjs'
+import { passagesFrom, anchor, publicPage, sources } from '../scripts/build-public-docs.mjs'
 import { loadWriterCorpus } from '../publisher/corpus.js'
+import { chmodSync, mkdirSync, writeFileSync, statSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
+import { join } from 'node:path'
+import { ResourceScope } from '../shared/resource-scope.js'
 
 describe('public documentation passage builder', () => {
+  it('makes public container inputs readable under the private operator umask', async () => {
+    const scope = new ResourceScope(), root = scope.tempDir('public-docs-mode-'), out = join(root, 'output')
+    try {
+      for (const source of sources) {
+        const dir = join(root, source.slug)
+        mkdirSync(dir)
+        writeFileSync(join(dir, 'LICENSE'), 'Test fixture licence')
+      }
+      mkdirSync(out, { mode: 0o700 })
+      for (const name of ['index.json', 'manifest.json']) {
+        writeFileSync(join(out, name), '{}')
+        chmodSync(join(out, name), 0o600)
+      }
+      execFileSync(process.execPath, ['--input-type=module', '-e', `import { build } from ${JSON.stringify(new URL('../scripts/build-public-docs.mjs', import.meta.url).href)}; process.umask(0o077); build(${JSON.stringify(root)}, ${JSON.stringify(out)});`])
+      expect(statSync(out).mode & 0o555).toBe(0o555)
+      for (const name of ['index.json', 'manifest.json']) expect(statSync(join(out, name)).mode & 0o444).toBe(0o444)
+    } finally { await scope.close() }
+  })
   it('refuses executable and non-web canonical passage URLs', async () => {
     const { SpanSchema } = await import('../shared/contracts/corpus.js')
     expect(SpanSchema.safeParse({id:'p1',text:'Public text',url:'javascript:alert(1)'}).success).toBe(false)

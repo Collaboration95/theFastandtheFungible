@@ -17,7 +17,7 @@ async function setup(stale:boolean) {
   return {...h,article:report.article}
 }
 describe.each(['default','real'])('ledger purchase under %s profile', profile=>{
-  beforeEach(()=>vi.stubEnv('CORPUS_PROFILE',profile))
+  beforeEach(()=>{vi.stubEnv('CORPUS_PROFILE',profile);vi.stubEnv('LEDGER_ANALYTICS','1');vi.stubEnv('ESCROW_MODE','key-reveal')})
   afterEach(()=>vi.unstubAllEnvs())
 it('keeps premium report bytes behind payment and charges one intent once',async()=>{
   const h=await setup(false)

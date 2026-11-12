@@ -99,8 +99,15 @@ if [[ -f /etc/researchagent/env.local ]]; then
       echo 'WRITER_CREDENTIAL_DOMAIN must be exactly 64 hexadecimal characters' >&2
       exit 1
     fi
-    [[ $name =~ ^(HOSTED_PROVIDERS_READY_UNTIL|HOSTED_(RESEARCH|DECISION)_(INPUT|OUTPUT)_USD_PER_MILLION|HOSTED_DECISION_OUTPUT_TOKENS|HOSTED_QUESTION_CAP_MINOR|HOSTED_ADMISSIONS_UNTIL|HOSTED_(DECK|VIDEO|PROGRESS|REPLAY)_URL|WALLET_DAILY_CAP_MINOR|DECISION_PROVIDER|WRITER_CREDENTIAL_DOMAIN)$ && $value =~ ^[A-Za-z0-9.:/_-]+$ ]] || exit 1
+    [[ $name =~ ^(HOSTED_PROVIDERS_READY_UNTIL|HOSTED_(RESEARCH|DECISION)_(INPUT|OUTPUT)_USD_PER_MILLION|HOSTED_DECISION_OUTPUT_TOKENS|HOSTED_QUESTION_CAP_MINOR|HOSTED_ADMISSIONS_UNTIL|HOSTED_(DECK|VIDEO|PROGRESS|REPLAY)_URL|WALLET_DAILY_CAP_MINOR|DECISION_PROVIDER|WRITER_CREDENTIAL_DOMAIN|FREE_TIER|CORPUS_PROFILE|LEDGER_ANALYTICS|EMBEDDING_PROVIDER|XRPL_STREAM_WAITS|SETTLEMENT_TIMING|PUBLIC_FEED|AUDIENCE_COUNTS|ANSWER_RATINGS|MCP_PUBLIC|PAID_ENDPOINT_PUBLIC|WEB_PUBLISHING|AUTO_APPROVE)$ && $value =~ ^[A-Za-z0-9.:/_-]+$ ]] || exit 1
     [[ $name != DECISION_PROVIDER || $value =~ ^(openai|cloudflare|fixture)$ ]] || exit 1
+    case "$name" in
+      FREE_TIER) [[ $value =~ ^(default|public-docs)$ ]] || exit 1 ;;
+      CORPUS_PROFILE) [[ $value =~ ^(default|real)$ ]] || exit 1 ;;
+      EMBEDDING_PROVIDER) [[ $value =~ ^(cloudflare|local)$ ]] || exit 1 ;;
+      LEDGER_ANALYTICS|XRPL_STREAM_WAITS|SETTLEMENT_TIMING|PUBLIC_FEED|AUDIENCE_COUNTS|ANSWER_RATINGS) [[ $value =~ ^(0|1)$ ]] || exit 1 ;;
+      MCP_PUBLIC|PAID_ENDPOINT_PUBLIC|WEB_PUBLISHING|AUTO_APPROVE) [[ $value =~ ^(off|on)$ ]] || exit 1 ;;
+    esac
     sed -i "/^$name=/d" /etc/researchagent/env.new
     printf '%s=%s\n' "$name" "$value" >>/etc/researchagent/env.new
   done </etc/researchagent/env.local

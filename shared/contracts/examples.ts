@@ -21,8 +21,13 @@ export const TESTNET_QUESTIONS = [
 ] as const
 const FIXTURE_LABELS: Record<string, string> = { UC1: 'Bank of Japan decision', UC2: 'Kestrel–TSMC outlook', UC3: 'Malaysia packaging lead times', UC4: 'Penang plant power' }
 /** The three example questions for a rail: Testnet shows XRPL questions; simulated and recorded demos keep the fixture stories. */
-export function exampleQuestions(settlement?: string): { id: string; label: string; text: string }[] {
-  if (settlement === XRPL_LABEL) return TESTNET_QUESTIONS.map(q => ({ ...q }))
+export const REAL_TESTNET_QUESTIONS = [
+  { id: 'XRPL2', label: 'XRPL account info', text: 'According to the XRPL documentation, what information does account_info return about an XRP Ledger account?' },
+  { id: 'XRPL1', label: 'RLUSD holders', text: 'What is the latest measured RLUSD holder concentration on the XRP Ledger, and what share do the top ten holders have?' },
+  { id: 'XRPL3', label: 'RLUSD escrow', text: 'Can an XRPL escrow hold RLUSD today, and what must the issuer enable before a buyer can lock it?' },
+] as const
+export function exampleQuestions(settlement?: string, realCorpus = false): { id: string; label: string; text: string }[] {
+  if (settlement === XRPL_LABEL) return (realCorpus ? REAL_TESTNET_QUESTIONS : TESTNET_QUESTIONS).map(q => ({ ...q }))
   return DEMO_QUESTIONS.slice(0, 3).map(q => ({ id: q.id, label: FIXTURE_LABELS[q.id] ?? q.id, text: q.text }))
 }
 /** A neutral synthetic question for unit-test fixtures (not a demo use case). */
