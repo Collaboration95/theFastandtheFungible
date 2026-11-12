@@ -1499,3 +1499,9 @@ persistence or a mainnet deployment. No cloud resource or live ledger call ran.
 - **Fix:** opted-in ledger-analytics candidates with signed freshness metadata use their existing exact-payment path. Team notes retain key-reveal escrow and unsupported writers still fail closed. Existing budget, idempotency, delivery and freshness checks remain intact.
 - **Verification:** the existing ledger purchase suite with key-reveal mode reproduces four failures, then passes unchanged assertions after the fix; the zero-budget cases still skip. Full local qualification and gate follow before promotion.
 - **Severity / mainnet impact:** medium opt-in integration blocker; no Mainnet write or real-money payment.
+
+## 12 November 2026: private umask made generated public Docker inputs unreadable
+
+- **Evidence:** DEPLOY-9 permission regression reproduced an output directory lacking group/other traversal under umask 077, with existing output files mode 600. Docker preserves those modes while the hosted runtime runs as a non-root user. This was identified before image deployment.
+- **Fix:** set only the generated public-doc directory to 755 and its index/manifest to 644; private archives, credentials and operator files retain private permissions. The regression passes with the same restrictive umask, including pre-existing private output files.
+- **Suggested fix / severity / mainnet impact:** public build-artifact producers should set explicit runtime-readable modes rather than depend on operator umask. P2 packaging blocker; no Mainnet operation or real-money payment.
