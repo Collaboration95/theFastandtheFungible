@@ -2,7 +2,7 @@
 
 ## Status
 
-Local BGE-small CPU embeddings are opt-in. The calibrated decision provider was rejected and remains removed. Container qualification and Node 22 merge admission are in progress; no deployment or paid-note lift claim is made here.
+Local BGE-small CPU embeddings are opt-in. The calibrated decision provider was rejected and remains removed. The Linux/amd64 hosted API and publisher model images built successfully. A query embedded into 384 finite normalized dimensions in the API model image with `docker run --network none`. Node 22 admission is recorded by the PR clean-head local-gate status; no deployment or paid-note lift claim is made here.
 
 ## Retrieval choice and Mac cost
 
@@ -37,3 +37,20 @@ EMBEDDING_PROVIDER=local node --import tsx scripts/build-embeddings.mjs
 Runtime never acquires models. Build-time acquisition pins model revision `ea104dacec62c0de699686887e3f920caeb4f3e3` and records SHA-256 hashes. Additive Docker targets `api-models` and `publisher-models` retain the original target names and defaults. Models use glibc/Node 22 and a CPU-only dependency closure; the original images use Alpine/Node 24. Image delta includes that base/runtime difference.
 
 No live model calls or XRPL transactions are required for this qualification. Prior lane cost remains US$0.671020182 maximum accounted exposure; it belongs to the separate eval evidence.
+
+## Container qualification
+
+Baseline hosted API: **199,044,676 bytes**. API model image: **460,967,276 bytes**. Delta: **+261,922,600 bytes** (uncompressed Docker image sizes). Publisher model image: **460,967,276 bytes**. See `container.json` for immutable image IDs and offline inference output. The delta includes Debian/glibc, Node version, weights and runtime dependencies; it is not a weights-only estimate.
+
+All three builds used `--platform linux/amd64` and the shared heavy lock:
+
+```sh
+docker build --platform linux/amd64 -f docker/hosted/Dockerfile --target api -t ra-r3-baseline:amd64 .
+docker build --platform linux/amd64 -f docker/hosted/Dockerfile --target api-models -t ra-r3-models:amd64 .
+docker build --platform linux/amd64 -f docker/hosted/Dockerfile --target publisher-models -t ra-r3-publisher-models:amd64 .
+docker image inspect ra-r3-baseline:amd64 ra-r3-models:amd64 ra-r3-publisher-models:amd64 --format '{{.RepoTags}} {{.Size}}'
+docker run --rm --platform linux/amd64 --network none --entrypoint node ra-r3-models:amd64 --input-type=module -e 'const {env,pipeline}=await import("@huggingface/transformers");env.localModelPath="/app/data/models/";env.allowRemoteModels=false;const p=await pipeline("feature-extraction","Xenova/bge-small-en-v1.5",{device:"cpu",dtype:"q8",local_files_only:true,session_options:{intraOpNumThreads:1,interOpNumThreads:1}});const out=await p("offline retrieval",{pooling:"mean",normalize:true});if(out.dims.at(-1)!==384||!Array.from(out.data).every(Number.isFinite))throw Error("invalid vector");console.log(out.dims)'
+docker builder prune -f
+```
+
+Only builder cache was pruned after qualification. No image or volume was pruned. The Mac retrieval measurements above are historical lane measurements; this container test proves offline inference, not hosted latency or memory.
