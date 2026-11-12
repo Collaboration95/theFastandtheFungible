@@ -125,7 +125,7 @@ test('failure recovery views: labelled fallback, slow Testnet, stopped unused pa
   await page.route('**/runs/fixture-uc2/events', route => route.fulfill({ contentType: 'text/event-stream', body: ': fixture test\n\n' }))
   await page.route('**/api/health', route => route.fulfill({ json: { labels: { ...snapshot.labels, research: 'DeepSeek · configured' } } }))
   await page.goto('/?run=fixture-uc2&pace=real')
-  await expect(page.getByText('Written from offline extracts: the model was unavailable.')).toBeVisible()
+  await expect(page.getByText('Written from offline extracts.', { exact: true })).toBeVisible()
   snapshot = { ...snapshot, phase: 'FAILED', checkpoint: { ...snapshot.checkpoint, nextAction: 'retry-delivery' } }
   await page.reload()
   await expect(page.getByText('Finishing after a restart…', { exact: true })).toBeVisible()
