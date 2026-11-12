@@ -1349,3 +1349,9 @@ persistence or a mainnet deployment. No cloud resource or live ledger call ran.
 - **Suggested fix:** stream tarball bytes to disk in the builder rather than collecting an entire upstream repository archive in a bounded Node buffer.
 - **Severity / mainnet impact:** medium local build/evaluation setup blocker, worked around; no model calls, XRPL transactions or mainnet writes.
 
+## 12 November 2026: two-slot heavy queue can bypass its first pending ticket (observed wait; code-derived fairness failure)
+
+- **Evidence:** `scratch/heavy-lock-fairness.json` pins the shared wrapper hash, pending ticket order, holder process start times and observation time. This lane remained queued after becoming first pending while other holders changed. The wrapper admits both tickets where `position < SLOTS`; with one free slot, the later eligible ticket can win its 15-second polling race. The entire wait is not attributed to this race; active verification also held the slots.
+- **Workaround:** keep the original queue ticket and wait; no lock, process, slot count or gate was changed.
+- **Suggested fix:** reserve a free slot for the earliest pending ticket, or let only the front ticket claim any free slot before removing its ticket.
+- **Severity / mainnet impact:** medium local verification throughput issue; no model spend, XRPL transaction, policy change or mainnet impact.
