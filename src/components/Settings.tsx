@@ -4,10 +4,10 @@ import Icon from './Icon'
 const OwnerSettings = lazy(() => import('./OwnerSettings'))
 import BudgetPicker from './BudgetPicker'
 
-export interface SettingsProps { universal: boolean; budgetMinor: number; settlement: string; notify: boolean; onBack: () => void; onUniversal: (on: boolean) => void; onBudget: (minor: number) => void; onNotify: (on: boolean) => void }
+export interface SettingsProps { realCorpus?: boolean; universal: boolean; budgetMinor: number; settlement: string; notify: boolean; onBack: () => void; onUniversal: (on: boolean) => void; onBudget: (minor: number) => void; onNotify: (on: boolean) => void }
 
 /** Settings, opened from the sidebar. A universal budget applies to every question, and Home then shows a chip instead of the slider. */
-export default function Settings({ universal, budgetMinor, notify, onBack, onUniversal, onBudget, onNotify }: SettingsProps) {
+export default function Settings({ realCorpus, universal, budgetMinor, notify, onBack, onUniversal, onBudget, onNotify }: SettingsProps) {
   const replay = import.meta.env.MODE === 'browser-demo'
   const [error, setError] = useState('')
   const audit = async (minor: number, on: boolean) => {
@@ -25,7 +25,7 @@ export default function Settings({ universal, budgetMinor, notify, onBack, onUni
     <button type="button" className="ra-back" onClick={onBack}><Icon name="left" />Back<kbd>Esc</kbd></button>
     <h1>Settings</h1>
     {error && <p role="alert">{error}</p>}
-    {replay ? <section className="ra-set" aria-label="Replay preferences"><h2>About this replay</h2><p>This is a recorded run. No new questions are sent and no money moves.</p><p>Use the scenario links to switch recordings and Pause to stop playback. Your device’s reduced-motion preference is respected.</p><p>Owner settings are available in the local or desktop app.</p></section> : <Suspense fallback={<p role="status">Loading settings…</p>}><OwnerSettings notifications={<section className="ra-set" aria-labelledby="ra-set-notify">
+    {replay ? <section className="ra-set" aria-label="Replay preferences"><h2>About this replay</h2><p>This is a recorded run. No new questions are sent and no money moves.</p><p>Use the scenario links to switch recordings and Pause to stop playback. Your device’s reduced-motion preference is respected.</p><p>Owner settings are available in the local or desktop app.</p></section> : <Suspense fallback={<p role="status">Loading settings…</p>}><OwnerSettings realCorpus={realCorpus} notifications={<section className="ra-set" aria-labelledby="ra-set-notify">
       <h2 id="ra-set-notify">Notifications</h2>
       <label className="ra-set-row">
         <input type="checkbox" checked={notify} onChange={event => onNotify(event.target.checked)} />

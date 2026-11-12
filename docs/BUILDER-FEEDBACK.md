@@ -1330,3 +1330,8 @@ persistence or a mainnet deployment. No cloud resource or live ledger call ran.
   obscured, while retry safety is retained. The same SDK error path could affect
   mainnet diagnostics, but this observation is synthetic and mainnet was not
   written or tested.
+## 2026-11-12 — paid-site leak audit exceeded its unit timeout (observed tooling)
+
+- Evidence: real-profile head `47536f0cf6101a669c86840b0d48f2fc29b31707`; full-gate receipt `1794488629187-62523-9a437b23-2211-4761-a0a9-d37482b6e6fd.json`. The paid-site HTML leak audit exceeded 30 seconds; the same head passed 3,233 fast tests with four existing skips. The cause is not established. No ledger transaction.
+- Workaround: retain the failure and rerun verification with the existing timeout and leak threshold. Suggested fix: retain per-audit timing and host-load measurements so failures can be classified from evidence.
+- Severity: Low tooling friction. Mainnet impact: none; no leak was demonstrated and no assertion, check or threshold is removed.

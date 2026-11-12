@@ -98,7 +98,7 @@ const unsignedHit = (hit: SearchHit, dropped: DroppedHit[]) => hit.tier === 'FRE
 const toCandidate = (hit: SearchHit, publisher: RegistryPublisher): PublicCandidate => PublicCandidateSchema.parse({
   source: hit.source, profileId: hit.publisherSlug, resourceId: hit.articleId, version: hit.version, title: hit.title, publisher: publisher.slug === 'team-xrpl-explainers' ? `${publisher.name} · team-authored explainer · sources cited · not an independent writer · Testnet` : publisher.slug === 'team-builder-notes' ? `${publisher.name} · team-authored · real content · not an independent writer · Testnet` : publisher.name, preview: hit.abstract,
   price: { amountMinor: hit.priceMinor, currency: 'SGD' }, ...(hit.manifest ? { wallet: hit.manifest.wallet, manifest: hit.manifest } : {}), family: hit.family, ...(hit.derivedFrom ? { derivedFrom: hit.derivedFrom } : {}),
-  facets: hit.tags, authority: KIND_AUTHORITY[publisher.kind], tier: hit.tier, verification: hit.verification, license: { kind: publisher.synthetic === false ? 'AUTHOR SUPPLIED' : 'SYNTHETIC', attribution: publisher.name },
+  facets: hit.tags, authority: KIND_AUTHORITY[publisher.kind], tier: hit.tier, verification: hit.verification, license: { kind: publisher.licence ?? (publisher.synthetic === false ? 'AUTHOR SUPPLIED' : 'SYNTHETIC'), attribution: publisher.name },
   publisherSlug: hit.publisherSlug, writerSlug: hit.writerSlug, url: hit.url, relevance: hit.relevance,
 })
 

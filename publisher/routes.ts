@@ -1,4 +1,6 @@
 import { webPublishing, webQueueFile } from './publishing/web.js'
+import { PUBLIC_DOCS_PUBLISHERS } from './writers/public-docs.js'
+
 import { startLedgerAnalytics, reportListed, type BackgroundOptions } from './writers/ledger-analytics/background.js'
 
 import { loadConfig } from '../server/config.js'
@@ -224,7 +226,7 @@ export function createPublisherApp(config: PublisherConfig = {}) {
   app.get('/registry', (_req, res) => {
     res.json({ publishers: [...registry.values()].map(({ publisher }) => ({
       slug: publisher.slug, name: publisher.name, kind: publisher.kind, domain: publisher.domain, wallet: publisher.wallet,
-      synthetic: publisher.synthetic, authorship: TEAM_AUTHORED_PUBLISHERS.has(publisher.slug) ? 'team-authored' : undefined, verification: publisher.verification, endpoints: endpointsFor(publisher.slug),
+      synthetic: publisher.synthetic, ...(PUBLIC_DOCS_PUBLISHERS.has(publisher.slug) ? {licence:publisher.licence} : {}), authorship: TEAM_AUTHORED_PUBLISHERS.has(publisher.slug) ? 'team-authored' : undefined, verification: publisher.verification, endpoints: endpointsFor(publisher.slug),
     })) })
   })
   app.get('/w/:slug/.well-known/agent-publisher.json', (req, res) => {
