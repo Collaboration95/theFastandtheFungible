@@ -33,6 +33,8 @@ it('authenticates operator cookies and direct tokens without exposing the token 
  const url=`http://127.0.0.1:${(server.address() as {port:number}).port}`, headers={Origin:'https://demo.example','Sec-Fetch-Site':'same-origin'}
  expect(await (await fetch(url+'/classify',{method:'POST',headers})).json()).toEqual({audience:'external'})
  expect(await (await fetch(url+'/classify',{method:'POST',headers:{...headers,'X-Internal':'true'}})).json()).toEqual({audience:'external'})
+ expect(await (await fetch(url+'/classify',{method:'POST'})).json()).toEqual({audience:'external'})
+ expect(await (await fetch(url+'/classify',{method:'POST',headers:{Authorization:'Bearer '+config.OPERATOR_TOKEN}})).json()).toEqual({audience:'internal'})
  expect((await fetch(url+'/api/operator/session',{method:'POST',headers})).status).toBe(401)
  expect((await fetch(url+'/api/operator/session',{method:'POST',headers:{Origin:'https://other.example',Authorization:'Bearer '+config.OPERATOR_TOKEN}})).status).toBe(403)
  const response=await fetch(url+'/api/operator/session',{method:'POST',headers:{...headers,Authorization:'Bearer '+config.OPERATOR_TOKEN}})
