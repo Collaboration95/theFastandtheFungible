@@ -7,11 +7,13 @@ All timings are planning estimates until retimed against owner audio. No new hos
 ## Recording boundaries
 
 The featured run is `421bae3d-564c-48f8-b5e8-5034b195860a`, 12 Nov: browser 24 passed,
-0 failed, 2 not checked; all five gates Held. The separate hosted question is
+0 failed, 2 not checked; all five gates Held.
+Take log: the current cut uses hosted take `62f67015-4187-49bb-95bd-8882106cce98`: 22.3 s, one S$0.40 article.
+The previous hosted take was
 `0fe8cdb8-541e-4c7b-80c6-854c73cfb4f6`: 20.7 s, one S$0.40 article.
-[Its finish](https://testnet.xrpl.org/transactions/60D4CA28A9BCB7E1C792CF71261AAEE520CAE117245F9E32E12259D05E1B814C).
-Never mix the runs’ numbers. The hosted take has no captured same-run Trace; omit that claim.
-Its actual model provenance was not exported, so the narration makes no live-model claim.
+[Previous take finish](https://testnet.xrpl.org/transactions/60D4CA28A9BCB7E1C792CF71261AAEE520CAE117245F9E32E12259D05E1B814C).
+Never mix the runs’ numbers. The previous hosted take has no captured same-run Trace; omit that claim.
+That previous take’s actual model provenance was not exported, so the narration makes no live-model claim.
 The featured receipt’s initial draft used fixture extracts and keyword search; the evidence retains that context.
 The optional decline was not asked: “Which airlines ordered new narrowbody jets at the 2026 Farnborough Airshow?”.
 MCP clip prompt: `ask_expert 'What does an x402 402 Payment Required response contain?' with budget_sgd=2`.
@@ -26,7 +28,7 @@ ResearchAgent gives coding agents a research wallet. Ask a question and set a bu
 
 ### s2-sandbox · Question, paywall, payment
 
-How does the writer get paid, and what stops the agent from reading the article and then refusing to pay? Free sources first. Policy buys the missing passage within your budget. This run finished in 20.7 seconds and bought one S$0.40 article. The key that unlocks the article is the same key that releases the writer's payment.
+How does the writer get paid, and what stops the agent from reading the article and then refusing to pay? Free sources first. Policy buys the missing passage within your budget. This run bought one S$0.40 article. The key that unlocks the article is the same key that releases the writer's payment.
 
 ### s3-refund · Check the key
 
