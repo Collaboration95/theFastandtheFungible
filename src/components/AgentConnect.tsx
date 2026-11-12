@@ -28,6 +28,7 @@ export default function AgentConnect() {
       <h4>Claude</h4>
       <ol><li>Open Settings → Connectors.</li><li>Choose Add custom connector and paste this URL.</li></ol>
       <p><code>{url}</code> <button type="button" className="ra-btn" onClick={() => void copy(url)}>Copy URL</button></p>
+      <p className="ra-note">Claude custom connectors need a URL reachable from the internet.{!requiresBearer && ' If asked about authentication, choose No sign in.'}</p>
       <h4>Claude Code</h4>
       <p><code>{links.claude}</code> <button type="button" className="ra-btn" onClick={() => void copy(links.claude)}>Copy command</button></p>
       {requiresBearer && <p>Your local server requires an agent bearer key. Add it in your client’s server settings.</p>}

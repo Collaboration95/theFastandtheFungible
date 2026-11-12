@@ -21,7 +21,7 @@ it('loads server config, exposes all client choices and copies the URL',async()=
  const node=document.createElement('div'),root=createRoot(node);document.body.append(node)
  try{
   await act(async()=>root.render(<AgentConnect/>))
-  expect(node.textContent).toContain('Settings → Connectors');expect(node.textContent).toContain('Add custom connector')
+  expect(node.textContent).toContain('Settings → Connectors');expect(node.textContent).toContain('Add custom connector');expect(node.textContent).toContain('choose No sign in')
   expect([...node.querySelectorAll('a')].map(a=>a.textContent)).toEqual(['Add to Cursor','Add to VS Code'])
   const button=[...node.querySelectorAll('button')].find(b=>b.textContent==='Copy URL')!
   await act(async()=>button.click());expect(writeText).toHaveBeenCalledWith('https://research.example/mcp')
@@ -41,4 +41,16 @@ it('derives hosted URLs only when opted in and keeps local bearer requirements b
  expect(connectionDetails({...hosted,MCP_PUBLIC:'on'})).toEqual({url:'https://research.example/mcp',requiresBearer:false})
  expect(connectionDetails({...hosted,HOSTED:'0',MCP_CONNECT_URL:'https://local-relay.example/mcp'})).toEqual({url:'https://local-relay.example/mcp',requiresBearer:true})
  expect(connectionDetails({...hosted,MCP_CONNECT_URL:'https://user:password@research.example/mcp'})).toEqual({url:null})
+})
+
+it('explains the remote Claude boundary without suggesting no-auth for a local bearer server',async()=>{
+ vi.stubGlobal('fetch',vi.fn().mockResolvedValue({ok:true,json:async()=>({url:'http://127.0.0.1:9689/mcp',requiresBearer:true})}))
+ const node=document.createElement('div'),root=createRoot(node)
+ try{
+  await act(async()=>root.render(<AgentConnect/>))
+  expect(node.textContent).toContain('URL reachable from the internet')
+  expect(node.textContent).toContain('requires an agent bearer key')
+  expect(node.textContent).not.toContain('choose No sign in')
+  expect(node.textContent).toContain("claude mcp add --transport http researchagent 'http://127.0.0.1:9689/mcp'")
+ }finally{await act(async()=>root.unmount())}
 })

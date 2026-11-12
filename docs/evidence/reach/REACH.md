@@ -74,8 +74,15 @@ offering a broken install. Local bearer servers still require their agent key.
 - VS Code: choose **Add to VS Code**, inspect and confirm installation. Format:
   `vscode:mcp/install?<URL-encoded JSON {"name":"researchagent","type":"http","url":"<configured URL>"}>`.
 - Claude: 1. Open **Settings → Connectors**. 2. Choose **Add custom connector**
-  and paste the URL from **Copy URL**. Availability depends on the client/account.
+  and paste the URL from **Copy URL**. For the public endpoint, choose **No sign in**
+  if asked. Availability depends on the client/account.
 - Claude Code: copy `claude mcp add --transport http researchagent '<configured URL>'`.
+
+Claude custom connectors connect from Anthropic infrastructure and require an
+internet-reachable URL; a loopback server needs a separately configured public
+endpoint. Cursor, VS Code and Claude Code can use a local URL with its bearer
+key. Sources: [Claude custom connectors](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp),
+[Claude Code HTTP setup](https://code.claude.com/docs/en/mcp).
 
 These are generated instructions and decoded-link tests; no claim that each
 native client has been installed or that any hosted deployment is enabled.
