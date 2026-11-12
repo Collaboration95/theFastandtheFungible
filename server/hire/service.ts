@@ -1,3 +1,4 @@
+import { credentialPayeeRefusal } from '../../publisher/publishing/regulated.js'
 import { sourceKey } from '../../shared/source-identity.js'
 import { deriveAddress } from 'ripple-keypairs'
 import { Router } from 'express'
@@ -76,9 +77,12 @@ export function hireService(context: ApiContext, hooks: { principal?: () => stri
     store.reservePolicyPayments(runId, [...royalties, ...change])
     for (const payment of store.policyPayments(runId)) {
       const refusal = !payment.submission && !payment.cancelledAt && payment.kind === 'royalty' ? screenPayee(payment.payTo) : undefined
-      if (refusal) store.cancelRefusedRoyalty(runId, payment.id, principal, { reason: refusal.refusal, screen: refusal.list, listReason: refusal.reason ?? null })
+      const credentialReason=!refusal && !payment.submission && !payment.cancelledAt && payment.kind==='royalty' ? await credentialPayeeRefusal(payment.payTo) : undefined
+      if(credentialReason)store.cancelRefusedRoyalty(runId,payment.id,principal,{reason:credentialReason,screen:'credential-domain'})
+      else if (refusal) store.cancelRefusedRoyalty(runId, payment.id, principal, { reason: refusal.refusal, screen: refusal.list, listReason: refusal.reason ?? null })
     }
-    for (const payment of store.policyPayments(runId)) {
+    const payouts=store.policyPayments(runId)
+    for (const payment of payouts) {
       if (payment.confirmedAt || payment.cancelledAt) continue
       const screened = screenPayee(payment.payTo)
       if (screened) {
@@ -107,6 +111,10 @@ export function hireService(context: ApiContext, hooks: { principal?: () => stri
       }
       if (payment.submission) await send(payment.submission)
       else {
+        if(payment.kind==='royalty') {
+          const reason=await credentialPayeeRefusal(payment.payTo)
+          if(reason){store.cancelRefusedRoyalty(runId,payment.id,principal,{reason,screen:'credential-domain'});const refund=store.policyPayments(runId).find(p=>p.id===payment.id+':refund');if(refund&&!payouts.some(p=>p.id===refund.id))payouts.push(refund);continue}
+        }
         const paid = await payer!.pay(terms, signed => store.recordPolicySubmission(runId, payment.id, signed), send)
         await paid.sent
       }
@@ -120,7 +128,7 @@ export function hireService(context: ApiContext, hooks: { principal?: () => stri
     const changeDrops = change.reduce((s, p) => s + Number(p.amountDrops), 0) + refundedRoyaltyDrops
     const result = { ...presentRun(run, context.publisherUrl), moneyChain: {
       inbound: { txHash: settled.txHash, payer: principal, payTo: payer!.address, amountDrops: hire.quote.amount, explorerUrl: `https://testnet.xrpl.org/transactions/${settled.txHash}`, label: XRPL_LABEL },
-      writerAddresses: addresses, cancelledRoyalties: cancelled.map(p => ({ id: p.id, payTo: p.payTo, amountDrops: p.amountDrops, reason: 'operator denylist' })), payments, purchaseDrops: String(run.spentMinor * DROPS_PER_MINOR), royaltyDrops: String(royaltyDrops - refundedRoyaltyDrops), changeDrops: String(changeDrops),
+      writerAddresses: addresses, cancelledRoyalties: cancelled.map(p => ({ id: p.id, payTo: p.payTo, amountDrops: p.amountDrops, reason: p.cancellationReason ?? 'operator denylist' })), payments, purchaseDrops: String(run.spentMinor * DROPS_PER_MINOR), royaltyDrops: String(royaltyDrops - refundedRoyaltyDrops), changeDrops: String(changeDrops),
       retainedDrops: String(SERVICE_FEE_MINOR * DROPS_PER_MINOR - royaltyDrops), feePolicy: 'Network fees paid separately by each sender; not deducted from caller change', policy: 'hire-v1 · 25% of fixed S$0.20 fee; equal by distinct cited writer, slug-sorted remainder' } }
     hires.patch(hire.key, { result })
     store.closeHireReserve(runId)

@@ -211,3 +211,29 @@ it('keeps the operator’s Open Records alongside the other team writers', async
  expect(result.shown.map(w=>w.publisherSlug)).toEqual(['open-records','team-builder-notes'])
  expect(result.demo.map(w=>w.publisherSlug)).toEqual(['alphaleak'])
 })
+
+it('fresh enforcement bypasses a cached accepted credential after revocation and a failed domain read',async()=>{
+ let revoked=false,broken=false
+ const base=domainRpc()
+ const request=async(req:Record<string,unknown>)=>{
+   if(broken)throw Error('unavailable')
+   if(revoked&&req.credential)return {result:{error:'entryNotFound'}}
+   return base(req)
+ }
+ const verifier=new WriterCredentials([],request,1200,300_000,domainId)
+ try{
+   expect((await verifier.check(subject)).status).toBe('verified')
+   revoked=true
+   expect((await verifier.check(subject)).status).toBe('verified')
+   expect((await verifier.current(subject)).status).toBe('unverified')
+   broken=true
+   await expect(verifier.current(subject)).rejects.toThrow('unavailable')
+ }finally{verifier.dispose()}
+})
+
+it.each([-121,31])('refuses stale or future-dated credential ledgers for payment enforcement, offset %s',async offset=>{
+ const base=domainRpc()
+ const request=async(req:Record<string,unknown>)=>req.command==='ledger'?{result:{validated:true,ledger_index:123,ledger_hash:hash,ledger:{close_time:Math.floor(Date.now()/1000)-946684800+offset}}}:base(req)
+ const verifier=new WriterCredentials([],request,1200,300_000,domainId)
+ try{await expect(verifier.current(subject)).rejects.toThrow('ledger is stale or future-dated')}finally{verifier.dispose()}
+})

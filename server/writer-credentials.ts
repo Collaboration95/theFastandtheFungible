@@ -22,9 +22,9 @@ async function acquire(signal: AbortSignal) {
   })
 }
 function release() { const next = waiting.shift(); if (next) next(); else active-- }
-export function credentialRpc(): Rpc {
+export function credentialRpc(env: NodeJS.ProcessEnv = loadConfig()): Rpc {
   return async (request, signal) => {
-    const url = new URL(testnetUrl(loadConfig().XRPL_RPC_URL))
+    const url = new URL(testnetUrl(env.XRPL_RPC_URL))
     url.protocol = 'https:'
     if (url.port === '51233') url.port = '51234'
     const { command, ...params } = request
@@ -145,10 +145,17 @@ export class WriterCredentials {
     }
     return this.context
   }
-  private async lookup(subject: string): Promise<{ value: WriterVerification; until: number }> {
+  /** Fresh policy observation: bypass the advisory cache and await the full pinned-ledger lookup. */
+  async current(subject: string): Promise<WriterVerification> {
+    this.context = undefined
+    return (await this.lookup(subject,true)).value
+  }
+  private async lookup(subject: string, fresh = false): Promise<{ value: WriterVerification; until: number }> {
     z.string().regex(/^r[1-9A-HJ-NP-Za-km-z]{24,34}$/).parse(subject)
     const context = this.getContext()
     const { header, issuers } = await context.value
+    const age=Date.now()/1000-epoch-header.ledger.close_time
+    if(fresh && (age>120||age< -30))throw Error('Validated credential ledger is stale or future-dated')
     const checkedAt = new Date().toISOString()
     for (const issuer of issuers) {
       const raw = await this.request({ command: 'ledger_entry', ledger_hash: header.ledger_hash,
@@ -199,4 +206,11 @@ export async function prewarmWriterVerification() {
       verifier.prewarm(registry.flatMap(writer => writer.wallet ? [writer.wallet] : []))
     }))
   } catch { /* Identity display cannot block startup or readiness. */ }
+}
+
+/** Payment enforcement never accepts advisory stale data or a caller-supplied verification badge. */
+export async function acceptedCredential(subject: string, env: NodeJS.ProcessEnv = loadConfig()): Promise<WriterVerification> {
+  if (!/^[a-f0-9]{64}$/i.test(env.WRITER_CREDENTIAL_DOMAIN ?? '')) return { status:'check_failed' }
+  const verifier=new WriterCredentials([],credentialRpc(env),8000,1000,env.WRITER_CREDENTIAL_DOMAIN!.toUpperCase())
+  try { return await verifier.current(subject) } catch { return {status:'check_failed'} } finally { verifier.dispose() }
 }

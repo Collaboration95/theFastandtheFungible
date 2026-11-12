@@ -20,6 +20,7 @@ const ConfigSchema = z.object({
   PUBLIC_FEED: z.enum(['0', '1']).optional(),
   XRPL_STREAM_WAITS: z.enum(['0', '1']).optional(),
   SETTLEMENT_TIMING: z.enum(['0', '1']).optional(),
+  REGULATED_MODE: z.enum(['','off','on']).optional(), PUBLISHER_REGULATED_MODE: z.enum(['','off','on']).optional(),
   WEB_PUBLISHING: mode(['off','on']), AUTO_APPROVE: mode(['off','on']), AUTO_APPROVE_SECONDS: numeric(n => Number.isInteger(n) && n >= 1 && n <= 3600),
   MCP_CONNECT_URL: url,
   MCP_PUBLIC: mode(['off','on']), PAID_ENDPOINT_PUBLIC: mode(['off','on']),

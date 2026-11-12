@@ -16,3 +16,5 @@ export function admit(store: Store, input: { surface: Surface; principal: string
   requestedMinor: number; idempotencyKey: string; maxMinor: number; dailyMinor?: number; labels?: ModeLabels; reserveMinor?: number }) {
   return store.admit(input)
 }
+
+export { regulatedWriterRefusal, regulatedBuyerRefusal } from '../publisher/publishing/regulated.js'

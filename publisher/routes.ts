@@ -1,3 +1,5 @@
+import { decode, hashes } from 'xrpl'
+import { regulatedBuyerRefusal } from './publishing/regulated.js'
 import { webPublishing, webQueueFile } from './publishing/web.js'
 import { PUBLIC_DOCS_PUBLISHERS } from './writers/public-docs.js'
 
@@ -135,6 +137,20 @@ export function createPublisherApp(config: PublisherConfig = {}) {
    * this article version. With it, the facilitator settles once per tx hash and the paid body, passages
    * and salts are delivered; a resend of the same blob returns the same delivery.
    */
+  async function requireBuyer(subject:string,blob?:string) {
+    if(blob) {
+      const hash=hashes.hashSignedTx(blob)
+      if(journal.settlementByTx(hash) || journal.escrowGrant(hash)) return
+    }
+    const reason=await regulatedBuyerRefusal(subject,env)
+    if(reason){journal.refusal(reason,/^r[1-9A-HJ-NP-Za-km-z]{24,34}$/.test(subject)?subject:undefined);throw new PublisherError(403,reason)}
+  }
+  async function checkBuyerSignature(signature:PaymentSignature) {
+    if(env.PUBLISHER_REGULATED_MODE!=='on')return
+    let subject:string
+    try {subject=String(decode(signature.payload.signedTxBlob).Account)}catch{journal.refusal('Buyer signature is invalid; nothing was charged');throw new PublisherError(400,'Buyer signature is invalid; nothing was charged')}
+    await requireBuyer(subject,signature.payload.signedTxBlob)
+  }
   async function sellPaid(req: Request, res: Response, item: PaidItem) {
     const salts = manifests.saltsFor(item)
     const root = manifestRoot(item.passages.map((p, i) => leafHash(salts[i], i, p.id, p.text)))
@@ -155,6 +171,7 @@ export function createPublisherApp(config: PublisherConfig = {}) {
     }
     let signature: PaymentSignature
     try { signature = decodeHeader('PAYMENT-SIGNATURE', raw) } catch { throw new PublisherError(400, 'Invalid PAYMENT-SIGNATURE header') }
+    await checkBuyerSignature(signature)
     if (signature.accepted.scheme === 'escrow-v1') {
       if (!escrowEnabled(item.publisherSlug)) throw new PublisherError(400, 'Writer has not opted into buyer refusal risk')
       try {
@@ -187,6 +204,7 @@ export function createPublisherApp(config: PublisherConfig = {}) {
   })
   app.post('/w/:slug/facilitator/verify', async (req, res) => {
     const signature = signatureFromBody(req.body)
+    await checkBuyerSignature(signature)
     if (signature.accepted.scheme === 'escrow-v1') {
       try {
         const q = verifyEscrowSignature(signature, journal)
@@ -200,6 +218,7 @@ export function createPublisherApp(config: PublisherConfig = {}) {
   })
   app.post('/w/:slug/facilitator/settle', async (req, res) => {
     const signature = signatureFromBody(req.body)
+    await checkBuyerSignature(signature)
     if (signature.accepted.scheme === 'escrow-v1') {
       try {
         const q = verifyEscrowSignature(signature, journal)
@@ -255,6 +274,7 @@ export function createPublisherApp(config: PublisherConfig = {}) {
     }))
   })
   app.post('/w/:slug/articles/:id/escrow-quote', async (req, res) => {
+    await requireBuyer(typeof req.body?.payer === 'string' ? req.body.payer : '')
     const entry = entryFor(req.params.slug)
     if (!escrowEnabled(req.params.slug) || !entry.keys) throw new PublisherError(400, 'Escrow unsupported by writer')
     const article = entry.articles.find(a => a.articleId === req.params.id && a.tier === 'PAID')

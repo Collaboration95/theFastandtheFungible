@@ -312,3 +312,20 @@ it.each([false, true])('exports a verifiable escrow finish/cancel bundle (cancel
   expect(result.checks.filter(c => c.status === 'FAIL')).toEqual([])
   expect(result.ok).toBe(true)
 })
+
+it.each([false,true])('freshly checks a prepared unsigned escrow after restart, accepted=%s',async accepted=>{
+ const s=await setup(),credentials=await import('../server/writer-credentials.js')
+ const {EscrowPurchases}=await import('../server/escrow.js')
+ const crash=vi.spyOn(EscrowPurchases.prototype,'advance').mockRejectedValueOnce(Error('process died after prepare'))
+ try{
+  await expect(s.buy()).rejects.toThrow('process died after prepare')
+  const prepared=s.store.getIntent('escrow-one')!;expect(prepared.status).toBe('SUBMITTING');expect(prepared.escrow?.state).toBe('PREPARED');expect(s.store.escrowOutbox(prepared.intentId)).toHaveLength(0);expect(s.c.txs.size).toBe(0)
+  crash.mockRestore();s.restart()
+  vi.stubEnv('REGULATED_MODE','on');vi.stubEnv('WRITER_CREDENTIAL_DOMAIN','A'.repeat(64))
+  vi.spyOn(credentials,'acceptedCredential').mockResolvedValue(accepted?{status:'verified',issuerLabel:'Operator',issuer:s.wallet.classicAddress,credentialType:'AA',domainId:'A'.repeat(64),credentialId:'C'.repeat(64),ledgerIndex:1,checkedAt:new Date().toISOString()}:{status:'unverified'})
+  await s.manager.reconcile()
+  const result=s.store.getIntent(prepared.intentId)!
+  if(accepted){expect(result.status).toBe('VERIFIED');expect(s.c.txs.size).toBe(2)}
+  else{expect(result.status).toBe('FAILED_NOT_SETTLED');expect(s.c.txs.size).toBe(0);expect(s.store.getRun(s.run.runId).spentMinor).toBe(0);expect(s.store.getRun(s.run.runId).grants).toHaveLength(0);expect(s.store.auditEntries().some(e=>e.kind==='refusal'&&String(e.data.reason).includes('credential'))).toBe(true)}
+ }finally{vi.unstubAllEnvs()}
+})
