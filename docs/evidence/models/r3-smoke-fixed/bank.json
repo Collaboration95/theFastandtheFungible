@@ -1,0 +1,3584 @@
+{
+  "schema": "researchagent.r3-bank/v1",
+  "method": "100 historical synthetic-fact controls, whose sources are excluded by the real profile; 60 used protocol judge questions; 40 offline protocol specifications checked in real public docs. Development diagnostic, no independent holdout claim. Report each stratum separately.",
+  "questions": [
+    {
+      "id": "Q01",
+      "lane": "rates",
+      "kind": "uc-variant",
+      "useCase": "UC1",
+      "question": "What did the Bank of Japan change at its last meeting, and how did 10-year JGB yields react?",
+      "requested": [
+        {
+          "id": "Q01.rate",
+          "need": "What the BoJ changed to its policy rate at the 17\u201318 September 2026 meeting, with the new level",
+          "text": "The BoJ raised the policy rate 25 bp, from 0.75% to 1.00%, on 18 September 2026.",
+          "needles": [
+            "0.75%",
+            "1.00%"
+          ],
+          "sources": [
+            "or-boj-statement-2026-09-18"
+          ]
+        },
+        {
+          "id": "Q01.yield",
+          "need": "How the 10-year JGB yield moved on 18 September 2026, in basis points and level",
+          "text": "The 10-year JGB yield rose 9 bp to 2.14% on 18 September 2026.",
+          "needles": [
+            "2.14%",
+            "+9 bp"
+          ],
+          "sources": [
+            "or-jgb-yield-table-2026-09"
+          ]
+        }
+      ],
+      "conflicts": [
+        {
+          "factId": "Q01.yield",
+          "articleId": "or-boj-statement-2026-09-18",
+          "needles": [
+            "0.85%"
+          ],
+          "note": "Statement says the 10-year rose 3 bp to 0.85% (fixed by #198)."
+        }
+      ],
+      "expect": {
+        "buy": null,
+        "avoid": [
+          "mp-boj-hike-digest",
+          "notft-inside-boj-september-hike",
+          "bp-jgb-curve-10s30s-analysis",
+          "kopi-boj-always-late"
+        ]
+      },
+      "corpusSensitive": "#198",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "v3-V02",
+      "topic": "payments-fees",
+      "question": "How do I tag an XRP payment so an exchange or merchant can credit the right customer?",
+      "gold": "DestinationTag",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v3-V01",
+      "topic": "payments-fees",
+      "question": "What is the minimum transaction cost on the XRP Ledger, and in which unit is it quoted?",
+      "gold": "10 drops",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v3-V03",
+      "topic": "payments-fees",
+      "question": "A submitted XRP payment returned a preliminary result. When is the outcome actually final?",
+      "gold": "validated ledger",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v3-V04",
+      "topic": "escrow",
+      "question": "Which EscrowCreate field lets the sender recover locked funds if the escrow is never finished?",
+      "gold": "CancelAfter",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v3-V13",
+      "topic": "x402",
+      "question": "What does an x402 facilitator do on behalf of a resource server?",
+      "gold": "settle",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v3-V14",
+      "topic": "x402",
+      "question": "What HTTP status code does a server return when payment is required before serving a resource?",
+      "gold": "402",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v4-H05",
+      "topic": "escrow",
+      "question": "Which XLS standard extends XRPL escrow from XRP to issued tokens?",
+      "gold": "XLS-85",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "R01",
+      "question": "Which XRPL transaction changes account options?",
+      "gold": "AccountSet",
+      "sources": [
+        "xrpl-docs-07b5c1bb7d9c-24"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R31",
+      "question": "Which XRPL API method returns an account balance and activity summary?",
+      "gold": "account_info",
+      "sources": [
+        "xrpl-docs-485dad06d157-12"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "Q02",
+      "lane": "rates",
+      "kind": "uc-variant",
+      "useCase": "UC1",
+      "question": "By how much did the Bank of Japan raise its policy rate in September 2026, and what is the new rate?",
+      "requested": [
+        {
+          "id": "Q02.rate",
+          "need": "The size of the September 2026 BoJ rate hike and the new policy rate",
+          "text": "Raised 25 bp from 0.75% to 1.00%.",
+          "needles": [
+            "0.75%",
+            "1.00%"
+          ],
+          "sources": [
+            "or-boj-statement-2026-09-18"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null,
+        "avoid": [
+          "mp-boj-hike-digest"
+        ]
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q03",
+      "lane": "rates",
+      "kind": "uc-variant",
+      "useCase": "UC1",
+      "question": "Where did the 10-year JGB yield close on 22 September 2026, after the BoJ hike?",
+      "requested": [
+        {
+          "id": "Q03.close",
+          "need": "The 10-year JGB yield close on 22 September 2026",
+          "text": "The 10-year JGB yield closed at 2.19% on 22 September 2026.",
+          "needles": [
+            "2.19%"
+          ],
+          "sources": [
+            "or-jgb-yield-table-2026-09"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q04",
+      "lane": "rates",
+      "kind": "uc-variant",
+      "useCase": "UC1",
+      "question": "Did the Bank of Japan change its JGB purchase taper plan at the September 2026 meeting?",
+      "requested": [
+        {
+          "id": "Q04.taper",
+          "need": "Whether the BoJ changed its JGB purchase taper plan in September 2026",
+          "text": "The JGB purchase taper plan was left unchanged.",
+          "needles": [
+            "taper plan",
+            "left unchanged"
+          ],
+          "sources": [
+            "or-boj-statement-2026-09-18"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q05",
+      "lane": "rates",
+      "kind": "uc-variant",
+      "useCase": "UC1",
+      "question": "How much of the September 2026 BoJ hike was priced in beforehand, and why did 10-year yields still rise?",
+      "requested": [
+        {
+          "id": "Q05.priced",
+          "need": "How much of the September 2026 hike was priced in beforehand, and the 10-year yield move it explains",
+          "text": "The hike was roughly 85% priced by 17 September, so the 9 bp rise reflects guidance.",
+          "needles": [
+            "85%",
+            "9 bp"
+          ],
+          "sources": [
+            "bp-boj-september-recap"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q06",
+      "lane": "rates",
+      "kind": "uc-variant",
+      "useCase": "UC1",
+      "question": "How did the 2-year JGB yield react to the Bank of Japan hike on 18 September 2026?",
+      "requested": [
+        {
+          "id": "Q06.two",
+          "need": "The 2-year JGB yield move on 18 September 2026",
+          "text": "The 2-year yield rose 12 bp to 1.31% on 18 September 2026.",
+          "needles": [
+            "1.31%"
+          ],
+          "sources": [
+            "or-jgb-yield-table-2026-09"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q07",
+      "lane": "rates",
+      "kind": "paid-needed",
+      "useCase": "UC1",
+      "question": "How did the Bank of Japan board vote on the September 2026 rate hike?",
+      "requested": [
+        {
+          "id": "Q07.vote",
+          "need": "The BoJ board vote split on the September 2026 hike",
+          "text": "The board vote was 8\u20131 with one member favouring a pause (7\u20132 with two after #198).",
+          "needles": [
+            "8\u20131"
+          ],
+          "alt": [
+            [
+              "7\u20132"
+            ]
+          ],
+          "sources": [
+            "notft-inside-boj-september-hike"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "notft-inside-boj-september-hike",
+        "avoid": [
+          "mp-boj-hike-digest",
+          "kopi-boj-always-late"
+        ]
+      },
+      "corpusSensitive": "#198",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q08",
+      "lane": "rates",
+      "kind": "paid-needed",
+      "useCase": "UC1",
+      "question": "How wide was the JGB 10s30s spread after the September 2026 BoJ hike?",
+      "requested": [
+        {
+          "id": "Q08.spread",
+          "need": "The JGB 10s30s spread level after the September 2026 hike, with its date",
+          "text": "The 10s30s spread widened to 86 bp on 24 September 2026.",
+          "needles": [
+            "86 bp"
+          ],
+          "sources": [
+            "bp-jgb-curve-10s30s-analysis"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "bp-jgb-curve-10s30s-analysis"
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q09",
+      "lane": "semis",
+      "kind": "uc-variant",
+      "useCase": "UC2",
+      "question": "What's the analyst outlook on Kestrel Semiconductor's latest deal with TSMC?",
+      "answers": {
+        "angle": "pricing & margins"
+      },
+      "requested": [
+        {
+          "id": "Q09.margin",
+          "need": "Analysts' (not the company's) gross-margin estimate for Kestrel after the TSMC deal, with the revision",
+          "text": "Analyst consensus fiscal 2027 gross margin was cut to 55.2% from 58.5% on 1 October 2026.",
+          "needles": [
+            "55.2%",
+            "58.5%"
+          ],
+          "sources": [
+            "notft-kestrel-tsmc-deal-margins"
+          ]
+        },
+        {
+          "id": "Q09.price",
+          "need": "The per-wafer price under Kestrel's new TSMC contract compared with the previous contract",
+          "text": "The new contract prices an N3P wafer at about US$22,500 against US$19,800 before.",
+          "needles": [
+            "US$22,500",
+            "US$19,800"
+          ],
+          "sources": [
+            "notft-kestrel-tsmc-deal-margins"
+          ]
+        }
+      ],
+      "traps": [
+        {
+          "factId": "Q09.margin",
+          "articleId": "or-kestrel-tsmc-filing-2026-09-29",
+          "needles": [
+            "no margin guidance"
+          ],
+          "kind": "topic-only",
+          "note": "The free filing mentions margins only to say the company gave no guidance."
+        },
+        {
+          "factId": "Q09.margin",
+          "articleId": "open-kestrel-semiconductor-exchange-filings-july-25-2026",
+          "needles": [
+            "48.7 percent"
+          ],
+          "kind": "wrong-entity",
+          "note": "A company-reported quarterly margin, not an analyst estimate (the UC2 trap)."
+        }
+      ],
+      "expect": {
+        "buy": "notft-kestrel-tsmc-deal-margins",
+        "avoid": [
+          "mp-kestrel-deal-digest",
+          "kopi-kestrel-tsmc-hype"
+        ]
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q10",
+      "lane": "semis",
+      "kind": "uc-variant",
+      "useCase": "UC2",
+      "question": "What's the analyst outlook on Kestrel Semiconductor's latest deal with TSMC?",
+      "answers": {
+        "angle": "capacity allocation"
+      },
+      "requested": [
+        {
+          "id": "Q10.slots",
+          "need": "When and how the capacity slots for Kestrel's TSMC deal were allocated",
+          "text": "Slots for the 24,000 wafers a month were confirmed on 3 October 2026.",
+          "needles": [
+            "3 October 2026"
+          ],
+          "sources": [
+            "fab-floor-kestrel-allocation"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "fab-floor-kestrel-allocation",
+        "avoid": [
+          "mp-kestrel-deal-digest"
+        ]
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q11",
+      "lane": "semis",
+      "kind": "uc-variant",
+      "useCase": "UC2",
+      "question": "What are the terms of Kestrel Semiconductor's September 2026 agreement with TSMC?",
+      "requested": [
+        {
+          "id": "Q11.volume",
+          "need": "The term and monthly wafer volume of Kestrel's September 2026 TSMC agreement",
+          "text": "Five years, 24,000 N3P wafers a month from Q3 2027.",
+          "needles": [
+            "five-year",
+            "24,000"
+          ],
+          "sources": [
+            "or-kestrel-tsmc-filing-2026-09-29"
+          ]
+        },
+        {
+          "id": "Q11.prepay",
+          "need": "The prepayment amount in Kestrel's TSMC agreement",
+          "text": "A US$1.1 billion prepayment.",
+          "needles": [
+            "US$1.1 billion"
+          ],
+          "sources": [
+            "or-kestrel-tsmc-filing-2026-09-29",
+            "notft-kestrel-tsmc-deal-margins"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null,
+        "avoid": [
+          "mp-kestrel-deal-digest",
+          "kopi-kestrel-tsmc-hype"
+        ]
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q12",
+      "lane": "semis",
+      "kind": "paid-needed",
+      "useCase": "UC2",
+      "question": "What do analysts now expect for Kestrel Semiconductor's fiscal 2028 revenue after the TSMC deal?",
+      "requested": [
+        {
+          "id": "Q12.rev",
+          "need": "Analysts' fiscal 2028 revenue estimate for Kestrel after the TSMC deal, with the revision",
+          "text": "Analysts raised fiscal 2028 revenue estimates to US$6.4 billion from US$5.5 billion.",
+          "needles": [
+            "US$6.4 billion",
+            "US$5.5 billion"
+          ],
+          "sources": [
+            "notft-kestrel-tsmc-deal-margins"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "notft-kestrel-tsmc-deal-margins",
+        "avoid": [
+          "mp-kestrel-deal-digest"
+        ]
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q13",
+      "lane": "semis",
+      "kind": "paid-needed",
+      "useCase": "UC2",
+      "question": "How much more will Kestrel Semiconductor pay per N3P wafer under its new TSMC contract?",
+      "requested": [
+        {
+          "id": "Q13.wafer",
+          "need": "The per-wafer price change under Kestrel's new TSMC contract, in dollars and percent",
+          "text": "About US$22,500 per wafer against US$19,800, a rise of 13.6%.",
+          "needles": [
+            "US$22,500",
+            "US$19,800",
+            "13.6%"
+          ],
+          "sources": [
+            "notft-kestrel-tsmc-deal-margins"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "notft-kestrel-tsmc-deal-margins",
+        "avoid": [
+          "mp-kestrel-deal-digest"
+        ]
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q14",
+      "lane": "semis",
+      "kind": "paid-needed",
+      "useCase": "UC2",
+      "question": "How large is Kestrel Semiconductor's TSMC prepayment relative to its cash?",
+      "requested": [
+        {
+          "id": "Q14.prepay",
+          "need": "The prepayment amount in Kestrel's TSMC agreement",
+          "text": "The prepayment is US$1.1 billion.",
+          "needles": [
+            "US$1.1 billion"
+          ],
+          "sources": [
+            "or-kestrel-tsmc-filing-2026-09-29",
+            "notft-kestrel-tsmc-deal-margins"
+          ]
+        },
+        {
+          "id": "Q14.share",
+          "need": "The prepayment as a share of Kestrel's cash at the time of the deal",
+          "text": "It is about 46% of Kestrel's US$2.4 billion cash.",
+          "needles": [
+            "46%",
+            "US$2.4 billion"
+          ],
+          "sources": [
+            "notft-kestrel-tsmc-deal-margins"
+          ]
+        }
+      ],
+      "traps": [
+        {
+          "factId": "Q14.share",
+          "articleId": "or-kestrel-tsmc-filing-2026-09-29",
+          "needles": [
+            "US$2.3 billion"
+          ],
+          "kind": "wrong-date",
+          "note": "Cash as of 30 June 2026, not the September-quarter balance the share is computed on."
+        }
+      ],
+      "expect": {
+        "buy": "notft-kestrel-tsmc-deal-margins",
+        "avoid": [
+          "mp-kestrel-deal-digest"
+        ]
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q15",
+      "lane": "semis",
+      "kind": "free-sufficient",
+      "useCase": "UC2",
+      "question": "How many wafers a month did Kestrel Semiconductor's previous TSMC contract cover?",
+      "requested": [
+        {
+          "id": "Q15.prev",
+          "need": "The monthly wafer volume of Kestrel's previous TSMC contract",
+          "text": "The previous contract covered 16,000 wafers a month.",
+          "needles": [
+            "16,000"
+          ],
+          "sources": [
+            "or-kestrel-tsmc-filing-2026-09-29"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q16",
+      "lane": "semis",
+      "kind": "hard-case",
+      "hardCase": "topic-only",
+      "useCase": "UC2",
+      "question": "What gross-margin estimate do analysts have for Kestrel Semiconductor's fiscal 2027?",
+      "requested": [
+        {
+          "id": "Q16.margin",
+          "need": "Analysts' (not the company's) fiscal 2027 gross-margin estimate for Kestrel",
+          "text": "Consensus fiscal 2027 gross margin is 55.2%, cut from 58.5%.",
+          "needles": [
+            "55.2%",
+            "58.5%"
+          ],
+          "sources": [
+            "notft-kestrel-tsmc-deal-margins"
+          ]
+        }
+      ],
+      "traps": [
+        {
+          "factId": "Q16.margin",
+          "articleId": "or-kestrel-tsmc-filing-2026-09-29",
+          "needles": [
+            "no margin guidance"
+          ],
+          "kind": "topic-only",
+          "note": "Margins are mentioned; no estimate is given."
+        },
+        {
+          "factId": "Q16.margin",
+          "articleId": "or-kestrel-tsmc-filing-2026-09-29",
+          "needles": [
+            "34.2 percent"
+          ],
+          "kind": "wrong-entity",
+          "note": "Company-reported second-quarter margin, not an analyst estimate."
+        },
+        {
+          "factId": "Q16.margin",
+          "articleId": "open-kestrel-semiconductor-exchange-filings-july-25-2026",
+          "needles": [
+            "48.7 percent"
+          ],
+          "kind": "wrong-entity",
+          "note": "Company-reported margin, not an analyst estimate."
+        }
+      ],
+      "expect": {
+        "buy": "notft-kestrel-tsmc-deal-margins",
+        "avoid": [
+          "mp-kestrel-deal-digest",
+          "kopi-kestrel-tsmc-hype"
+        ]
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q17",
+      "lane": "semis",
+      "kind": "free-sufficient",
+      "useCase": "UC2",
+      "question": "What is a wafer-capacity prepayment, and how is it carried on the balance sheet?",
+      "requested": [
+        {
+          "id": "Q17.deposit",
+          "need": "What a wafer-capacity prepayment is and how it is carried until delivery",
+          "text": "A prepayment secures future capacity and is carried as a deposit until wafers are delivered.",
+          "needles": [
+            "deposit"
+          ],
+          "sources": [
+            "or-wafer-capacity-prepayment-explainer"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q18",
+      "lane": "packaging",
+      "kind": "uc-variant",
+      "useCase": "UC3",
+      "question": "Are Kestrel Semiconductor's advanced-packaging lead times in Malaysia getting shorter?",
+      "requested": [
+        {
+          "id": "Q18.series",
+          "need": "Dated lead-time figures in weeks for Kestrel's Penang advanced packaging, showing the trend",
+          "text": "Kestrel's Penang lead time was 26 weeks on 1 June, 22 weeks on 1 August and 18 weeks on 15 September 2026.",
+          "needles": [
+            "26 weeks",
+            "22 weeks",
+            "18 weeks"
+          ],
+          "sources": [
+            "fab-floor-kestrel-penang-lead-times"
+          ]
+        }
+      ],
+      "traps": [
+        {
+          "factId": "Q18.series",
+          "articleId": "alphaleak-kestrel-penang-lead-times",
+          "needles": [
+            "collapsing"
+          ],
+          "kind": "forecast-as-fact",
+          "note": "Asserts lead times are collapsing with no figure (the planted claim)."
+        },
+        {
+          "factId": "Q18.series",
+          "articleId": "the-penang-osat-capacity-2026-outlook-and-opportunities",
+          "needles": [
+            "26 weeks",
+            "18 weeks"
+          ],
+          "kind": "wrong-entity",
+          "note": "QFN/BGA lead times at Penang's top three OSATs in May, not Kestrel's advanced packaging."
+        },
+        {
+          "factId": "Q18.series",
+          "articleId": "or-penang-packaging-output-2026-q3",
+          "needles": [
+            "no customer lead times"
+          ],
+          "kind": "topic-only",
+          "note": "The free record covers capacity and says it has no lead times."
+        }
+      ],
+      "expect": {
+        "buy": "fab-floor-kestrel-penang-lead-times",
+        "storyRound1": "alphaleak-kestrel-penang-lead-times",
+        "avoid": [
+          "mp-malaysia-packaging-digest",
+          "notft-malaysia-packaging-capex-2026"
+        ]
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q19",
+      "lane": "packaging",
+      "kind": "free-sufficient",
+      "useCase": "UC3",
+      "question": "When was Kestrel Semiconductor's Penang Phase 2 packaging plant commissioned, and how much capacity did it add?",
+      "requested": [
+        {
+          "id": "Q19.phase2",
+          "need": "When Kestrel's Penang Phase 2 plant was commissioned and the capacity before and after",
+          "text": "Commissioned 15 August 2026, lifting capacity from 11,000 to 16,000 units a month.",
+          "needles": [
+            "15 August 2026",
+            "11,000",
+            "16,000"
+          ],
+          "sources": [
+            "or-penang-packaging-output-2026-q3"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q20",
+      "lane": "packaging",
+      "kind": "paid-needed",
+      "useCase": "UC3",
+      "question": "What was the advanced-packaging lead time at Kestrel Semiconductor's Johor alternative in September 2026?",
+      "requested": [
+        {
+          "id": "Q20.johor",
+          "need": "The lead time in weeks at Kestrel's Johor packaging alternative in September 2026",
+          "text": "The Johor alternative remained at 24 weeks on 15 September 2026.",
+          "needles": [
+            "24 weeks"
+          ],
+          "sources": [
+            "fab-floor-kestrel-penang-lead-times"
+          ]
+        }
+      ],
+      "traps": [
+        {
+          "factId": "Q20.johor",
+          "articleId": "the-johor-osat-expansion-new-facilities-and-lead-times",
+          "needles": [
+            "34 weeks"
+          ],
+          "kind": "wrong-entity",
+          "note": "Time to qualification of new Johor OSAT lines, not Kestrel's lead time."
+        }
+      ],
+      "expect": {
+        "buy": "fab-floor-kestrel-penang-lead-times"
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q21",
+      "lane": "packaging",
+      "kind": "paid-needed",
+      "useCase": "UC3",
+      "question": "How much advanced-packaging capex have Kestrel Semiconductor and its peers committed in Malaysia?",
+      "requested": [
+        {
+          "id": "Q21.capex",
+          "need": "The packaging capex Kestrel and peers committed in Malaysia, with its date",
+          "text": "US$420 million as of 9 September 2026.",
+          "needles": [
+            "US$420 million"
+          ],
+          "sources": [
+            "notft-malaysia-packaging-capex-2026"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "notft-malaysia-packaging-capex-2026",
+        "avoid": [
+          "mp-malaysia-packaging-digest"
+        ]
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q22",
+      "lane": "packaging",
+      "kind": "free-sufficient",
+      "useCase": "UC3",
+      "question": "How large a grid connection does Kestrel Semiconductor's Penang Phase 2 plant need?",
+      "requested": [
+        {
+          "id": "Q22.grid",
+          "need": "The grid connection size Kestrel's Penang Phase 2 plant needs",
+          "text": "The Phase 2 plant needs a 45 MW grid connection.",
+          "needles": [
+            "45 MW"
+          ],
+          "sources": [
+            "lf-penang-grid-connection"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q23",
+      "lane": "power",
+      "kind": "free-sufficient",
+      "question": "How much power does a dense AI accelerator rack draw at full load?",
+      "requested": [
+        {
+          "id": "Q23.rack",
+          "need": "The full-load power draw of a dense AI accelerator rack",
+          "text": "A dense accelerator rack draws 120 kW at full load.",
+          "needles": [
+            "120 kW"
+          ],
+          "sources": [
+            "lf-ai-accelerator-rack-power"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q24",
+      "lane": "semis",
+      "kind": "free-sufficient",
+      "question": "What gross margin did Kestrel Semiconductor report in its July 2026 quarterly filings?",
+      "requested": [
+        {
+          "id": "Q24.gm",
+          "need": "The gross margin Kestrel reported in its July 2026 quarterly filings, against a year earlier",
+          "text": "Gross margin of 48.7 percent, down from 51.2 percent a year earlier.",
+          "needles": [
+            "48.7 percent",
+            "51.2 percent"
+          ],
+          "sources": [
+            "open-kestrel-semiconductor-exchange-filings-july-25-2026"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q25",
+      "lane": "power",
+      "kind": "free-sufficient",
+      "question": "How many data-centre projects did Malaysia's MITI register approve in May 2026, and with what investment?",
+      "requested": [
+        {
+          "id": "Q25.register",
+          "need": "The number of approved data-centre projects and committed investment in MITI's May 2026 register",
+          "text": "14 approved projects with RM 9.4 billion committed.",
+          "needles": [
+            "14 approved",
+            "RM 9.4 billion"
+          ],
+          "sources": [
+            "open-malaysia-data-centre-approvals-june-20-2026"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q26",
+      "lane": "semis",
+      "kind": "free-sufficient",
+      "question": "How much did TSMC's customer prepayments for wafer capacity total at the end of 2025?",
+      "requested": [
+        {
+          "id": "Q26.tsmc",
+          "need": "TSMC's customer prepayments for wafer capacity at the end of 2025, against a year earlier",
+          "text": "NT$142.6 billion at 31 December 2025, against NT$118.3 billion a year earlier.",
+          "needles": [
+            "NT$142.6 billion",
+            "NT$118.3 billion"
+          ],
+          "sources": [
+            "open-understanding-wafer-capacity-prepayment-august-30-2026"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q27",
+      "lane": "power",
+      "kind": "free-sufficient",
+      "question": "What peak load did the eastern grid operator forecast for 16 May 2026?",
+      "requested": [
+        {
+          "id": "Q27.peak",
+          "need": "The eastern grid operator's peak-load forecast for 16 May 2026",
+          "text": "A peak load of 118,400 megawatts.",
+          "needles": [
+            "118,400 megawatts"
+          ],
+          "sources": [
+            "open-grid-operator-demand-statistics-may-15-2026"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q28",
+      "lane": "power",
+      "kind": "free-sufficient",
+      "question": "For a 4.2 MW data hall, what is the total facility load and how much of it is cooling and losses?",
+      "requested": [
+        {
+          "id": "Q28.hall",
+          "need": "Total facility load and the cooling-and-losses share for a 4.2 MW data hall",
+          "text": "6.09 MW total, of which 1.89 MW is cooling and losses.",
+          "needles": [
+            "6.09 MW",
+            "1.89 MW"
+          ],
+          "sources": [
+            "load-cooling-load-dynamics-in-southeast-asian-data-halls"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q29",
+      "lane": "rates",
+      "kind": "free-sufficient",
+      "question": "In May 2026, what chance of a Bank of Japan hike by the end of 2026 were overnight index swaps pricing?",
+      "requested": [
+        {
+          "id": "Q29.ois",
+          "need": "The OIS-implied chance of a BoJ hike by end-2026, as priced in May 2026",
+          "text": "Roughly a 40 percent chance.",
+          "needles": [
+            "40 percent"
+          ],
+          "sources": [
+            "basis-boj-signals-future-rate-path-a-closer-look"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": null
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q30",
+      "lane": "rates",
+      "kind": "paid-needed",
+      "question": "How much duration do Japan's largest life insurers expect to add in the fiscal year ending March 2027?",
+      "requested": [
+        {
+          "id": "Q30.duration",
+          "need": "How much duration Japan's largest life insurers expect to add in the fiscal year ending March 2027",
+          "text": "Roughly 900 billion yen of duration on a net basis.",
+          "needles": [
+            "900 billion yen"
+          ],
+          "sources": [
+            "basis-life-insurers-appetite-for-super-long-jgbs-what-it-means-for"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "basis-life-insurers-appetite-for-super-long-jgbs-what-it-means-for"
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q31",
+      "lane": "power",
+      "kind": "paid-needed",
+      "question": "What was Singapore's average daily USEP price spread in the week ending 30 April 2026?",
+      "requested": [
+        {
+          "id": "Q31.usep",
+          "need": "Singapore's average daily USEP spread in the week ending 30 April 2026, against a year earlier",
+          "text": "78.4 SGD/MWh, up from 52.1 SGD/MWh a year earlier.",
+          "needles": [
+            "78.4",
+            "52.1"
+          ],
+          "sources": [
+            "load-analyzing-singapore-s-wholesale-price-spreads-for-2026"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "load-analyzing-singapore-s-wholesale-price-spreads-for-2026"
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q32",
+      "lane": "power",
+      "kind": "paid-needed",
+      "question": "What is the electricity interconnector capacity between Malaysia and Singapore as of June 2026?",
+      "requested": [
+        {
+          "id": "Q32.links",
+          "need": "The Malaysia\u2013Singapore interconnector capacity as of June 2026 and how it is split",
+          "text": "1,000 MW, split between two 500 MW links.",
+          "needles": [
+            "1,000 MW",
+            "500 MW"
+          ],
+          "sources": [
+            "load-interconnector-capacity-between-malaysia-and-singapore-2026-"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "load-interconnector-capacity-between-malaysia-and-singapore-2026-"
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q33",
+      "lane": "packaging",
+      "kind": "paid-needed",
+      "question": "What 2026 revenue forecast did Maybank set for Malaysia's OSAT sector in April 2026?",
+      "requested": [
+        {
+          "id": "Q33.osat",
+          "need": "Maybank's April 2026 revenue forecast for Malaysia's OSAT sector, with the revision",
+          "text": "18.4 billion ringgit, up from 15.1 billion ringgit.",
+          "needles": [
+            "18.4 billion ringgit",
+            "15.1 billion ringgit"
+          ],
+          "sources": [
+            "notfinancialtimes-advanced-packaging-growth-in-penang-market-dynamics"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "notfinancialtimes-advanced-packaging-growth-in-penang-market-dynamics"
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q34",
+      "lane": "semis",
+      "kind": "paid-needed",
+      "question": "What is KGI Securities' 2026 capital expenditure estimate for TSMC?",
+      "requested": [
+        {
+          "id": "Q34.capex",
+          "need": "KGI Securities' 2026 TSMC capex estimate, with the revision",
+          "text": "US$42.5 billion, raised from US$38.0 billion.",
+          "needles": [
+            "$42.5 billion",
+            "$38.0 billion"
+          ],
+          "sources": [
+            "notfinancialtimes-tsmc-customer-capacity-expansion-2026-update"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "notfinancialtimes-tsmc-customer-capacity-expansion-2026-update"
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q35",
+      "lane": "semis",
+      "kind": "paid-needed",
+      "question": "What did TSMC quote for a 5nm wafer in April 2026, and how much was that up?",
+      "requested": [
+        {
+          "id": "Q35.5nm",
+          "need": "TSMC's April 2026 quote for a 5nm wafer, against the previous price",
+          "text": "31,500 USD per wafer, up from 24,000 USD in Q4 2025.",
+          "needles": [
+            "31,500 USD",
+            "24,000 USD"
+          ],
+          "sources": [
+            "the-node-5nm-wafer-pricing-surge-what-it-means-for-startups"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "the-node-5nm-wafer-pricing-surge-what-it-means-for-startups"
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q36",
+      "lane": "packaging",
+      "kind": "paid-needed",
+      "question": "What blended advanced-packaging lead time were buyers seeing at the end of Q1 2026?",
+      "requested": [
+        {
+          "id": "Q36.blended",
+          "need": "The blended advanced-packaging lead time at the end of Q1 2026, against Q4 2025",
+          "text": "58 weeks across CoWoS-S, CoWoS-L and SoIC, up from 47 weeks in Q4 2025.",
+          "needles": [
+            "58 weeks",
+            "47 weeks"
+          ],
+          "sources": [
+            "the-2026-q1-advanced-packaging-lead-times-a-reality-check"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "the-2026-q1-advanced-packaging-lead-times-a-reality-check"
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q37",
+      "lane": "packaging",
+      "kind": "paid-needed",
+      "question": "What CoWoS capacity is TSMC targeting by the end of 2026?",
+      "requested": [
+        {
+          "id": "Q37.cowos",
+          "need": "TSMC's CoWoS capacity target for end-2026, against Q4 2025",
+          "text": "Roughly 330,000 CoWoS wafers a month, up from about 180,000 in Q4 2025.",
+          "needles": [
+            "330,000",
+            "180,000"
+          ],
+          "sources": [
+            "the-cowos-slot-allocation-trends-2026-forecast"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "the-cowos-slot-allocation-trends-2026-forecast"
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q38",
+      "lane": "rates",
+      "kind": "paid-needed",
+      "question": "How much Singapore-dollar corporate bond issuance was there in the first four months of 2026?",
+      "requested": [
+        {
+          "id": "Q38.issuance",
+          "need": "Singapore-dollar corporate bond issuance in January\u2013April 2026, with the year-on-year change",
+          "text": "S$38.4 billion, up 12.7 per cent year on year.",
+          "needles": [
+            "S$38.4 billion",
+            "12.7 per cent"
+          ],
+          "sources": [
+            "notfinancialtimes-singapore-s-corporate-bond-market-trends-and-outlook"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "notfinancialtimes-singapore-s-corporate-bond-market-trends-and-outlook"
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q39",
+      "lane": "rates",
+      "kind": "paid-needed",
+      "question": "What surplus did Singapore's 2026 budget project, and how much government securities issuance is planned?",
+      "requested": [
+        {
+          "id": "Q39.surplus",
+          "need": "The overall surplus projected in Singapore's 2026 budget",
+          "text": "An overall surplus of S$4.2 billion.",
+          "needles": [
+            "S$4.2 billion"
+          ],
+          "sources": [
+            "notfinancialtimes-singapore-s-fiscal-policy-and-its-effect-on-bond-yields"
+          ]
+        },
+        {
+          "id": "Q39.sgs",
+          "need": "Planned gross SGS issuance for fiscal 2026, against 2025",
+          "text": "Gross SGS issuance falls to S$28 billion from S$32 billion.",
+          "needles": [
+            "S$28 billion",
+            "S$32 billion"
+          ],
+          "sources": [
+            "notfinancialtimes-singapore-s-fiscal-policy-and-its-effect-on-bond-yields"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "notfinancialtimes-singapore-s-fiscal-policy-and-its-effect-on-bond-yields"
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q40",
+      "lane": "power",
+      "kind": "paid-needed",
+      "question": "How large is Malaysia's grid connection queue as of March 2026?",
+      "requested": [
+        {
+          "id": "Q40.queue",
+          "need": "The number and total capacity of large grid-connection applications in Malaysia's queue as of March 2026",
+          "text": "47 active applications over 10 MW, totalling 8.2 GW.",
+          "needles": [
+            "47 active applications",
+            "8.2 GW"
+          ],
+          "sources": [
+            "notfinancialtimes-malaysia-grid-connection-queues-status-and-impact"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "notfinancialtimes-malaysia-grid-connection-queues-status-and-impact",
+        "avoid": [
+          "marketpulse-malaysia-grid-connection-queues-status-impact"
+        ]
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q41",
+      "lane": "power",
+      "kind": "hard-case",
+      "hardCase": "forecast-as-fact",
+      "question": "How much data-centre capacity is contracted in Johor's corridor today?",
+      "requested": [
+        {
+          "id": "Q41.contracted",
+          "need": "The data-centre capacity contracted in Johor's corridor today (not a forecast)",
+          "text": "1.4 gigawatts currently contracted (April 2026).",
+          "needles": [
+            "1.4 gigawatts"
+          ],
+          "sources": [
+            "notfinancialtimes-johor-data-centres-rising-power-demand-forecast"
+          ]
+        }
+      ],
+      "traps": [
+        {
+          "factId": "Q41.contracted",
+          "articleId": "notfinancialtimes-johor-data-centres-rising-power-demand-forecast",
+          "needles": [
+            "3.2 gigawatts by 2028"
+          ],
+          "kind": "forecast-as-fact",
+          "note": "A 2028 projection, not today's contracted capacity."
+        },
+        {
+          "factId": "Q41.contracted",
+          "articleId": "marketpulse-johor-data-centres-power-demand-forecast-rising-trends",
+          "needles": [
+            "5.5 gigawatts"
+          ],
+          "kind": "forecast-as-fact",
+          "note": "A 2035 projection in a rewrite."
+        },
+        {
+          "factId": "Q41.contracted",
+          "articleId": "load-projected-data-centre-load-growth-in-johor-by-2030",
+          "needles": [
+            "1.2 gigawatts"
+          ],
+          "kind": "forecast-as-fact",
+          "note": "An approved pipeline, not contracted load."
+        }
+      ],
+      "expect": {
+        "buy": "notfinancialtimes-johor-data-centres-rising-power-demand-forecast",
+        "avoid": [
+          "marketpulse-johor-data-centres-power-demand-forecast-rising-trends"
+        ]
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q42",
+      "lane": "power",
+      "kind": "hard-case",
+      "hardCase": "forecast-as-fact",
+      "question": "How much power do Thailand's data centres draw today?",
+      "requested": [
+        {
+          "id": "Q42.current",
+          "need": "Thailand's current data-centre power demand (a measured figure, not a forecast)",
+          "text": "Thailand's current data-centre power demand (no article states it).",
+          "needles": [],
+          "sources": []
+        }
+      ],
+      "traps": [
+        {
+          "factId": "Q42.current",
+          "articleId": "marketpulse-thailand-data-centres-power-demand-forecast-2026-outlook",
+          "needles": [
+            "2,000 megawatts by 2027"
+          ],
+          "kind": "forecast-as-fact",
+          "note": "A 2027 forecast; the corpus never states current demand."
+        }
+      ],
+      "expect": {
+        "buy": null,
+        "avoid": [
+          "marketpulse-thailand-data-centres-power-demand-forecast-2026-outlook"
+        ]
+      },
+      "notes": "Unanswerable by construction: every purchase is wasted spend, and the only correct coverage label is missing.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q43",
+      "lane": "rates",
+      "kind": "hard-case",
+      "hardCase": "wrong-date",
+      "useCase": "UC1",
+      "question": "Where did the 10-year JGB yield close on 18 September 2026?",
+      "requested": [
+        {
+          "id": "Q43.close",
+          "need": "The 10-year JGB yield close on 18 September 2026",
+          "text": "2.14%, up 9 bp on the day.",
+          "needles": [
+            "2.14%"
+          ],
+          "sources": [
+            "or-jgb-yield-table-2026-09"
+          ]
+        }
+      ],
+      "traps": [
+        {
+          "factId": "Q43.close",
+          "articleId": "open-daily-jgb-yield-table-april-10-2026",
+          "needles": [
+            "0.785 percent"
+          ],
+          "kind": "wrong-date",
+          "note": "The 10 April 2026 close."
+        },
+        {
+          "factId": "Q43.close",
+          "articleId": "notfinancialtimes-jgb-yields-trend-2026-outlook",
+          "needles": [
+            "1.42 percent"
+          ],
+          "kind": "wrong-date",
+          "note": "The 12 April 2026 close."
+        }
+      ],
+      "conflicts": [
+        {
+          "factId": "Q43.close",
+          "articleId": "or-boj-statement-2026-09-18",
+          "needles": [
+            "0.85%"
+          ],
+          "note": "Statement says 0.85% (fixed by #198)."
+        }
+      ],
+      "expect": {
+        "buy": null
+      },
+      "corpusSensitive": "#198",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q44",
+      "lane": "packaging",
+      "kind": "hard-case",
+      "hardCase": "wrong-entity",
+      "question": "What lead times are Penang's top OSATs quoting for advanced QFN and BGA packages?",
+      "requested": [
+        {
+          "id": "Q44.qfn",
+          "need": "Lead times in weeks that Penang's top OSATs quote for advanced QFN and BGA packages, with the trend",
+          "text": "26 weeks as of 1 May 2026, up from 18 weeks in January.",
+          "needles": [
+            "26 weeks",
+            "18 weeks",
+            "QFN"
+          ],
+          "sources": [
+            "the-penang-osat-capacity-2026-outlook-and-opportunities"
+          ]
+        }
+      ],
+      "traps": [
+        {
+          "factId": "Q44.qfn",
+          "articleId": "fab-floor-kestrel-penang-lead-times",
+          "needles": [
+            "26 weeks",
+            "18 weeks"
+          ],
+          "kind": "wrong-entity",
+          "note": "Kestrel's own advanced-packaging series uses the same numbers for a different entity and dates."
+        }
+      ],
+      "expect": {
+        "buy": "the-penang-osat-capacity-2026-outlook-and-opportunities"
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q45",
+      "lane": "rates",
+      "kind": "hard-case",
+      "hardCase": "conflicting",
+      "question": "What was the Bank of Japan's policy rate after its January 2026 meeting?",
+      "requested": [
+        {
+          "id": "Q45.rate",
+          "need": "The BoJ policy rate set at the January 2026 meeting",
+          "text": "The board voted 7-2 to lift the call rate to 0.75 percent.",
+          "needles": [
+            "0.75 percent"
+          ],
+          "sources": [
+            "notfinancialtimes-jgb-yields-trend-2026-outlook"
+          ]
+        }
+      ],
+      "conflicts": [
+        {
+          "factId": "Q45.rate",
+          "articleId": "notfinancialtimes-asian-central-bank-rate-paths-a-comparative-analysis",
+          "needles": [
+            "0.5% by early 2026"
+          ],
+          "note": "Says the rate was 0.5% by early 2026."
+        },
+        {
+          "factId": "Q45.rate",
+          "articleId": "basis-asian-central-banks-vs-the-fed-diverging-policy-paths",
+          "needles": [
+            "-0.1%"
+          ],
+          "note": "Stale: describes the negative-rate era as current."
+        }
+      ],
+      "expect": {
+        "buy": "notfinancialtimes-jgb-yields-trend-2026-outlook",
+        "avoid": [
+          "marketpulse-jgb-yields-trend-2026-outlook-what-to-expect"
+        ]
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q46",
+      "lane": "semis",
+      "kind": "hard-case",
+      "hardCase": "topic-only",
+      "question": "What AI accelerator revenue growth do sell-side analysts now model for 2026?",
+      "requested": [
+        {
+          "id": "Q46.growth",
+          "need": "Sell-side analysts' modelled 2026 AI accelerator revenue growth, with the revision",
+          "text": "22 percent year over year, down from 38 percent.",
+          "needles": [
+            "22 percent",
+            "38 percent"
+          ],
+          "sources": [
+            "notfinancialtimes-sell-side-estimates-for-ai-chip-designers-2026-projections"
+          ]
+        }
+      ],
+      "traps": [
+        {
+          "factId": "Q46.growth",
+          "articleId": "kopi-chip-stock-hype-cycles-a-quick-guide-to-avoiding-the-next-bu",
+          "needles": [
+            "AI is the new electricity"
+          ],
+          "kind": "topic-only",
+          "note": "Opinion on AI chip hype with no estimate."
+        }
+      ],
+      "expect": {
+        "buy": "notfinancialtimes-sell-side-estimates-for-ai-chip-designers-2026-projections",
+        "avoid": [
+          "kopi-chip-stock-hype-cycles-a-quick-guide-to-avoiding-the-next-bu"
+        ]
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q47",
+      "lane": "rates",
+      "kind": "hard-case",
+      "hardCase": "conflicting",
+      "useCase": "UC1",
+      "question": "How much did the 10-year JGB yield rise on the day of the Bank of Japan's September 2026 hike?",
+      "requested": [
+        {
+          "id": "Q47.rise",
+          "need": "The 10-year JGB yield change on 18 September 2026, in basis points",
+          "text": "+9 bp, to 2.14%.",
+          "needles": [
+            "+9 bp"
+          ],
+          "sources": [
+            "or-jgb-yield-table-2026-09"
+          ]
+        }
+      ],
+      "conflicts": [
+        {
+          "factId": "Q47.rise",
+          "articleId": "or-boj-statement-2026-09-18",
+          "needles": [
+            "3 basis points to 0.85%"
+          ],
+          "note": "Statement says 3 bp to 0.85% (fixed by #198; this becomes a supported-only case)."
+        }
+      ],
+      "expect": {
+        "buy": null
+      },
+      "corpusSensitive": "#198",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q48",
+      "lane": "packaging",
+      "kind": "paid-needed",
+      "question": "How far out are HBM interposer substrate lead times running in 2026?",
+      "requested": [
+        {
+          "id": "Q48.hbm",
+          "need": "Lead times in weeks for HBM interposer substrates in 2026, with the trend",
+          "text": "41 weeks as of 25 April 2026, up from 29 weeks in January.",
+          "needles": [
+            "41 weeks",
+            "29 weeks"
+          ],
+          "sources": [
+            "the-hbm-substrate-shortages-impact-on-ai-accelerators"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "the-hbm-substrate-shortages-impact-on-ai-accelerators"
+      },
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q49",
+      "lane": "source:the-wafer-pricing-by-node-2026-vs-2025-comparison",
+      "kind": "paid-needed",
+      "question": "How much did blended wafer costs increase in Q2 2026 against Q2 2025?",
+      "requested": [
+        {
+          "id": "Q49.fact",
+          "need": "How much did blended wafer costs increase in Q2 2026 against Q2 2025?",
+          "text": "I run procurement for a mid-size fabless shop, and I have the Q2 2026 invoices in front of me. As of 2026-05-15, our blended wafer cost across all nodes is up 19.4% versus the same quarter in 2025. That is not a typo. We are 20 weeks into the year and I have already burned through the entire cost-down budget I fought for in December. The foundries know it. My TSMC rep knows it. Every email I send gets a reply within an hour now, which tells you everything about who has leverage.",
+          "needles": [
+            "19.4%"
+          ],
+          "sources": [
+            "the-wafer-pricing-by-node-2026-vs-2025-comparison"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "the-wafer-pricing-by-node-2026-vs-2025-comparison"
+      },
+      "notes": "Synthetic-corpus fact; curated specification the-wafer-pricing-by-node-2026-vs-2025-comparison/p1. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q50",
+      "lane": "source:the-wafer-pricing-by-node-2026-vs-2025-comparison",
+      "kind": "paid-needed",
+      "question": "What did the procurement shop pay per N5 wafer in Q2 2025 and Q2 2026?",
+      "requested": [
+        {
+          "id": "Q50.fact",
+          "need": "What did the procurement shop pay per N5 wafer in Q2 2025 and Q2 2026?",
+          "text": "In Q2 2025 we were paying $16,800 per 300mm wafer for N5 family capacity on a 12-week lead time. As of 2026-05-15, the same wafer is $19,400. That is a 15.5% jump in 52 weeks. For N4, we went from $18,200 to $21,300, a 17.0% increase. The lead time is now 18 weeks, and my foundry partner will not budge below a 24-week rolling forecast commitment.",
+          "needles": [
+            "$16,800",
+            "$19,400"
+          ],
+          "sources": [
+            "the-wafer-pricing-by-node-2026-vs-2025-comparison"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "the-wafer-pricing-by-node-2026-vs-2025-comparison"
+      },
+      "notes": "Synthetic-corpus fact; curated specification the-wafer-pricing-by-node-2026-vs-2025-comparison/p3. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q51",
+      "lane": "source:the-wafer-pricing-by-node-2026-vs-2025-comparison",
+      "kind": "paid-needed",
+      "question": "What were the N4 wafer prices before and after the Q2 2026 increase?",
+      "requested": [
+        {
+          "id": "Q51.fact",
+          "need": "What were the N4 wafer prices before and after the Q2 2026 increase?",
+          "text": "In Q2 2025 we were paying $16,800 per 300mm wafer for N5 family capacity on a 12-week lead time. As of 2026-05-15, the same wafer is $19,400. That is a 15.5% jump in 52 weeks. For N4, we went from $18,200 to $21,300, a 17.0% increase. The lead time is now 18 weeks, and my foundry partner will not budge below a 24-week rolling forecast commitment.",
+          "needles": [
+            "$18,200",
+            "$21,300"
+          ],
+          "sources": [
+            "the-wafer-pricing-by-node-2026-vs-2025-comparison"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "the-wafer-pricing-by-node-2026-vs-2025-comparison"
+      },
+      "notes": "Synthetic-corpus fact; curated specification the-wafer-pricing-by-node-2026-vs-2025-comparison/p3. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q52",
+      "lane": "source:the-wafer-pricing-by-node-2026-vs-2025-comparison",
+      "kind": "paid-needed",
+      "question": "How did N7 wafer prices change between Q2 2025 and Q2 2026?",
+      "requested": [
+        {
+          "id": "Q52.fact",
+          "need": "How did N7 wafer prices change between Q2 2025 and Q2 2026?",
+          "text": "N7 was supposed to be the workhorse node where we could hide from the bleeding edge. Not anymore. Q2 2025: $9,800 per wafer. Q2 2026: $11,600. That is 18.4% in 52 weeks. N6 went from $10,400 to $12,300, up 18.3%. Lead times stretched from 10 weeks to 16 weeks.",
+          "needles": [
+            "$9,800",
+            "$11,600"
+          ],
+          "sources": [
+            "the-wafer-pricing-by-node-2026-vs-2025-comparison"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "the-wafer-pricing-by-node-2026-vs-2025-comparison"
+      },
+      "notes": "Synthetic-corpus fact; curated specification the-wafer-pricing-by-node-2026-vs-2025-comparison/p5. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q53",
+      "lane": "source:the-wafer-pricing-by-node-2026-vs-2025-comparison",
+      "kind": "paid-needed",
+      "question": "How did N6 wafer prices change between Q2 2025 and Q2 2026?",
+      "requested": [
+        {
+          "id": "Q53.fact",
+          "need": "How did N6 wafer prices change between Q2 2025 and Q2 2026?",
+          "text": "N7 was supposed to be the workhorse node where we could hide from the bleeding edge. Not anymore. Q2 2025: $9,800 per wafer. Q2 2026: $11,600. That is 18.4% in 52 weeks. N6 went from $10,400 to $12,300, up 18.3%. Lead times stretched from 10 weeks to 16 weeks.",
+          "needles": [
+            "$10,400",
+            "$12,300"
+          ],
+          "sources": [
+            "the-wafer-pricing-by-node-2026-vs-2025-comparison"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "the-wafer-pricing-by-node-2026-vs-2025-comparison"
+      },
+      "notes": "Synthetic-corpus fact; curated specification the-wafer-pricing-by-node-2026-vs-2025-comparison/p5. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q54",
+      "lane": "source:the-wafer-pricing-by-node-2026-vs-2025-comparison",
+      "kind": "paid-needed",
+      "question": "What N16 wafer prices did the shop pay in Q2 2025 and Q2 2026?",
+      "requested": [
+        {
+          "id": "Q54.fact",
+          "need": "What N16 wafer prices did the shop pay in Q2 2025 and Q2 2026?",
+          "text": "If you want a reason not to panic, look here. N16 in Q2 2025 was $5,200 per wafer. Q2 2026 is $5,700. That is 9.6% in 52 weeks. N12 went from $5,900 to $6,500, up 10.2%. Lead times are stable at 8 to 10 weeks. My foundry partners are still willing to talk about volume tiers. This is where I am moving every design that can tolerate the performance hit.",
+          "needles": [
+            "$5,200",
+            "$5,700"
+          ],
+          "sources": [
+            "the-wafer-pricing-by-node-2026-vs-2025-comparison"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "the-wafer-pricing-by-node-2026-vs-2025-comparison"
+      },
+      "notes": "Synthetic-corpus fact; curated specification the-wafer-pricing-by-node-2026-vs-2025-comparison/p7. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q55",
+      "lane": "source:the-wafer-pricing-by-node-2026-vs-2025-comparison",
+      "kind": "paid-needed",
+      "question": "What N12 wafer prices did the shop pay in Q2 2025 and Q2 2026?",
+      "requested": [
+        {
+          "id": "Q55.fact",
+          "need": "What N12 wafer prices did the shop pay in Q2 2025 and Q2 2026?",
+          "text": "If you want a reason not to panic, look here. N16 in Q2 2025 was $5,200 per wafer. Q2 2026 is $5,700. That is 9.6% in 52 weeks. N12 went from $5,900 to $6,500, up 10.2%. Lead times are stable at 8 to 10 weeks. My foundry partners are still willing to talk about volume tiers. This is where I am moving every design that can tolerate the performance hit.",
+          "needles": [
+            "$5,900",
+            "$6,500"
+          ],
+          "sources": [
+            "the-wafer-pricing-by-node-2026-vs-2025-comparison"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "the-wafer-pricing-by-node-2026-vs-2025-comparison"
+      },
+      "notes": "Synthetic-corpus fact; curated specification the-wafer-pricing-by-node-2026-vs-2025-comparison/p7. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q56",
+      "lane": "source:the-wafer-pricing-by-node-2026-vs-2025-comparison",
+      "kind": "paid-needed",
+      "question": "What were the N28 wafer prices in Q2 2025 and Q2 2026?",
+      "requested": [
+        {
+          "id": "Q56.fact",
+          "need": "What were the N28 wafer prices in Q2 2025 and Q2 2026?",
+          "text": "N28 was $2,900 per wafer in Q2 2025. Q2 2026 is $3,100. That is 6.9% in 52 weeks. N40 and N65 are basically flat, up 3% to 4%. Lead times are 6 to 8 weeks. For PMICs, MCUs, and anything that does not need to be fast, this is still the bargain bin.",
+          "needles": [
+            "$2,900",
+            "$3,100"
+          ],
+          "sources": [
+            "the-wafer-pricing-by-node-2026-vs-2025-comparison"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "the-wafer-pricing-by-node-2026-vs-2025-comparison"
+      },
+      "notes": "Synthetic-corpus fact; curated specification the-wafer-pricing-by-node-2026-vs-2025-comparison/p9. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q57",
+      "lane": "source:the-johor-osat-expansion-new-facilities-and-lead-times",
+      "kind": "paid-needed",
+      "question": "What floor area is planned for the Johor automotive MCU advanced-packaging facility?",
+      "requested": [
+        {
+          "id": "Q57.fact",
+          "need": "What floor area is planned for the Johor automotive MCU advanced-packaging facility?",
+          "text": "Three major OSAT players have broken ground in the Johor Bahru tech corridor since late 2025. The first is a 120,000 square foot facility focused on advanced packaging for automotive MCUs. The second is a 200,000 square foot plant that will do wafer-level packaging and test for RF front-end modules. The third is a retrofit of an existing building into a 90,000 square foot line for memory and logic test. Combined, that is roughly 410,000 square feet of new cleanroom space. Sounds like a lot until you realize that TSMC alone consumes more than that in a single quarter for its advanced packaging needs. So Johor is not solving the global shortage. It is solving a regional gap for Southeast Asian fabless firms that are tired of paying Singapore prices.",
+          "needles": [
+            "120,000 square foot"
+          ],
+          "sources": [
+            "the-johor-osat-expansion-new-facilities-and-lead-times"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "the-johor-osat-expansion-new-facilities-and-lead-times"
+      },
+      "notes": "Synthetic-corpus fact; curated specification the-johor-osat-expansion-new-facilities-and-lead-times/p2. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q58",
+      "lane": "source:the-johor-osat-expansion-new-facilities-and-lead-times",
+      "kind": "paid-needed",
+      "question": "What total cleanroom floor area do the three Johor OSAT facilities add?",
+      "requested": [
+        {
+          "id": "Q58.fact",
+          "need": "What total cleanroom floor area do the three Johor OSAT facilities add?",
+          "text": "Three major OSAT players have broken ground in the Johor Bahru tech corridor since late 2025. The first is a 120,000 square foot facility focused on advanced packaging for automotive MCUs. The second is a 200,000 square foot plant that will do wafer-level packaging and test for RF front-end modules. The third is a retrofit of an existing building into a 90,000 square foot line for memory and logic test. Combined, that is roughly 410,000 square feet of new cleanroom space. Sounds like a lot until you realize that TSMC alone consumes more than that in a single quarter for its advanced packaging needs. So Johor is not solving the global shortage. It is solving a regional gap for Southeast Asian fabless firms that are tired of paying Singapore prices.",
+          "needles": [
+            "410,000 square feet"
+          ],
+          "sources": [
+            "the-johor-osat-expansion-new-facilities-and-lead-times"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "the-johor-osat-expansion-new-facilities-and-lead-times"
+      },
+      "notes": "Synthetic-corpus fact; curated specification the-johor-osat-expansion-new-facilities-and-lead-times/p2. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q59",
+      "lane": "source:the-johor-osat-expansion-new-facilities-and-lead-times",
+      "kind": "paid-needed",
+      "question": "What equipment lead times do Johor OSATs quote for die bonders and wire bonders?",
+      "requested": [
+        {
+          "id": "Q59.fact",
+          "need": "What equipment lead times do Johor OSATs quote for die bonders and wire bonders?",
+          "text": "I talked to a procurement director at one of the OSATs. He would not give me exact numbers, but he did say that their equipment lead times for die bonders and wire bonders are running 28 to 36 weeks. That is up from 16 weeks in 2024. The bottleneck is not the building. It is the back-end tools. And those tools are made by a handful of vendors who are already maxed out serving TSMC and Intel. So Johor gets the scraps. That means your 2026 ramp plans are already dead if you were counting on Johor capacity.",
+          "needles": [
+            "28 to 36 weeks"
+          ],
+          "sources": [
+            "the-johor-osat-expansion-new-facilities-and-lead-times"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "the-johor-osat-expansion-new-facilities-and-lead-times"
+      },
+      "notes": "Synthetic-corpus fact; curated specification the-johor-osat-expansion-new-facilities-and-lead-times/p3. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q60",
+      "lane": "source:the-johor-osat-expansion-new-facilities-and-lead-times",
+      "kind": "paid-needed",
+      "question": "How many weeks until production samples for new QFN capacity in Johor?",
+      "requested": [
+        {
+          "id": "Q60.fact",
+          "need": "How many weeks until production samples for new QFN capacity in Johor?",
+          "text": "Here is what I am hearing from three different sources as of 2026-05-05. For QFN and other leadframe packages, new capacity in Johor will be ready for production samples in 18 weeks. That puts you at early September 2026. For volume, add another 12 weeks. So February 2027. For flip chip ball grid array, the story is worse. The new lines need 26 weeks for sample qualification and another 16 weeks for volume. That is 42 weeks total, which lands you in late February 2027. For wafer-level chip scale packages, the RF line I mentioned is targeting 30 weeks to sample and 20 weeks to volume. That is 50 weeks, or mid-April 2027. And for system-in-package modules, forget it. The OSATs are not even quoting new programs until Q3 2026 because they are still debugging the first wave.",
+          "needles": [
+            "18 weeks"
+          ],
+          "sources": [
+            "the-johor-osat-expansion-new-facilities-and-lead-times"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "the-johor-osat-expansion-new-facilities-and-lead-times"
+      },
+      "notes": "Synthetic-corpus fact; curated specification the-johor-osat-expansion-new-facilities-and-lead-times/p4. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q61",
+      "lane": "source:the-johor-osat-expansion-new-facilities-and-lead-times",
+      "kind": "paid-needed",
+      "question": "What sample-qualification and volume delays are quoted for new Johor flip chip lines?",
+      "requested": [
+        {
+          "id": "Q61.fact",
+          "need": "What sample-qualification and volume delays are quoted for new Johor flip chip lines?",
+          "text": "Here is what I am hearing from three different sources as of 2026-05-05. For QFN and other leadframe packages, new capacity in Johor will be ready for production samples in 18 weeks. That puts you at early September 2026. For volume, add another 12 weeks. So February 2027. For flip chip ball grid array, the story is worse. The new lines need 26 weeks for sample qualification and another 16 weeks for volume. That is 42 weeks total, which lands you in late February 2027. For wafer-level chip scale packages, the RF line I mentioned is targeting 30 weeks to sample and 20 weeks to volume. That is 50 weeks, or mid-April 2027. And for system-in-package modules, forget it. The OSATs are not even quoting new programs until Q3 2026 because they are still debugging the first wave.",
+          "needles": [
+            "26 weeks",
+            "16 weeks"
+          ],
+          "sources": [
+            "the-johor-osat-expansion-new-facilities-and-lead-times"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "the-johor-osat-expansion-new-facilities-and-lead-times"
+      },
+      "notes": "Synthetic-corpus fact; curated specification the-johor-osat-expansion-new-facilities-and-lead-times/p4. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q62",
+      "lane": "source:the-johor-osat-expansion-new-facilities-and-lead-times",
+      "kind": "paid-needed",
+      "question": "What delays are quoted for Johor wafer-level chip scale package samples and volume?",
+      "requested": [
+        {
+          "id": "Q62.fact",
+          "need": "What delays are quoted for Johor wafer-level chip scale package samples and volume?",
+          "text": "Here is what I am hearing from three different sources as of 2026-05-05. For QFN and other leadframe packages, new capacity in Johor will be ready for production samples in 18 weeks. That puts you at early September 2026. For volume, add another 12 weeks. So February 2027. For flip chip ball grid array, the story is worse. The new lines need 26 weeks for sample qualification and another 16 weeks for volume. That is 42 weeks total, which lands you in late February 2027. For wafer-level chip scale packages, the RF line I mentioned is targeting 30 weeks to sample and 20 weeks to volume. That is 50 weeks, or mid-April 2027. And for system-in-package modules, forget it. The OSATs are not even quoting new programs until Q3 2026 because they are still debugging the first wave.",
+          "needles": [
+            "30 weeks",
+            "20 weeks"
+          ],
+          "sources": [
+            "the-johor-osat-expansion-new-facilities-and-lead-times"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "the-johor-osat-expansion-new-facilities-and-lead-times"
+      },
+      "notes": "Synthetic-corpus fact; curated specification the-johor-osat-expansion-new-facilities-and-lead-times/p4. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q63",
+      "lane": "source:the-johor-osat-expansion-new-facilities-and-lead-times",
+      "kind": "paid-needed",
+      "question": "How much cheaper is Johor OSAT labor than Singapore labor in the field report?",
+      "requested": [
+        {
+          "id": "Q63.fact",
+          "need": "How much cheaper is Johor OSAT labor than Singapore labor in the field report?",
+          "text": "Compare that to what you can get in Taiwan or South Korea today. A mature QFN line in Hsinchu can turn samples in 8 weeks and volume in 16. Flip chip in Korea is 14 weeks to sample and 28 to volume. So Johor is not competitive on speed. It is competitive on cost. Labor is 40 percent cheaper than Singapore, and the Malaysian government is handing out tax holidays like candy. But cheap does not help you if you miss your window.",
+          "needles": [
+            "40 percent"
+          ],
+          "sources": [
+            "the-johor-osat-expansion-new-facilities-and-lead-times"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "the-johor-osat-expansion-new-facilities-and-lead-times"
+      },
+      "notes": "Synthetic-corpus fact; curated specification the-johor-osat-expansion-new-facilities-and-lead-times/p5. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q64",
+      "lane": "source:the-johor-osat-expansion-new-facilities-and-lead-times",
+      "kind": "paid-needed",
+      "question": "How quickly can a mature QFN line in Hsinchu deliver samples and volume?",
+      "requested": [
+        {
+          "id": "Q64.fact",
+          "need": "How quickly can a mature QFN line in Hsinchu deliver samples and volume?",
+          "text": "Compare that to what you can get in Taiwan or South Korea today. A mature QFN line in Hsinchu can turn samples in 8 weeks and volume in 16. Flip chip in Korea is 14 weeks to sample and 28 to volume. So Johor is not competitive on speed. It is competitive on cost. Labor is 40 percent cheaper than Singapore, and the Malaysian government is handing out tax holidays like candy. But cheap does not help you if you miss your window.",
+          "needles": [
+            "8 weeks",
+            "16"
+          ],
+          "sources": [
+            "the-johor-osat-expansion-new-facilities-and-lead-times"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "the-johor-osat-expansion-new-facilities-and-lead-times"
+      },
+      "notes": "Synthetic-corpus fact; curated specification the-johor-osat-expansion-new-facilities-and-lead-times/p5. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q65",
+      "lane": "source:the-allocation-behind-tsmc-customer-deals-how-to-secure-slots",
+      "kind": "paid-needed",
+      "question": "What lead time was quoted for N3 wafer starts in May 2026, and six months earlier?",
+      "requested": [
+        {
+          "id": "Q65.fact",
+          "need": "What lead time was quoted for N3 wafer starts in May 2026, and six months earlier?",
+          "text": "Let's talk numbers. As of 2026-05-10, the lead time for N3 wafer starts is running about 36 weeks from order to delivery. That's up from 28 weeks just six months ago. For N5, it's around 24 weeks, and for N7, it's 16 weeks. These are averages, mind you. If you're a small customer without a strong relationship, you can add another 4 to 8 weeks to those figures.",
+          "needles": [
+            "36 weeks",
+            "28 weeks"
+          ],
+          "sources": [
+            "the-allocation-behind-tsmc-customer-deals-how-to-secure-slots"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "the-allocation-behind-tsmc-customer-deals-how-to-secure-slots"
+      },
+      "notes": "Synthetic-corpus fact; curated specification the-allocation-behind-tsmc-customer-deals-how-to-secure-slots/p8. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q66",
+      "lane": "source:the-allocation-behind-tsmc-customer-deals-how-to-secure-slots",
+      "kind": "paid-needed",
+      "question": "What lead time was quoted for N5 wafer starts in May 2026?",
+      "requested": [
+        {
+          "id": "Q66.fact",
+          "need": "What lead time was quoted for N5 wafer starts in May 2026?",
+          "text": "Let's talk numbers. As of 2026-05-10, the lead time for N3 wafer starts is running about 36 weeks from order to delivery. That's up from 28 weeks just six months ago. For N5, it's around 24 weeks, and for N7, it's 16 weeks. These are averages, mind you. If you're a small customer without a strong relationship, you can add another 4 to 8 weeks to those figures.",
+          "needles": [
+            "24 weeks"
+          ],
+          "sources": [
+            "the-allocation-behind-tsmc-customer-deals-how-to-secure-slots"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "the-allocation-behind-tsmc-customer-deals-how-to-secure-slots"
+      },
+      "notes": "Synthetic-corpus fact; curated specification the-allocation-behind-tsmc-customer-deals-how-to-secure-slots/p8. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q67",
+      "lane": "source:the-allocation-behind-tsmc-customer-deals-how-to-secure-slots",
+      "kind": "paid-needed",
+      "question": "What lead time was quoted for N7 wafer starts in May 2026?",
+      "requested": [
+        {
+          "id": "Q67.fact",
+          "need": "What lead time was quoted for N7 wafer starts in May 2026?",
+          "text": "Let's talk numbers. As of 2026-05-10, the lead time for N3 wafer starts is running about 36 weeks from order to delivery. That's up from 28 weeks just six months ago. For N5, it's around 24 weeks, and for N7, it's 16 weeks. These are averages, mind you. If you're a small customer without a strong relationship, you can add another 4 to 8 weeks to those figures.",
+          "needles": [
+            "16 weeks"
+          ],
+          "sources": [
+            "the-allocation-behind-tsmc-customer-deals-how-to-secure-slots"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "the-allocation-behind-tsmc-customer-deals-how-to-secure-slots"
+      },
+      "notes": "Synthetic-corpus fact; curated specification the-allocation-behind-tsmc-customer-deals-how-to-secure-slots/p8. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q68",
+      "lane": "source:the-allocation-behind-tsmc-customer-deals-how-to-secure-slots",
+      "kind": "paid-needed",
+      "question": "How much extra lead time may small TSMC customers without a strong relationship face?",
+      "requested": [
+        {
+          "id": "Q68.fact",
+          "need": "How much extra lead time may small TSMC customers without a strong relationship face?",
+          "text": "Let's talk numbers. As of 2026-05-10, the lead time for N3 wafer starts is running about 36 weeks from order to delivery. That's up from 28 weeks just six months ago. For N5, it's around 24 weeks, and for N7, it's 16 weeks. These are averages, mind you. If you're a small customer without a strong relationship, you can add another 4 to 8 weeks to those figures.",
+          "needles": [
+            "4 to 8 weeks"
+          ],
+          "sources": [
+            "the-allocation-behind-tsmc-customer-deals-how-to-secure-slots"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "the-allocation-behind-tsmc-customer-deals-how-to-secure-slots"
+      },
+      "notes": "Synthetic-corpus fact; curated specification the-allocation-behind-tsmc-customer-deals-how-to-secure-slots/p8. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q69",
+      "lane": "source:notfinancialtimes-semiconductor-supply-chain-resilience-post-covid",
+      "kind": "paid-needed",
+      "question": "What share of leading-edge wafer capacity was in Taiwan and South Korea in 2019 and Q1 2026?",
+      "requested": [
+        {
+          "id": "Q69.fact",
+          "need": "What share of leading-edge wafer capacity was in Taiwan and South Korea in 2019 and Q1 2026?",
+          "text": "The most visible change is geographic. In 2019, roughly 78 percent of leading-edge logic wafer capacity sat in Taiwan and South Korea. By the first quarter of 2026, that figure had fallen to 61 percent, according to SemiVision's tally. The shift is not because Taiwan or South Korea lost capacity; both added fabs. It is because the United States, Japan, and Germany added more. TSMC's Arizona campus now runs three fabs at volume, with a fourth under construction. Samsung's Taylor, Texas, plant began shipping 2-nanometer wafers in late 2025. Intel Foundry's Ohio complex, after two years of delays, reached risk production in March 2026.",
+          "needles": [
+            "78 percent",
+            "61 percent"
+          ],
+          "sources": [
+            "notfinancialtimes-semiconductor-supply-chain-resilience-post-covid"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "notfinancialtimes-semiconductor-supply-chain-resilience-post-covid"
+      },
+      "notes": "Synthetic-corpus fact; curated specification notfinancialtimes-semiconductor-supply-chain-resilience-post-covid/p2. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q70",
+      "lane": "source:notfinancialtimes-semiconductor-supply-chain-resilience-post-covid",
+      "kind": "paid-needed",
+      "question": "What cost-per-wafer premium do new US and European fabs have over Taiwan?",
+      "requested": [
+        {
+          "id": "Q70.fact",
+          "need": "What cost-per-wafer premium do new US and European fabs have over Taiwan?",
+          "text": "Lin cautions that geographic diversification has not come cheap. The average cost per wafer at a new US or European fab is 38 percent higher than at an equivalent facility in Taiwan, a gap that has narrowed only slightly since 2023. \"Resilience is a tax,\" Lin said. \"The question is whether governments and customers are willing to keep paying it.\" So far, the answer appears to be yes. The US CHIPS and Science Act, the EU Chips Act, and Japan's semiconductor subsidy program have together committed more than 180 billion dollars in direct grants and tax credits through 2030.",
+          "needles": [
+            "38 percent"
+          ],
+          "sources": [
+            "notfinancialtimes-semiconductor-supply-chain-resilience-post-covid"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "notfinancialtimes-semiconductor-supply-chain-resilience-post-covid"
+      },
+      "notes": "Synthetic-corpus fact; curated specification notfinancialtimes-semiconductor-supply-chain-resilience-post-covid/p3. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q71",
+      "lane": "source:notfinancialtimes-semiconductor-supply-chain-resilience-post-covid",
+      "kind": "paid-needed",
+      "question": "How much did DRAM contract prices rise in Q1 2026 according to SemiVision?",
+      "requested": [
+        {
+          "id": "Q71.fact",
+          "need": "How much did DRAM contract prices rise in Q1 2026 according to SemiVision?",
+          "text": "Not everyone is convinced. Park Ji-hoon, a senior analyst at Seoul-based Meridian Capital, argues that the new bands merely delay the next bust. \"You cannot automate away the capital cycle,\" Park said. \"When every player follows the same rule, they all cut at once, and the shortage that follows is worse.\" SemiVision's data shows that DRAM contract prices rose 22 percent in the first quarter of 2026, which Park cites as evidence that the bands are already failing.",
+          "needles": [
+            "22 percent"
+          ],
+          "sources": [
+            "notfinancialtimes-semiconductor-supply-chain-resilience-post-covid"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "notfinancialtimes-semiconductor-supply-chain-resilience-post-covid"
+      },
+      "notes": "Synthetic-corpus fact; curated specification notfinancialtimes-semiconductor-supply-chain-resilience-post-covid/p5. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q72",
+      "lane": "source:notfinancialtimes-semiconductor-supply-chain-resilience-post-covid",
+      "kind": "paid-needed",
+      "question": "How much did BoJ normalization add to new fab toolset costs between 2023 and 2026?",
+      "requested": [
+        {
+          "id": "Q72.fact",
+          "need": "How much did BoJ normalization add to new fab toolset costs between 2023 and 2026?",
+          "text": "A less obvious driver of supply chain decisions has been monetary policy. The Bank of Japan's gradual exit from yield curve control, which began in 2024 and continued through 2025, raised the cost of yen-denominated borrowing for Japanese equipment makers such as Tokyo Electron and Advantest. That, in turn, pushed up the price of deposition and test tools worldwide. SemiVision estimates that BoJ policy normalization added 4 to 6 percent to the cost of a new fab toolset between 2023 and 2026.",
+          "needles": [
+            "4 to 6 percent"
+          ],
+          "sources": [
+            "notfinancialtimes-semiconductor-supply-chain-resilience-post-covid"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "notfinancialtimes-semiconductor-supply-chain-resilience-post-covid"
+      },
+      "notes": "Synthetic-corpus fact; curated specification notfinancialtimes-semiconductor-supply-chain-resilience-post-covid/p6. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q73",
+      "lane": "source:notfinancialtimes-semiconductor-supply-chain-resilience-post-covid",
+      "kind": "paid-needed",
+      "question": "What was the global refurbished semiconductor tool market size in 2025 and 2020?",
+      "requested": [
+        {
+          "id": "Q73.fact",
+          "need": "What was the global refurbished semiconductor tool market size in 2025 and 2020?",
+          "text": "Lin argues that this cost pressure has accelerated a shift toward used equipment and refurbishment. The global market for refurbished semiconductor tools reached 9.8 billion dollars in 2025, up from 5.1 billion in 2020. \"The leading edge gets the headlines, but the trailing edge is where resilience is actually being built,\" Lin said. Mature-node fabs in China, Malaysia, and Vietnam have absorbed much of this refurbished capacity, reducing their dependence on new tool deliveries that can take 18 months or more.",
+          "needles": [
+            "9.8 billion",
+            "5.1 billion"
+          ],
+          "sources": [
+            "notfinancialtimes-semiconductor-supply-chain-resilience-post-covid"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "notfinancialtimes-semiconductor-supply-chain-resilience-post-covid"
+      },
+      "notes": "Synthetic-corpus fact; curated specification notfinancialtimes-semiconductor-supply-chain-resilience-post-covid/p7. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q74",
+      "lane": "source:notfinancialtimes-semiconductor-supply-chain-resilience-post-covid",
+      "kind": "paid-needed",
+      "question": "What price premium does supply-chain resilience add to leading-edge logic wafers?",
+      "requested": [
+        {
+          "id": "Q74.fact",
+          "need": "What price premium does supply-chain resilience add to leading-edge logic wafers?",
+          "text": "The report's central finding is that resilience has a price, and that price is now embedded in chip prices. SemiVision calculates that the average selling price of a leading-edge logic wafer is 14 percent higher than it would have been under a purely efficiency-optimized supply chain. For memory, the premium is smaller, around 6 percent, because memory capacity is more fungible.",
+          "needles": [
+            "14 percent"
+          ],
+          "sources": [
+            "notfinancialtimes-semiconductor-supply-chain-resilience-post-covid"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "notfinancialtimes-semiconductor-supply-chain-resilience-post-covid"
+      },
+      "notes": "Synthetic-corpus fact; curated specification notfinancialtimes-semiconductor-supply-chain-resilience-post-covid/p8. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q75",
+      "lane": "source:notfinancialtimes-semiconductor-supply-chain-resilience-post-covid",
+      "kind": "paid-needed",
+      "question": "What price premium does supply-chain resilience add to memory?",
+      "requested": [
+        {
+          "id": "Q75.fact",
+          "need": "What price premium does supply-chain resilience add to memory?",
+          "text": "The report's central finding is that resilience has a price, and that price is now embedded in chip prices. SemiVision calculates that the average selling price of a leading-edge logic wafer is 14 percent higher than it would have been under a purely efficiency-optimized supply chain. For memory, the premium is smaller, around 6 percent, because memory capacity is more fungible.",
+          "needles": [
+            "6 percent"
+          ],
+          "sources": [
+            "notfinancialtimes-semiconductor-supply-chain-resilience-post-covid"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "notfinancialtimes-semiconductor-supply-chain-resilience-post-covid"
+      },
+      "notes": "Synthetic-corpus fact; curated specification notfinancialtimes-semiconductor-supply-chain-resilience-post-covid/p8. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q76",
+      "lane": "source:load-behind-the-meter-solar-adoption-in-singapore-data-centres",
+      "kind": "paid-needed",
+      "question": "What share of Singapore electricity demand do data centres consume now and five years earlier?",
+      "requested": [
+        {
+          "id": "Q76.fact",
+          "need": "What share of Singapore electricity demand do data centres consume now and five years earlier?",
+          "text": "I spent the last two weeks buried in the Energy Market Authority\u2019s latest Singapore Energy Statistics, and one number kept jumping out at me: data centres now account for roughly 7 percent of the island\u2019s electricity demand. That is up from about 4 percent five years ago. As a professor who models grid load for a living, I find that growth both impressive and a little terrifying. The grid is already carbon-constrained, and every new hyperscale campus adds a flat, 24/7 load that does not care about the sun.",
+          "needles": [
+            "7 percent",
+            "4 percent"
+          ],
+          "sources": [
+            "load-behind-the-meter-solar-adoption-in-singapore-data-centres"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "load-behind-the-meter-solar-adoption-in-singapore-data-centres"
+      },
+      "notes": "Synthetic-corpus fact; curated specification load-behind-the-meter-solar-adoption-in-singapore-data-centres/p1. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q77",
+      "lane": "source:load-behind-the-meter-solar-adoption-in-singapore-data-centres",
+      "kind": "paid-needed",
+      "question": "How much annual energy does a one-megawatt-peak Singapore rooftop solar array produce?",
+      "requested": [
+        {
+          "id": "Q77.fact",
+          "need": "How much annual energy does a one-megawatt-peak Singapore rooftop solar array produce?",
+          "text": "Let us start with a 1 megawatt-peak (MWp) solar array on a data centre roof. In Singapore, a well-designed system produces about 1,200 megawatt-hours (MWh) per year. That is a capacity factor of roughly 13.7 percent, which sounds low until you remember we are 1.3 degrees north of the equator and get frequent afternoon thunderstorms.",
+          "needles": [
+            "1,200 megawatt-hours"
+          ],
+          "sources": [
+            "load-behind-the-meter-solar-adoption-in-singapore-data-centres"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "load-behind-the-meter-solar-adoption-in-singapore-data-centres"
+      },
+      "notes": "Synthetic-corpus fact; curated specification load-behind-the-meter-solar-adoption-in-singapore-data-centres/p3. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q78",
+      "lane": "source:load-behind-the-meter-solar-adoption-in-singapore-data-centres",
+      "kind": "paid-needed",
+      "question": "What capacity factor is modelled for Singapore rooftop solar?",
+      "requested": [
+        {
+          "id": "Q78.fact",
+          "need": "What capacity factor is modelled for Singapore rooftop solar?",
+          "text": "Let us start with a 1 megawatt-peak (MWp) solar array on a data centre roof. In Singapore, a well-designed system produces about 1,200 megawatt-hours (MWh) per year. That is a capacity factor of roughly 13.7 percent, which sounds low until you remember we are 1.3 degrees north of the equator and get frequent afternoon thunderstorms.",
+          "needles": [
+            "13.7 percent"
+          ],
+          "sources": [
+            "load-behind-the-meter-solar-adoption-in-singapore-data-centres"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "load-behind-the-meter-solar-adoption-in-singapore-data-centres"
+      },
+      "notes": "Synthetic-corpus fact; curated specification load-behind-the-meter-solar-adoption-in-singapore-data-centres/p3. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q79",
+      "lane": "source:load-behind-the-meter-solar-adoption-in-singapore-data-centres",
+      "kind": "paid-needed",
+      "question": "What installed cost per watt-peak is quoted for Singapore commercial rooftop solar in 2026?",
+      "requested": [
+        {
+          "id": "Q79.fact",
+          "need": "What installed cost per watt-peak is quoted for Singapore commercial rooftop solar in 2026?",
+          "text": "The installed cost for a commercial rooftop system in 2026 is around S$1.10 per watt-peak, all in. So 1 MWp costs S$1.1 million. Add S$150,000 for inverters and balance-of-system over a 25-year life, and you are at S$1.25 million. Divide by 1,200 MWh per year times 25 years, which is 30,000 MWh. That gives a levelised cost of electricity (LCOE) of about S$41.7 per MWh, or 4.17 cents per kWh.",
+          "needles": [
+            "S$1.10"
+          ],
+          "sources": [
+            "load-behind-the-meter-solar-adoption-in-singapore-data-centres"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "load-behind-the-meter-solar-adoption-in-singapore-data-centres"
+      },
+      "notes": "Synthetic-corpus fact; curated specification load-behind-the-meter-solar-adoption-in-singapore-data-centres/p4. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q80",
+      "lane": "source:load-behind-the-meter-solar-adoption-in-singapore-data-centres",
+      "kind": "paid-needed",
+      "question": "What levelised cost per MWh is calculated for the rooftop solar example?",
+      "requested": [
+        {
+          "id": "Q80.fact",
+          "need": "What levelised cost per MWh is calculated for the rooftop solar example?",
+          "text": "The installed cost for a commercial rooftop system in 2026 is around S$1.10 per watt-peak, all in. So 1 MWp costs S$1.1 million. Add S$150,000 for inverters and balance-of-system over a 25-year life, and you are at S$1.25 million. Divide by 1,200 MWh per year times 25 years, which is 30,000 MWh. That gives a levelised cost of electricity (LCOE) of about S$41.7 per MWh, or 4.17 cents per kWh.",
+          "needles": [
+            "S$41.7"
+          ],
+          "sources": [
+            "load-behind-the-meter-solar-adoption-in-singapore-data-centres"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "load-behind-the-meter-solar-adoption-in-singapore-data-centres"
+      },
+      "notes": "Synthetic-corpus fact; curated specification load-behind-the-meter-solar-adoption-in-singapore-data-centres/p4. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q81",
+      "lane": "source:load-behind-the-meter-solar-adoption-in-singapore-data-centres",
+      "kind": "paid-needed",
+      "question": "What large-consumer grid tariff is quoted for Singapore in June 2026?",
+      "requested": [
+        {
+          "id": "Q81.fact",
+          "need": "What large-consumer grid tariff is quoted for Singapore in June 2026?",
+          "text": "Now compare that to the typical commercial tariff. As of June 2026, the regulated tariff for large consumers is around S$0.28 per kWh. Even if you assume only 80 percent of your solar generation is consumed on site (the rest is curtailed or exported at a low feed-in tariff), your effective savings are enormous. The payback period is under five years. I have seen professors argue about discount rates for hours, but when the payback is that short, the conclusion is robust.",
+          "needles": [
+            "S$0.28"
+          ],
+          "sources": [
+            "load-behind-the-meter-solar-adoption-in-singapore-data-centres"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "load-behind-the-meter-solar-adoption-in-singapore-data-centres"
+      },
+      "notes": "Synthetic-corpus fact; curated specification load-behind-the-meter-solar-adoption-in-singapore-data-centres/p5. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q82",
+      "lane": "source:load-behind-the-meter-solar-adoption-in-singapore-data-centres",
+      "kind": "paid-needed",
+      "question": "What capital cost and payback does the combined rooftop solar and battery scenario have?",
+      "requested": [
+        {
+          "id": "Q82.fact",
+          "need": "What capital cost and payback does the combined rooftop solar and battery scenario have?",
+          "text": "I modelled a 10 MW data centre with a 5 MWp rooftop array and 10 MWh of batteries. The batteries shift midday solar to the evening peak, raising the solar fraction from 12 percent to 18 percent. The LCOE for that combined system rises to about S$0.12 per kWh, still well below the grid tariff. But the capital cost is S$8.5 million, and the payback stretches to seven years. That is still attractive, but it is no longer a no-brainer.",
+          "needles": [
+            "S$8.5 million",
+            "seven years"
+          ],
+          "sources": [
+            "load-behind-the-meter-solar-adoption-in-singapore-data-centres"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "load-behind-the-meter-solar-adoption-in-singapore-data-centres"
+      },
+      "notes": "Synthetic-corpus fact; curated specification load-behind-the-meter-solar-adoption-in-singapore-data-centres/p8. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q83",
+      "lane": "source:load-behind-the-meter-solar-adoption-in-singapore-data-centres",
+      "kind": "paid-needed",
+      "question": "What annual output could solar on all available Singapore data-centre roofs generate?",
+      "requested": [
+        {
+          "id": "Q83.fact",
+          "need": "What annual output could solar on all available Singapore data-centre roofs generate?",
+          "text": "I will end with a number that surprised me. If every data centre in Singapore covered its available roof area with solar, the total capacity would be about 400 MWp. That would generate 480 GWh per year, or roughly 1.5 percent of the sector\u2019s current demand. Behind-the-meter solar is a useful tool, but it is not a silver bullet. The real solution is a cleaner grid, and that is a policy problem, not an engineering one. I will save that for my next column.",
+          "needles": [
+            "480 GWh"
+          ],
+          "sources": [
+            "load-behind-the-meter-solar-adoption-in-singapore-data-centres"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "load-behind-the-meter-solar-adoption-in-singapore-data-centres"
+      },
+      "notes": "Synthetic-corpus fact; curated specification load-behind-the-meter-solar-adoption-in-singapore-data-centres/p14. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q84",
+      "lane": "source:load-optimizing-water-use-in-singapore-data-centres",
+      "kind": "paid-needed",
+      "question": "What share of Singapore water does the water-use article say is imported from Malaysia?",
+      "requested": [
+        {
+          "id": "Q84.fact",
+          "need": "What share of Singapore water does the water-use article say is imported from Malaysia?",
+          "text": "I spent last week at a workshop in Singapore, where the topic was water use in data centres. As an energy-systems professor, I usually focus on electricity, but water is becoming a critical constraint. Singapore imports about 40% of its water from Malaysia, and the rest comes from desalination and NEWater. Data centres are thirsty: they use water for cooling, and with the push for AI, demand is rising. In this post, I want to walk through the arithmetic of water use and share some optimization strategies that I've seen work.",
+          "needles": [
+            "40%"
+          ],
+          "sources": [
+            "load-optimizing-water-use-in-singapore-data-centres"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "load-optimizing-water-use-in-singapore-data-centres"
+      },
+      "notes": "Synthetic-corpus fact; curated specification load-optimizing-water-use-in-singapore-data-centres/p1. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q85",
+      "lane": "source:load-optimizing-water-use-in-singapore-data-centres",
+      "kind": "paid-needed",
+      "question": "How much cooling water per kWh of IT load is typical in Singapore data centres?",
+      "requested": [
+        {
+          "id": "Q85.fact",
+          "need": "How much cooling water per kWh of IT load is typical in Singapore data centres?",
+          "text": "Most data centres in Singapore use chilled water systems. The cooling tower evaporates water to reject heat. The amount of water evaporated depends on the heat load and the efficiency of the cooling system. A typical rule of thumb is that for every kilowatt-hour of IT load, you need about 1.5 to 2.5 liters of water for cooling, depending on the climate and the cooling system design. Let's do the math: a 10 MW data centre running at 80% utilization has an IT load of 8 MW. Over a day, that's 8,000 kW * 24 h = 192,000 kWh. At 2 liters per kWh, that's 384,000 liters, or 384 cubic meters per day. That's a lot of water. And that's just for cooling; there's also water for humidification and other uses.",
+          "needles": [
+            "1.5 to 2.5 liters"
+          ],
+          "sources": [
+            "load-optimizing-water-use-in-singapore-data-centres"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "load-optimizing-water-use-in-singapore-data-centres"
+      },
+      "notes": "Synthetic-corpus fact; curated specification load-optimizing-water-use-in-singapore-data-centres/p2. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q86",
+      "lane": "source:load-optimizing-water-use-in-singapore-data-centres",
+      "kind": "paid-needed",
+      "question": "What share of makeup water can recovered condensate supply?",
+      "requested": [
+        {
+          "id": "Q86.fact",
+          "need": "What share of makeup water can recovered condensate supply?",
+          "text": "Third, recover water from other sources. For instance, condensate from air handling units can be collected and used as makeup water. In a typical data centre, condensate can provide 5-10% of makeup water needs. Also, treated wastewater from NEWater can be used for cooling, but that requires a separate pipeline.",
+          "needles": [
+            "5-10%"
+          ],
+          "sources": [
+            "load-optimizing-water-use-in-singapore-data-centres"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "load-optimizing-water-use-in-singapore-data-centres"
+      },
+      "notes": "Synthetic-corpus fact; curated specification load-optimizing-water-use-in-singapore-data-centres/p6. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q87",
+      "lane": "source:load-optimizing-water-use-in-singapore-data-centres",
+      "kind": "paid-needed",
+      "question": "How much cooling energy can raising chilled water temperature by a degree save?",
+      "requested": [
+        {
+          "id": "Q87.fact",
+          "need": "How much cooling energy can raising chilled water temperature by a degree save?",
+          "text": "Fourth, optimize the operation of the cooling system. For example, raise the chilled water supply temperature. For every degree Celsius increase, you can save about 2-3% of cooling energy, and also reduce water evaporation because the cooling tower operates more efficiently. But you need to ensure that the IT equipment can tolerate higher temperatures. ASHRAE guidelines allow up to 27\u00b0C for inlet air in some classes.",
+          "needles": [
+            "2-3%"
+          ],
+          "sources": [
+            "load-optimizing-water-use-in-singapore-data-centres"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "load-optimizing-water-use-in-singapore-data-centres"
+      },
+      "notes": "Synthetic-corpus fact; curated specification load-optimizing-water-use-in-singapore-data-centres/p7. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q88",
+      "lane": "source:load-optimizing-water-use-in-singapore-data-centres",
+      "kind": "paid-needed",
+      "question": "How did water intensity change in the Singapore data-centre optimization case study?",
+      "requested": [
+        {
+          "id": "Q88.fact",
+          "need": "How did water intensity change in the Singapore data-centre optimization case study?",
+          "text": "Let me share a case study from a data centre I visited in Singapore. It's a 5 MW facility with a mix of cloud and enterprise customers. They implemented a few measures: they increased cycles of concentration from 3 to 5, installed a condensate recovery system, and raised the chilled water supply temperature from 7\u00b0C to 10\u00b0C. The results were impressive. Water consumption dropped from 1.8 liters per kWh to 1.2 liters per kWh. That's a 33% reduction. In absolute terms, for a 5 MW facility at 70% utilization, IT load is 3.5 MW. Daily energy is 3,500 kW * 24 = 84,000 kWh. Water use before: 84,000 * 1.8 = 151,200 liters per day. After: 84,000 * 1.2 = 100,800 liters per day. Savings: 50,400 liters per day, or about 18.4 million liters per year. That's enough to fill about 7 Olympic-sized swimming pools. The payback period for the upgrades was under two years, based on water and energy savings.",
+          "needles": [
+            "1.8 liters",
+            "1.2 liters"
+          ],
+          "sources": [
+            "load-optimizing-water-use-in-singapore-data-centres"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "load-optimizing-water-use-in-singapore-data-centres"
+      },
+      "notes": "Synthetic-corpus fact; curated specification load-optimizing-water-use-in-singapore-data-centres/p8. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q89",
+      "lane": "source:load-optimizing-water-use-in-singapore-data-centres",
+      "kind": "paid-needed",
+      "question": "What percentage water saving did the Singapore cooling optimization case study achieve?",
+      "requested": [
+        {
+          "id": "Q89.fact",
+          "need": "What percentage water saving did the Singapore cooling optimization case study achieve?",
+          "text": "Let me share a case study from a data centre I visited in Singapore. It's a 5 MW facility with a mix of cloud and enterprise customers. They implemented a few measures: they increased cycles of concentration from 3 to 5, installed a condensate recovery system, and raised the chilled water supply temperature from 7\u00b0C to 10\u00b0C. The results were impressive. Water consumption dropped from 1.8 liters per kWh to 1.2 liters per kWh. That's a 33% reduction. In absolute terms, for a 5 MW facility at 70% utilization, IT load is 3.5 MW. Daily energy is 3,500 kW * 24 = 84,000 kWh. Water use before: 84,000 * 1.8 = 151,200 liters per day. After: 84,000 * 1.2 = 100,800 liters per day. Savings: 50,400 liters per day, or about 18.4 million liters per year. That's enough to fill about 7 Olympic-sized swimming pools. The payback period for the upgrades was under two years, based on water and energy savings.",
+          "needles": [
+            "33%"
+          ],
+          "sources": [
+            "load-optimizing-water-use-in-singapore-data-centres"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "load-optimizing-water-use-in-singapore-data-centres"
+      },
+      "notes": "Synthetic-corpus fact; curated specification load-optimizing-water-use-in-singapore-data-centres/p8. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q90",
+      "lane": "source:load-reserve-margins-and-capacity-auctions-lessons-from-2025",
+      "kind": "paid-needed",
+      "question": "What nominal reserve margin did the 2025 capacity auction imply?",
+      "requested": [
+        {
+          "id": "Q90.fact",
+          "need": "What nominal reserve margin did the 2025 capacity auction imply?",
+          "text": "Let me start with the basics. A capacity auction is a mechanism to ensure that enough generation is available to meet peak demand, plus a reserve margin. The reserve margin is the extra capacity above expected peak load, expressed as a percentage. In 2025, the auction cleared at a price that implied a reserve margin of 15.2 percent. That figure alone is not shocking; many regions target 15 percent. But the composition of that margin was the surprise. Nearly 40 percent of the cleared capacity came from demand response and behind-the-meter resources, not from traditional generators. That is a fundamental shift.",
+          "needles": [
+            "15.2 percent"
+          ],
+          "sources": [
+            "load-reserve-margins-and-capacity-auctions-lessons-from-2025"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "load-reserve-margins-and-capacity-auctions-lessons-from-2025"
+      },
+      "notes": "Synthetic-corpus fact; curated specification load-reserve-margins-and-capacity-auctions-lessons-from-2025/p2. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q91",
+      "lane": "source:load-reserve-margins-and-capacity-auctions-lessons-from-2025",
+      "kind": "paid-needed",
+      "question": "How much capacity did the 2025 auction procure?",
+      "requested": [
+        {
+          "id": "Q91.fact",
+          "need": "How much capacity did the 2025 auction procure?",
+          "text": "Let me show you the arithmetic that kept me up at night. Suppose the expected peak load for a system is 10,000 megawatts. A 15 percent reserve margin means you need 11,500 megawatts of capacity. In 2025, the auction procured 11,520 megawatts, so the margin was 15.2 percent. Fine. But now consider the effective capacity of those resources. Demand response is not firm; it depends on customer participation. The auction report, published by the system operator in March 2026, assigned a capacity value of 85 percent to demand response. So of the 4,600 megawatts of demand response cleared, only 3,910 megawatts were counted as firm. That reduces the effective reserve margin to 11.9 percent. And if you further derate solar and wind for their capacity contribution at peak, the margin drops to 9.4 percent. That is below the 10 percent threshold that many planners consider the minimum for a reliable system.",
+          "needles": [
+            "11,520 megawatts"
+          ],
+          "sources": [
+            "load-reserve-margins-and-capacity-auctions-lessons-from-2025"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "load-reserve-margins-and-capacity-auctions-lessons-from-2025"
+      },
+      "notes": "Synthetic-corpus fact; curated specification load-reserve-margins-and-capacity-auctions-lessons-from-2025/p3. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q92",
+      "lane": "source:load-reserve-margins-and-capacity-auctions-lessons-from-2025",
+      "kind": "paid-needed",
+      "question": "What clearing-price premium did flexible capacity earn in the 2025 auction?",
+      "requested": [
+        {
+          "id": "Q92.fact",
+          "need": "What clearing-price premium did flexible capacity earn in the 2025 auction?",
+          "text": "The 2025 auction had a few design features that I think are worth emulating. First, it introduced a separate clearing price for flexible capacity, defined as resources that can ramp up within 30 minutes. That price was 2.3 times the base capacity price. This sent a clear signal: flexibility is scarce. Second, the auction allowed storage to bid in as a capacity resource, with a state-of-charge requirement. That brought in 1,200 megawatts of four-hour batteries. Third, the auction penalised resources that failed to perform during test events. In 2025, there were three test events, and the penalty for non-performance was 1.5 times the clearing price. That is a strong incentive.",
+          "needles": [
+            "2.3 times"
+          ],
+          "sources": [
+            "load-reserve-margins-and-capacity-auctions-lessons-from-2025"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "load-reserve-margins-and-capacity-auctions-lessons-from-2025"
+      },
+      "notes": "Synthetic-corpus fact; curated specification load-reserve-margins-and-capacity-auctions-lessons-from-2025/p5. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q93",
+      "lane": "source:load-reserve-margins-and-capacity-auctions-lessons-from-2025",
+      "kind": "paid-needed",
+      "question": "How much four-hour battery capacity entered the 2025 capacity auction?",
+      "requested": [
+        {
+          "id": "Q93.fact",
+          "need": "How much four-hour battery capacity entered the 2025 capacity auction?",
+          "text": "The 2025 auction had a few design features that I think are worth emulating. First, it introduced a separate clearing price for flexible capacity, defined as resources that can ramp up within 30 minutes. That price was 2.3 times the base capacity price. This sent a clear signal: flexibility is scarce. Second, the auction allowed storage to bid in as a capacity resource, with a state-of-charge requirement. That brought in 1,200 megawatts of four-hour batteries. Third, the auction penalised resources that failed to perform during test events. In 2025, there were three test events, and the penalty for non-performance was 1.5 times the clearing price. That is a strong incentive.",
+          "needles": [
+            "1,200 megawatts"
+          ],
+          "sources": [
+            "load-reserve-margins-and-capacity-auctions-lessons-from-2025"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "load-reserve-margins-and-capacity-auctions-lessons-from-2025"
+      },
+      "notes": "Synthetic-corpus fact; curated specification load-reserve-margins-and-capacity-auctions-lessons-from-2025/p5. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q94",
+      "lane": "source:load-reserve-margins-and-capacity-auctions-lessons-from-2025",
+      "kind": "paid-needed",
+      "question": "What effective reserve margin results after correlated outages are modelled?",
+      "requested": [
+        {
+          "id": "Q94.fact",
+          "need": "What effective reserve margin results after correlated outages are modelled?",
+          "text": "But there were also flaws. The auction did not account for correlation between outages and peak demand. In a heat wave, both generators and transmission lines can fail. The 2025 auction assumed independent outages, which is optimistic. I have modelled this: if you assume a correlation of 0.3 between forced outages and peak demand, the effective reserve margin falls by another 1.8 percentage points. That would bring the 9.4 percent down to 7.6 percent. That is a red flag.",
+          "needles": [
+            "7.6 percent"
+          ],
+          "sources": [
+            "load-reserve-margins-and-capacity-auctions-lessons-from-2025"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "load-reserve-margins-and-capacity-auctions-lessons-from-2025"
+      },
+      "notes": "Synthetic-corpus fact; curated specification load-reserve-margins-and-capacity-auctions-lessons-from-2025/p6. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q95",
+      "lane": "source:load-reserve-margins-and-capacity-auctions-lessons-from-2025",
+      "kind": "paid-needed",
+      "question": "Where in the 2025 auction report were the key derating factors published?",
+      "requested": [
+        {
+          "id": "Q95.fact",
+          "need": "Where in the 2025 auction report were the key derating factors published?",
+          "text": "I want to end with a plea for transparency. The 2025 auction report was 240 pages long, and the key derating factors were on page 187. That is not accessible to the public. As a professor, I have the time to dig, but most people do not. I urge system operators to publish a one-page summary of effective reserve margins alongside the nominal figures. The data is there; it just needs to be presented clearly. The 2025 auction was a learning experience, and I hope the 2026 auction builds on those lessons. After all, the goal is not a high reserve margin on paper; it is a reliable grid in reality.",
+          "needles": [
+            "page 187"
+          ],
+          "sources": [
+            "load-reserve-margins-and-capacity-auctions-lessons-from-2025"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "load-reserve-margins-and-capacity-auctions-lessons-from-2025"
+      },
+      "notes": "Synthetic-corpus fact; curated specification load-reserve-margins-and-capacity-auctions-lessons-from-2025/p9. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q96",
+      "lane": "source:lf-kestrel-penang-phase2-power-deep-dive",
+      "kind": "paid-needed",
+      "question": "What firm grid connection capacity and voltage does Kestrel Penang Phase 2 have?",
+      "requested": [
+        {
+          "id": "Q96.fact",
+          "need": "What firm grid connection capacity and voltage does Kestrel Penang Phase 2 have?",
+          "text": "Phase 2 was commissioned on 15 August 2026 and sits on a 45 MW firm connection at 132 kV. In the six weeks to 26 September 2026 its metered peak was 38.6 MW and its average was 31.2 MW. The average will rise as the second half of the tool set comes up to rated throughput; my estimate for the steady state is 35 MW, and I would be surprised by anything outside 33 to 37 MW. At 35 MW the plant consumes roughly 307 GWh in a year.",
+          "needles": [
+            "45 MW",
+            "132 kV"
+          ],
+          "sources": [
+            "lf-kestrel-penang-phase2-power-deep-dive"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "lf-kestrel-penang-phase2-power-deep-dive"
+      },
+      "notes": "Synthetic-corpus fact; curated specification lf-kestrel-penang-phase2-power-deep-dive/p2. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q97",
+      "lane": "source:lf-kestrel-penang-phase2-power-deep-dive",
+      "kind": "paid-needed",
+      "question": "What peak and average load were metered at Kestrel Penang Phase 2 through September 2026?",
+      "requested": [
+        {
+          "id": "Q97.fact",
+          "need": "What peak and average load were metered at Kestrel Penang Phase 2 through September 2026?",
+          "text": "Phase 2 was commissioned on 15 August 2026 and sits on a 45 MW firm connection at 132 kV. In the six weeks to 26 September 2026 its metered peak was 38.6 MW and its average was 31.2 MW. The average will rise as the second half of the tool set comes up to rated throughput; my estimate for the steady state is 35 MW, and I would be surprised by anything outside 33 to 37 MW. At 35 MW the plant consumes roughly 307 GWh in a year.",
+          "needles": [
+            "38.6 MW",
+            "31.2 MW"
+          ],
+          "sources": [
+            "lf-kestrel-penang-phase2-power-deep-dive"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "lf-kestrel-penang-phase2-power-deep-dive"
+      },
+      "notes": "Synthetic-corpus fact; curated specification lf-kestrel-penang-phase2-power-deep-dive/p2. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q98",
+      "lane": "source:lf-kestrel-penang-phase2-power-deep-dive",
+      "kind": "paid-needed",
+      "question": "What steady-state average draw does the Penang Phase 2 power analyst project?",
+      "requested": [
+        {
+          "id": "Q98.fact",
+          "need": "What steady-state average draw does the Penang Phase 2 power analyst project?",
+          "text": "Phase 2 was commissioned on 15 August 2026 and sits on a 45 MW firm connection at 132 kV. In the six weeks to 26 September 2026 its metered peak was 38.6 MW and its average was 31.2 MW. The average will rise as the second half of the tool set comes up to rated throughput; my estimate for the steady state is 35 MW, and I would be surprised by anything outside 33 to 37 MW. At 35 MW the plant consumes roughly 307 GWh in a year.",
+          "needles": [
+            "35 MW"
+          ],
+          "sources": [
+            "lf-kestrel-penang-phase2-power-deep-dive"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "lf-kestrel-penang-phase2-power-deep-dive"
+      },
+      "notes": "Synthetic-corpus fact; curated specification lf-kestrel-penang-phase2-power-deep-dive/p2. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q99",
+      "lane": "source:lf-kestrel-penang-phase2-power-deep-dive",
+      "kind": "paid-needed",
+      "question": "What fraction of weekly Penang Phase 2 energy occurs during the night interval?",
+      "requested": [
+        {
+          "id": "Q99.fact",
+          "need": "What fraction of weekly Penang Phase 2 energy occurs during the night interval?",
+          "text": "The interval data shows why the annual share flatters the contract. Between 10:00 and 15:00 on a clear day the modelled solar output would cover about 55% of the plant's draw. Between 19:00 and 07:00 it covers nothing, and those twelve hours carry 52% of the plant's weekly energy, because the night shifts run the reflow and test lines hardest. On an hourly-matched basis the contract covers about 9% of consumption, roughly half the annual figure.",
+          "needles": [
+            "52%"
+          ],
+          "sources": [
+            "lf-kestrel-penang-phase2-power-deep-dive"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "lf-kestrel-penang-phase2-power-deep-dive"
+      },
+      "notes": "Synthetic-corpus fact; curated specification lf-kestrel-penang-phase2-power-deep-dive/p7. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "Q100",
+      "lane": "source:lf-kestrel-penang-phase2-power-deep-dive",
+      "kind": "paid-needed",
+      "question": "What share of Penang Phase 2 consumption does solar cover on an hourly-matched basis?",
+      "requested": [
+        {
+          "id": "Q100.fact",
+          "need": "What share of Penang Phase 2 consumption does solar cover on an hourly-matched basis?",
+          "text": "The interval data shows why the annual share flatters the contract. Between 10:00 and 15:00 on a clear day the modelled solar output would cover about 55% of the plant's draw. Between 19:00 and 07:00 it covers nothing, and those twelve hours carry 52% of the plant's weekly energy, because the night shifts run the reflow and test lines hardest. On an hourly-matched basis the contract covers about 9% of consumption, roughly half the annual figure.",
+          "needles": [
+            "9%"
+          ],
+          "sources": [
+            "lf-kestrel-penang-phase2-power-deep-dive"
+          ]
+        }
+      ],
+      "expect": {
+        "buy": "lf-kestrel-penang-phase2-power-deep-dive"
+      },
+      "notes": "Synthetic-corpus fact; curated specification lf-kestrel-penang-phase2-power-deep-dive/p7. Human review pending; not a claim about the real world.",
+      "stratum": "historical-out-of-profile"
+    },
+    {
+      "id": "v3-V05",
+      "topic": "escrow",
+      "question": "Which crypto-condition type does XRPL escrow use for a hash-locked release?",
+      "gold": "PREIMAGE-SHA-256",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v3-V06",
+      "topic": "escrow",
+      "question": "Does an XRPL escrow pay out by itself once FinishAfter has passed, or does something have to be submitted?",
+      "gold": "EscrowFinish",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v3-V07",
+      "topic": "rlusd-stablecoin",
+      "question": "Which US state regulator supervises the trust company that issues RLUSD?",
+      "gold": "New York",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v3-V08",
+      "topic": "rlusd-stablecoin",
+      "question": "RLUSD has a five-letter code. How is that currency code represented on the XRP Ledger?",
+      "gold": "524C555344",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v3-V09",
+      "topic": "trust-lines-reserves",
+      "question": "What must a holder submit before an account can receive an issued token such as a stablecoin on XRPL?",
+      "gold": "TrustSet",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v3-V10",
+      "topic": "trust-lines-reserves",
+      "question": "Why does every trust line make a wallet need more XRP than just the transaction fee?",
+      "gold": "owner reserve",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v3-V11",
+      "topic": "credentials-did",
+      "question": "Which transaction must the subject of a Credential submit to accept it?",
+      "gold": "CredentialAccept",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v3-V12",
+      "topic": "credentials-did",
+      "question": "Which XRPL transaction publishes or updates a decentralized identifier for an account?",
+      "gold": "DIDSet",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v3-V15",
+      "topic": "amm-dex",
+      "question": "What is the maximum trading fee an XRPL AMM pool can set?",
+      "gold": "1%",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v3-V16",
+      "topic": "amm-dex",
+      "question": "Which Payment field lets an agent pay in one currency while the recipient receives another through the DEX or AMMs?",
+      "gold": "SendMax",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v3-V17",
+      "topic": "mainnet-kyc-mas",
+      "question": "Which Singapore statute governs digital payment token services that an XRPL payments product could fall under?",
+      "gold": "Payment Services Act",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v3-V18",
+      "topic": "mainnet-kyc-mas",
+      "question": "Which FATF rule requires originator and beneficiary information to travel with crypto transfers between VASPs?",
+      "gold": "Travel Rule",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v3-V19",
+      "topic": "spending-controls",
+      "question": "How can an XRPL account require more than one approver before an agent's payment is released?",
+      "gold": "SignerListSet",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v3-V20",
+      "topic": "spending-controls",
+      "question": "Which native XRPL object lets a payer pre-approve a capped payment that the recipient cashes later?",
+      "gold": "CheckCash",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v4-H01",
+      "topic": "payments-fees",
+      "question": "What account-level counter stops an XRPL payment from being replayed or applied out of order?",
+      "gold": "Sequence",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v4-H02",
+      "topic": "payments-fees",
+      "question": "My payment agent wants to prepare several XRPL transactions and submit them in any order. Which transaction reserves sequence numbers for that?",
+      "gold": "TicketCreate",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v4-H03",
+      "topic": "payments-fees",
+      "question": "Where in an XRPL transaction can a sender attach an invoice reference or other free-form data?",
+      "gold": "Memos",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v4-H04",
+      "topic": "escrow",
+      "question": "Which transaction returns an expired escrow's XRP to the account that created it?",
+      "gold": "EscrowCancel",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v4-H06",
+      "topic": "escrow",
+      "question": "What must a stablecoin issuer enable on its account before holders can lock that issuer's trust line tokens in an escrow?",
+      "gold": "AllowTrustLineLocking",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v4-H07",
+      "topic": "rlusd-stablecoin",
+      "question": "Which AccountSet flag lets a token issuer freeze every holder of its currency at once?",
+      "gold": "GlobalFreeze",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v4-H08",
+      "topic": "rlusd-stablecoin",
+      "question": "Which 2025 US federal law created a licensing framework for payment stablecoins?",
+      "gold": "GENIUS Act",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v4-H09",
+      "topic": "trust-lines-reserves",
+      "question": "Which issuer AccountSet flag makes new trust lines allow rippling, so holders of its token can pay each other through the issuer?",
+      "gold": "DefaultRipple",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v4-H10",
+      "topic": "trust-lines-reserves",
+      "question": "Which transaction deletes an XRPL account and sweeps its remaining XRP to another account?",
+      "gold": "AccountDelete",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v4-H11",
+      "topic": "credentials-did",
+      "question": "Which field of an XRPL Credential records what kind of attestation it is, such as a KYC check?",
+      "gold": "CredentialType",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v4-H12",
+      "topic": "credentials-did",
+      "question": "Which XLS standard defines the native XRPL decentralized identifier ledger entry?",
+      "gold": "XLS-40",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v4-H13",
+      "topic": "x402",
+      "question": "Which company created the x402 payment protocol?",
+      "gold": "Coinbase",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v4-H14",
+      "topic": "x402",
+      "question": "What does the HTTP specification itself say about status code 402?",
+      "gold": "reserved",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v4-H15",
+      "topic": "amm-dex",
+      "question": "Which transaction creates a new AMM pool for a pair of assets on the XRP Ledger?",
+      "gold": "AMMCreate",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v4-H16",
+      "topic": "amm-dex",
+      "question": "Which transaction bids for an AMM pool's auction slot to trade at a discounted fee?",
+      "gold": "AMMBid",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v4-H17",
+      "topic": "mainnet-kyc-mas",
+      "question": "Which US Treasury bureau do crypto money transmitters register with under the Bank Secrecy Act?",
+      "gold": "FinCEN",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v4-H18",
+      "topic": "mainnet-kyc-mas",
+      "question": "Which MAS-led Singapore initiative pilots asset tokenisation and DeFi use cases with financial institutions?",
+      "gold": "Project Guardian",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v4-H19",
+      "topic": "spending-controls",
+      "question": "How can an account owner stop the master key from signing so that only a separate agent key can?",
+      "gold": "DisableMaster",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v4-H20",
+      "topic": "spending-controls",
+      "question": "Which XRPL transaction lets an account grant another account permission to submit specific transaction types on its behalf?",
+      "gold": "DelegateSet",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v5-H01",
+      "topic": "fees-reserves",
+      "question": "What is the reference transaction cost on the XRP Ledger, measured in drops?",
+      "gold": "10 drops",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v5-H02",
+      "topic": "flags",
+      "question": "Which OfferCreate flag makes an XRPL offer fill completely or not at all?",
+      "gold": "tfFillOrKill",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v5-H03",
+      "topic": "agent-payments",
+      "question": "Which agent payments protocol did Google announce in 2025 to let AI agents pay with verifiable mandates?",
+      "gold": "AP2",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v5-H04",
+      "topic": "escrow",
+      "question": "Which crypto-condition type do conditional escrows on the XRP Ledger support?",
+      "gold": "PREIMAGE-SHA-256",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v5-H05",
+      "topic": "token-escrow",
+      "question": "Which XRPL amendment lets escrows hold issued tokens, not just XRP?",
+      "gold": "TokenEscrow",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v5-H06",
+      "topic": "amm",
+      "question": "Which transaction type creates a new automated market maker pool on the XRP Ledger?",
+      "gold": "AMMCreate",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v5-H07",
+      "topic": "dex",
+      "question": "Which transaction type places an order on the XRPL decentralized exchange?",
+      "gold": "OfferCreate",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v5-H08",
+      "topic": "credentials",
+      "question": "After an issuer creates an on-ledger credential on XRPL, what must the subject do before the credential is valid?",
+      "gold": "CredentialAccept",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v5-H09",
+      "topic": "dids",
+      "question": "Which transaction type sets or updates a decentralized identifier on the XRP Ledger?",
+      "gold": "DIDSet",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v5-H10",
+      "topic": "permissioned-domains",
+      "question": "Which transaction type creates or modifies a permissioned domain on the XRP Ledger?",
+      "gold": "PermissionedDomainSet",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v5-H11",
+      "topic": "multisig",
+      "question": "Which transaction type configures the signer list and quorum for multi-signing on XRPL?",
+      "gold": "SignerListSet",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v5-H12",
+      "topic": "tickets",
+      "question": "What is the maximum number of tickets one XRPL account can hold at the same time?",
+      "gold": "250",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v5-H13",
+      "topic": "payment-channels",
+      "question": "Which XRPL feature lets two parties exchange many signed off-ledger micropayment claims and settle once on the ledger?",
+      "gold": "payment channel",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v5-H14",
+      "topic": "rlusd",
+      "question": "RLUSD has five characters, so how is its currency code written on the XRP Ledger?",
+      "gold": "524C555344",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v5-H15",
+      "topic": "stablecoin-regulation",
+      "question": "Which US federal law, enacted in July 2025, created a framework for payment stablecoins?",
+      "gold": "GENIUS",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v5-H16",
+      "topic": "mas-stablecoins",
+      "question": "Under the Monetary Authority of Singapore stablecoin framework, within how many business days must an issuer redeem a stablecoin at par?",
+      "gold": "5 business days",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v5-H17",
+      "topic": "mas-licensing",
+      "question": "Which Singapore act requires digital payment token service providers to be licensed?",
+      "gold": "Payment Services Act",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v5-H18",
+      "topic": "travel-rule",
+      "question": "In which FATF Recommendation is the travel rule for virtual asset transfers set out?",
+      "gold": "Recommendation 16",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v5-H19",
+      "topic": "x402",
+      "question": "In the x402 protocol, what does the facilitator do after a client sends a signed payment?",
+      "gold": "verif",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "v5-H20",
+      "topic": "consensus",
+      "question": "What share of its trusted validators must agree before the XRP Ledger consensus process validates a ledger?",
+      "gold": "80%",
+      "stratum": "protocol-used-judge-bank"
+    },
+    {
+      "id": "R02",
+      "question": "Which XRPL transaction creates or modifies a trust line?",
+      "gold": "TrustSet",
+      "sources": [
+        "xrpl-docs-82cb2e8a448f-0"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R03",
+      "question": "Which XRPL transaction deletes an account and sends its remaining XRP?",
+      "gold": "AccountDelete",
+      "sources": [
+        "xrpl-docs-82cb2e8a448f-0"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R04",
+      "question": "Which XRPL transaction creates a check?",
+      "gold": "CheckCreate",
+      "sources": [
+        "xrpl-docs-2796003783d9-0"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R05",
+      "question": "Which XRPL transaction redeems a check?",
+      "gold": "CheckCash",
+      "sources": [
+        "xrpl-docs-bc65884e0dab-0"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R06",
+      "question": "Which XRPL transaction cancels a check?",
+      "gold": "CheckCancel",
+      "sources": [
+        "xrpl-docs-2796003783d9-0"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R07",
+      "question": "Which XRPL transaction preauthorizes deposits?",
+      "gold": "DepositPreauth",
+      "sources": [
+        "xrpl-docs-bc65884e0dab-12"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R08",
+      "question": "Which XRPL transaction places funds in escrow?",
+      "gold": "EscrowCreate",
+      "sources": [
+        "xrpl-docs-af1964322963-0"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R09",
+      "question": "Which XRPL transaction delivers an escrowed payment?",
+      "gold": "EscrowFinish",
+      "sources": [
+        "xrpl-docs-82cb2e8a448f-0"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R10",
+      "question": "Which XRPL transaction cancels an expired escrow?",
+      "gold": "EscrowCancel",
+      "sources": [
+        "xrpl-docs-82cb2e8a448f-0"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R11",
+      "question": "Which XRPL transaction creates a non-fungible token?",
+      "gold": "NFTokenMint",
+      "sources": [
+        "xrpl-docs-07b5c1bb7d9c-12"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R12",
+      "question": "Which XRPL transaction destroys a non-fungible token?",
+      "gold": "NFTokenBurn",
+      "sources": [
+        "xrpl-docs-db76ab42b01a-12"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R13",
+      "question": "Which XRPL transaction creates an offer to buy or sell an NFT?",
+      "gold": "NFTokenCreateOffer",
+      "sources": [
+        "xrpl-docs-71e9ea3e0d85-36"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R14",
+      "question": "Which XRPL transaction accepts an offer to buy or sell an NFT?",
+      "gold": "NFTokenAcceptOffer",
+      "sources": [
+        "xrpl-docs-71e9ea3e0d85-36"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R15",
+      "question": "Which XRPL transaction cancels NFT offers?",
+      "gold": "NFTokenCancelOffer",
+      "sources": [
+        "xrpl-docs-60092f047df2-0"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R16",
+      "question": "Which XRPL transaction removes an order from the decentralized exchange?",
+      "gold": "OfferCancel",
+      "sources": [
+        "xrpl-docs-9c2912ba136b-0"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R17",
+      "question": "Which XRPL transaction opens a payment channel?",
+      "gold": "PaymentChannelCreate",
+      "sources": [
+        "xrpl-docs-a63841234ab9-0"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R18",
+      "question": "Which XRPL transaction adds XRP to a payment channel?",
+      "gold": "PaymentChannelFund",
+      "sources": [
+        "xrpl-docs-a63841234ab9-0"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R19",
+      "question": "Which XRPL transaction claims funds from a payment channel?",
+      "gold": "PaymentChannelClaim",
+      "sources": [
+        "xrpl-docs-82cb2e8a448f-0"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R20",
+      "question": "Which XRPL transaction assigns a regular key to an account?",
+      "gold": "SetRegularKey",
+      "sources": [
+        "xrpl-docs-485dad06d157-12"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R21",
+      "question": "Which XRPL transaction sets aside sequence numbers for future use?",
+      "gold": "TicketCreate",
+      "sources": [
+        "xrpl-docs-409e4f04e4f5-0"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R22",
+      "question": "Which XRPL transaction adds assets to an automated market maker pool?",
+      "gold": "AMMDeposit",
+      "sources": [
+        "xrpl-docs-71e9ea3e0d85-24"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R23",
+      "question": "Which XRPL transaction removes assets from an automated market maker pool?",
+      "gold": "AMMWithdraw",
+      "sources": [
+        "xrpl-docs-71e9ea3e0d85-24"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R24",
+      "question": "Which XRPL transaction votes on an automated market maker trading fee?",
+      "gold": "AMMVote",
+      "sources": [
+        "xrpl-docs-71e9ea3e0d85-48"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R25",
+      "question": "Which XRPL transaction bids for an automated market maker auction slot?",
+      "gold": "AMMBid",
+      "sources": [
+        "xrpl-docs-566c39e775cd-12"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R26",
+      "question": "Which XRPL transaction removes an empty automated market maker?",
+      "gold": "AMMDelete",
+      "sources": [
+        "xrpl-docs-71e9ea3e0d85-60"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R27",
+      "question": "Which XRPL transaction issues an on-ledger credential?",
+      "gold": "CredentialCreate",
+      "sources": [
+        "xrpl-docs-b38b6b381d96-0"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R28",
+      "question": "Which XRPL transaction deletes an on-ledger credential?",
+      "gold": "CredentialDelete",
+      "sources": [
+        "xrpl-docs-b38b6b381d96-0"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R29",
+      "question": "Which XRPL transaction removes an account decentralized identifier?",
+      "gold": "DIDDelete",
+      "sources": [
+        "xrpl-docs-90e03006b8f3-0"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R30",
+      "question": "Which XRPL transaction deletes a permissioned domain?",
+      "gold": "PermissionedDomainDelete",
+      "sources": [
+        "xrpl-docs-0bd062d98e53-0"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R32",
+      "question": "Which XRPL API method lists an account trust lines?",
+      "gold": "account_lines",
+      "sources": [
+        "xrpl-docs-3bb595d39280-12"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R33",
+      "question": "Which XRPL API method lists ledger objects owned by an account?",
+      "gold": "account_objects",
+      "sources": [
+        "xrpl-docs-a975399fbffa-0"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R34",
+      "question": "Which XRPL API method lists transactions involving an account?",
+      "gold": "account_tx",
+      "sources": [
+        "xrpl-docs-93ebcc66b8ad-12"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R35",
+      "question": "Which XRPL API method lists currencies an account can send or receive?",
+      "gold": "account_currencies",
+      "sources": [
+        "xrpl-docs-cf227456e051-0"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R36",
+      "question": "Which XRPL API method totals balances of tokens issued by an account?",
+      "gold": "gateway_balances",
+      "sources": [
+        "xrpl-docs-5c17c9eab3de-0"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R37",
+      "question": "Which XRPL API method retrieves raw ledger state objects?",
+      "gold": "ledger_data",
+      "sources": [
+        "xrpl-docs-668c96bae8be-0"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R38",
+      "question": "Which XRPL API method returns human-readable server status?",
+      "gold": "server_info",
+      "sources": [
+        "xrpl-docs-302c518025d3-12"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R39",
+      "question": "Which XRPL API method retrieves offers from an order book?",
+      "gold": "book_offers",
+      "sources": [
+        "xrpl-docs-9c2912ba136b-12"
+      ],
+      "stratum": "protocol-source-facts"
+    },
+    {
+      "id": "R40",
+      "question": "Which XRPL API method finds payment paths between two accounts?",
+      "gold": "ripple_path_find",
+      "sources": [
+        "xrpl-docs-ca066823dbfe-0"
+      ],
+      "stratum": "protocol-source-facts"
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "reason": "Unchanged strict oracle; DestinationTag paid fixture public-answer phrase collision corrected with distinct wording and unique canary. Original failed attempt retained.",
+  "from": "/Users/speedpowermac/.t3/worktrees/tftf/t3-897adb36-bee7b3ade99097b3/scratch/r3-failed-oracle",
+  "priorIdentity": {
+    "modelCeilingUsd": 4.9,
+    "corpusSha256": "f2d650367f8ffa325cc97b287a515e92cebe4f6e6d315a99d9738de3ec53696c",
+    "bankSha256": "b5e722d9a004a56f5c5f0ed1078bfb911063100c244e11252459608cb770cb6b",
+    "profile": "real",
+    "freeTier": "public-docs",
+    "decision": "fixture",
+    "embedding": "local",
+    "limit": 200,
+    "revision": "r3-real-v3",
+    "sourceCommit": "59994175a0d239da9200d169b6757f7763067fc6"
+  },
+  "identity": {
+    "modelCeilingUsd": 4.9,
+    "corpusSha256": "6abc4837a7abf2f6484a3a113be9a83ed40be7e878949918077ab36c3137f45a",
+    "bankSha256": "b5e722d9a004a56f5c5f0ed1078bfb911063100c244e11252459608cb770cb6b",
+    "profile": "real",
+    "freeTier": "public-docs",
+    "decision": "fixture",
+    "embedding": "local",
+    "limit": 200,
+    "revision": "r3-real-v3",
+    "sourceCommit": "30900d2aed361f331b0d2fa0a217254a9593ab93"
+  },
+  "retainedPairs": 206,
+  "priorViolations": [
+    {
+      "id": "v3-V02",
+      "arm": "paid",
+      "runId": "da90a388-c8f4-4246-a595-4953e2db5205",
+      "violations": [
+        {
+          "rule": "premium_leak",
+          "runId": "da90a388-c8f4-4246-a595-4953e2db5205",
+          "evidence": "raw public metadata, persisted events or wire observation"
+        }
+      ]
+    },
+    {
+      "id": "v3-V02",
+      "arm": "free",
+      "runId": "c393973c-441c-466d-bc5f-d04923b60767",
+      "violations": [
+        {
+          "rule": "premium_leak",
+          "runId": "c393973c-441c-466d-bc5f-d04923b60767",
+          "evidence": "raw public metadata, persisted events or wire observation"
+        }
+      ]
+    }
+  ],
+  "assertions": [
+    "Only the diagnosed static fixture changed",
+    "No retained run bought, read or received a grant for that fixture",
+    "Every retained run and its complete SSE observations passed the unchanged auditor",
+    "All scores, run IDs and task keys retained"
+  ]
+}

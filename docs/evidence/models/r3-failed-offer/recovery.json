@@ -1,0 +1,73 @@
+{
+  "reason": "Unchanged strict oracle; Paid fixture public-answer phrase collision corrected with distinct wording and unique canary. Original failed attempt retained.",
+  "from": "/Users/speedpowermac/.t3/worktrees/tftf/t3-897adb36-bee7b3ade99097b3/scratch/r3-real-resumed",
+  "priorIdentity": {
+    "modelCeilingUsd": 4.9,
+    "corpusSha256": "6abc4837a7abf2f6484a3a113be9a83ed40be7e878949918077ab36c3137f45a",
+    "bankSha256": "b5e722d9a004a56f5c5f0ed1078bfb911063100c244e11252459608cb770cb6b",
+    "profile": "real",
+    "freeTier": "public-docs",
+    "decision": "fixture",
+    "embedding": "local",
+    "limit": 200,
+    "revision": "r3-real-v3",
+    "sourceCommit": "30900d2aed361f331b0d2fa0a217254a9593ab93"
+  },
+  "identity": {
+    "modelCeilingUsd": 4.9,
+    "corpusSha256": "a83c3ee626a46de22cb6ff69996d593af389beec5f53b166e96e0967e6e6cdb0",
+    "bankSha256": "b5e722d9a004a56f5c5f0ed1078bfb911063100c244e11252459608cb770cb6b",
+    "profile": "real",
+    "freeTier": "public-docs",
+    "decision": "fixture",
+    "embedding": "local",
+    "limit": 200,
+    "revision": "r3-real-v3",
+    "sourceCommit": "5cb410291c03e0dd80b932ff59213f26b0141e9b"
+  },
+  "retainedPairs": 211,
+  "priorViolations": [
+    {
+      "id": "v3-V05",
+      "arm": "free",
+      "runId": "c3909aef-de3d-47f0-b9a5-07a0f66c884e",
+      "violations": [
+        {
+          "rule": "premium_leak",
+          "runId": "c3909aef-de3d-47f0-b9a5-07a0f66c884e",
+          "evidence": "raw public metadata, persisted events or wire observation"
+        }
+      ]
+    },
+    {
+      "id": "v3-V05",
+      "arm": "paid",
+      "runId": "dee285a0-00f1-4dfa-8098-cee1bce3fbfc",
+      "violations": [
+        {
+          "rule": "premium_leak",
+          "runId": "dee285a0-00f1-4dfa-8098-cee1bce3fbfc",
+          "evidence": "raw public metadata, persisted events or wire observation"
+        }
+      ]
+    },
+    {
+      "id": "v3-V06",
+      "arm": "paid",
+      "runId": "8425589a-2327-4c51-8de3-3ad644588790",
+      "violations": [
+        {
+          "rule": "premium_leak",
+          "runId": "8425589a-2327-4c51-8de3-3ad644588790",
+          "evidence": "raw public metadata, persisted events or wire observation"
+        }
+      ]
+    }
+  ],
+  "assertions": [
+    "Only the diagnosed static fixture changed",
+    "No retained run bought, read or received a grant for that fixture",
+    "Every retained run and its complete SSE observations passed the unchanged auditor",
+    "All scores, run IDs and task keys retained"
+  ]
+}
