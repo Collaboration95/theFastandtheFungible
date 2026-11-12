@@ -1,0 +1,734 @@
+From 567b1327d265f549c4509581442fdf6b5d6e3b17 Mon Sep 17 00:00:00 2001
+From: ResearchAgent contributors <contributors@example.invalid>
+Date: Thu, 12 Nov 2026 19:55:28 +0800
+Subject: [PATCH] docs: add standalone experimental key-reveal delivery example
+
+---
+ .../x402-key-reveal-escrow/README.md          | 148 ++++++++++
+ .../x402-key-reveal-escrow/example.mjs        | 191 ++++++++++++
+ .../x402-key-reveal-escrow/example.test.mjs   |  46 +++
+ .../x402-key-reveal-escrow/package-lock.json  | 273 ++++++++++++++++++
+ .../x402-key-reveal-escrow/package.json       |   9 +
+ docs/agents/agentic-payments-x402.md          |   4 +
+ 6 files changed, 671 insertions(+)
+ create mode 100644 _code-samples/x402-key-reveal-escrow/README.md
+ create mode 100644 _code-samples/x402-key-reveal-escrow/example.mjs
+ create mode 100644 _code-samples/x402-key-reveal-escrow/example.test.mjs
+ create mode 100644 _code-samples/x402-key-reveal-escrow/package-lock.json
+ create mode 100644 _code-samples/x402-key-reveal-escrow/package.json
+
+diff --git a/_code-samples/x402-key-reveal-escrow/README.md b/_code-samples/x402-key-reveal-escrow/README.md
+new file mode 100644
+index 0000000..86168e2
+--- /dev/null
++++ b/_code-samples/x402-key-reveal-escrow/README.md
+@@ -0,0 +1,148 @@
++# x402 key-reveal escrow on XRPL
++
++**XRPL Testnet only · faucet XRP · synthetic article · no real value.**
++
++A copyable seller and buyer in one 191-line JavaScript file, using only Node,
++`xrpl@4.7.0` and the Starter Kit payment integration `x402-xrpl@0.3.4`.
++Copy this directory anywhere; it imports no ResearchAgent code, model, wallet
++service, Express app or facilitator. The lockfile pins the dependencies.
++
++## Run in about 60 seconds
++
++Node ≥22.13 and access to the public Testnet faucet and WebSocket are required.
++From this directory:
++
++```sh
++npm ci && OFFSET=1400 XRPL_KEY_REVEAL_TESTNET=1 npm start
++```
++
++The command explicitly authorizes two fixed 1,000-drop escrow principals
++(0.002 Testnet XRP total) and at most 1,000 drops per transaction in fees.
++It creates two fresh faucet wallets, binds an ephemeral loopback HTTP port,
++prints four explorer links, verifies delivery and cancellation, then exits.
++It reads no wallet seed or API key from the environment and never prints keys.
++The offset is accepted by the environment; this example always uses port 0.
++Faucet and ledger latency can take longer than a minute; it never substitutes
++a simulated success. Keep faucet use modest.
++
++## What happens
++
++1. Buyer requests `/article?intent=deliver`. Seller returns HTTP 402 with the
++   same challenge in the body and `PAYMENT-REQUIRED`. It includes only encrypted
++   content, AES-GCM metadata, a plaintext hash, buyer, price and expiry.
++2. Seller holds a random 32-byte key K. The offer's Condition is the serialized
++   PREIMAGE-SHA-256 crypto-condition `A0258020 || SHA256(K) || 810120`.
++   **Condition is not a bare digest.** The fulfillment is `A0228020 || K`.
++3. Fixed buyer policy checks Testnet, seller, amount, buyer and bounded expiry.
++   It signs one `EscrowCreate` with that Condition and `CancelAfter`; its Memo
++   commits to the canonical challenge, including invoice and encrypted envelope.
++4. After validation, buyer sends that same signed create blob in
++   `PAYMENT-SIGNATURE`. Seller checks its hash, validated `tesSUCCESS`, exact
++   terms and live escrow object, then submits `EscrowFinish` with K.
++5. Buyer reads the finish directly from the ledger, requires validated success
++   and the original owner/sequence, checks SHA256(K) against the saved on-ledger
++   Condition, authenticates/decrypts AES-GCM and checks the plaintext hash. Only
++   then does it expose a verified grant's plaintext. HTTP never delivers K.
++   Replaying the same create returns the same finish without another charge.
++6. A separate `withhold` intent deliberately gets no key. Buyer waits for
++   **validated ledger close time** to pass `CancelAfter`, submits `EscrowCancel`,
++   and verifies its balance increased by the full principal less cancellation fee.
++   Expiry permits cancellation; it does not submit it or return funds itself.
++
++## Trust model and boundaries
++
++Delivery is atomic via key reveal: the ledger releases payment only on a valid
++fulfillment, which publicly reveals the decryption key. This holds for an honest
++envelope prepared under that key. The ledger does **not** inspect ciphertext,
++guarantee truthful content, enforce article quality, or judge a broken promise.
++A malicious seller can commit to garbage or an envelope that cannot decrypt.
++Once finish succeeds, `CancelAfter` cannot reverse payment. A refund then needs
++a **writer-signed Payment**; a writer can refuse. This minimal example does not
++implement that cooperative refund. A seller who never finishes leaves principal
++recoverable by explicit cancellation after the deadline; fees are never refunded.
++
++K is public after finish. Anyone with the ciphertext can decrypt it then. Use a
++fresh key/envelope per buyer and intent, and never treat this as lasting DRM.
++
++This is an **experimental `key-reveal-escrow` scheme**, not t54 `exact` escrow
++support or a standardized x402 extension. We reuse the actual pinned package's
++header codecs and signed-blob envelope builder. Its `XRPLPresignedPaymentPayer`,
++`requirePayment` and hosted exact facilitator require Payment transactions and
++must not settle these offers. No facilitator is called here. See the
++[t54 scheme](https://xrpl-x402.t54.ai/docs/xrpl-scheme),
++[XRPL escrow semantics](https://xrpl.org/docs/concepts/payment-types/escrow) and
++[EscrowCancel](https://xrpl.org/docs/references/protocol/transactions/types/escrowcancel).
++
++Ripple's Phase 1 Starter Kit is a curated toolkit, not one npm package. The
++payment dependency is pinned to the same `x402-xrpl@0.3.4` used by the parent
++repository's bidirectional native-XRP interop tests. No RLUSD, IOU, mainnet,
++model, external adoption or upstream acceptance is claimed.
++
++This is a single-process teaching example: buyer and seller have separate
++wallets but share a process and a trusted loopback transport. Offers and signed
++blobs live in memory. Production needs authenticated signed offers, durable
++intent/nonce and signed-blob journals, bounded recovery, reserve checks, network
++timeouts and cancellation recovery. On an uncertain submit, query the original
++hash; never create a replacement payment. On interruption, inspect the printed
++create hashes and cancel unfinished escrows after their deadlines. A new run
++creates new wallets/intents; it is not crash recovery for an earlier run.
++
++## Tests
++
++```sh
++npm test                                      # offline crypto / policy / SDK boundaries
++OFFSET=1400 XRPL_KEY_REVEAL_TESTNET=1 npm test  # also runs both paths on real Testnet
++```
++
++The root `npm run check:fast` runs the offline tests and explicitly skips its
++live Testnet test unless `XRPL_KEY_REVEAL_TESTNET=1`. Offline tests cover a wrong
++key/Condition, altered authentication tag and plaintext commitment, budget and
++network rejection, missing invoice binding, codec preservation and the exact
++payer's refusal of this custom scheme. Live checks include replay and actual
++principal recovery. Synthetic crypto fixtures do not establish ledger success.
++
++## Recorded Testnet run · 10 Nov 2026
++
++The completed live test and the four independently validated transaction hashes
++are recorded below. Public Testnet history may be pruned or reset.
++
++`OFFSET=1400 XRPL_KEY_REVEAL_TESTNET=1 node --test example.test.mjs`:
++**3 passed, 0 skipped, 0 failed; live subtest 49.3 s** (49.7 s including offline
++checks). A separate read-only `tx` query confirmed all four were validated
++`tesSUCCESS`. Fees: create 12 drops each, finish 423 drops, cancel 12 drops;
++459 drops burned total. Delivery paid 1,000 drops; the withheld 1,000 drops
++returned in full before cancellation fee.
++
++| Step | Transaction / explorer |
++|---|---|
++| Withheld create | [25CC953B9B337D8A45499433A8BD55FA928FA81C33E1735BD407699887052124](https://testnet.xrpl.org/transactions/25CC953B9B337D8A45499433A8BD55FA928FA81C33E1735BD407699887052124) |
++| Delivery create | [C7BCC2963C3FBAAC370AD192E75019A6FDAB62FB2F7922BE5DD7825E89792FB3](https://testnet.xrpl.org/transactions/C7BCC2963C3FBAAC370AD192E75019A6FDAB62FB2F7922BE5DD7825E89792FB3) |
++| Delivery finish / public key | [770580CE68742B35268EEAF82F74B8D19B2863E0CD9A12F3911ED3E5C602AC73](https://testnet.xrpl.org/transactions/770580CE68742B35268EEAF82F74B8D19B2863E0CD9A12F3911ED3E5C602AC73) |
++| Withheld cancel / principal back | [B901A74FF2A8741816AE2D5660E2FA7F44AB69E963C5D88620AF3644D4AB6D5D](https://testnet.xrpl.org/transactions/B901A74FF2A8741816AE2D5660E2FA7F44AB69E963C5D88620AF3644D4AB6D5D) |
++
++Expected output (hashes and timings change on each run):
++
++```text
++XRPL TESTNET · faucet XRP · synthetic content · no real value
++withhold create: https://testnet.xrpl.org/transactions/<create hash>
++deliver create: https://testnet.xrpl.org/transactions/<create hash>
++deliver finish: https://testnet.xrpl.org/transactions/<finish hash>
++Verified grant: sha256(K) matches on-ledger Condition; AES-GCM and plaintext hash OK
++Synthetic article: keys travel on XRPL.
++withhold cancel: https://testnet.xrpl.org/transactions/<cancel hash>
++CancelAfter: 1000 drops principal returned; transaction fees are not refunded. RESULT PASS
++```
++
++Exploratory runs before this complete run funded disposable wallets and created
++one escrow before exposing an RPC annotation comparison bug. Those faucet
++allocations and transaction fees are additional to the final-run totals above.
++No private wallet material is committed. The preliminary escrow was cancelled
++after expiry; its create and cleanup receipt are recorded below.
++
++Preliminary create:
++[ACE5E576450557CF5CBDA57B6C1A273480180CF3919098207A13010A38968566](https://testnet.xrpl.org/transactions/ACE5E576450557CF5CBDA57B6C1A273480180CF3919098207A13010A38968566).
++Cleanup cancel (a third-party faucet wallet can submit cancellation for the
++original owner):
++[9E06AA77E120B46467CEAF7B12C802B20CDCB77E783D9B10E6934AE7B220854D](https://testnet.xrpl.org/transactions/9E06AA77E120B46467CEAF7B12C802B20CDCB77E783D9B10E6934AE7B220854D),
++validated `tesSUCCESS` in ledger 22218670, fee 12 drops. Principal went back to
++the original buyer, not the cancellation submitter.
+diff --git a/_code-samples/x402-key-reveal-escrow/example.mjs b/_code-samples/x402-key-reveal-escrow/example.mjs
+new file mode 100644
+index 0000000..17861ba
+--- /dev/null
++++ b/_code-samples/x402-key-reveal-escrow/example.mjs
+@@ -0,0 +1,191 @@
++// XRPL TESTNET ONLY; faucet XRP and synthetic content. No environment wallets.
++import assert from 'node:assert/strict'
++import { createCipheriv, createDecipheriv, createHash, randomBytes, randomUUID } from 'node:crypto'
++import { once } from 'node:events'
++import { createServer } from 'node:http'
++import { pathToFileURL } from 'node:url'
++import { Client, decode, hashes } from 'xrpl'
++import { encodePaymentRequiredHeader, decodePaymentRequiredHeader, decodePaymentSignatureHeader,
++  buildPaymentSignatureHeaderForSignedBlob, jsonCanonicalStringify } from 'x402-xrpl'
++
++const TESTNET = 'wss://s.altnet.rippletest.net:51233'
++const hex = b => b.toString('hex').toUpperCase()
++const bytes = h => Buffer.from(h, 'hex')
++const sha = b => hex(createHash('sha256').update(b).digest())
++export const conditionFor = key => `A0258020${sha(key)}810120` // DER, cost = 32
++const commitment = offer => sha(jsonCanonicalStringify(offer))
++const txJSON = r => r.tx_json ?? r
++const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
++
++export function seal(content) {
++  const key = randomBytes(32), iv = randomBytes(12)
++  const cipher = createCipheriv('aes-256-gcm', key, iv)
++  const encrypted = Buffer.concat([cipher.update(content), cipher.final()])
++  return { key, envelope: { ciphertext: hex(encrypted), iv: hex(iv), tag: hex(cipher.getAuthTag()),
++    plaintextHash: sha(content) } }
++}
++export function open(envelope, finish, onLedgerCondition) {
++  assert.match(finish.Fulfillment, /^A0228020[A-F0-9]{64}$/)
++  const key = bytes(finish.Fulfillment.slice(8))
++  assert.equal(conditionFor(key), onLedgerCondition, 'sha256(K) must match ledger Condition')
++  assert.equal(finish.Condition, onLedgerCondition)
++  const decipher = createDecipheriv('aes-256-gcm', key, bytes(envelope.iv))
++  decipher.setAuthTag(bytes(envelope.tag))
++  const plaintext = Buffer.concat([decipher.update(bytes(envelope.ciphertext)), decipher.final()])
++  assert.equal(sha(plaintext), envelope.plaintextHash)
++  return plaintext.toString('utf8')
++}
++export function checkOffer(req, seller, buyer, now) {
++  assert.equal(req.scheme, 'key-reveal-escrow'); assert.equal(req.network, 'xrpl:1')
++  assert.equal(req.asset, 'XRP'); assert.equal(req.payTo, seller)
++  assert.equal(req.amount, '1000', 'fixed per-intent policy budget: 1000 drops')
++  assert.equal(req.extra.buyer, buyer)
++  assert.match(req.extra.condition, /^A0258020[A-F0-9]{64}810120$/)
++  assert.ok(Number.isInteger(req.extra.cancelAfter) && req.extra.cancelAfter > now + 8)
++  assert.ok(req.extra.cancelAfter <= now + 65, 'bounded lock lifetime')
++}
++export function checkCreate(tx, offer) {
++  const req = offer.accepts[0], e = req.extra
++  assert.equal(tx.TransactionType, 'EscrowCreate'); assert.equal(tx.Account, e.buyer)
++  assert.equal(tx.Destination, req.payTo); assert.equal(tx.Amount, req.amount)
++  assert.equal(tx.Condition, e.condition); assert.equal(tx.CancelAfter, e.cancelAfter)
++  assert.equal(tx.FinishAfter, undefined)
++  assert.deepEqual(tx.Memos, [{ Memo: { MemoData: commitment(offer) } }])
++}
++function validated(r) {
++  assert.equal(r.validated, true); assert.equal(r.meta.TransactionResult, 'tesSUCCESS')
++  return r
++}
++async function submit(client, wallet, tx) {
++  const prepared = await client.autofill(tx)
++  assert.ok(BigInt(prepared.Fee) <= 1000n, 'per-transaction fee cap: 1000 drops')
++  const signed = wallet.sign(prepared) // Sign once. Never re-sign after an uncertain submit.
++  const result = validated((await client.submitAndWait(signed.tx_blob)).result)
++  return { result, blob: signed.tx_blob, hash: signed.hash }
++}
++async function ledgerTime(client) {
++  return (await client.request({ command: 'ledger', ledger_index: 'validated' })).result.ledger.close_time
++}
++async function escrow(client, buyer, sequence) {
++  return (await client.request({ command: 'ledger_entry', ledger_index: 'validated',
++    escrow: { owner: buyer, seq: sequence } })).result.node
++}
++
++export async function run({ log = console.log } = {}) {
++  assert.equal(process.env.XRPL_KEY_REVEAL_TESTNET, '1', 'Opt in with XRPL_KEY_REVEAL_TESTNET=1')
++  const client = new Client(TESTNET, { connectionTimeout: 15000, timeout: 15000 })
++  let server
++  const receipts = []
++  function record(label, payment) {
++    receipts.push({ label, hash: payment.hash, ledger: payment.result.ledger_index,
++      fee: txJSON(payment.result).Fee })
++    log(`${label}: https://testnet.xrpl.org/transactions/${payment.hash}`)
++  }
++  try {
++    await client.connect()
++    assert.equal((await client.request({ command: 'server_info' })).result.info.network_id, 1)
++    log('XRPL TESTNET · faucet XRP · synthetic content · no real value')
++    const { wallet: buyer } = await client.fundWallet()
++    const { wallet: seller } = await client.fundWallet()
++    const offers = new Map()
++    server = createServer(async (request, response) => {
++      const reply = (status, body, headers = {}) => {
++        response.writeHead(status, { 'content-type': 'application/json', ...headers })
++        response.end(JSON.stringify(body))
++      }
++      try {
++        const url = new URL(request.url, 'http://localhost'), intent = url.searchParams.get('intent')
++        assert.equal(request.method, 'GET'); assert.equal(url.pathname, '/article')
++        assert.ok(['deliver', 'withhold'].includes(intent))
++        if (!offers.has(intent)) {
++          const { key, envelope } = seal(Buffer.from('Synthetic article: keys travel on XRPL.'))
++          const offer = { x402Version: 2, resource: { url: `http://127.0.0.1:${server.address().port}${request.url}` },
++            accepts: [{ scheme: 'key-reveal-escrow', network: 'xrpl:1',
++            asset: 'XRP', amount: '1000', payTo: seller.classicAddress, maxTimeoutSeconds: 60,
++            extra: { invoiceId: randomUUID(), buyer: buyer.classicAddress, condition: conditionFor(key),
++              cancelAfter: await ledgerTime(client) + (intent === 'withhold' ? 24 : 60) } }],
++          extensions: { keyReveal: envelope } }
++          offers.set(intent, { key, offer }) // One offer and one create per intent, in memory.
++        }
++        const state = offers.get(intent), req = state.offer.accepts[0]
++        const header = request.headers['payment-signature']
++        if (!header) return reply(402, state.offer, { 'PAYMENT-REQUIRED': encodePaymentRequiredHeader(state.offer) })
++        const payment = decodePaymentSignatureHeader(header), blob = payment.payload.signedTxBlob
++        assert.deepEqual(payment.accepted, req)
++        const hash = hashes.hashSignedTx(blob), tx = decode(blob)
++        checkCreate(tx, state.offer)
++        const create = validated((await client.request({ command: 'tx', transaction: hash })).result)
++        assert.equal(create.hash, hash); checkCreate(txJSON(create), state.offer)
++        if (state.createHash) assert.equal(hash, state.createHash, 'no replacement create')
++        state.createHash = hash
++        if (intent === 'withhold') return reply(202, { status: 'seller deliberately withholds key' })
++        if (!state.finish) {
++          const node = await escrow(client, buyer.classicAddress, tx.Sequence)
++          for (const field of ['Account', 'Destination', 'Amount', 'Condition', 'CancelAfter']) assert.equal(node[field], tx[field])
++          state.finish ??= submit(client, seller, { TransactionType: 'EscrowFinish', Account: seller.classicAddress,
++            Owner: buyer.classicAddress, OfferSequence: tx.Sequence, Condition: node.Condition,
++            Fulfillment: `A0228020${hex(state.key)}` })
++        }
++        const finish = await state.finish
++        return reply(200, { finishHash: finish.hash }) // Key never travels over HTTP.
++      } catch { reply(400, { error: 'Escrow offer or validated transaction rejected' }) }
++    })
++    server.listen(0, '127.0.0.1') // Ephemeral: compatible with any lane OFFSET.
++    await once(server, 'listening')
++    const base = `http://127.0.0.1:${server.address().port}/article`
++    async function buy(intent) {
++      const url = `${base}?intent=${intent}`, unpaid = await fetch(url)
++      assert.equal(unpaid.status, 402)
++      const offer = decodePaymentRequiredHeader(unpaid.headers.get('PAYMENT-REQUIRED'))
++      assert.equal(commitment(offer), commitment(await unpaid.json())) // Same header and body; ciphertext only.
++      const req = offer.accepts[0], e = req.extra
++      checkOffer(req, seller.classicAddress, buyer.classicAddress, await ledgerTime(client))
++      const create = await submit(client, buyer, { TransactionType: 'EscrowCreate', Account: buyer.classicAddress,
++        Destination: req.payTo, Amount: req.amount, Condition: e.condition, CancelAfter: e.cancelAfter,
++        Memos: [{ Memo: { MemoData: commitment(offer) } }] })
++      record(`${intent} create`, create)
++      const sequence = txJSON(create.result).Sequence
++      const node = await escrow(client, buyer.classicAddress, sequence)
++      assert.equal(node.Condition, e.condition)
++      const payment = await fetch(url, { headers: { 'PAYMENT-SIGNATURE': buildPaymentSignatureHeaderForSignedBlob({
++        req, signedTxBlob: create.blob, invoiceId: e.invoiceId }) } })
++      assert.equal(payment.status, intent === 'withhold' ? 202 : 200)
++      return { url, offer, create, sequence, node, response: await payment.json() }
++    }
++    const withheld = await buy('withhold') // Start its expiry clock while proving delivery.
++    const delivered = await buy('deliver')
++    const finish = validated((await client.request({ command: 'tx', transaction: delivered.response.finishHash })).result)
++    const ft = txJSON(finish)
++    assert.equal(ft.TransactionType, 'EscrowFinish'); assert.equal(ft.Owner, buyer.classicAddress)
++    assert.equal(ft.OfferSequence, delivered.sequence)
++    record('deliver finish', { hash: delivered.response.finishHash, result: finish })
++    const plaintext = open(delivered.offer.extensions.keyReveal, ft, delivered.node.Condition)
++    log(`Verified grant: sha256(K) matches on-ledger Condition; AES-GCM and plaintext hash OK`)
++    log(plaintext) // First plaintext accessible to the buyer, after validated reveal and checks.
++    const replay = await fetch(delivered.url, { headers: { 'PAYMENT-SIGNATURE': buildPaymentSignatureHeaderForSignedBlob({
++      req: delivered.offer.accepts[0], signedTxBlob: delivered.create.blob,
++      invoiceId: delivered.offer.accepts[0].extra.invoiceId }) } })
++    assert.equal(replay.status, 200); assert.deepEqual(await replay.json(), delivered.response)
++    const deadline = Date.now() + 90000
++    while (await ledgerTime(client) <= withheld.node.CancelAfter) {
++      assert.ok(Date.now() < deadline, 'ledger expiry wait timed out; original escrow remains pending')
++      await wait(1000)
++    }
++    const before = BigInt((await client.request({ command: 'account_info', account: buyer.classicAddress,
++      ledger_index: 'validated' })).result.account_data.Balance)
++    const cancel = await submit(client, buyer, { TransactionType: 'EscrowCancel', Account: buyer.classicAddress,
++      Owner: buyer.classicAddress, OfferSequence: withheld.sequence })
++    record('withhold cancel', cancel)
++    const after = BigInt((await client.request({ command: 'account_info', account: buyer.classicAddress,
++      ledger_index: 'validated' })).result.account_data.Balance)
++    assert.equal(after - before + BigInt(txJSON(cancel.result).Fee), 1000n)
++    log('CancelAfter: 1000 drops principal returned; transaction fees are not refunded. RESULT PASS')
++    return { receipts, plaintext }
++  } finally {
++    if (server) { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)) }
++    await client.disconnect()
++  }
++}
++if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
++  run().catch(() => { console.error('Example failed; inspect original Testnet escrows before retrying. No automatic re-pay.'); process.exitCode = 1 })
++}
+diff --git a/_code-samples/x402-key-reveal-escrow/example.test.mjs b/_code-samples/x402-key-reveal-escrow/example.test.mjs
+new file mode 100644
+index 0000000..0e4abc1
+--- /dev/null
++++ b/_code-samples/x402-key-reveal-escrow/example.test.mjs
+@@ -0,0 +1,46 @@
++import assert from 'node:assert/strict'
++import { createHash } from 'node:crypto'
++import { test } from 'node:test'
++import { encodePaymentRequiredHeader, decodePaymentRequiredHeader, XRPLPresignedPaymentPayer, jsonCanonicalStringify } from 'x402-xrpl'
++import { Wallet } from 'xrpl'
++import { seal, open, conditionFor, checkOffer, checkCreate, run } from './example.mjs'
++
++test('ciphertext quarantined until the ledger key matches; tampering fails closed', () => {
++  const { key, envelope } = seal(Buffer.from('synthetic paid bytes'))
++  const condition = conditionFor(key), finish = { Condition: condition, Fulfillment: `A0228020${key.toString('hex').toUpperCase()}` }
++  assert.ok(!JSON.stringify(envelope).includes('synthetic paid bytes'))
++  assert.equal(open(envelope, finish, condition), 'synthetic paid bytes')
++  assert.throws(() => open(envelope, { ...finish, Fulfillment: `A0228020${'00'.repeat(32)}` }, condition))
++  assert.throws(() => open(envelope, finish, conditionFor(Buffer.alloc(32))))
++  assert.throws(() => open({ ...envelope, tag: '00'.repeat(16) }, finish, condition))
++  assert.throws(() => open({ ...envelope, plaintextHash: '00'.repeat(32) }, finish, condition))
++})
++test('pinned t54 header codec preserves custom terms; exact payer refuses the scheme', () => {
++  const req = { scheme: 'key-reveal-escrow', network: 'xrpl:1', asset: 'XRP', amount: '1000',
++    payTo: Wallet.generate().classicAddress, maxTimeoutSeconds: 60,
++    extra: { buyer: Wallet.generate().classicAddress, condition: conditionFor(Buffer.alloc(32)), cancelAfter: 124, invoiceId: 'synthetic' } }
++  const offer = { x402Version: 2, resource: { url: 'http://127.0.0.1/article' }, accepts: [req], extensions: { keyReveal: seal(Buffer.from('fixture')).envelope } }
++  const decoded = decodePaymentRequiredHeader(encodePaymentRequiredHeader(offer))
++  assert.deepEqual(decoded.accepts[0], req); assert.deepEqual(decoded.extensions, offer.extensions)
++  const payer = new XRPLPresignedPaymentPayer({ wallet: Wallet.generate(), network: 'xrpl:1', wsUrl: 'wss://s.altnet.rippletest.net:51233' })
++  assert.equal(payer.supports(req), false)
++  checkOffer(req, req.payTo, req.extra.buyer, 100)
++  for (const patch of [{ amount: '1001' }, { network: 'xrpl:0' }, { scheme: 'exact' }, { payTo: req.extra.buyer },
++    { extra: { ...req.extra, cancelAfter: 100 } }, { extra: { ...req.extra, buyer: req.payTo } }]) {
++    assert.throws(() => checkOffer({ ...req, ...patch }, req.payTo, req.extra.buyer, 100))
++  }
++  // Missing the envelope/invoice commitment must fail before seller settlement.
++  const tx = { TransactionType: 'EscrowCreate', Account: req.extra.buyer,
++    Destination: req.payTo, Amount: req.amount, Condition: req.extra.condition, CancelAfter: 124 }
++  assert.throws(() => checkCreate(tx, offer))
++  tx.Memos = [{ Memo: { MemoData: createHash('sha256').update(jsonCanonicalStringify(offer)).digest('hex').toUpperCase() } }]
++  checkCreate({ ...tx, date: 100, ctid: 'synthetic', ledger_index: 42 }, offer) // RPC annotations are not signed fields.
++  assert.throws(() => checkCreate({ ...tx, Amount: '999' }, offer))
++})
++test('Testnet: create, reveal, decrypt, replay and CancelAfter principal refund', {
++  skip: process.env.XRPL_KEY_REVEAL_TESTNET !== '1', timeout: 180000,
++}, async () => {
++  const result = await run()
++  assert.equal(result.receipts.length, 4)
++  for (const receipt of result.receipts) assert.match(receipt.hash, /^[A-F0-9]{64}$/)
++})
+diff --git a/_code-samples/x402-key-reveal-escrow/package-lock.json b/_code-samples/x402-key-reveal-escrow/package-lock.json
+new file mode 100644
+index 0000000..afd7e3c
+--- /dev/null
++++ b/_code-samples/x402-key-reveal-escrow/package-lock.json
+@@ -0,0 +1,273 @@
++{
++  "name": "x402-key-reveal-escrow-example",
++  "version": "1.0.0",
++  "lockfileVersion": 3,
++  "requires": true,
++  "packages": {
++    "": {
++      "name": "x402-key-reveal-escrow-example",
++      "version": "1.0.0",
++      "dependencies": {
++        "x402-xrpl": "0.3.4",
++        "xrpl": "4.7.0"
++      },
++      "engines": {
++        "node": ">=22.13"
++      }
++    },
++    "node_modules/@noble/curves": {
++      "version": "1.9.7",
++      "resolved": "https://registry.npmjs.org/@noble/curves/-/curves-1.9.7.tgz",
++      "integrity": "sha512-gbKGcRUYIjA3/zCCNaWDciTMFI0dCkvou3TL8Zmy5Nc7sJ47a0jtOeZoTaMxkuqRo9cRhjOdZJXegxYE5FN/xw==",
++      "license": "MIT",
++      "dependencies": {
++        "@noble/hashes": "1.8.0"
++      },
++      "engines": {
++        "node": "^14.21.3 || >=16"
++      },
++      "funding": {
++        "url": "https://paulmillr.com/funding/"
++      }
++    },
++    "node_modules/@noble/hashes": {
++      "version": "1.8.0",
++      "resolved": "https://registry.npmjs.org/@noble/hashes/-/hashes-1.8.0.tgz",
++      "integrity": "sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==",
++      "license": "MIT",
++      "engines": {
++        "node": "^14.21.3 || >=16"
++      },
++      "funding": {
++        "url": "https://paulmillr.com/funding/"
++      }
++    },
++    "node_modules/@scure/base": {
++      "version": "1.2.6",
++      "resolved": "https://registry.npmjs.org/@scure/base/-/base-1.2.6.tgz",
++      "integrity": "sha512-g/nm5FgUa//MCj1gV09zTJTaM6KBAHqLN907YVQqf7zC49+DcO4B1so4ZX07Ef10Twr6nuqYEH9GEggFXA4Fmg==",
++      "license": "MIT",
++      "funding": {
++        "url": "https://paulmillr.com/funding/"
++      }
++    },
++    "node_modules/@scure/bip32": {
++      "version": "1.7.0",
++      "resolved": "https://registry.npmjs.org/@scure/bip32/-/bip32-1.7.0.tgz",
++      "integrity": "sha512-E4FFX/N3f4B80AKWp5dP6ow+flD1LQZo/w8UnLGYZO674jS6YnYeepycOOksv+vLPSpgN35wgKgy+ybfTb2SMw==",
++      "license": "MIT",
++      "dependencies": {
++        "@noble/curves": "~1.9.0",
++        "@noble/hashes": "~1.8.0",
++        "@scure/base": "~1.2.5"
++      },
++      "funding": {
++        "url": "https://paulmillr.com/funding/"
++      }
++    },
++    "node_modules/@scure/bip39": {
++      "version": "1.6.0",
++      "resolved": "https://registry.npmjs.org/@scure/bip39/-/bip39-1.6.0.tgz",
++      "integrity": "sha512-+lF0BbLiJNwVlev4eKelw1WWLaiKXw7sSl8T6FvBlWkdX+94aGJ4o8XjUdlyhTCjd8c+B3KT3JfS8P0bLRNU6A==",
++      "license": "MIT",
++      "dependencies": {
++        "@noble/hashes": "~1.8.0",
++        "@scure/base": "~1.2.5"
++      },
++      "funding": {
++        "url": "https://paulmillr.com/funding/"
++      }
++    },
++    "node_modules/@xrplf/isomorphic": {
++      "version": "1.0.2",
++      "resolved": "https://registry.npmjs.org/@xrplf/isomorphic/-/isomorphic-1.0.2.tgz",
++      "integrity": "sha512-ncZUdMXr6VlSXtdoiDi0jTH+gBrgGxwVeEidhoegII3PmyErbQsyj6e+j7acmR4LW/lvBkPkzb9QzRfJH0n3rA==",
++      "license": "ISC",
++      "dependencies": {
++        "@noble/hashes": "^2.0.1",
++        "eventemitter3": "5.0.1",
++        "ws": "^8.20.0"
++      },
++      "engines": {
++        "node": ">=18.0.0"
++      }
++    },
++    "node_modules/@xrplf/isomorphic/node_modules/@noble/hashes": {
++      "version": "2.4.0",
++      "resolved": "https://registry.npmjs.org/@noble/hashes/-/hashes-2.4.0.tgz",
++      "integrity": "sha512-X5XaVWZIBCT7HHZGm5I7ZQXDwLG+bGXuSrMQAW+7Zvl87h1kmc1ZB1VSRJcpUfoUrGQp4Fkoxm5kZ+Ms+aW+eA==",
++      "license": "MIT",
++      "engines": {
++        "node": ">= 20.19.0"
++      },
++      "funding": {
++        "url": "https://paulmillr.com/funding/"
++      }
++    },
++    "node_modules/@xrplf/isomorphic/node_modules/eventemitter3": {
++      "version": "5.0.1",
++      "resolved": "https://registry.npmjs.org/eventemitter3/-/eventemitter3-5.0.1.tgz",
++      "integrity": "sha512-GWkBvjiSZK87ELrYOSESUYeVIc9mvLLf/nXalMOS5dYrgZq9o5OVkbZAVM06CVxYsCwH9BDZFPlQTlPA1j4ahA==",
++      "license": "MIT"
++    },
++    "node_modules/@xrplf/secret-numbers": {
++      "version": "2.0.0",
++      "resolved": "https://registry.npmjs.org/@xrplf/secret-numbers/-/secret-numbers-2.0.0.tgz",
++      "integrity": "sha512-z3AOibRTE9E8MbjgzxqMpG1RNaBhQ1jnfhNCa1cGf2reZUJzPMYs4TggQTc7j8+0WyV3cr7y/U8Oz99SXIkN5Q==",
++      "license": "ISC",
++      "dependencies": {
++        "@xrplf/isomorphic": "^1.0.1",
++        "ripple-keypairs": "^2.0.0"
++      }
++    },
++    "node_modules/bignumber.js": {
++      "version": "9.3.1",
++      "resolved": "https://registry.npmjs.org/bignumber.js/-/bignumber.js-9.3.1.tgz",
++      "integrity": "sha512-Ko0uX15oIUS7wJ3Rb30Fs6SkVbLmPBAKdlm7q9+ak9bbIeFf0MwuBsQV6z7+X768/cHsfg+WlysDWJcmthjsjQ==",
++      "license": "MIT",
++      "engines": {
++        "node": "*"
++      }
++    },
++    "node_modules/eventemitter3": {
++      "version": "5.0.4",
++      "resolved": "https://registry.npmjs.org/eventemitter3/-/eventemitter3-5.0.4.tgz",
++      "integrity": "sha512-mlsTRyGaPBjPedk6Bvw+aqbsXDtoAyAzm5MO7JgU+yVRyMQ5O8bD4Kcci7BS85f93veegeCPkL8R4GLClnjLFw==",
++      "license": "MIT"
++    },
++    "node_modules/fast-json-stable-stringify": {
++      "version": "2.1.0",
++      "resolved": "https://registry.npmjs.org/fast-json-stable-stringify/-/fast-json-stable-stringify-2.1.0.tgz",
++      "integrity": "sha512-lhd/wF+Lk98HZoTCtlVraHtfh5XYijIjalXck7saUtuanSDyLMxnHhSXEDJqHxD7msR8D0uCmqlkwjCV8xvwHw==",
++      "license": "MIT"
++    },
++    "node_modules/jose": {
++      "version": "5.10.0",
++      "resolved": "https://registry.npmjs.org/jose/-/jose-5.10.0.tgz",
++      "integrity": "sha512-s+3Al/p9g32Iq+oqXxkW//7jk2Vig6FF1CFqzVXoTUXt2qz89YWbL+OwS17NFYEvxC35n0FKeGO2LGYSxeM2Gg==",
++      "license": "MIT",
++      "funding": {
++        "url": "https://github.com/sponsors/panva"
++      }
++    },
++    "node_modules/ripple-address-codec": {
++      "version": "5.0.1",
++      "resolved": "https://registry.npmjs.org/ripple-address-codec/-/ripple-address-codec-5.0.1.tgz",
++      "integrity": "sha512-JQHLKuVJV8lv9Qobmn4aUM2Dpv9WRRLKnNWfM8tN02fAbUtG8mUPsu9q9UYX8P76G4qzytEc5ZKMp/3JggNYmw==",
++      "license": "ISC",
++      "dependencies": {
++        "@scure/base": "^2.0.0",
++        "@xrplf/isomorphic": "^1.0.2"
++      },
++      "engines": {
++        "node": ">= 18"
++      }
++    },
++    "node_modules/ripple-address-codec/node_modules/@scure/base": {
++      "version": "2.4.0",
++      "resolved": "https://registry.npmjs.org/@scure/base/-/base-2.4.0.tgz",
++      "integrity": "sha512-thZ1TuJwFwBblOhgsjDKvvGirBxNp+wSvY/DR6tJBJOTDhdAAcHJ8Vbr2eFnqaxeca4+t0i9KBf+uHYGWwZORg==",
++      "license": "MIT",
++      "funding": {
++        "url": "https://paulmillr.com/funding/"
++      }
++    },
++    "node_modules/ripple-binary-codec": {
++      "version": "2.11.0",
++      "resolved": "https://registry.npmjs.org/ripple-binary-codec/-/ripple-binary-codec-2.11.0.tgz",
++      "integrity": "sha512-qad61CYAqIi8H7DuPnuDpj40wrXY8wYrc1YbuDcA9G/NZG0Uu8unHNbTC6Itz8SlOSL0P/nF/8HTFW/1caVlTg==",
++      "license": "ISC",
++      "dependencies": {
++        "@xrplf/isomorphic": "^1.0.2",
++        "bignumber.js": "^10.0.2",
++        "ripple-address-codec": "^5.0.1"
++      },
++      "engines": {
++        "node": ">= 18"
++      }
++    },
++    "node_modules/ripple-binary-codec/node_modules/bignumber.js": {
++      "version": "10.0.2",
++      "resolved": "https://registry.npmjs.org/bignumber.js/-/bignumber.js-10.0.2.tgz",
++      "integrity": "sha512-E8Wp9O06QA6lneJ4aRUXKYf/1GIomqUEmUMwtIOMtDxf1U52ffJY+y7JBk/8wRafA8qOIqLnXQGqonYXZdBnFQ==",
++      "license": "MIT"
++    },
++    "node_modules/ripple-keypairs": {
++      "version": "2.1.0",
++      "resolved": "https://registry.npmjs.org/ripple-keypairs/-/ripple-keypairs-2.1.0.tgz",
++      "integrity": "sha512-B+Pf4A2EOQhU8LavUVz+ilQsS8yLXivmDFrJ0FswmCjL3bMHNvFovfqQVdffsJOZnIVHQDNehy9uiKJBfQSnbw==",
++      "license": "ISC",
++      "dependencies": {
++        "@noble/curves": "^1.0.0",
++        "@xrplf/isomorphic": "^1.0.1",
++        "ripple-address-codec": "^5.0.0"
++      },
++      "engines": {
++        "node": ">= 18"
++      }
++    },
++    "node_modules/ws": {
++      "version": "8.22.2",
++      "resolved": "https://registry.npmjs.org/ws/-/ws-8.22.2.tgz",
++      "integrity": "sha512-/rEZ2ejown2N5gxVTHUu9bVVC7ttu0/Tgzf5hbTOixR3Fs7mbbXgn2DbdbcKgJOmpQMtrIUWivtYuVMnp/W/yA==",
++      "license": "MIT",
++      "engines": {
++        "node": ">=10.0.0"
++      },
++      "peerDependencies": {
++        "bufferutil": "^4.0.1",
++        "utf-8-validate": ">=5.0.2"
++      },
++      "peerDependenciesMeta": {
++        "bufferutil": {
++          "optional": true
++        },
++        "utf-8-validate": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/x402-xrpl": {
++      "version": "0.3.4",
++      "resolved": "https://registry.npmjs.org/x402-xrpl/-/x402-xrpl-0.3.4.tgz",
++      "integrity": "sha512-nXXSTFEM7WE8U9+gFFiJyjOqB2PlEEA0zE8BwA5oXtsaPtZ5QZjXITQKHT6PSXFJEiGs342orm5McSZqaKXZ3w==",
++      "license": "MIT",
++      "dependencies": {
++        "jose": "^5.10.0",
++        "xrpl": "^4.5.0"
++      },
++      "engines": {
++        "node": ">=18"
++      },
++      "peerDependencies": {
++        "express": ">=4"
++      },
++      "peerDependenciesMeta": {
++        "express": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/xrpl": {
++      "version": "4.7.0",
++      "resolved": "https://registry.npmjs.org/xrpl/-/xrpl-4.7.0.tgz",
++      "integrity": "sha512-HCGf6Kk8dcJZmk4Fc42P2jb3SKRLcznr5fEtHsOzMy2TDze/EOuX93lWgrnFKb9q0Nxqoz5Z96WYcC6p1+7+sg==",
++      "license": "ISC",
++      "dependencies": {
++        "@scure/bip32": "^1.3.1",
++        "@scure/bip39": "^1.2.1",
++        "@xrplf/isomorphic": "^1.0.1",
++        "@xrplf/secret-numbers": "^2.0.0",
++        "bignumber.js": "^9.0.0",
++        "eventemitter3": "^5.0.1",
++        "fast-json-stable-stringify": "^2.1.0",
++        "ripple-address-codec": "^5.0.0",
++        "ripple-binary-codec": "^2.7.0",
++        "ripple-keypairs": "^2.0.0"
++      },
++      "engines": {
++        "node": ">=18.0.0"
++      }
++    }
++  }
++}
+diff --git a/_code-samples/x402-key-reveal-escrow/package.json b/_code-samples/x402-key-reveal-escrow/package.json
+new file mode 100644
+index 0000000..3610ab4
+--- /dev/null
++++ b/_code-samples/x402-key-reveal-escrow/package.json
+@@ -0,0 +1,9 @@
++{
++  "name": "x402-key-reveal-escrow-example",
++  "version": "1.0.0",
++  "private": true,
++  "type": "module",
++  "engines": { "node": ">=22.13" },
++  "scripts": { "start": "node example.mjs", "test": "node --test example.test.mjs" },
++  "dependencies": { "xrpl": "4.7.0", "x402-xrpl": "0.3.4" }
++}
+diff --git a/docs/agents/agentic-payments-x402.md b/docs/agents/agentic-payments-x402.md
+index 5502a51..dcf74af 100644
+--- a/docs/agents/agentic-payments-x402.md
++++ b/docs/agents/agentic-payments-x402.md
+@@ -49,6 +49,10 @@ state to handle.
+ ![X402 payment sequence diagram showing the end-to-end flow between Agent, Merchant, XRP Ledger, and Facilitator](../img/x402-sequence-light.svg)
+ 
+ 
++## Experimental conditional delivery example
++
++For a separate Testnet-only demonstration of payment release publishing a decryption key, see the {% repo-link path="_code-samples/x402-key-reveal-escrow/" %}key-reveal escrow example{% /repo-link %}. It includes offline tests and an explicitly opted-in ledger run with create, finish, replay, and withheld-key cancellation. It uses an experimental `key-reveal-escrow` scheme with `xrpl.js`; the `x402-xrpl` exact payer and facilitator do not implement that scheme. The ledger can prove the key was revealed, but cannot judge article quality. Cancellation requires an explicit `EscrowCancel` after the deadline, and refunds after a successful finish still require the writer's cooperation.
++
+ ## Prerequisites
+ 
+ - Python 3.11+
+-- 
+2.54.0
+
