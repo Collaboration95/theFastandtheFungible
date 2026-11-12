@@ -1,3 +1,4 @@
+import type { DatabaseSync } from 'node:sqlite'
 import { createHash } from 'node:crypto'
 import { Router } from 'express'
 import type { Store } from '../store.js'
@@ -10,13 +11,14 @@ import { sameSource, sourceKey, type SourceIdentity } from '../../shared/source-
 export const SCOREBOARD_LABEL = 'XRPL Testnet · test funds · includes our own test runs since 11 Nov'
 export const SCOREBOARD_SINCE = Date.parse('2026-11-11T00:00:00Z')
 const charged = new Set(['SETTLED', 'DELIVERY_PENDING', 'DELIVERY_FAILED', 'VERIFIED', 'CLAIM_FAILED', 'CHALLENGED', 'REFUNDED', 'CHALLENGE_REJECTED', 'CHALLENGE_REFUSED'])
-export type SandboxStats = {
+export type SandboxBreakdown = {
   label: string; updatedAt: string; questions: number; purchaseRuns: number; purchasesSettled: number; refunds: number;
   completed: number; inProgress: number; excludedSimulated: number; anchored: number; anchorPending: number; stoppedBeforeAnswer: number;
   timing: { samples: number; medianMs: number | null; p90Ms: number | null };
   medianSpendMinor: number | null; medianModelUsd: number | null;
   audit: { checked: number; unavailable: number; readBeforeGrant: number; buyWithoutPolicy: number; overBudget: number; duplicateIntent: number; receiptWithoutIntent: number; unanchored: number };
 }
+export type SandboxStats = SandboxBreakdown & { all: SandboxBreakdown; external: SandboxBreakdown; unclassified: number }
 const median = (values: number[]) => {
   if (!values.length) return null
   values.sort((a,b) => a-b)
@@ -31,12 +33,12 @@ type Decision = { round: number; selectedResourceId?: string; selectedSourceKey?
  * Raw ledger rows deliberately bypass getRun(), which joins away orphan receipts and recomputes corrupted totals.
  * Each audit counter counts affected runs, not individual events. An absent trace is unavailable, never a pass.
  */
-export function aggregateSandbox(store: Store, now = Date.now()): SandboxStats {
-  return store.hostedState(db => {
-    const result: SandboxStats = { label: SCOREBOARD_LABEL, updatedAt: new Date(now).toISOString(), questions: 0, purchaseRuns: 0, purchasesSettled: 0, refunds: 0, completed: 0, inProgress: 0, excludedSimulated: 0, anchored: 0, anchorPending: 0, stoppedBeforeAnswer: 0,
+function aggregatePopulation(db: DatabaseSync, now: number, audience?: 'external'): SandboxBreakdown {
+    const result: SandboxBreakdown = { label: audience ? 'XRPL Testnet · confirmed external visitors since 11 Nov' : SCOREBOARD_LABEL, updatedAt: new Date(now).toISOString(), questions: 0, purchaseRuns: 0, purchasesSettled: 0, refunds: 0, completed: 0, inProgress: 0, excludedSimulated: 0, anchored: 0, anchorPending: 0, stoppedBeforeAnswer: 0,
       timing: { samples: 0, medianMs: null, p90Ms: null }, medianSpendMinor: null, medianModelUsd: null,
       audit: { checked: 0, unavailable: 0, readBeforeGrant: 0, buyWithoutPolicy: 0, overBudget: 0, duplicateIntent: 0, receiptWithoutIntent: 0, unanchored: 0 } }
-    const rows = sandboxPopulation(db, true)
+    const external = new Set(db.prepare("SELECT run_id FROM run_audience WHERE audience='external'").all().map(r=>String(r.run_id)))
+    const rows = sandboxPopulation(db, true).filter(r => !audience || external.has(String(r.id)))
     const runs = new Map(rows.filter(row => row.rail === XRPL_LABEL).map(row => [String(row.id), { row, intents: [] as Intent[], events: [] as Event[], decisions: [] as Decision[], receipts: [] as { intentId: string; amountMinor: number }[] }]))
     result.excludedSimulated = rows.length - runs.size
     // These tables are already indexed by run identity. Reading once avoids N+1 snapshots at 5,000 runs.
@@ -111,6 +113,13 @@ export function aggregateSandbox(store: Store, now = Date.now()): SandboxStats {
     result.timing = { samples: times.length, medianMs: median(times), p90Ms: times.length ? times[Math.ceil(times.length * .9)-1] : null }
     result.medianSpendMinor = median(spends); result.medianModelUsd = median(models)
     return result
+}
+export function aggregateSandbox(store: Store, now = Date.now()): SandboxStats {
+  return store.hostedState(db => {
+    const all=aggregatePopulation(db,now), external=aggregatePopulation(db,now,'external')
+    const known=new Set(db.prepare('SELECT run_id FROM run_audience').all().map(r=>String(r.run_id)))
+    const unclassified=sandboxPopulation(db).filter(r=>!known.has(String(r.id))).length
+    return {...all,all,external,unclassified}
   })
 }
 
