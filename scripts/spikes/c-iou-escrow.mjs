@@ -3,12 +3,9 @@
 import assert from 'node:assert/strict'
 import { randomBytes } from 'node:crypto'
 import { spawn } from 'node:child_process'
-import { mkdtempSync, rmSync } from 'node:fs'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
 import { Wallet, AccountSetAsfFlags } from 'xrpl'
 import { connect, funded, submit, save, account } from './lib.mjs'
-const c = await connect(), records = [], children = [], dir = mkdtempSync(join(tmpdir(), 'r3-iou-'))
+const c = await connect(), records = [], children = []
 let run, receipt
 const api = 'http://127.0.0.1:9588', token = randomBytes(32).toString('hex')
 try {
@@ -23,7 +20,7 @@ try {
     HOST: '127.0.0.1', PORT: '9588', PUBLISHER_PORT: '9590', DEMO_PORT_OFFSET: '800', PUBLISHER_URL: 'http://127.0.0.1:9590',
     RA_API_TOKEN: token, LLM_PROVIDER: 'fixture', DECISION_PROVIDER: 'fixture', SEARCH_EMBEDDINGS: 'off', LANGFUSE_ENABLED: '0',
     SETTLEMENT_RAIL: 'xrpl-testnet', ESCROW_MODE: 'key-reveal', ESCROW_ASSET: 'test-iou', TESTNET_IOU_ISSUER: issuer.address,
-    XRPL_PAYER_SEED: buyer.seed, APP_DB: join(dir, 'app.db'), PUBLISHER_DB: join(dir, 'publisher.db'), REPORT_DIR: dir,
+    XRPL_PAYER_SEED: buyer.seed, APP_DB: ':memory:', PUBLISHER_DB: ':memory:', REPORT_DIR: 'scratch/r3-spike-c',
     PUBLISHER_SECRET: randomBytes(32).toString('hex') }
   // Isolate all fixture writer roles to one fresh funded wallet for this one purchase.
   const slugs = ['team-builder-notes','team-xrpl-explainers','alphaleak','the-fab-floor','notfinancialtimes','basis-points','load-factor','kopi-contrarian','marketpulse-digest','grid-operators-report','open-records']
@@ -54,5 +51,5 @@ try {
 } finally {
   for (const child of children) child.kill('SIGTERM')
   await Promise.all(children.map(child => new Promise(resolve => { if (child.exitCode !== null) return resolve(); child.once('exit', resolve); setTimeout(() => child.kill('SIGKILL'), 3000).unref() })))
-  await c.disconnect(); rmSync(dir, { recursive: true, force: true })
+  await c.disconnect()
 }

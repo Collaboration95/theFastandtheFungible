@@ -55,7 +55,7 @@ B3 single observation: normal create/finish **14,202 ms / 4 validated-ledger adv
 
 Fresh faucet-funded buyer, fresh issuer and writer funded from it; issuer sets `asfAllowTrustLineLocking` (17), observed Flags=1073741824. OFFSET=800: API 9588 / publisher 9590, fixture planner/research/decision, real XRPL Testnet settlement, `ESCROW_MODE=key-reveal ESCROW_ASSET=test-iou`. One writer wallet is intentionally shared by the isolated fixture writer roles for this single purchase, not evidence of independent writers. The question is the established RLUSD escrow preset. **40 minor units / one verified purchase / 16626 ms** for the run (provisioning excluded). Article `c5-xrpl-token-escrow-xls85` is team-authored; SGT is a labelled stand-in, not RLUSD. `c-receipt.json` preserves the product export.
 
-`verifyEscrowCredit` passes on the real code path: `server/escrow.ts:82` checks recipient RippleState delta before persisting the reveal and releasing the encrypted article. The resulting intent is VERIFIED/RELEASED. This is a local HTTP stack, not hosted acceptance. All processes stopped and private temporary databases deleted by the script. Seed values only exist in process environment/memory, never public evidence.
+`verifyEscrowCredit` passes on the real code path: `server/escrow.ts:82` checks recipient RippleState delta before persisting the reveal and releasing the encrypted article. The resulting intent is VERIFIED/RELEASED. This is a local HTTP stack, not hosted acceptance. All processes stopped and private in-memory databases discarded on shutdown. Seed values only exist in process environment/memory, never public evidence.
 
 | Step | Engine / validated result | Hash |
 |---|---|---|
