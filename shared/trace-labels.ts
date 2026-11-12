@@ -10,7 +10,7 @@ export const EVENT_LABELS: Record<string, string> = {
   MODEL_FALLBACK: 'Model substitute', MODEL_USAGE: 'Model usage', DECISION_UNAVAILABLE: 'Buying unavailable',
   MANIFEST_DROPPED: 'Source excluded', RECOVERY: 'Recovery', REPORT: 'Report', SNAPSHOT: 'Saved',
   TRACE: 'Trace link', WIRE: 'Request', XRPL: 'Ledger', PROGRESS: 'Progress',
-  SETTLEMENT_TIMING: 'Payment timing',
+  SETTLEMENT_TIMING: 'Payment timing', HOLDBACK: 'Holdback',
   LEDGER_DRY_RUN: 'Ledger preview', LEDGER_PRE_CHECK: 'Ledger check', ROYALTY_UNRESOLVED: 'Royalty unresolved',
 }
 

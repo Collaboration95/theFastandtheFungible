@@ -4,6 +4,7 @@ import hashlib
 import re
 from decimal import Decimal
 from urllib.request import Request, urlopen
+from ._holdback import key_terms, create_ok as holdback_create_ok, terminal_ok as holdback_terminal_ok
 
 
 def lookup(tx_hash):
@@ -43,6 +44,8 @@ def verify_transactions(b, entries, lookup, add):
         return isinstance(actual, dict) and actual.get('currency') == asset['currency'] and actual.get('issuer') == asset['issuer'] and Decimal(actual['value']) == Decimal(value)
 
     def create_ok(t, terms):
+        if terms.get('holdback'):
+            return holdback_create_ok(t, terms)
         return t.get('TransactionType') == 'EscrowCreate' and t.get('Account') == terms['payer'] and t.get('Destination') == terms['payTo'] and matches_amount(t.get('Amount'), terms['amount'], terms['asset']) and t.get('Condition') == terms['condition'] and t.get('CancelAfter') == terms['cancelAfter'] and not any(k in t for k in ('FinishAfter', 'InvoiceID', 'DestinationTag', 'SourceTag')) and not t.get('Flags') and t.get('Memos') == [{'Memo': {'MemoType': b'researchagent/escrow-v1'.hex().upper(), 'MemoData': __import__('researchagent.verify', fromlist=['canonical']).canonical(terms).encode().hex().upper()}}] and isinstance(t.get('Sequence'), int) and t['Sequence'] > 0 and isinstance(t.get('LastLedgerSequence'), int) and 0 < int(t.get('Fee', 0)) <= 2000
 
     def credit(meta, terms, recipient):
@@ -77,8 +80,33 @@ def verify_transactions(b, entries, lookup, add):
             def terminal(p=p, terms=terms):
                 t, meta, n = tx(p['txHash'])
                 finish = p['escrowState'] == 'RELEASED'
-                return credit(meta, terms, terms['payTo'] if finish else terms['payer']) and p['escrowState'] in ('RELEASED', 'CANCELLED') and t.get('TransactionType') == ('EscrowFinish' if finish else 'EscrowCancel') and t.get('Owner') == terms['payer'] and t.get('OfferSequence') == p['escrowCreateSequence'] and (not finish or t.get('Condition') == terms['condition'] and (not terms.get('keyReveal') or bool(re.fullmatch('A0228020[A-F0-9]{64}', t.get('Fulfillment',''))) and 'A0258020'+hashlib.sha256(bytes.fromhex(t['Fulfillment'][8:])).hexdigest().upper()+'810120' == terms['condition'])) and p['amountDrops'] == (terms['amount'] if finish else '0') and (p['ledgerIndex'] == '' or n == p['ledgerIndex'])
+                return credit(meta, key_terms(terms), terms['payTo'] if finish else terms['payer']) and p['escrowState'] in ('RELEASED', 'CANCELLED') and t.get('TransactionType') == ('EscrowFinish' if finish else 'EscrowCancel') and t.get('Owner') == terms['payer'] and t.get('OfferSequence') == p['escrowCreateSequence'] and (not finish or t.get('Condition') == terms['condition'] and (not terms.get('keyReveal') or bool(re.fullmatch('A0228020[A-F0-9]{64}', t.get('Fulfillment',''))) and 'A0258020'+hashlib.sha256(bytes.fromhex(t['Fulfillment'][8:])).hexdigest().upper()+'810120' == terms['condition'])) and p['amountDrops'] == (terms['amount'] if finish else '0') and (p['ledgerIndex'] == '' or n == p['ledgerIndex'])
             check(('escrow-finish ' if p['escrowState'] == 'RELEASED' else 'escrow-cancel ') + name, terminal)
+            if terms.get('holdback'):
+                h = p['holdback']
+                def batch(p=p, terms=terms, h=h):
+                    from .verify import find
+                    proof = find(b.get('holdbacks', []), intentId=p['intentId'])
+                    outer, _, ledger = tx(h['batchHash'])
+                    if not all(outer.get(k) == v for k, v in proof['batch'].items()):
+                        return False
+                    for index, identity in enumerate((p['escrowCreateHash'], h['createHash'])):
+                        inner, meta, n = tx(identity)
+                        raw = outer['RawTransactions'][index]['RawTransaction']
+                        if n != ledger or meta.get('ParentBatchID') != h['batchHash'] or not holdback_create_ok(inner, terms, index == 1) or not all(inner.get(k) == v for k, v in raw.items()):
+                            return False
+                        objects = [node['CreatedNode'].get('NewFields', {}) for node in meta.get('AffectedNodes', []) if node.get('CreatedNode', {}).get('LedgerEntryType') == 'Escrow']
+                        if not any(all(obj.get(k) == raw.get(k) for k in ('Account', 'Destination', 'Amount', 'Condition', 'CancelAfter')) and not obj.get('FinishAfter') for obj in objects):
+                            return False
+                    return True
+                check('holdback-batch ' + name, batch)
+                if h['state'] != 'pending':
+                    def holdback(p=p, terms=terms, h=h):
+                        from .verify import find
+                        terminal = find(b['holdbacks'], intentId=p['intentId'])['terminal']
+                        t, meta, n = tx(h['finishHash'] if h['state'] == 'released' else h['cancelHash'])
+                        return all(t.get(k) == v for k, v in terminal.items()) and holdback_terminal_ok(t, terms, h) and n == h['ledgerIndex'] and credit(meta, dict(terms, amount=h['amount']), terms['payTo'] if h['state'] == 'released' else terms['payer'])
+                    check('holdback-' + h['state'] + ' ' + name, holdback)
         else:
             check('payment ' + name, lambda p=p: payment(p['txHash'], p['payer'], p['payee'], p['amountDrops'], p['invoiceId'], p.get('asset', 'XRP'), p['ledgerIndex']))
         if p.get('refundTxHash'):
@@ -96,8 +124,9 @@ def verify_transactions(b, entries, lookup, add):
             if e['kind'] == 'ESCROW_CREATE':
                 import hashlib
                 invoice = bytes.fromhex(t['Memos'][0]['Memo']['MemoData']).decode()
-                terms = json.loads(invoice)
-                return create_ok(t, terms) and hashlib.sha256(invoice.encode()).hexdigest().upper() == d['invoiceHash'] and t.get('Account') == d['owner'] and t.get('Sequence') == d['createSequence'] and terms['amount'] == d['amountDrops'] and t.get('Destination') == d['payTo'] and t.get('CancelAfter') == d['cancelAfter']
+                terms = d.get('terms') or json.loads(invoice)
+                canonical = __import__('researchagent.verify', fromlist=['canonical']).canonical
+                return create_ok(t, terms) and hashlib.sha256(canonical(terms).encode()).hexdigest().upper() == d['invoiceHash'] and t.get('Account') == d['owner'] and t.get('Sequence') == d['createSequence'] and key_terms(terms)['amount'] == d['amountDrops'] and t.get('Destination') == d['payTo'] and t.get('CancelAfter') == d['cancelAfter']
             return t.get('TransactionType') == ('EscrowFinish' if e['kind'] == 'ESCROW_FINISH' else 'EscrowCancel') and t.get('Owner') == d['owner'] and t.get('OfferSequence') == d['createSequence']
         check(e['kind'].lower().replace('_', '-') + ' ' + e['intentId'], event)
         if e['kind'] == 'ESCROW_FINISH':
@@ -106,6 +135,10 @@ def verify_transactions(b, entries, lookup, add):
                     return False
                 if d.get('proofOk') is True:
                     return True
+                holdback = next((p.get('holdback') for p in b['payments'] if p['intentId'] == e['intentId']), None)
+                if holdback:
+                    # The separate holdback check reports its pending/refunded state; no full-refund claim.
+                    return holdback.get('checks') == 'fail' and holdback['state'] in ('pending', 'refunded')
                 r = next(r for r in entries if r['kind'] == 'refund' and r['intentId'] == e['intentId'] and r['data']['originalTxHash'] == d['txHash'])
                 c = next(c['data'] for c in entries if c['kind'] == 'ESCROW_CREATE' and c['intentId'] == e['intentId'])
                 create, _, _ = tx(c['txHash'])

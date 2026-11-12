@@ -585,6 +585,8 @@ def verify(export, *, expect_head=None, ledger=False, ledger_lookup=None, testne
                 add('audit anchor', False, str(error))
         else:
             skip('audit anchor', 'simulated run, nothing on a ledger' if 'SIMULATED' in b['label'] else 'offline; add --ledger to look it up on XRPL Testnet (read-only)')
+        from ._holdback import verify_holdbacks
+        verify_holdbacks(b, entries, add, skip)
         source_ok = {}
         for s in b["sources"]:
             ps = [p for p in b["proofs"] if key(p) == key(s)]
@@ -868,7 +870,7 @@ def verify(export, *, expect_head=None, ledger=False, ledger_lookup=None, testne
         )
         for e in entries:
             if e['kind'] == 'ESCROW_FINISH' and e['data'].get('proofOk') is False:
-                add('key-reveal-proof ' + e['intentId'], any(r['kind'] == 'refund' and r['intentId'] == e['intentId'] and r['data'].get('originalTxHash') == e['data']['txHash'] and any(p['intentId'] == e['intentId'] and p.get('refundTxHash') == r['data'].get('txHash') for p in b['payments']) for r in entries))
+                add('key-reveal-proof ' + e['intentId'], any(i['intentId'] == e['intentId'] and i.get('escrow', {}).get('holdback') for i in b['intents']) or any(r['kind'] == 'refund' and r['intentId'] == e['intentId'] and r['data'].get('originalTxHash') == e['data']['txHash'] and any(p['intentId'] == e['intentId'] and p.get('refundTxHash') == r['data'].get('txHash') for p in b['payments']) for r in entries), 'Failed proof has a bound refund or a separately reported partial holdback outcome')
         if testnet or ledger and ('SIMULATED' not in b['label'] or b.get('ledgerAnchor') or any(p.get('escrowTerms', {}).get('asset', 'XRP') != 'XRP' for p in b['payments'])):
             from ._ledger import lookup, verify_transactions
             verify_transactions(b, entries, ledger_lookup or lookup, add)
