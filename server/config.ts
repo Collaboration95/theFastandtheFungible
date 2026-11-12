@@ -24,7 +24,7 @@ const ConfigSchema = z.object({
   LLM_PROVIDER: mode(['fixture','deepseek','groq','openai-compatible']), LLM_BASE_URL: url, LLM_MODEL: text, LLM_API_KEY: text,
   DEEPSEEK_API_KEY: text, GROQ_API_KEY: text,
   LLM_TIMEOUT_MS: positive, LLM_SYNTHESIS_TIMEOUT_MS: positive,
-  DECISION_BASE_URL: url, DECISION_API_KEY: text, DECISION_PROVIDER: mode(['fixture','openai','cloudflare','compatible']), DECISION_MODEL: text, CLEF_TIMEOUT_MS: positive, DECISION_TIMEOUT_MS: positive,
+  DECISION_BASE_URL: url, DECISION_API_KEY: text, DECISION_PROVIDER: mode(['fixture','openai','cloudflare','compatible','calibrated']), DECISION_MODEL: text, CLEF_TIMEOUT_MS: positive, DECISION_TIMEOUT_MS: positive,
   DECISIONS_MAX_QUESTIONS: numeric(n => Number.isInteger(n) && n >= 4),
   DECISIONS_WORDING: text, DECISIONS_GAP_WORDING: text,
   BUY_THRESHOLD: numeric(n => n >= 0 && n <= 1), DECISION_CALIBRATION: text, DECISION_CALIBRATION_DIR: text,

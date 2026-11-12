@@ -21,7 +21,7 @@ export const CalibrationModelSchema = z.discriminatedUnion('method', [
   z.object({ method: z.literal('platt'), a: z.number().finite(), b: z.number().finite() }),
   z.object({ method: z.literal('isotonic'), knots: z.array(probability).min(1), values: z.array(probability).min(1) }),
 ])
-export const CalibratorKeySchema = z.object({ provider: z.enum(['cloudflare', 'openai', 'fixture']), model: z.string().min(1), promptVersion: z.string().min(1) })
+export const CalibratorKeySchema = z.object({ provider: z.enum(['cloudflare', 'openai', 'fixture', 'calibrated']), model: z.string().min(1), promptVersion: z.string().min(1) })
 export const CalibratorSchema = z.object({
   schema: z.literal(CALIBRATOR_SCHEMA),
   /** Bumped on every refit for the same key; shown as "calibrated vN" (gate 5). */

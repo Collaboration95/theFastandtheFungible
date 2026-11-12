@@ -1,3 +1,4 @@
+import { CalibratedDecisionProvider } from './agents/calibrated-policy.js'
 import { writeSse, endSse, sseBufferedBytes } from './api/sse.js'
 import { writersRouter } from './api/writers.js'
 import { hostedWriterPages } from './hosted/writers.js'
@@ -133,6 +134,7 @@ async function createConfiguredApi(options: ApiOptions = {}) {
   const purchases = new PurchaseManager(store, client, payer)
   let provider = options.provider
   // DECISION_PROVIDER=openai: OpenAI Decisions (gpt-6-luna, #214); =cloudflare: Clef (the one-line revert); otherwise the labelled fixture.
+  if (!provider && config.DECISION_PROVIDER === 'calibrated') provider = new CalibratedDecisionProvider()
   if (!provider && config.DECISION_PROVIDER === 'compatible') provider = new JsonDecisionProvider()
   if (!provider && config.DECISION_PROVIDER === 'openai') provider = new OpenAIDecisionsProvider({ allowLive: true })
   if (!provider && config.DECISION_PROVIDER === 'cloudflare') {

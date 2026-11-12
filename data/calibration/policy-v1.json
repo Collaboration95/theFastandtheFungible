@@ -1,0 +1,55 @@
+{
+  "schema": "researchagent.policy/v1",
+  "version": 1,
+  "features": [
+    "relevance",
+    "similarity",
+    "priceSgd",
+    "trust",
+    "honesty",
+    "promiseHistory",
+    "authority",
+    "original",
+    "repeatedFamily",
+    "gapCoverage",
+    "entityCoverage"
+  ],
+  "intercept": -4.087138494751952,
+  "weights": [
+    0.6439654907644465,
+    0.35213189615379786,
+    1.3993959069819535,
+    0,
+    0,
+    0,
+    -0.5444441907995808,
+    -0.26746437093990727,
+    0,
+    2.5079713576437985,
+    1.3198962150562084
+  ],
+  "threshold": 0.2,
+  "fit": {
+    "constantFeaturesFixedToZero": [
+      "trust",
+      "honesty",
+      "promiseHistory",
+      "repeatedFamily"
+    ],
+    "iterations": 4000,
+    "learningRate": 0.1,
+    "l2": 0.002,
+    "split": "sha256(policy-v1:questionId) mod 5; test=0, validation=1, train=2..4",
+    "sources": [
+      {
+        "file": "eval/decisions/datasets/luna-requested-2026-10-09.jsonl",
+        "sha256": "37477706dba0ebaecb23d0fb5dc56806594186ef7cece4b128cf417707b8f8a9"
+      },
+      {
+        "file": "eval/decisions/datasets/luna-fact-menu-sweep-2026-11-03.jsonl",
+        "sha256": "50f4faa97e506f52bc6cca59f225d32b430c2b1782e02209606bf16b78a206c5"
+      }
+    ]
+  },
+  "sha256": "71b5714903d7ee966fd2902214b2438278ccac5a5a584f348fd255d7e39de491"
+}
