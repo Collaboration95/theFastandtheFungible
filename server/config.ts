@@ -26,7 +26,7 @@ const ConfigSchema = z.object({
   MCP_CONNECT_URL: url,
   MCP_PUBLIC: mode(['off','on']), PAID_ENDPOINT_PUBLIC: mode(['off','on']),
   CORPUS_PROFILE: mode(['default','real']), FREE_TIER: mode(['default','public-docs']), LEDGER_ANALYTICS: z.enum(['0','1']).optional(),
-
+  WALLET_MODE: mode(['shared', 'delegated']),
   HOSTED: z.enum(['0', '1']).optional(),
   RA_API_TOKEN: text, RA_ALLOWED_HOSTS: text, RA_WEB_ORIGIN: url, WALLET_DAILY_CAP_MINOR: cap, SPENDING_PAUSED: z.enum(['0', '1']).optional(), LEGACY_GAP: z.enum(['0', '1']).optional(),
   ACTIVE_WORK_LIMIT: numeric(n => Number.isInteger(n) && n > 0), RECONCILE_INTERVAL_MS: positive, LOG_FORMAT: z.enum(['json', 'human']).optional(), MODEL_INPUT_USD_PER_MILLION: numeric(n => n >= 0), MODEL_OUTPUT_USD_PER_MILLION: numeric(n => n >= 0),

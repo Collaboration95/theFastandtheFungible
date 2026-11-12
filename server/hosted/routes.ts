@@ -139,6 +139,7 @@ export function hostedRouter(context: ApiContext, config: Config, limits: Hosted
     // Read durable identity before queue capacity, including reconnect after a lost response.
     const previous = limits.existing(principal,key,'submit',req.body)
     if (previous?.run_id) return res.status(200).json(store.getRun(previous.run_id))
+    context.wallets?.requireBinding(res)
     queue.capacity(); requireAdmissions(config)
     if (!(await ready())) throw new HostedError(503,'demo_unavailable')
     // Reserve after the async readiness probe, then bind and enqueue without another await.
@@ -146,6 +147,7 @@ export function hostedRouter(context: ApiContext, config: Config, limits: Hosted
     if (hold.run_id) return res.status(200).json(store.getRun(hold.run_id))
     const admitted = store.admit({surface:'web',principal,question:input.question,requestedMinor:input.budgetMinor,idempotencyKey:key,maxMinor:limits.questionMinor,labels:context.labels})
     const runId = admitted.run.runId
+    if (!admitted.reused) context.wallets?.bindRun(res, runId)
     limits.update(hold.id,{run_id:runId,state:admitted.reused?'interrupted':'queued'})
     if (admitted.reused) return res.status(200).json(store.getRun(runId))
     const expired = () => { loop.stop(runId); limits.update(hold.id,{state:'expired'}); limits.settle(hold.id); store.appendEvent(runId,{type:'SNAPSHOT',label:'The waiting time ended. No new work will start.'}) }
