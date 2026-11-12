@@ -1566,3 +1566,10 @@ Chromium creates the visitor key, obtains faucet XRP, binds public proof through
 - **Workaround:** give each probe an operating-system temporary cache directory owned by the existing verification `ResourceScope` helper and close the scope after Vite. An intermediate raw temp creator was rejected by `checkCreators`; that failed check is retained and the creator inventory is unchanged. Preserve the failed log and previous generated cache outside the checkout; lint configuration and assertions are unchanged.
 - **Suggested fix:** standalone browser examples should isolate generated caches from source globs and clean up in their finalizer.
 - **Severity / mainnet impact:** low local verification friction; no ledger behavior or Mainnet operation.
+
+### 2026-11-12 — Concurrent verification hit existing corpus-test timeouts (observed tooling)
+
+- **Evidence:** `check:fast` at wallet head `692d0364591ffd340909a234ad342812f629a82f`: 3,308 tests passed, four skipped, three existing `tests/corpus-v2.test.ts` mutation checks exceeded 5,000 ms. Lint/typecheck passed; resource check reported zero leaked entries/groups. The failed log is retained as `/tmp/r3-wallet-fast-corpus-timeout-failure.log`. Host load immediately afterward was 23.30 on this ten-core machine; contention is a hypothesis, not a traced cause.
+- **Workaround:** rerun the unchanged corpus checks first, then the complete fast check with the existing `RA_TEST_WORKERS=1` configuration to reduce concurrent work. The full local gate still uses its standard worker plan. No timeout, assertion, corpus fixture or leak threshold is changed, and no failure is treated as admission.
+- **Suggested fix:** coordinate total worker budgets across the two shared heavy-gate slots and retain timing diagnostics for corpus mutation checks.
+- **Severity / mainnet impact:** low local verification reliability friction; no ledger submission or Mainnet operation.
