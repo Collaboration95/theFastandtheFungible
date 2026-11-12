@@ -181,7 +181,7 @@ on Testnet. Nothing signed or submitted.
 ## Status and limits
 
 - **XRPL Testnet only, no real value.** Mainnet signing is disabled. [Readiness gaps](docs/BUILDER-FEEDBACK.md#mainnet-readiness-checklist).
-- **Writers.** Build notes and XRPL explainers supply team-authored paid notes; Open Records supplies free records. All three hold operator-issued XRPL Testnet Credentials; one Testnet Permissioned Domain lists accepted issuers. Identity only, not KYC or quality. Fictional writers stay unverified; hosted badges require configuration. **No independent writers, customers,
+- **Writers.** Two team-authored writers, Build notes and XRPL explainers, supply paid notes; Open Records supplies free records. All three hold accepted XRPL Testnet Credentials from our operator; one Testnet Permissioned Domain lists accepted issuers. Identity only, not KYC or quality. Fictional writers stay unverified; hosted badges require configuration. **No independent writers, customers,
   pilots or revenue yet.** Outside writers will be labelled **real person · Testnet · no real value**. ([Identity evidence](docs/evidence/writer-credentials-nov12/README.md)).
 - **New writers get one labelled probe:** one matching article, up to S$0.30 within budget (*probe purchase · new writer*).
 - **TEST-SGD stands in for RLUSD** in token escrow (CLI and evidence; the live demo pays in Testnet XRP); official RLUSD payments work on Testnet.
