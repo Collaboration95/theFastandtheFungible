@@ -3,12 +3,12 @@
 //                                                           and scratch/deck-png/slide-NN.png (ignored)
 //   node docs/submission/deck/export.mjs --refresh-shots → imports the original public-view browser
 //                                                           captures after REDEPLOYED; zero questions.
-//                                                           Keeps historical answer imagery labelled.
+//                                                           Includes the existing recorded answer and payment view.
 //   node docs/submission/deck/export.mjs --replay-shots   → offline fallback: the same shots from the
 //                                                           /demo/ replay of the recorded Testnet run
 //   node docs/submission/deck/export.mjs --no-png         → PDF only
-// Offline: fonts come from node_modules (@fontsource-variable), images from the repo. Historical answer shots come from the 11 Nov hosted run.
-// --refresh-shots updates only public views from the shared browser, with a pinned capture manifest. --replay-shots instead uses the /demo/ replay
+// Offline: fonts come from node_modules (@fontsource-variable), images from the repo. Capture manifests bind hosted shots to their deployed release.
+// --refresh-shots imports shared-browser views (including an existing recorded run), with a pinned capture manifest. --replay-shots instead uses the /demo/ replay
 // build of the current app (src/), served by Vite on an ephemeral loopback port: a recorded XRPL Testnet run
 // with fictional writers, light theme, 2x, with every non-loopback request blocked.
 // Fails, without replacing the PDF, if: a fact marker is stale (run `node scripts/facts.mjs`), any

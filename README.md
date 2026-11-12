@@ -9,6 +9,9 @@ is the same key that releases the writer’s payment. Your browser checks the ma
 
 **XRPL Testnet demo · 13–19 Nov 2026.**
 
+<p align="center"><img src="docs/assets/payment-stepper.gif" width="712" alt="A recorded payment locks in escrow; the writer publishes its key and the article unlocks."></p>
+<p align="center"><sub><a href="https://collaboration95.github.io/theFastandtheFungible/demo/">Recorded replay</a>, fictional writers: locked → key published → article unlocked (waiting shortened).</sub></p>
+
 [**Try it in your browser →**](https://collaboration95.github.io/theFastandtheFungible/try/) ·
 [Check a recorded run without asking a question](https://ra-front-651013803640.asia-southeast1.run.app) ·
 [Watch a recorded run](https://collaboration95.github.io/theFastandtheFungible/demo/)
@@ -19,8 +22,8 @@ is the same key that releases the writer’s payment. Your browser checks the ma
 <a href="docs/key-reveal-escrow.md"><img alt="Key-reveal escrow" src="https://img.shields.io/badge/delivery-key%20reveal-2F6B4F?style=flat-square"></a>
 </p>
 
-<p align="center"><img src="docs/media/readme-answer.png" width="900" alt="A cited answer beside its payment card: payment locked, key revealed, key matches, article unlocked."></p>
-<p align="center"><sub>Recorded hosted answer, 11 Nov 2026 · <a href="docs/evidence/hosted-export-nov11/README.md">receipts and ledger links</a></sub></p>
+<p align="center"><img src="docs/media/readme-answer.png" width="900" alt="ResearchAgent hosted home: ask a question with a budget or verify a recorded run."></p>
+<p align="center"><sub>Hosted demo, captured 12 Nov 2026.</sub></p>
 
 ## Live demo numbers
 

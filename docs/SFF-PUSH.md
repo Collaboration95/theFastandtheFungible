@@ -10,6 +10,7 @@ something significant: a feature, a metric move, a finished deliverable. Don't
 add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
+- 12 Nov: Redeployed the hosted demo at `354820a2`, verified the single Home environment marker and all five recorded gates, refreshed hosted README/deck captures and the deck PDF, and added a six-second payment-stepper replay above the fold with no new question. [Capture manifest](submission/deck/assets/hosted-public-shots.json).
 - 12 Nov: UI-C reduces Home environment/provenance messages from 5 to 1, moves key-reveal payment steps into the main run column with live create/finish/cancel links and distinct quality refunds, and preserves replay labels; desktop/390 px axe checks pass. Hosted redeploy and replay publication remain with the orchestrator. [Evidence](evidence/ui-c/README.md).
 - 12 Nov: DOC-1 makes the judge pack lead with product and key-match proof, adds dated live feasibility aggregates and a Pages `/try/` redirect/QR, centralises limits, and refreshes the deck PDF and owner read sheet. Pages publication and hosted screenshot refresh remain with the orchestrator.
 - 12 Nov: POLISH-1 aligns Writers with the scoreboard’s admitted Testnet settled-sales population; qualifies key-reveal, refund, anchor, latency and held-out claims; separates writer identity links into 44 px targets; refreshes progress output and the judge-deck PDF. Hosted redeploy and Pages publication remain with the orchestrator.

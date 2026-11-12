@@ -2,7 +2,7 @@
 // Never asks a question, creates a visitor run, recovers tokens, or changes the deployment.
 // node docs/submission/deck/export.mjs --refresh-shots
 // First capture Home, recorded Verify, Writers and scoreboard to the manifest below.
-// Historical answer images/manifest remain unchanged with their actual build/date labels.
+// Answer and payment views may reuse an existing visitor run; never submit a new question.
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import { dirname, join, resolve } from 'node:path'
@@ -18,7 +18,7 @@ if (!expected || !/^[a-f0-9]{40}$/.test(expected) || manifest.deployedSha !== ex
 if (manifest.bundleSha256 !== selected.sha256 || manifest.questionsSubmitted !== 0) throw Error('Need selected recorded-run evidence and zero new questions')
 if (manifest.gates.length !== 5 || manifest.gates.some(x => x !== 'Passed' && x !== 'Held')) throw Error('Need five observed passing browser gates')
 if (manifest.result !== '24 passed · 2 not checked') throw Error('Need the actual featured browser result, including skips')
-const required = ['home', 'judges-corner', 'writers', 'scoreboard']
+const required = ['home', 'judges-corner', 'writers', 'scoreboard', 'answer', 'payment']
 const imported = []
 for (const name of required) {
   const shot = manifest.shots[name]
@@ -27,11 +27,13 @@ for (const name of required) {
   const hash = createHash('sha256').update(bytes).digest('hex')
   if (hash !== shot.sha256 || bytes.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a') throw Error(`Changed or invalid PNG: ${name}`)
   mkdirSync(assets, { recursive: true })
-  const file = `hosted-${name}.png`
+  const file = name === 'answer' ? 'ux-answer.png' : name === 'payment' ? 'ux-payment.png' : `hosted-${name}.png`
   copyFileSync(shot.path, join(assets, file))
-  imported.push({ name, file, sha256: hash, viewport: shot.viewport })
+  if (name === 'home') copyFileSync(shot.path, join(root, 'docs/media/readme-answer.png'))
+  imported.push({ name, file, sha256: hash, viewport: shot.viewport, ...(shot.crop ? { crop: shot.crop } : {}) })
 }
 const publicManifest = { ...manifest }
 delete publicManifest.shots
-writeFileSync(join(assets, 'hosted-public-shots.json'), JSON.stringify({ ...publicManifest, shots: imported, note: 'Original shared-browser PNGs copied byte-for-byte. No new hosted question; historical answer imagery unchanged.' }, null, 2) + '\n')
+writeFileSync(join(assets, 'hosted-public-shots.json'), JSON.stringify({ ...publicManifest, shots: imported, note: 'Shared-browser captures copied byte-for-byte; answer/payment crops are recorded. Existing visitor run, no new question.' }, null, 2) + '\n')
+writeFileSync(join(assets, 'shots.json'), JSON.stringify({ source: manifest.url, captured: manifest.capturedAt, deployedSha: expected, label: 'Hosted XRPL Testnet demo · no real value', runId: manifest.runId, receipts: selected.evidence, bundleSha256: selected.sha256, deviceScaleFactor: 1, colorScheme: 'light', shots: imported }, null, 2) + '\n')
 console.log(`hosted: imported ${imported.length} public-view captures; zero questions`)
