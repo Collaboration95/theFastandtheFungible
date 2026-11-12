@@ -17,12 +17,14 @@ nginx configurations; fixture models, simulated settlement; readiness overridden
 only in this local harness):
 
 ```json
-{"kind":"native-two-nginx-hosted-gateway","models":"fixture","settlement":"simulated","readiness":"test override; no Testnet balance proof","tools":["ask_expert","get_run","status","search_expertise","lookup_receipt","verify_answer"],"sse":true,"ask":"DONE","purchases":1,"retrySameRun":true,"receiptsVerified":true,"cloud":false}
+{"kind":"native-two-nginx-hosted-gateway","models":"fixture","settlement":"simulated","readiness":"test override; no Testnet balance proof","tools":["ask_expert","get_run","status","search_expertise","lookup_receipt","verify_answer"],"sse":true,"ask":"DONE","purchases":1,"retrySameRun":true,"receiptsVerified":true,"headerWhitelist":true,"oneForwardedHop":true,"sseUnbuffered":true,"unreachablePaused503":true,"cloud":false}
 ```
 
 The SDK connects without credentials. Its ask traverses front nginx, VM nginx,
 the hosted API, and the same `/runs` admission route as the web. MCP responses
-use SSE. Both proxies disable buffering and caching. The test covers denied
+use SSE. The retained synthetic proxy checks also verify the header whitelist,
+one forwarded hop, a first SSE frame before 900 ms, and a paused 503 when the
+backend is unreachable. Both proxies disable buffering and caching. The test covers denied
 Host/Origin/forwarded chains, other-IP run isolation, reconnect, idempotency,
 receipts, verification and an operator pause. Local bearer MCP retains its
 numeric-loopback Host check and rejects all Origin headers.

@@ -11,7 +11,12 @@ import {Client} from '@modelcontextprotocol/sdk/client/index.js'
 import {StreamableHTTPClientTransport} from '@modelcontextprotocol/sdk/client/streamableHttp.js'
 const dir=mkdtempSync(join(tmpdir(),'ra-reach-proxy-')), root=resolve('.')
 const free=async()=>{const s=createServer().listen(0,'127.0.0.1');await once(s,'listening');const p=s.address().port;await new Promise(r=>s.close(r));return p}
-const [frontPort,vmPort]=await Promise.all([free(),free()])
+const [frontPort,vmPort,probeFrontPort]=await Promise.all([free(),free(),free()])
+const probe=createServer((req,res)=>{
+  if(req.url==='/sse'){res.writeHead(200,{'Content-Type':'text/event-stream'});res.write('data: first\n\n');setTimeout(()=>res.end('data: last\n\n'),1000)}
+  else {res.setHeader('Content-Type','application/json');res.end(JSON.stringify(req.headers))}
+}).listen(0,'127.0.0.1');await once(probe,'listening')
+const probePort=probe.address().port
 const apiServer=createServer().listen(0,'127.0.0.1');await once(apiServer,'listening')
 const origin=`https://127.0.0.1:${frontPort}`,url=`http://127.0.0.1:${frontPort}`
 Object.assign(process.env,{HOSTED:'1',MCP_PUBLIC:'on',HOSTED_ORIGIN:origin,HOSTED_TRUSTED_PROXY:'127.0.0.1',HOSTED_IP_HMAC_KEY:'local-proof-not-a-deployed-key-0001',HOSTED_CONTROL_PATH:join(dir,'control.json'),LLM_PROVIDER:'fixture',DECISION_PROVIDER:'fixture',SETTLEMENT_RAIL:'simulated',ANCHOR_RAIL:'off',LANGFUSE_ENABLED:'0'})
@@ -25,7 +30,8 @@ const nginx=process.env.NGINX_BIN||'/opt/homebrew/bin/nginx'
 const front=readFileSync('docker/hosted/front/default.conf.template','utf8').replace('listen 8080',`listen 127.0.0.1:${frontPort}`).replaceAll('${VM_UPSTREAM}',`127.0.0.1:${vmPort}`).replace('${HOSTED_VIDEO_URL}','').replace('/usr/share/nginx/html',join(root,'docker/hosted')).replace('Host $host','Host $http_host')
 let vm=readFileSync('docker/hosted/nginx.conf','utf8');vm=vm.slice(vm.indexOf('  server {'),vm.lastIndexOf('}')).replace('listen 8080',`listen 127.0.0.1:${vmPort}`).replaceAll('/etc/nginx/proxy-headers.conf',join(dir,'headers.conf')).replaceAll('http://api:8788',`http://127.0.0.1:${apiServer.address().port}`).replace('/usr/share/nginx/html',join(root,'dist'))
 writeFileSync(join(dir,'headers.conf'),readFileSync('docker/hosted/proxy-headers.conf','utf8').replace('Host $host','Host $http_host'))
-writeFileSync(join(dir,'nginx.conf'),`worker_processes 1; pid ${dir}/nginx.pid; error_log ${dir}/error.log crit; events {worker_connections 128;} http {include ${process.env.NGINX_MIME||'/opt/homebrew/etc/nginx/mime.types'}; access_log off; client_body_temp_path ${dir}/client; proxy_temp_path ${dir}/proxy; ${vm}\n${front}}`)
+const probeFront=front.replace(`127.0.0.1:${frontPort}`,`127.0.0.1:${probeFrontPort}`).replaceAll(`127.0.0.1:${vmPort}`,`127.0.0.1:${probePort}`).replace(/map \$http_x_forwarded_for[\s\S]*?\n}\n/,'')
+writeFileSync(join(dir,'nginx.conf'),`worker_processes 1; pid ${dir}/nginx.pid; error_log ${dir}/error.log crit; events {worker_connections 128;} http {include ${process.env.NGINX_MIME||'/opt/homebrew/etc/nginx/mime.types'}; access_log off; client_body_temp_path ${dir}/client; proxy_temp_path ${dir}/proxy; ${vm}\n${front}\n${probeFront}}`)
 const processNginx=spawn(nginx,['-c',join(dir,'nginx.conf'),'-g','daemon off;'],{stdio:'ignore'})
 const client=new Client({name:'reach-local-proof',version:'1'})
 try {
@@ -41,8 +47,20 @@ try {
   const run=JSON.parse(result.content[0].text);assert.equal(run.phase,'DONE');assert(run.purchases.length>0)
   const again=await client.callTool({name:'ask_expert',arguments:args});assert.equal(JSON.parse(again.content[0].text).run_id,run.run_id)
   const verified=await client.callTool({name:'verify_answer',arguments:{run_id:run.run_id}});assert.equal(JSON.parse(verified.content[0].text).ok,true)
-  console.log(JSON.stringify({kind:'native-two-nginx-hosted-gateway',models:'fixture',settlement:'simulated',readiness:'test override; no Testnet balance proof',tools,sse:true,ask:run.phase,purchases:run.purchases.length,retrySameRun:true,receiptsVerified:true,cloud:false}))
+  const probeUrl=`http://127.0.0.1:${probeFrontPort}`
+  const forwarded=await(await fetch(probeUrl+'/headers',{headers:{'X-Forwarded-For':'1.2.3.4, 198.51.100.9',Authorization:'Bearer private-probe','X-Internal-Arbitrary':'private-probe','X-RA-Principal':'owner','MCP-Protocol-Version':'2025-11-25'}})).json()
+  assert.equal(forwarded['x-forwarded-for'],'198.51.100.9')
+  assert(!forwarded.authorization&&!forwarded['x-internal-arbitrary']&&!forwarded['x-ra-principal'])
+  assert.equal(forwarded['mcp-protocol-version'],'2025-11-25')
+  const time=Date.now(),stream=await fetch(probeUrl+'/sse'),reader=stream.body.getReader()
+  const first=await reader.read()
+  assert(new TextDecoder().decode(first.value).includes('first')&&Date.now()-time<900,'SSE buffered')
+  await reader.cancel();probe.closeAllConnections();await new Promise(r=>probe.close(r))
+  const unreachable=await fetch(probeUrl+'/unreachable')
+  assert.equal(unreachable.status,503);assert((await unreachable.text()).includes('shared demo is paused'))
+  console.log(JSON.stringify({kind:'native-two-nginx-hosted-gateway',models:'fixture',settlement:'simulated',readiness:'test override; no Testnet balance proof',tools,sse:true,ask:run.phase,purchases:run.purchases.length,retrySameRun:true,receiptsVerified:true,headerWhitelist:true,oneForwardedHop:true,sseUnbuffered:true,unreachablePaused503:true,cloud:false}))
 } finally {
+  probe.closeAllConnections();probe.close()
   await client.close();processNginx.kill('SIGTERM');await once(processNginx,'exit').catch(()=>{})
   apiServer.closeAllConnections();await new Promise(r=>apiServer.close(r));await api.close()
   publisher.closeAllConnections();await new Promise(r=>publisher.close(r));pub.locals.journal.close();rmSync(dir,{recursive:true,force:true})
