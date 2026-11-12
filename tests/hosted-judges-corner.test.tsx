@@ -121,7 +121,8 @@ describe('using it costs no question', () => {
     const before = JSON.stringify(h.status.remaining)
     await showHome(h, state)
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Run the checks' })) })
-    expect((await screen.findByText(/passed/, { selector: '.ra-hv-head' })).textContent).toBe('26 passed · 2 not checked')
+    // The lazy verifier chunk can take over 1 s to load under a full parallel gate; allow 5 s.
+    expect((await screen.findByText(/passed/, { selector: '.ra-hv-head' }, { timeout: 5000 })).textContent).toBe('26 passed · 2 not checked')
     expect(fetchSpy.mock.calls.map(call => String((call as unknown[])[0]))).toEqual(['/judge/hosted-run-nov12.receipts.json'])
     expect(JSON.stringify(h.status.remaining)).toBe(before)
     expect(screen.getByText(JUDGE_RUN.caption)).toBeTruthy()
