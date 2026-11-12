@@ -84,6 +84,16 @@ it('a failed promise cancels without a writer signature after CancelAfter', asyn
   expect(cancel.tx_json.OfferSequence).toBe(next.escrow!.holdback!.createSequence)
   expect(s.store.getRun(s.run.runId).spentMinor).toBe(s.candidate.price.amountMinor)
 })
+it('keeps the holdback refundable when the existing ledger-freshness check fails', async () => {
+  const s=await setup(), freshness=await import('../publisher/writers/ledger-analytics/freshness.js')
+  vi.spyOn(freshness,'checkFreshness').mockResolvedValue({ok:false,failedClaimId:'p1:dated-figure',reason:'Synthetic stale-report failure'})
+  const result=await s.buy()
+  expect(result.status).toBe('CLAIM_FAILED')
+  expect(result.escrow!.holdback).toMatchObject({state:'pending',checks:'fail'})
+  expect(s.store.getRun(s.run.runId).contents).toHaveLength(0)
+  s.c.state.now=result.escrow!.holdback!.cancelAfter+1; await s.manager.reconcile()
+  expect(s.store.getIntent(result.intentId)!.escrow!.holdback!.state).toBe('refunded')
+})
 it('refuses body release on outer success with rolled back inner creates', async () => {
   const s = await setup(); s.c.state.batchRollback = true
   const result = await s.buy()

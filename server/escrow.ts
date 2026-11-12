@@ -2,6 +2,7 @@ import { holdbackOffer, createHoldback, verifyHoldbackBatch, settleHoldback } fr
 import { batchInners, innerHash, keyTerms, holdbackMinor } from '../shared/holdback.js'
 import { createHash } from 'node:crypto'
 import { loadConfig } from './config.js'
+import { checkFreshness } from '../publisher/writers/ledger-analytics/freshness.js'
 // Trusted policy purchase path. Bytes are quarantined until proof AND validated finish.
 import { amountFor, ledgerAmount, matchesAmount } from '../shared/contracts/asset.js'
 import { escrowAsset, preflightEscrow, verifyEscrowCredit } from './escrow-asset.js'
@@ -102,6 +103,11 @@ export class EscrowPurchases {
       const manifest = this.store.getManifest(intent.intentId)!
       failedClaimIds = verifyDelivery(d.body, d.passages, d.salts, manifest).failedClaims
       proof = d.articleId === intent.resourceId && d.version === intent.version && manifest.root === t.manifestRoot && verifyManifestSignature(manifest) && verifyDelivery(d.body, d.passages, d.salts, manifest).ok
+      if (proof && t.holdback) {
+        const freshness = await checkFreshness(d.body,manifest,new Date().toISOString(),undefined,found.ledgerIndex)
+        if (!freshness.ok) { proof=false; failedClaimIds.push(freshness.failedClaimId ?? 'p1:dated-figure') }
+        if (manifest.publisherSlug === 'ledger-analytics') this.store.appendEvent(intent.runId,{type:'PROOF',label:freshness.reason,data:{intentId:intent.intentId,freshnessOk:freshness.ok}})
+      }
     } catch { /* Invalid envelope remains private; evidence can be exported explicitly after reveal. */ }
     if (proof && d) {
       const content = { source: intent.source, profileId: intent.profileId, resourceId: intent.resourceId, version: intent.version, title: d.title, publisher: d.publisher, body: d.body, spans: d.passages }
