@@ -116,10 +116,10 @@ export function hostedLinks(hosted: Hosted) {
 export const JUDGE_RUN = {
   bundleUrl: recordedRun.bundleUrl,
   // Final answer and decision providers are pinned by the committed bundle in the caption regression test.
-  caption: 'Recorded 12 Nov · team-authored writers · live planning and final answer; first draft from recorded extracts · keyword search · policy rules buy.',
+  caption: 'Recorded 13 Nov (SGT) · team-authored ledger report · live planning and answers · keyword search · policy rules buy. Exact Testnet payment, not key-reveal escrow.',
   summary: recordedRun.summary,
-  /** Its EscrowFinish: the writer publishes the article key in the Fulfillment field, and the escrow's lock is that key's hash. */
-  keyTx: recordedRun.keyTx,
+  /** The actual exact-payment receipt for the measured ledger report. */
+  proofTx: recordedRun.transaction.hash,
 } as const
 export const explorerTx = (hash: string) => `https://testnet.xrpl.org/transactions/${hash}`
 

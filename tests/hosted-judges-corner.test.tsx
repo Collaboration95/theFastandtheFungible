@@ -18,15 +18,15 @@ vi.mock('../src/ledger-check', async original => ({ ...await original<typeof imp
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.doUnmock('../src/verify/browser'); vi.resetModules() })
 
 it('pins the recorded caption to the final answer and audited decision providers', () => {
-  const bundle = JSON.parse(readFileSync('public/judge/hosted-run-nov12.receipts.json', 'utf8'))
+  const bundle = JSON.parse(readFileSync('public/judge/hosted-run-nov13.receipts.json', 'utf8'))
   const answer = bundle.answers.at(-1)
-  expect(bundle.answers[0].provider).toBe('fixture')
-  expect(JUDGE_RUN.summary).toContain('31.1 s Start→Done · 1 article · S$0.40')
+  expect(bundle.answers[0].provider).toBe('deepseek')
+  expect(JUDGE_RUN.summary).toContain('17.4 s Start→Done · 1 ledger report · S$0.40')
   expect(answer.provider).toBe('deepseek')
   const decisions = bundle.audit.entries.filter((entry: { kind: string }) => entry.kind === 'decision')
   expect(decisions.length).toBeGreaterThan(0)
   expect(decisions.every((entry: { data: { provider: string } }) => entry.data.provider === 'fixture')).toBe(true)
-  expect(JUDGE_RUN.caption).toBe('Recorded 12 Nov · team-authored writers · live planning and final answer; first draft from recorded extracts · keyword search · policy rules buy.')
+  expect(JUDGE_RUN.caption).toBe('Recorded 13 Nov (SGT) · team-authored ledger report · live planning and answers · keyword search · policy rules buy. Exact Testnet payment, not key-reveal escrow.')
 })
 
 const status = (patch: Partial<HostedDemoStatus> = {}): HostedDemoStatus => ({
@@ -50,17 +50,17 @@ const showHome = async (h: Hosted, state: HomeState) => {
 }
 
 describe('the committed recorded run', () => {
-  it('is the hosted export of 12 Nov, byte for byte, with the pinned SHA-256', async () => {
-    const served = readFileSync('public/judge/hosted-run-nov12.receipts.json')
-    const evidence = readFileSync('docs/evidence/hosted-export-nov12/receipts.json')
-    expect(createHash('sha256').update(served).digest('hex')).toBe('8cedc67bdbdc51e2e13ad1bb68ed6a5b78e76d75afa7b47e37e7a97cec71f2ae')
+  it('is the hosted export of 13 Nov (SGT), byte for byte, with the pinned SHA-256', async () => {
+    const served = readFileSync('public/judge/hosted-run-nov13.receipts.json')
+    const evidence = readFileSync('docs/evidence/hosted-export-nov13/receipts.json')
+    expect(createHash('sha256').update(served).digest('hex')).toBe('c74ade00430e78cae64d469ded64a54c401d0d11eee087ff4c839555a7b19548')
     expect(Buffer.compare(served, evidence)).toBe(0)
-    expect(JUDGE_RUN.bundleUrl).toBe('/judge/hosted-run-nov12.receipts.json')
+    expect(JUDGE_RUN.bundleUrl).toBe('/judge/hosted-run-nov13.receipts.json')
   })
-  it('contains the EscrowFinish the strip links to', async () => {
-    const bundle = readFileSync('public/judge/hosted-run-nov12.receipts.json', 'utf8')
-    expect(bundle).toContain(JUDGE_RUN.keyTx)
-    expect(explorerTx(JUDGE_RUN.keyTx)).toBe('https://testnet.xrpl.org/transactions/01A6A7E07652216B102DFD1FED13462539D43475DFFBBA5A3C6E0FB12F643F1D')
+  it('contains the exact payment the strip links to', async () => {
+    const bundle = readFileSync('public/judge/hosted-run-nov13.receipts.json', 'utf8')
+    expect(bundle).toContain(JUDGE_RUN.proofTx)
+    expect(explorerTx(JUDGE_RUN.proofTx)).toBe('https://testnet.xrpl.org/transactions/3AEF05655C6B05CA961DD1DFD9443897C126F54E64EF2FD45BCAC5657CBB5C0B')
   })
 })
 
@@ -75,8 +75,8 @@ describe('the strip', () => {
     await showHome(h, expected)
     const strip = screen.getByRole('region', { name: 'Check the recorded evidence' })
     expect(within(strip).getByRole('heading', { name: 'Verify a real run from this demo in your browser' })).toBeTruthy()
-    expect(within(strip).getByRole('heading', { name: 'See the key on the ledger' })).toBeTruthy()
-    expect(within(strip).getByText('The key is in the transaction’s Fulfillment field.')).toBeTruthy()
+    expect(within(strip).getByRole('heading', { name: 'See the payment on the ledger' })).toBeTruthy()
+    expect(within(strip).getByText('The ledger report was delivered against this exact Testnet payment.')).toBeTruthy()
     expect(within(strip).getByRole('button', { name: 'Run the checks' })).toBeTruthy()
     expect(within(strip).getByText(JUDGE_RUN.caption)).toBeTruthy()
     expect(within(strip).getByText(JUDGE_RUN.summary)).toBeTruthy()
@@ -128,7 +128,7 @@ describe('using it costs no question', () => {
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Run the checks' })) })
     // The lazy verifier chunk can take over 1 s to load under a full parallel gate; allow 5 s.
     expect((await screen.findByText(/passed/, { selector: '.ra-hv-head' }, { timeout: 5000 })).textContent).toBe('26 passed · 2 not checked')
-    expect(fetchSpy.mock.calls.map(call => String((call as unknown[])[0]))).toEqual(['/judge/hosted-run-nov12.receipts.json'])
+    expect(fetchSpy.mock.calls.map(call => String((call as unknown[])[0]))).toEqual(['/judge/hosted-run-nov13.receipts.json'])
     expect(JSON.stringify(h.status.remaining)).toBe(before)
     expect(screen.getByText(JUDGE_RUN.caption)).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Run again' })).toBeTruthy()
@@ -142,8 +142,8 @@ describe('using it costs no question', () => {
   it('(b) is a plain link to the explorer: clicking it makes no request of ours', async () => {
     const fetchSpy = setup([check('PASS')])
     await showHome(hosted({ state: 'ended' }), 'ended')
-    const link = screen.getByRole('link', { name: /View key-release transaction/ })
-    expect(link.getAttribute('href')).toBe(explorerTx(JUDGE_RUN.keyTx))
+    const link = screen.getByRole('link', { name: /View payment transaction/ })
+    expect(link.getAttribute('href')).toBe(explorerTx(JUDGE_RUN.proofTx))
     expect(link.getAttribute('target')).toBe('_blank'); expect(link.getAttribute('rel')).toContain('noopener')
     link.addEventListener('click', event => event.preventDefault())
     fireEvent.click(link)

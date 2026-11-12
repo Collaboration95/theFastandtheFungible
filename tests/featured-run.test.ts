@@ -16,8 +16,14 @@ it('the corner, stage kit and future video captures select the same exact export
   expect(RECEIPTS).toBe(file)
   expect(readFileSync(DEFAULTS.evidence).equals(bytes)).toBe(true)
   expect(createHash('sha256').update(bytes).digest('hex')).toBe(RECEIPTS_SHA256)
-  expect(KEY_TX).toBe(JUDGE_RUN.keyTx)
-  expect(JSON.parse(bytes.toString()).proofs.some((proof: { keyReveal?: { finishHash?: string } }) => proof.keyReveal?.finishHash === KEY_TX)).toBe(true)
+  expect(KEY_TX).toBe(JUDGE_RUN.proofTx)
+  const bundle: ReceiptBundle = JSON.parse(bytes.toString())
+  const payment = bundle.payments.find(row => row.txHash === KEY_TX)!
+  expect(payment).toMatchObject({ writer: 'ledger-analytics', status: 'VERIFIED', amountDrops: '40000' })
+  const intent = bundle.intents.find(row => row.intentId === payment.intentId)!
+  expect(intent.quote?.payment).toMatchObject({ payTo: payment.payee, amountDrops: payment.amountDrops, invoiceId: payment.invoiceId })
+  expect(bundle.receipts.find(row => row.intentId === payment.intentId)?.xrpl).toMatchObject({ txHash: KEY_TX, payTo: payment.payee, amountDrops: payment.amountDrops })
+  expect(createHash('sha256').update(readFileSync('public/judge/hosted-run-nov12.receipts.json')).digest('hex')).toBe('8cedc67bdbdc51e2e13ad1bb68ed6a5b78e76d75afa7b47e37e7a97cec71f2ae')
   expect(createHash('sha256').update(readFileSync('public/judge/hosted-run-nov11.receipts.json')).digest('hex')).toBe('1f2fe4de4de58fedb68c8e04c9f2106fa0b66004c1839ae93f29bb0662ee13ee')
 })
 

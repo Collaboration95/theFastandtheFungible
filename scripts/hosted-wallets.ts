@@ -5,7 +5,8 @@ import { Client, Wallet } from 'xrpl'
 import { testnetUrl } from '../shared/xrpl.js'
 import { seedEnvName } from '../publisher/registry.js'
 // Every writer the hosted publisher serves, free-only ones included: each signs its deliveries (a free article without
-// its writer's signed proof is dropped since #472). A free-only writer's wallet is never paid; --fund is optional for it.
+// its writer's signed proof is dropped since #472). Free writers can receive hire-v1 citation royalties; fund them
+// before enabling the hosted paid-answer endpoint, even though reading their articles costs nothing.
 const servedSlugs = () => readdirSync(new URL('../data/writers/',import.meta.url)).filter(f=>f.endsWith('.json')).map(f=>JSON.parse(readFileSync(new URL('../data/writers/'+f,import.meta.url),'utf8')).publisher.slug as string).sort()
 const args=process.argv.slice(2)
 const out=args[args.indexOf('--out')+1]
