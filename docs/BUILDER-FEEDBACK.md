@@ -1436,6 +1436,21 @@ persistence or a mainnet deployment. No cloud resource or live ledger call ran.
   The same failure mode could affect mainnet, but this regression is synthetic
   and mainnet was not written or tested.
 
+## 2026-11-12 — A buyer holdback needs three reserved sequences and two inner-result checks (observed Testnet; crash cases synthetic)
+
+- **Evidence:** `docs/evidence/money/HOLDBACK.md`, `holdback-transactions.json`, `tests/holdback.test.ts`. First real product Batch `6D6730D6EF2C1501E6FA419353D2BAF5BC9F30189F21D1EA68D83505CF1500AD`; buyer holdback finish `488F8B4EDE3C879CAB4191F907EB4BE404CD48FD22DF585F94A01E6679CFD197`. The prior money spike observed outer `tesSUCCESS` with rolled-back inner creates; this lane reproduces that adversarial shape on a fake ledger.
+- **Workaround:** reserve outer Sequence and both inner Sequences durably before signing, retain the exact Batch across crashes, and read both validated inner transactions plus both escrow objects at the creation ledger. `ParentBatchID` is in inner metadata, not `tx_json`. Single-account signing works without the spike's multi-account SDK workaround. Buyer policy keeps the holdback fulfillment private until release; failure uses buyer `EscrowCancel` after the deadline.
+- **Suggested fix:** make single-account Batch examples persist sequence reservations before signing and explicitly demonstrate outer-success/inner-rollback handling. Return an application-level success helper that checks inner results and expected ledger objects.
+- **Severity / mainnet impact:** high payment-integrity risk if wrapper success is mistaken for settlement or a retry allocates new principal. This is Testnet implementation evidence plus synthetic crash coverage, not a mainnet run. The non-cooperative refund covers the holdback only; the key-release portion and fees remain paid.
+
+
+## 2026-11-12 — A two-escrow IOU Batch exceeds the x402 payment-header cap with duplicate full-quote memos (observed local fixture)
+
+- **Evidence:** `tests/holdback.test.ts` reproduces `PAYMENT-SIGNATURE header exceeds 8192 bytes` through the real buyer/publisher HTTP path with a fake IOU ledger. The original full-quote XRP Testnet trials fit; this is not an observed issued-token Testnet failure.
+- **Workaround:** new holdback creates carry the SHA-256 commitment to the canonical signed quote in each memo, while receipts and the create audit entry retain the signed terms. The verifier also accepts the original exact full-quote memos from the initial Testnet trial. The 8 KiB header cap and 1 KiB memo limit are unchanged.
+- **Suggested fix:** document serialized header-size budgets for Batch examples, including base64 and issued-asset metadata, and use quote commitments rather than repeating the entire quote inside each inner transaction.
+- **Severity / mainnet impact:** medium interoperability failure. A Batch could lock principal before the client discovers its signature cannot fit the delivery header. Compact commitments fix that shape locally; no mainnet or official-RLUSD settlement is claimed.
+
 ### 2026-11-12 — money spikes: delegation and Batch SDK (observed)
 
 - **Delegation works, including revocation (informational).** Evidence: `docs/evidence/money/a.json`, delegated EscrowCreate `3CA31F98B5137ED91ADAE2E4AD01DDE0841FC4911430B74042359492E0504015`, revoke `B376A2CBBD7BEED9004195B954A7D56D2300D7C07961381A2F18B96F96FB9E60`. Fee 12 drops comes from delegate; 100,000 principal from visitor. Payment and post-revoke create return `terNO_DELEGATE_PERMISSION` without validation. Workaround: none. Suggested fix: document fee payer and explicit negative probes beside the delegate example. Mainnet impact: permission scope must remain enforced by policy; no Mainnet write tested.

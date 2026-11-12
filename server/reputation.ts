@@ -173,7 +173,7 @@ export class Reputation {
     const record = this.store.applyConsequence(intent.intentId, 'calibration', 'measured', () => {
       const record = this.recordCalibration({ publisherSlug, wallet: candidate.wallet!, claimed, observed, runId: run.runId })
       const latest = this.store.getRun(run.runId)
-      this.store.updateRun(run.runId, { checkpoint: { ...latest.checkpoint, calibrated: [...calibrated(run.runId), intent.intentId] } })
+      this.store.updateRun(run.runId, { checkpoint: { ...latest.checkpoint, ...(intent.escrow?.holdback ? {holdbackCalibration:{...(latest.checkpoint.holdbackCalibration as Record<string,unknown> ?? {}),[intent.intentId]:{claimed,observed}}} : {}), calibrated: [...calibrated(run.runId), intent.intentId] } })
       return record
     })
     if (!record) return {status:'SKIPPED',reason:'Already calibrated.'}

@@ -1,3 +1,5 @@
+import { holdbackOffer, createHoldback, verifyHoldbackBatch, settleHoldback } from './holdback.js'
+import { batchInners, innerHash, keyTerms } from '../shared/holdback.js'
 import { createHash } from 'node:crypto'
 import { loadConfig } from './config.js'
 // Trusted policy purchase path. Bytes are quarantined until proof AND validated finish.
@@ -56,12 +58,14 @@ export class EscrowPurchases {
       if (candidate.tier !== 'PAID' || !manifest || !verifyManifestSignature(manifest) || manifest.articleId !== candidate.resourceId || manifest.version !== candidate.version || manifest.publisherSlug !== candidate.profileId || manifest.priceMinor !== candidate.price.amountMinor || manifest.wallet !== candidate.wallet || payeeRefusal(candidate.wallet ?? '')) throw new Error('Escrow candidate is ineligible')
       if (rep && rep.status !== 'active') return this.store.skipEscrow({ source: candidate.source, runId, intentId, profileId: candidate.profileId, resourceId: candidate.resourceId, version: candidate.version, amountMinor: candidate.price.amountMinor, status: 'SKIPPED' }, 'Writer quarantined or delisted')
       const startedAt = new Date().toISOString()
-      const hashlock = newHashlock(), cancelAfter = await ledgerTime(this.payer.ledger) + 120
+      const hashlock = newHashlock(), now = await ledgerTime(this.payer.ledger), cancelAfter = now + 120
+      const holdback = holdbackOffer(amountFor(candidate.price.amountMinor,escrowAsset()),now,escrowAsset() === 'XRP')
       const paidPath = PublisherClient.paidPath(candidate)
       let quote
-      try { quote = EscrowQuoteSchema.parse(await this.client.forSource(candidate.source).escrowQuote(paidPath, { ...(loadConfig().ESCROW_MODE === 'key-reveal' ? { mode: 'key-reveal' as const } : {}), payer: this.payer.address!, intentId, condition: hashlock.condition, cancelAfter })) }
+      try { quote = EscrowQuoteSchema.parse(await this.client.forSource(candidate.source).escrowQuote(paidPath, { ...(loadConfig().ESCROW_MODE === 'key-reveal' ? { mode: 'key-reveal' as const } : {}), ...(holdback ? {holdback:holdback.terms} : {}), payer: this.payer.address!, intentId, condition: hashlock.condition, cancelAfter })) }
       catch { return this.store.skipEscrow({ source: candidate.source, runId, intentId, profileId: candidate.profileId, resourceId: candidate.resourceId, version: candidate.version, amountMinor: candidate.price.amountMinor, status: 'SKIPPED' }, 'Writer escrow unavailable; no paid fallback') }
       const t = quote.terms
+      if (canonicalJson(t.holdback ?? null) !== canonicalJson(holdback?.terms ?? null)) throw Error('Holdback quote binding rejected')
       if (!verifyEscrowQuote(quote) || t.network !== 'xrpl:1' || canonicalJson(t.asset) !== canonicalJson(escrowAsset()) || t.payer !== this.payer.address || t.payTo !== candidate.wallet || t.intentId !== intentId || (loadConfig().ESCROW_MODE === 'key-reveal' ? !t.keyReveal || !quote.ciphertext : t.condition !== hashlock.condition || !!t.keyReveal) || t.cancelAfter !== cancelAfter || t.articleId !== candidate.resourceId || t.version !== candidate.version || t.publisherSlug !== candidate.profileId || t.manifestRoot !== manifest.root || t.amount !== amountFor(candidate.price.amountMinor, t.asset)) throw new Error('Escrow quote binding rejected')
       const invoice = escrowInvoice(t)
       const intent = this.store.reserveIntent({ source: candidate.source, runId, intentId, profileId: candidate.profileId, resourceId: candidate.resourceId, version: candidate.version, amountMinor: candidate.price.amountMinor, status: 'QUOTED', paidPath,
@@ -70,7 +74,10 @@ export class EscrowPurchases {
       if (intent.status !== 'RESERVED') return intent
       this.store.recordManifest(intentId, manifest)
       if (!this.store.claimSubmitting(intentId)) return this.store.getIntent(intentId)!
-      this.store.prepareEscrow({ intentId, secret: t.keyReveal ? '' : hashlock.secret, quote, publicStatus: { scheme: 'escrow-v1', policy: 'escrow-policy-v1', ...(t.keyReveal ? { mode: 'key-reveal' as const } : {}), state: 'PREPARED', owner: t.payer, cancelAfter } })
+      this.store.withTransaction(() => {
+      if (holdback) this.store.holdbackPrivate(intentId,{secret:holdback.secret})
+      this.store.prepareEscrow({ intentId, secret: t.keyReveal ? '' : hashlock.secret, quote, publicStatus: { scheme: 'escrow-v1', policy: 'escrow-policy-v1', ...(t.keyReveal ? { mode: 'key-reveal' as const } : {}), state: 'PREPARED', owner: t.payer, cancelAfter, ...(t.holdback ? {holdback:{...t.holdback,state:'pending' as const,amountMinor:Math.floor(candidate.price.amountMinor*t.holdback.percent/100)}} : {}) } })
+      })
     }
     return this.advance(intentId)
   }
@@ -81,7 +88,7 @@ export class EscrowPurchases {
     if (found.state !== 'validated' || found.meta.TransactionResult !== 'tesSUCCESS') return
     const tx = found.tx, fulfillment = String(tx.Fulfillment ?? '')
     if (tx.TransactionType !== 'EscrowFinish' || tx.Owner !== t.payer || Number(tx.OfferSequence) !== e.publicStatus.createSequence || tx.Condition !== t.condition || !/^A0228020[A-F0-9]{64}$/.test(fulfillment) || conditionFor(fulfillment.slice(8)) !== t.condition) throw new Error('Ledger key binding rejected')
-    verifyEscrowCredit(found.meta, t, t.payTo)
+    verifyEscrowCredit(found.meta, keyTerms(t), t.payTo)
     this.store.recordTiming(intent.intentId, 'finishValidated', { txHash: hash, ledgerIndex: found.ledgerIndex })
     const key = fulfillment.slice(8)
     this.store.persistReveal(intent.intentId, { key, finishHash: hash, ledgerIndex: found.ledgerIndex, transaction: found.tx })
@@ -106,6 +113,7 @@ export class EscrowPurchases {
     if (!proof) this.recordFailedProof(this.store.getIntent(intent.intentId)!)
     if (proof) this.store.recordTiming(intent.intentId, 'unlocked', { ledgerIndex: found.ledgerIndex })
     this.event(intent, 'finish', hash, found.ledgerIndex)
+    if (t.holdback) await settleHoldback(this.store,this.payer,intent.intentId)
   }
   private recordFailedProof(intent: PurchaseIntent) {
     if (intent.escrow?.proofOk !== false || !(intent.escrow?.mode === 'key-reveal' || this.store.getRun(intent.runId).events.some(e => e.type === 'PROOF' && e.data?.intentId === intent.intentId && e.data?.ok === false))) return
@@ -113,7 +121,7 @@ export class EscrowPurchases {
     new Reputation(this.store).recordProof({ intentId:intent.intentId, publisherSlug: intent.profileId, wallet: manifest.wallet, outcome: 'REJECTED', runId: intent.runId, claimed: manifest.relevance })
   }
   private terminalFeeHolds(intentId: string) {
-    return this.store.listIntents('SUBMITTING').filter(i => i.intentId !== intentId && i.escrow).length * FEE_CAP_DROPS
+    return this.store.listIntents().filter(i => i.intentId !== intentId && i.escrow).reduce((sum,i) => sum + (i.status === 'SUBMITTING' ? FEE_CAP_DROPS : 0) + (i.escrow?.holdback?.state === 'pending' ? FEE_CAP_DROPS : 0),0)
   }
   private event(intent: PurchaseIntent, op: EscrowOperation, hash: string, ledgerIndex: number) {
     const e = this.store.getEscrow(intent.intentId)!
@@ -129,7 +137,7 @@ export class EscrowPurchases {
       if (!['entryNotFound', 'objectNotFound'].includes((error as { data?: { error?: string } }).data?.error ?? '')) throw error
     }
     if (object) {
-      if (object.Account !== t.payer || object.Destination !== t.payTo || !matchesAmount(object.Amount, t.amount, t.asset) || object.Condition !== t.condition || object.CancelAfter !== t.cancelAfter) throw new Error('Escrow object differs from quote')
+      if (object.Account !== t.payer || object.Destination !== t.payTo || !matchesAmount(object.Amount, keyTerms(t).amount, t.asset) || object.Condition !== t.condition || object.CancelAfter !== t.cancelAfter) throw new Error('Escrow object differs from quote')
       return false
     }
     const create = await lookupTx(this.payer.ledger, e.publicStatus.createHash!)
@@ -200,6 +208,7 @@ export class EscrowPurchases {
     const intent = this.store.getIntent(intentId)!
     let e = this.store.getEscrow(intentId)
     if (e) this.recordFailedProof(intent)
+    if (e?.publicStatus.holdback && ['RELEASED','CANCELLED'].includes(e.publicStatus.state)) { await settleHoldback(this.store,this.payer,intentId); return this.store.getIntent(intentId)! }
     if (!e || intent.status !== 'SUBMITTING' || ['RELEASED', 'CANCELLED'].includes(e.publicStatus.state)) return intent
     try {
       let justSubmitted = false
@@ -208,11 +217,16 @@ export class EscrowPurchases {
         if (this.store.isPaused() || this.store.getRun(intent.runId).stopped || await ledgerTime(this.payer.ledger) >= e.quote.terms.cancelAfter - 15) return this.store.failSubmission(intentId, 'Escrow not signed before stop or expiry')
         const t = e.quote.terms
         await preflightEscrow(this.payer.ledger, t)
+        if (t.holdback) {
+          create = await createHoldback(this.store,this.payer,intentId,() => this.terminalFeeHolds(intentId))
+          justSubmitted = true
+        } else {
         const sent = await this.payer.escrow({ TransactionType: 'EscrowCreate', Destination: t.payTo, Amount: ledgerAmount(t.amount, t.asset), Condition: t.condition, CancelAfter: t.cancelAfter, Memos: escrowMemo(t) }, t.asset === 'XRP' ? Number(t.amount) : 0,
           s => this.store.recordEscrowSubmission(intentId, 'create', s), async s => { this.store.recordTiming(intentId, 'createSubmitted', { txHash: s.txHash }); try { await this.payer.ledger.request({ command: 'submit', tx_blob: s.txBlob }) } catch { /* hash decides */ } }, undefined, () => this.terminalFeeHolds(intentId))
         await sent.sent
         justSubmitted = true
         create = { ...sent.submission, intentId, operation: 'create' }
+        }
       }
       if (e.publicStatus.state === 'PREPARED') {
         let status = await this.payer.status(create)
@@ -223,10 +237,12 @@ export class EscrowPurchases {
         if (status.state === 'failed' || status.state === 'expired') return this.store.failSubmission(intentId, 'Escrow create ledger-proven not applied; no principal paid')
         if (status.state !== 'success') return this.store.getIntent(intentId)!
         const found = await lookupTx(this.payer.ledger, create.txHash)
-        if (found.state !== 'validated' || !matchesCreate(found.tx, e.quote.terms)) throw new Error('Create mismatch')
-        e = this.store.escrowTransition(intentId, { state: 'LOCKED', createHash: create.txHash, createSequence: Number(decode(create.txBlob).Sequence) }, status.ledgerIndex)
+        if (e.quote.terms.holdback && !await verifyHoldbackBatch(this.payer,create,e.quote.terms)) throw Error('Batch inner results or objects not proven')
+        const keyCreate = e.quote.terms.holdback ? batchInners(decode(create.txBlob))[0] : found.state === 'validated' ? found.tx : {}
+        if (found.state !== 'validated' || !matchesCreate(keyCreate, e.quote.terms)) throw new Error('Create mismatch')
+        e = this.store.escrowTransition(intentId, { state: 'LOCKED', createHash: e.quote.terms.holdback ? innerHash(keyCreate) : create.txHash, createSequence: Number(keyCreate.Sequence) }, status.ledgerIndex)
         this.store.recordTiming(intentId, 'createValidated', { txHash: create.txHash, ledgerIndex: status.ledgerIndex })
-        this.event(intent, 'create', create.txHash, status.ledgerIndex)
+        this.event(intent, 'create', e.publicStatus.createHash!, status.ledgerIndex)
       }
       if (e.quote.terms.keyReveal) {
         if (e.reveal) { await this.acceptReveal(intent, e.reveal.finishHash); return this.store.getIntent(intentId)! }
@@ -275,7 +291,7 @@ export class EscrowPurchases {
       else if (e.publicStatus.state === 'CANCEL_DUE') await this.terminal(intent, 'cancel')
     } catch {
       // Missing create blob is definitive: no network submission was possible. Otherwise retain authority.
-      if (!this.store.escrowOutbox(intentId).length) return this.store.failSubmission(intentId, 'Escrow could not be signed; nothing was charged')
+      if (!this.store.escrowOutbox(intentId).length && !this.store.holdbackPrivate<{unsigned?:unknown}>(intentId)?.unsigned) return this.store.failSubmission(intentId, 'Escrow could not be signed; nothing was charged')
       if (this.store.getIntent(intentId)?.status === 'SUBMITTING') this.store.updateIntent(intentId, { error: 'Escrow awaiting reconciliation; same intent retained' })
     }
     return this.store.getIntent(intentId)!

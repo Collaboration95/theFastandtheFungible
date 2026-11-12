@@ -19,6 +19,7 @@ const ConfigSchema = z.object({
   ANSWER_RATINGS: z.enum(['0', '1']).optional(),
   PUBLIC_FEED: z.enum(['0', '1']).optional(),
   XRPL_STREAM_WAITS: z.enum(['0', '1']).optional(),
+  ESCROW_HOLDBACK: mode(['on','off']), HOLDBACK_PERCENT: numeric(n => Number.isInteger(n) && n > 0 && n < 100), HOLDBACK_CANCEL_AFTER_S: numeric(n => Number.isInteger(n) && n >= 30 && n <= 86400),
   SETTLEMENT_TIMING: z.enum(['0', '1']).optional(),
   REGULATED_MODE: z.enum(['','off','on']).optional(), PUBLISHER_REGULATED_MODE: z.enum(['','off','on']).optional(),
   WEB_PUBLISHING: mode(['off','on']), AUTO_APPROVE: mode(['off','on']), AUTO_APPROVE_SECONDS: numeric(n => Number.isInteger(n) && n >= 1 && n <= 3600),

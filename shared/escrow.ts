@@ -1,3 +1,4 @@
+import { keyTerms } from './holdback.js'
 // Node-only escrow-v1 protocol. No secret is derived from article bytes.
 import { matchesAmount } from './contracts/asset.js'
 import { createHash, randomBytes } from 'node:crypto'
@@ -27,11 +28,10 @@ export async function ledgerTime(ledger: Ledger): Promise<number> {
   return time
 }
 export function matchesCreate(tx: Record<string, unknown>, t: EscrowTerms): boolean {
-  return tx.TransactionType === 'EscrowCreate' && tx.Account === t.payer && tx.Destination === t.payTo && matchesAmount(tx.Amount, t.amount, t.asset) &&
+  return tx.TransactionType === 'EscrowCreate' && tx.Account === t.payer && tx.Destination === t.payTo && matchesAmount(tx.Amount, keyTerms(t).amount, t.asset) &&
     tx.Condition === t.condition && tx.CancelAfter === t.cancelAfter && tx.FinishAfter === undefined && tx.InvoiceID === undefined &&
-    tx.DestinationTag === undefined && tx.SourceTag === undefined && !tx.Flags &&
+    tx.DestinationTag === undefined && tx.SourceTag === undefined && (t.holdback ? tx.Flags === 1073741824 : !tx.Flags) &&
     canonicalJson(tx.Memos) === canonicalJson(escrowMemo(t)) &&
-    Number.isSafeInteger(tx.Sequence) && Number(tx.Sequence) > 0 && Number.isSafeInteger(tx.LastLedgerSequence) &&
-    Number(tx.Fee) > 0 && Number(tx.Fee) <= 2000
+    Number.isSafeInteger(tx.Sequence) && Number(tx.Sequence) > 0 && (t.holdback ? tx.Fee === '0' && tx.SigningPubKey === '' : Number.isSafeInteger(tx.LastLedgerSequence) && Number(tx.Fee) > 0 && Number(tx.Fee) <= 2000)
 }
 export function safeSignature(blob: string) { try { return verifySignature(blob) } catch { return false } }

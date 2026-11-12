@@ -137,3 +137,13 @@ it('shows the validated create immediately at its timing event before the follow
   expect(document.querySelectorAll('ol > li.is-complete')).toHaveLength(1)
   expect(screen.queryByText('Creating escrow')).toBeNull()
 })
+
+for (const state of ['pending','released','refunded'] as const) it(`shows a quiet fourth holdback ${state} state with its transaction link`, () => {
+  const hash='B'.repeat(64)
+  view({...settled,escrow:{...settled.escrow!,holdback:{state,amount:'8000',amountMinor:8,percent:20,condition:`A0258020${'A'.repeat(64)}810120`,cancelAfter:800000600,batchHash:hash,...(state==='released'?{finishHash:hash,checks:'pass' as const}:state==='refunded'?{cancelHash:hash,checks:'fail' as const}:{})}}})
+  fireEvent.click(document.querySelector('summary')!)
+  expect(screen.getByText(`Holdback ${state}`)).toBeTruthy()
+  expect(document.querySelectorAll('ol > li')).toHaveLength(4)
+  expect(document.querySelector(`a[href$="${hash}"]`)).toBeTruthy()
+  expect(screen.queryByText('Quality refund: writer-signed')).toBeNull()
+})

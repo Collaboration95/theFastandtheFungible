@@ -1,3 +1,5 @@
+import { decode } from 'xrpl'
+import type { HoldbackPrivate } from './holdback.js'
 import { contributions } from '../shared/contribution.js'
 import { sameSource } from '../shared/source-identity.js'
 import { ReceiptBundleSchema, type ReceiptBundle } from '../shared/contracts/receipts.js'
@@ -10,6 +12,7 @@ export function receiptBundle(store: Store, runId: string): ReceiptBundle {
   const entries = store.auditEntries().filter(e => !pinned || e.seq <= pinned.seq), first = entries.findIndex(e => e.runId === runId)
   const anchor = first > 0 ? { seq: entries[first - 1].seq, hash: entries[first - 1].hash } : { seq: 0, hash: GENESIS_HASH }
   return ReceiptBundleSchema.parse({
+    holdbacks: run.intents.filter(i => i.escrow?.holdback?.batchHash).map(i => { const p = store.holdbackPrivate<HoldbackPrivate>(i.intentId)!; return {intentId:i.intentId,batch:decode(p.signed!.txBlob),...(p.terminal && i.escrow!.holdback!.state !== 'pending' ? {terminal:decode(p.terminal.txBlob)} : {})} }),
     fraudProofs: run.intents.filter(i => i.escrow?.mode === 'key-reveal' && i.escrow.state === 'RELEASED' && i.failedClaimIds?.length).map(i => {
       const e = store.keyRevealEvidence(i.intentId)
       return { intentId: i.intentId, manifest: e.manifest, quote: e.quote, key: e.key, finishHash: e.finishHash, ledgerIndex: e.ledgerIndex, ciphertextHash: e.quote.terms.keyReveal!.ciphertextHash, failedClaimIds: i.failedClaimIds! }
