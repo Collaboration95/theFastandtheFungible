@@ -77,7 +77,7 @@ MCP package <!--f:mcp_mb-->3.4<!--/f--> MB (was 21.4 MB), cold MCP initialize
 
 ## Progress since SingHacks
 
-<!--f:progress_line-->270 pull requests merged since 21 Sep (counted at bd52beff on 11 Nov) · 15 releases · 61 Testnet transactions you can re-check<!--/f-->.
+<!--f:progress_line-->299 pull requests merged since 21 Sep (counted at 8c6b9018 on 12 Nov) · 15 releases · 61 Testnet transactions you can re-check<!--/f-->.
 The queries behind every count, the release rail and the misses we kept are on the
 [progress page](https://collaboration95.github.io/theFastandtheFungible/progress/)
 (data: [`site/progress/data.json`](../site/progress/data.json)).
@@ -87,3 +87,15 @@ The queries behind every count, the release rail and the misses we kept are on t
 The quiet-host full soak passes all five unchanged gates (worst-interval p99 25.8 ms); the
 heavily loaded shared-host run failed and is kept. Local, synthetic, SIMULATED
 ([evidence](evidence/soak-nov4-ab/README.md)).
+
+## One paid answer, one cost envelope · 12 Nov
+
+[HOSTED-12](submission/evidence/hosted-answer-nov12/README.md) is one hosted DEPLOY-3
+run on 12 Nov: one S$0.40 article, four passages, no refunds; 65.8 s admission/Start→Done,
+excluding pre-admission planning and the five-second modal. Buyer create 12 + writer finish
+423 drops; buyer anchor another 12. FIN re-read this run’s three validated transactions.
+Fixed display rate, not FX; live DeepSeek plan/final answer, rule-based buying, initial fixture
+draft and keyword fallback. Two initial recorded gaps, none in the final answer; no independent
+quality score or new held-out claim. Model cost **unmeasured**: usage not retained. Do not
+reuse US$0.0026 from 3 Nov as this run’s cost. The separate [local T3 run](submission/evidence/t3-1-nov12/README.md)
+has a different clock (29.525 s including planning); it is not combined with this card.

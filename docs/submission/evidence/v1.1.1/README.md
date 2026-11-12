@@ -55,8 +55,8 @@ are reflected in `short-description.md` and the submission README.
 | Story 13 | Pitch and slide 4 scope zero violations to the Testnet blind banks; simulated historical audits retain their labels. |
 | Story 14 | Spoken pitch uses the refusal beat; slide 8 keeps 16/20 bought-and-cited and 7/20 key-fact leads together. |
 | Story 15 | Site home distinguishes live answers / rule-based buying / team-authored writers from the fixture-model, fictional-writer replay. |
-| XRPL 1 | Q&A 14 limits Credentials to CLI-published writers and calls sandbox team writers unverified. |
-| XRPL 2 | Compliance slide and deck say publish CLI; none in the live sandbox. |
+| XRPL 1 | Historical CLI-only identity scope at this evidence date is superseded on 12 Nov: Q&A 14 now describes the three accepted operator-issued Testnet writer Credentials, identity only. |
+| XRPL 2 | Historical check at this evidence date: CLI credentials only. Superseded on 12 Nov by three accepted operator-issued XRPL Testnet Credentials and a Testnet Permissioned Domain for identity only; not KYC or quality. See docs/evidence/writer-credentials-nov12/. |
 | XRPL 4 | README, numbers, descriptions, pitch, Q&A and deck attribute 12 drops to buyer create and 423 to writer finish; Q&A and numbers distinguish the 360-drop protocol minimum. |
 | XRPL 6 | Deck slides 6 and 11 and Q&A say TokenEscrow is enabled on Testnet and Mainnet; issuer flags block RLUSD. |
 | XRPL 7 | README, description, Q&A and deck distinguish CLI/token evidence from sandbox XRP. |
