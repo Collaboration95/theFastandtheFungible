@@ -1236,3 +1236,24 @@ persistence or a mainnet deployment. No cloud resource or live ledger call ran.
 - **Workaround:** stop the 200-question batch; retain every failed row and durable store. Keep the oracle and corpus unchanged. No claim of zero violations or paid-note lift.
 - **Suggested fix:** the corpus owner should investigate marker provenance and generic public phrasing before the public-docs evaluation; preserve detection of actual premium disclosure and document any oracle change explicitly.
 - **Severity / mainnet impact:** high local evaluation blocker. No XRPL or x402 defect established, no ledger transactions, and no mainnet impact measured.
+
+## 12 November 2026: generic phrase leak markers need unique fixture canaries (observed local tooling, follow-up)
+
+- **Evidence:** `docs/evidence/models/leak-diagnosis.json`, `tests/r3-oracle.test.ts`. Both original Q02 runs have no intents, grants or `read_paid` audit rows; PLAN precedes SEARCH and its prompt contains only the question and clarify answers. Two further generic planner phrases were reproduced at Q31 and Q38. The 43/400 result was an interrupted batch, not an acceptance result.
+- **Workaround / fix:** replace the generic fixture wording with equivalent wording containing unique single-word canaries, also represented as short passages for the unchanged exact-match check. Keep every eight-word, grant and raw-wire check. Preserve failed attempts and their model costs. Article-ID-bearing canaries were rejected because long IDs themselves form eight-word public metadata collisions.
+- **Suggested fix:** fixture generators should emit unique canaries and preflight planner restatements against their raw leak oracle, with durable task-ID-based runner resume.
+- **Severity / mainnet impact:** medium evaluation reliability friction. No premium read before a grant was established; no XRPL transactions or mainnet effects occurred.
+
+## 12 November 2026: Docker Desktop remained unresponsive after recovery (observed local tooling)
+
+- **Evidence:** `docs/evidence/models/MODELS.md`; a timed 20-minute `docker info` retry loop ended at 10:02 UTC with no successful response. Each attempt had a 10-second timeout. The prior ENOSPC incident and recovery attempts are historical context; this is a new observed availability failure.
+- **Workaround:** retain WIP and cancel our queued verification before acquiring the shared heavy lock. Offline hosted-container inference and image-size delta remain unverified. No shared image or volume was pruned, and no deployment occurred.
+- **Suggested fix:** expose bounded Docker health diagnostics after disk exhaustion and document safe builder-cache recovery, including successful health verification before a new build.
+- **Severity / mainnet impact:** high local build/qualification blocker; no XRPL defect, transaction or mainnet impact was measured.
+
+## 12 November 2026: failed local ONNX eval exits also report a native mutex error (observed local tooling)
+
+- **Evidence:** ignored `scratch/r3-qualification-200.log`; after the deliberate `Gate violations recorded` exception, Node 22.23.4 also reports `libc++abi` / `mutex lock failed: Invalid argument`, exiting 134. Model outputs and cumulative cost were already saved atomically; this does not erase the failed oracle.
+- **Workaround:** retain the failed rows, stores and conservative cost reservations. Do not interpret native shutdown failure as successful qualification. No native teardown fix or successful container comparison is claimed.
+- **Suggested fix:** investigate ONNX Runtime teardown on macOS arm64 with explicit session disposal before process exit and a minimal upstream reproducer.
+- **Severity / mainnet impact:** low diagnostic-process shutdown friction; no XRPL transactions or measured mainnet effect.

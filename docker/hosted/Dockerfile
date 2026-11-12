@@ -54,13 +54,18 @@ WORKDIR /app
 COPY --from=build-models /src/out/ dist/
 COPY --from=build-models /src/model-runtime node_modules/
 COPY --from=build-models /src/data data/
-COPY --from=build /src/node_modules/playwright-core node_modules/playwright-core
+COPY --from=build-models /src/node_modules/playwright-core node_modules/playwright-core
 COPY docker/hosted/ docker/hosted/
+COPY scripts/hosted-control.mjs scripts/hosted-control.mjs
 ENV NODE_ENV=production HOSTED=1 PUBLISHER_FAULTS=0 EMBEDDING_MODEL_DIR=/app/data/models
 USER 1000:1000
 ENTRYPOINT ["node", "/app/docker/hosted/start.mjs"]
 FROM runtime-models AS api-models
 ENV ROLE=api PORT=8788 RAW_API_PORT=18788 HOST=127.0.0.1 APP_DB=/state/api/app.db REPORT_DIR=/state/api/reports HOSTED_CONTROL_PATH=/state/control.json
+EXPOSE 8788
+HEALTHCHECK --interval=10s --timeout=3s --start-period=30s CMD node /app/docker/hosted/health.mjs
 FROM runtime-models AS publisher-models
 ENV ROLE=publisher PUBLISHER_PORT=8790
 WORKDIR /state/publisher
+EXPOSE 8790
+HEALTHCHECK --interval=10s --timeout=3s --start-period=30s CMD node /app/docker/hosted/health.mjs

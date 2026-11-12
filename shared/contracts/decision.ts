@@ -8,9 +8,9 @@ export const DecisionRowSchema = z.object({ probe: z.boolean().optional(), candi
 /** #207: which versioned calibrator mapped the raw scores of a round (absent: raw scores, the default). */
 export const RoundCalibrationSchema = z.object({ id: z.string().min(1), version: z.number().int().positive(), methods: z.object({ addressesGap: z.enum(['identity', 'platt', 'isotonic']), original: z.enum(['identity', 'platt', 'isotonic']) }) })
 /** Who judged a round (gate 5): Cloudflare Clef, OpenAI Decisions, or the offline metadata fixture. Never one labelled as another. */
-export const DecisionProviderSchema = z.enum(['cloudflare', 'openai', 'compatible', 'fixture', 'calibrated'])
+export const DecisionProviderSchema = z.enum(['cloudflare', 'openai', 'compatible', 'fixture'])
 export type DecisionProviderName = z.infer<typeof DecisionProviderSchema>
-export const decisionProviderLabels: Record<DecisionProviderName, string> = { calibrated: 'Calibrated policy model', compatible: 'Compatible JSON UNCALIBRATED', cloudflare: 'Cloudflare', openai: 'OpenAI Decisions', fixture: 'fixture' }
+export const decisionProviderLabels: Record<DecisionProviderName, string> = { compatible: 'Compatible JSON UNCALIBRATED', cloudflare: 'Cloudflare', openai: 'OpenAI Decisions', fixture: 'fixture' }
 /**
  * "OpenAI Decisions · gpt-6-luna", "Cloudflare · @cf/cloudflare/clef-flash", "fixture · metadata-fixture"; a round whose
  * scores went through a calibrator (#207) adds " · calibrated vN" (gate 5). Shown in the run's details, never the header.

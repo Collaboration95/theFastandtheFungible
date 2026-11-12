@@ -3,7 +3,7 @@
 import {readFileSync,writeFileSync} from 'node:fs'
 import {createHash} from 'node:crypto'
 import {loadWorld,candidateOf} from './world.js'
-import {metadataFeatures,POLICY_FEATURES,predictPolicy} from '../../server/agents/calibrated-policy.js'
+import {metadataFeatures,POLICY_FEATURES,predictPolicy} from './policy-features.js'
 import {embedLocal} from '../../server/embeddings/local.js'
 import {cosine,keywordRelevance,searchIndex,buildIndex,loadEmbeddingCache} from '../../publisher/search.js'
 import {FixtureDecisionProvider} from '../../server/agents/decision.js'
@@ -43,7 +43,8 @@ for(let step=0;step<4000;step++){
 }
 const threshold=0.2
 const payload={schema:'researchagent.policy/v1',version:1,features:POLICY_FEATURES,...model,threshold,fit:{constantFeaturesFixedToZero:POLICY_FEATURES.filter((_,j)=>!variable[j]),iterations:4000,learningRate:0.1,l2:0.002,split:'sha256(policy-v1:questionId) mod 5; test=0, validation=1, train=2..4',sources:files.map(file=>({file,sha256:hash(readFileSync(file,'utf8'))}))}}
-writeFileSync('data/calibration/policy-v1.json',JSON.stringify({...payload,sha256:hash(JSON.stringify(payload))},null,2)+'\n')
+// Rejected runtime model: retain the fit protocol and metrics, not deployable weights.
+console.log(`Retrospective fit payload SHA-256: ${hash(JSON.stringify(payload))}`)
 const report=Object.fromEntries(['train','validation','test'].map(split=>{
  const ss=samples.filter(s=>s.split===split),y=ss.map(s=>s.y),luna=ss.map(s=>s.row.verdict==='BUY'?1:0)
  const p=ss.map(s=>predictPolicy(s.x,model))

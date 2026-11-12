@@ -1,6 +1,6 @@
-# Calibrated policy model evidence notes
+# Negative result: retrospective logistic policy fit
 
-The logistic model is a learned pre-purchase usefulness score over public
+The rejected logistic model was a learned pre-purchase usefulness score over public
 metadata. Its score occupies the decision interface's `addressesGap` slot;
 originality is a deterministic exclusion from public derivation/family metadata,
 and credibility is the interface maximum (2) so that the policy's value formula preserves the score.
@@ -25,11 +25,11 @@ that context is not fully recoverable, so it is not a paired runtime replay.
 
 Historical snapshots lack trust, honesty, promise-calibration and already-read
 family state. Training uses documented neutral priors for those fields and
-cannot establish their predictive effect. Runtime can use the current
-reputation and read-family context; policy exclusions remain authoritative.
+cannot establish their predictive effect. Those effects were not validated. The runtime provider and its weights have been removed; hosted keeps fixture policy rules.
 Embedding similarity is between the gap and public title/preview/tags only.
 No premium passages or label fields enter features. The score cannot access a
 payer or purchase manager.
 
-The stored versioned JSON hashes its complete payload, including source-data
-hashes and the fitting protocol. Re-running the fit must produce identical bytes.
+The fit script prints a SHA-256 of its complete payload, including source-data hashes and the fitting protocol, and writes retrospective metrics only. It does not produce runtime weights.
+
+On 149 held-out rows, logistic Brier 0.036947 / ECE 0.058718 / AUC 0.971429 was worse than fixture rules at 0.035478 / 0.044411 / 0.982540. The precision difference does not justify shipping it.

@@ -1,0 +1,17 @@
+{
+  "store": "scratch/r3-baseline-200/paid.db",
+  "scope": "all 53 durable decision rounds, including interrupted in-flight work",
+  "verdicts": {
+    "SKIP_LOW_VALUE": 350,
+    "SKIP_REWRITE": 71,
+    "BUY": 3
+  },
+  "lowValueReasons": {
+    "The article title and topics do not cover the requested subject": 278,
+    "Value is below the model threshold": 58,
+    "Expected missing facts per S$ 0": 14
+  },
+  "threshold": 0.2,
+  "budgetVerdicts": 0,
+  "interpretation": "Off-subject candidates dominate the candidate pool; among the remaining candidates, score and marginal-value exclusions suppress buys. Budget is not binding. The free tier already answers part of this bank. No policy threshold, budget or buying rules were tuned."
+}

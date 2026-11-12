@@ -1,0 +1,139 @@
+{
+  "classification": "non-unique synthetic paid-text marker, not a paid read",
+  "beforeMarker": "the bank of japan raised its policy rate",
+  "runs": [
+    {
+      "arm": "free",
+      "runId": "4274441f-d165-464d-b911-72c0b7ec7b5b",
+      "planEventId": 2,
+      "audit": [
+        [
+          5,
+          "admission"
+        ],
+        [
+          6,
+          "refusal"
+        ],
+        [
+          7,
+          "decision"
+        ],
+        [
+          8,
+          "decision"
+        ]
+      ],
+      "intentCount": 0,
+      "grantCount": 0,
+      "firstSearchEventId": 3
+    },
+    {
+      "arm": "paid",
+      "runId": "fc8b115c-72fe-47cf-bebf-24550b443351",
+      "planEventId": 6,
+      "audit": [
+        [
+          4,
+          "admission"
+        ],
+        [
+          8,
+          "decision"
+        ],
+        [
+          9,
+          "decision"
+        ]
+      ],
+      "intentCount": 0,
+      "grantCount": 0,
+      "firstSearchEventId": 7
+    }
+  ],
+  "publisherJournal": {
+    "x402_quotes": 3,
+    "x402_settlements": 3,
+    "escrow_grants": 0
+  },
+  "plannerContext": {
+    "fixedPrompt": "PLAN_PROMPT in server/agents/scope.ts",
+    "dynamicFields": [
+      "question",
+      "answers"
+    ],
+    "calledBefore": "retrieveSources; no publisher client or paid content argument"
+  },
+  "afterMarkers": {
+    "bp-jgb-curve-10s30s-analysis": "R3CANARYEE28DE76C2DDD47F3A345754",
+    "basis-jgb-yield-curve-steepness-10-year-vs-30-year-dynamics": "R3CANARYAF19913E8E97DE350839EE7B",
+    "mp-boj-hike-digest": "R3CANARYAC44B352C29B6C263BDCC823",
+    "lf-kestrel-penang-phase2-power-deep-dive": "R3CANARY868170477D3CD523E8D8E8BF",
+    "load-analyzing-singapore-s-wholesale-price-spreads-for-2026": "R3CANARY5A77B930BBC7387C3441E5E6",
+    "notfinancialtimes-singapore-s-corporate-bond-market-trends-and-outlook": "R3CANARY114FDA86AA26E40FB4B52D6C",
+    "notft-inside-boj-september-hike": "R3CANARY0CF10D732B4401B011405E52"
+  },
+  "afterAuditViolationsBothRuns": 0,
+  "otherPlannerCollisions": [
+    {
+      "questionId": "Q31",
+      "before": "for the week ending 30 april 2026 the",
+      "article": "load-analyzing-singapore-s-wholesale-price-spreads-for-2026",
+      "zeroIntentsAndGrants": true
+    },
+    {
+      "questionId": "Q38",
+      "before": "in the first four months of 2026 the",
+      "article": "notfinancialtimes-singapore-s-corporate-bond-market-trends-and-outlook",
+      "preflightContext": "fixed planner prompt plus question and no publisher connection"
+    }
+  ],
+  "oracleChanges": "None: same exact canary, short-passage, eight-word overlap and grant checks. Seven synthetic paid fixtures use unique single-word tokens plus a short passage for exact matching.",
+  "writerCollision": {
+    "questionId": "Q107",
+    "runId": "8065c2fb-f7f4-4f88-96a3-cbc83b1df55c",
+    "before": "range of plus or minus 0 5 percent",
+    "paidFixture": "basis-jgb-yield-curve-steepness-10-year-vs-30-year-dynamics",
+    "audit": [
+      [
+        565,
+        "admission"
+      ],
+      [
+        568,
+        "decision"
+      ]
+    ],
+    "intentCount": 0,
+    "grantCount": 0,
+    "readPaidEventCount": 0,
+    "context": "writer receives only accessible free contents; no verified-granted paid body existed",
+    "all16ContentsFree": true,
+    "after": "\u00b10.5 percent band [R3CANARYAF19913E8E97DE350839EE7B]"
+  },
+  "Q18QualificationCollision": {
+    "runId": "26d78480-b468-4adf-a922-9475506c4dd3",
+    "before": "phase 2 was commissioned on 15 august 2026",
+    "paidFixture": "lf-kestrel-penang-phase2-power-deep-dive",
+    "boughtArticle": "fab-floor-kestrel-penang-lead-times",
+    "grantSequence": 113,
+    "readPaidSequences": [
+      114,
+      115,
+      116,
+      117,
+      118,
+      119,
+      120,
+      121,
+      122,
+      123,
+      124,
+      125,
+      126,
+      127
+    ],
+    "alsoInFreeEvidence": "or-penang-packaging-output-2026-q3 contains the commissioning date",
+    "classification": "answer paraphrases accessible evidence; the unmatched paid article was not in the writer context"
+  }
+}

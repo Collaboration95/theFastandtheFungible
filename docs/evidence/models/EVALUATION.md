@@ -4,7 +4,7 @@ Use 140 requested-fact questions from the existing v2 bank, plus the 20-question
 v3, v4 and v5 XRPL judge banks. All 200 run in each arm. Report both strata;
 question-heldout calibration is not an independently authored new bank.
 
-Both arms use the live DeepSeek planner and writer, calibrated policy scores,
+Both arms use the live DeepSeek planner and writer, fixture policy rules,
 and local CPU embeddings. Free-only authorizes S$0; paid authorizes the normal
 S$2 question budget with the normal per-source cap. Settlement is simulated,
 explicitly labelled; this measures model/retrieval behavior, not ledger latency.
@@ -45,5 +45,6 @@ The first batch was manually interrupted after two failed premium-leak audits;
 its 43 completed runs are retained in `r3-partial.json`. It is not a 200-question
 result. The current runner stops admitting questions after the first gate
 failure and finishes already admitted work, writes the partial summary, and
-exits unsuccessfully. Do not rerun live until the failure documented in
-`MODELS.md` is resolved.
+exits unsuccessfully. The generic BoJ phrase collision is repaired in three synthetic paid fixtures with article-specific canaries; the audit logic and thresholds are unchanged.
+
+The runner now resumes `R3_OUT`: atomic results and cost writes retain completed question/arm pairs; interrupted admissions are recovered by durable per-arm/question-ID admission keys from the durable store, whose engine resumes unfinished runs. Raw SSE observations are retained in ignored per-question JSONL. Repeated question wording gets separate admission keys; reused run IDs are rejected. Admissions interrupted before their live PLAN are planned before engine recovery. A bank, corpus hash, provider or profile mismatch refuses resume. Gate failures remain terminal; use a new output directory only after diagnosing and repairing their cause.

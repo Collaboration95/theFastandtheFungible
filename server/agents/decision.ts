@@ -400,7 +400,7 @@ async function judgeAll(provider: DecisionProvider, input: DecideInput, candidat
 }
 async function decideRound(input: DecideInput): Promise<DecisionRound> {
   // Zod strips every unknown property, including body, spans, and injected commands.
-  const candidates = z.array(PublicCandidateSchema).parse(input.candidates).filter(candidate => candidate.tier === 'PAID').map(candidate => input.provider?.name === 'calibrated' ? { ...candidate, reputation: input.reputation && candidate.wallet ? input.reputation[candidate.wallet] ?? NEWCOMER : undefined } : candidate)
+  const candidates = z.array(PublicCandidateSchema).parse(input.candidates).filter(candidate => candidate.tier === 'PAID')
   const readSources = publicSources(input.readSources)
   const remaining = z.number().int().nonnegative().parse(input.budgetMinor) - z.number().int().nonnegative().parse(input.spentMinor) - z.number().int().nonnegative().parse(input.reservedMinor)
   const cap = z.number().int().nonnegative().parse(input.perSourceCapMinor)
