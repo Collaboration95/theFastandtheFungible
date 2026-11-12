@@ -38,6 +38,25 @@ async function setup(options: { opted?: boolean; broken?: boolean; budget?: numb
   return { c, client, candidate, run, wallet, buy, journal:app.locals.journal as import('../publisher/journal.js').PublisherJournal, writer:Wallet.fromSeed(env.XRPL_PUBLISHER_LOAD_FACTOR_SEED), get store() { return store }, get manager() { return manager }, restart() { store.close(); store = new Store(db); manager = new PurchaseManager(store, client, payer()) } }
 }
 
+it('records opt-in phase observations durably without changing payment authority or offline proofs', async () => {
+  vi.stubEnv('SETTLEMENT_TIMING', '1')
+  const s = await setup()
+  const result = await s.buy()
+  const timing = s.store.getIntent(result.intentId)!.timing!
+  expect(Object.keys(timing.phases)).toEqual(['quote', 'createSubmitted', 'createValidated', 'lockProven', 'finishSubmitted', 'finishValidated', 'unlocked'])
+  expect(timing.phases.lockProven?.source).toBe('writer')
+  expect(timing.phases.finishSubmitted?.txHash).toBe(result.escrow!.finishHash)
+  expect(timing.phases.createValidated?.ledgerIndex).toBeGreaterThan(0)
+  expect(timing.phases.finishValidated?.ledgerIndex).toBeGreaterThan(timing.phases.createValidated!.ledgerIndex!)
+  expect(Object.values(timing.phases).every(p => Number.isFinite(p!.elapsedMs) && p!.elapsedMs >= 0)).toBe(true)
+  expect(s.store.getRun(s.run.runId).receipts[0].timing).toEqual(timing)
+  s.restart(); await s.buy()
+  expect(s.store.getIntent(result.intentId)!.timing).toEqual(timing)
+  expect(s.store.auditEntries().filter(e => e.kind === 'settlement-timing')).toHaveLength(7)
+  expect(s.store.getRun(s.run.runId).events.filter(e => e.type === 'SETTLEMENT_TIMING')).toHaveLength(7)
+  expect(s.c.txs.size).toBe(2)
+})
+
 it('key reveal pays only through writer finish and grants only after validated key', async () => {
   const s = await setup()
   const result = await s.buy()
@@ -100,6 +119,7 @@ for (const boundary of ['persistReveal', 'addGrant'] as const) it(`recovers afte
 })
 
 it('exports an offline verifiable key reveal and rejects tampering', async () => {
+  vi.stubEnv('SETTLEMENT_TIMING', '1')
   const { receiptBundle } = await import('../server/receipt-bundle.js')
   const { verifyAnswer } = await import('../sdk/verify.js')
   const s = await setup()
@@ -108,6 +128,8 @@ it('exports an offline verifiable key reveal and rejects tampering', async () =>
   const run = s.store.getRun(s.run.runId), source = run.contents[0]
   s.store.addAnswer(run.runId, { conclusion: 'Verified key reveal delivery.', claims: [{ id: 'key-reveal', text: source.spans[0].text, stance: 'SUPPORTS', citations: [{ resourceId: source.resourceId, version: source.version, spanId: source.spans[0].id }] }], openGaps: [], version: 1, provider: 'fixture', model: 'extractive-fixture' })
   const bundle = receiptBundle(s.store, run.runId)
+  expect(bundle.intents[0].timing).toEqual(bundle.receipts[0].timing)
+  expect(bundle.audit.entries.filter(e => 'kind' in e && e.kind === 'settlement-timing')).toHaveLength(7)
   const result = await verifyAnswer(bundle)
   if (process.env.KEY_REVEAL_FIXTURE === '1') {
     const { writeFileSync } = await import('node:fs')

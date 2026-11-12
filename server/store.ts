@@ -1,4 +1,5 @@
 import { runAudience } from './hosted/audience.js'
+import { type SettlementPhase, type PhaseObservation, PhaseObservationSchema } from '../shared/contracts/settlement-timing.js'
 import { probeMetadata } from './agents/precision.js'
 import { hostedExecution } from './hosted/execution.js'
 import { pastRunSummaries } from './history-query.js'
@@ -470,6 +471,25 @@ export class Store {
       if (run.phase !== patch.phase && patch.phase && (run.phase === 'FAILED' && patch.phase === 'READ_PAID' || run.checkpoint.recoveryIntentId && patch.phase === 'DONE')) this.audit.append({ runId, intentId: run.checkpoint.intentId, kind: 'recovery', data: { from: run.phase, to: patch.phase, answerVersion: run.checkpoint.answerVersion ?? 0, noNewSpending: true } })
     })
   }
+  /** Write once per phase, atomically with the hash-chained audit evidence. */
+  recordTiming(intentId: string, phase: SettlementPhase, detail: Partial<PhaseObservation> = {}, startedAt?: string) {
+    if (process.env.SETTLEMENT_TIMING !== '1') return
+    this.atomic(() => {
+      const intent = this.getIntent(intentId)
+      if (!intent || intent.timing?.phases[phase]) return
+      const start = intent.timing?.startedAt ?? startedAt ?? new Date().toISOString()
+      const at = detail.at ?? new Date().toISOString()
+      const observation = PhaseObservationSchema.parse({ at, elapsedMs: Math.max(0, Date.parse(at) - Date.parse(start)), source: 'buyer', ...detail })
+      const timing = { startedAt: start, phases: { ...intent.timing?.phases, [phase]: observation } }
+      this.saveIntent({ ...intent, timing })
+      const receipt = this.rows<Receipt>('SELECT json FROM receipts WHERE intent_id=?', intentId)[0]
+      if (receipt) this.prepare('UPDATE receipts SET json=? WHERE intent_id=?').run(JSON.stringify({ ...receipt, timing }), intentId)
+      this.audit.append({ runId: intent.runId, intentId, kind: 'settlement-timing', data: { phase, startedAt: start, ...observation } })
+    })
+    const intent = this.getIntent(intentId)!
+    if (!this.getRun(intent.runId).events.some(e => e.type === 'SETTLEMENT_TIMING' && e.data?.intentId === intentId && e.data?.phase === phase))
+      this.appendEvent(intent.runId, { type: 'SETTLEMENT_TIMING', label: 'Payment timing observed', data: { intentId, phase, ...intent.timing?.phases[phase] } })
+  }
   appendEvent(runId: string, input: Omit<TraceEvent, 'id' | 'runId' | 'at'>): TraceEvent {
     publicMetadata(input.data)
     const event = this.atomic(() => {
@@ -725,7 +745,7 @@ export class Store {
       if (!tx || terminal === 'finish' && !e.publicStatus.proofOk && !e.reveal) throw new Error('Terminal escrow proof missing')
       e.publicStatus = { ...e.publicStatus, state: terminal === 'finish' ? 'RELEASED' : 'CANCELLED', [terminal + 'Hash']: tx.txHash }
       const settledAt = new Date().toISOString(), terms = e.quote.terms
-      const receipt = ReceiptSchema.parse({ source: intent.source, receiptId: `escrow-${tx.txHash}`, intentId, runId: intent.runId, resourceId: intent.resourceId, version: intent.version,
+      const receipt = ReceiptSchema.parse({ timing: intent.timing, source: intent.source, receiptId: `escrow-${tx.txHash}`, intentId, runId: intent.runId, resourceId: intent.resourceId, version: intent.version,
         amountMinor: terminal === 'finish' ? intent.amountMinor : 0, currency: 'SGD', settledAt, label: 'XRPL TESTNET · no real value', escrow: e.publicStatus,
         xrpl: { asset: terms.asset, txHash: tx.txHash, ledgerIndex, payer: terms.payer, payTo: terminal === 'finish' ? terms.payTo : terms.payer, amountDrops: terminal === 'finish' ? terms.amount : '0', explorerUrl: `https://testnet.xrpl.org/transactions/${tx.txHash}` } })
       this.prepare('INSERT INTO receipts VALUES (?,?,?)').run(intentId, JSON.stringify(receipt), tx.txHash)

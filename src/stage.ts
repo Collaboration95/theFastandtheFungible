@@ -61,7 +61,8 @@ export function staged(run: RunSnapshot, cursor: number): RunSnapshot {
   }
   if (phase === 'FAILED' && run.phase === 'DONE' && run.intents.some(i => i.escrow?.mode === 'key-reveal')) phase = 'BUY'
   const intents = run.intents.filter(item => status.has(item.intentId)).map(item => {
-    const shown = { ...item, status: status.get(item.intentId)!, refund: events.some(e => e.type === 'REFUND' && e.data?.intentId === item.intentId) ? item.refund : undefined }
+    const timing = item.timing ? { ...item.timing, phases: Object.fromEntries(Object.entries(item.timing.phases).filter(([phase]) => events.some(e => e.type === 'SETTLEMENT_TIMING' && e.data?.intentId === item.intentId && e.data?.phase === phase))) } : undefined
+    const shown = { ...item, timing, status: status.get(item.intentId)!, refund: events.some(e => e.type === 'REFUND' && e.data?.intentId === item.intentId) ? item.refund : undefined }
     if (item.escrow?.mode !== 'key-reveal') return shown
     const seen = (type: string) => events.some(e => e.type === type && e.data?.intentId === item.intentId)
     const created = seen('ESCROW_CREATE'), released = seen('ESCROW_FINISH') || seen('GRANT'), cancelled = seen('ESCROW_CANCEL')

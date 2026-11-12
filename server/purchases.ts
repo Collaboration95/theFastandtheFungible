@@ -82,6 +82,7 @@ export class PurchaseManager {
     if (!intent) {
       if (candidate.tier !== 'PAID') throw new Error('Purchase requires paid public candidate')
       // The unpaid GET is visible as 402 and carries the x402 v2 terms in PAYMENT-REQUIRED, never a body.
+      const startedAt = new Date().toISOString()
       const paidPath = PublisherClient.paidPath(candidate)
       const first = await this.client.forSource(candidate.source).paidGet(paidPath, undefined, this.wire(runId))
       if (first.status === 200) throw new Error('Paid content did not require payment')
@@ -96,6 +97,7 @@ export class PurchaseManager {
         payment: { rail: first.required.resource.description === XRPL_LABEL ? 'xrpl-testnet' : 'simulated', network: accepted.network, asset: accepted.asset, payTo: accepted.payTo, amountDrops: accepted.amount, invoiceId: quoteHash },
       }
       intent = this.store.reserveIntent({ source: candidate.source, runId, intentId, profileId: candidate.profileId, resourceId: candidate.resourceId, version: candidate.version, amountMinor: candidate.price.amountMinor, quote, paidPath, status: 'QUOTED' })
+      this.store.recordTiming(intentId, 'quote', {}, startedAt)
       this.store.appendEvent(runId, { type: 'PURCHASE', label: intent.status, data: { intentId, status: intent.status } })
       // The proof check after delivery runs against exactly this manifest (#131).
       if (intent.status === 'RESERVED' && manifest) this.store.recordManifest(intentId, manifest)
@@ -166,7 +168,7 @@ export class PurchaseManager {
     let submission = this.store.getSubmission(intent.intentId)
     let result: PaidResult
     if (!submission) {
-      const paid = await this.payer.pay(terms, signed => this.store.recordSubmission(intent.intentId, signed), signed => this.send(intent, signed))
+      const paid = await this.payer.pay(terms, signed => this.store.recordSubmission(intent.intentId, signed), signed => { this.store.recordTiming(intent.intentId, 'paymentSubmitted', { txHash: signed.txHash }); return this.send(intent, signed) })
       submission = paid.submission
       this.ledgerEvent(intent.runId, `${terms.rail === 'simulated' ? 'SIMULATED · no ledger transaction · ' : 'Signed payment · ' }S$${(intent.quote!.amountMinor / 100).toFixed(2)} ≈ ${terms.asset === 'XRP' ? xrp(terms.amountDrops) + ' XRP' : terms.amountDrops + ' ' + terms.asset.label} (Testnet rate) → ${terms.payTo} · InvoiceID = sha256(invoiceId) · sent to the publisher's facilitator`, { intentId: intent.intentId, txHash: submission.txHash, amountDrops: terms.amountDrops, payTo: terms.payTo, ...(terms.rail === 'xrpl-testnet' ? { explorerUrl: explorer(submission.txHash) } : {}) })
       result = await paid.sent
@@ -187,6 +189,7 @@ export class PurchaseManager {
         if (checked.state !== 'ok' || checked.proof.payer !== this.payer.address) throw new Error('Ledger payment differs from quote')
         proof = checked.proof
         const ledgerIndex = proof.ledgerIndex
+        this.store.recordTiming(intent.intentId, 'paymentValidated', { txHash: submission.txHash, ledgerIndex })
         this.ledgerEvent(intent.runId, `Validated in ledger ${ledgerIndex} · tesSUCCESS`, { intentId: intent.intentId, txHash: submission.txHash, ledgerIndex, explorerUrl: explorer(submission.txHash) })
       }
       this.recordConfirmed(intent, submission, proof)
@@ -209,7 +212,7 @@ export class PurchaseManager {
   }
   private recordConfirmed(intent: PurchaseIntent, submission: Submission, proof?: LedgerProof) {
     const xrpl = proof ? { ...proof, explorerUrl: explorer(submission.txHash) } : undefined
-    this.store.recordSettlement(intent.intentId, { receiptId: `x402-${submission.txHash}`, intentId: intent.intentId, source: intent.source, runId: intent.runId, resourceId: intent.resourceId, version: intent.version, amountMinor: intent.amountMinor, currency: 'SGD', settledAt: new Date().toISOString(), label: xrpl ? XRPL_LABEL : SIMULATED_LABEL, ...(xrpl ? { xrpl } : {}) }, submission.txHash)
+    this.store.recordSettlement(intent.intentId, { timing: this.store.getIntent(intent.intentId)!.timing, receiptId: `x402-${submission.txHash}`, intentId: intent.intentId, source: intent.source, runId: intent.runId, resourceId: intent.resourceId, version: intent.version, amountMinor: intent.amountMinor, currency: 'SGD', settledAt: new Date().toISOString(), label: xrpl ? XRPL_LABEL : SIMULATED_LABEL, ...(xrpl ? { xrpl } : {}) }, submission.txHash)
   }
   /** XRPL: only the ledger can prove that a signed payment never applied (failed, or expired past LastLedgerSequence). */
   private async releaseIfLedgerProvesNoCharge(intent: PurchaseIntent, submission: Submission): Promise<boolean> {
@@ -246,6 +249,7 @@ export class PurchaseManager {
       // Only the proof check makes the grant accessible; a failure quarantines it (never cited).
       const proof = checkProof(this.store, intent.intentId)
       recordStep('proof-check', { intentId: intent.intentId, resourceId: intent.resourceId }, { status: proof.status, failedClaimIds: proof.failedClaimIds ?? [] })
+      if (proof.status === 'VERIFIED') this.store.recordTiming(intent.intentId, 'unlocked')
       if (proof.status === 'VERIFIED') this.store.appendEvent(intent.runId, { type: 'GRANT', label: 'manifest root verified', data: { intentId: intent.intentId, resourceId: intent.resourceId, version: intent.version } })
     } catch {
       // Delivery errors preserve the charge and receipt; a retry resends the same blob.

@@ -1229,3 +1229,10 @@ persistence or a mainnet deployment. No cloud resource or live ledger call ran.
 - Workaround: the API feed is opt-in and correct locally. Before hosted activation, the R3-REACH owner must add exact feed locations that forward the API cache policy once, retain `no-store` for SSE, and keep buffering disabled. This lane does not own `docker/hosted/**`.
 - Suggested fix: make public endpoint cache ownership explicit in the shared proxy configuration and test raw headers through both hops for JSON and SSE.
 - Severity: low (cache efficiency; no spending or privacy gate bypass). Mainnet impact: none established; this is hosting configuration, not an XRPL incident. No transactions or upstream issues were filed.
+
+## 2026-11-12 — Settlement observation overhead (code-derived and observed local Testnet)
+
+- **Evidence:** `server/xrpl.ts` polls validated-ledger plus transaction status every second; `server/escrow.ts` then fetches the validated create again and polls the writer finish separately. `docs/evidence/speed/SPEED.md` records 30/30 verified local Testnet purchases: quote-to-unlock p50 14.065 s / p90 17.411 s; create-submit-to-validation p50 5.668 s / p90 5.935 s and finish-submit-to-validation p50 4.302 s / p90 7.214 s. All 60 purchase hashes are in `before.json`; example create `53DA9A51A691AA29D45B1C9E1E2AC9244C27289995A07B5DA276019C1C9479E0`, finish `887B98F98F466849110EFEE7B5ACC66D523F4B2EF8BA007EC96806117DDB9828`.
+- **Workaround:** add opt-in, hash-chained phase observations (`SETTLEMENT_TIMING=1`) and measure before changing waits. Writer observations are explicitly writer-reported; elapsed wall time is not a consensus timestamp.
+- **Suggested fix:** XRPL/x402 examples should subscribe before submission, retain the validated transaction metadata and preserve LastLedgerSequence/account-sequence expiry proof during fallback.
+- **Severity / mainnet impact:** medium visible latency and RPC overhead. Code-derived, with Testnet measurements reported separately; no mainnet execution or latency claim.

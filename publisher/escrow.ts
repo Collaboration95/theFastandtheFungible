@@ -69,7 +69,7 @@ export async function lockEscrow(blob: string, invoice: string, articleId: strin
 }
 
 /** Writer alone holds K. Persist the exact finish blob before any network submission. */
-const reveals = new WeakMap<PublisherJournal, Map<string, Promise<{finishHash: string; ledgerPreCheck?: boolean}>>>()
+const reveals = new WeakMap<PublisherJournal, Map<string, Promise<{finishHash: string; ledgerPreCheck?: boolean; timing?: { lockProvenAt: string; finishSubmittedAt: string }}>>>()
 export function revealEscrow(quote: EscrowQuote, createBlob: string, keys: PublisherKeys, ledger: Ledger, journal: PublisherJournal) {
   let active = reveals.get(journal)
   if (!active) { active = new Map(); reveals.set(journal, active) }
@@ -98,8 +98,9 @@ async function revealOnce(quote: EscrowQuote, createBlob: string, keys: Publishe
   }
   if (!finish) {
     await lockEscrow(createBlob, invoice, quote.terms.articleId, quote.terms.version, ledger, journal)
+    const lockProvenAt = new Date().toISOString()
     const sent = await payer.escrow({ TransactionType: 'EscrowFinish', Owner: quote.terms.payer, OfferSequence: Number(decode(createBlob).Sequence), Condition: quote.terms.condition, Fulfillment: fulfillmentFor(privateState.secret) }, 0,
-      s => journal.saveKeyReveal(invoice, { ...privateState, finish: { ...s, ledgerPreCheck: true } })!,
+      s => journal.saveKeyReveal(invoice, { ...privateState, finish: { ...s, ledgerPreCheck: true, ...(process.env.SETTLEMENT_TIMING === '1' ? { writerTiming: { lockProvenAt, finishSubmittedAt: new Date().toISOString() } } : {}) } })!,
       s => ledger.request({ command: 'submit', tx_blob: s.txBlob }),
       async () => {
         // Run inside the wallet queue, even when lockEscrow reused a durable grant.
@@ -113,11 +114,11 @@ async function revealOnce(quote: EscrowQuote, createBlob: string, keys: Publishe
         if (await ledgerTime(ledger) + 30 >= t.cancelAfter) throw new BeforeSignError('Writer reveal window closed; key was not signed')
       },
       undefined, { lastLedgerOffset: 5 })
-    finish = sent.submission
+    finish = journal.keyReveal(invoice)!.finish!
     await sent.sent
   } else {
     const found = await lookupTx(ledger, finish.txHash)
     if (found.state !== 'validated') await ledger.request({ command: 'submit', tx_blob: finish.txBlob })
   }
-  return { finishHash: finish.txHash, ...(finish.ledgerPreCheck ? { ledgerPreCheck: true } : {}) }
+  return { finishHash: finish.txHash, ...(finish.writerTiming ? { timing: finish.writerTiming } : {}), ...(finish.ledgerPreCheck ? { ledgerPreCheck: true } : {}) }
 }
