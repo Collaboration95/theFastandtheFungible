@@ -10,6 +10,8 @@ something significant: a feature, a metric move, a finished deliverable. Don't
 add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
+- 13 Nov: Hosted health advertises the configured real corpus, answer ratings and embedding provider so hosted presets and paid-answer feedback follow the active capabilities.
+
 - 12 Nov: Opt-in accepted-credential payment policy and independent publisher buyer guard; pinned OFAC XRP address screen, audited zero-charge refusals, and two validated Testnet regular-key rotations. Evidence: `docs/evidence/publish/PUBLISH.md`.
 - 12 Nov: The key-reveal scheme draft follows upstream x402 format; public agent admission rejects rounded-up budgets and keeps MCP and paid quota holds distinct. Draft only; owner filing remains separate. [Draft](upstream/x402-scheme-key-reveal-escrow.md).
 - 12 Nov: An independent Python HTTP buyer completes a real Testnet purchase from a locally installed Hono seller, verifies/decrypts the revealed key, reuses its finish on retry and explicitly cancels an expired escrow; four hashes and archive digests are recorded. [Evidence](evidence/reach/REACH.md).

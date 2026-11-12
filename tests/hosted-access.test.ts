@@ -240,3 +240,16 @@ it('a fresh hosted visitor sees three team identities from the credential cache,
   const status = (await wire(url+'/api/writers/status','GET',a)).json<{publishers:{credential:{status:string}}[]}>()
   expect(status.publishers.filter(p=>p.credential.status==='verified')).toHaveLength(3)
 })
+
+for (const [profile,ratings,provider,search,embeddings] of [
+  ['real','1','local','off','local'], ['real','0','local','live','local'], ['default','0','cloudflare','off','off'],
+]) it(`exposes only public hosted health capabilities (${profile}, ${embeddings})`,async()=>{
+  for(const [key,value] of Object.entries({CORPUS_PROFILE:profile,ANSWER_RATINGS:ratings,EMBEDDING_PROVIDER:provider,SEARCH_EMBEDDINGS:search})) vi.stubEnv(key,value)
+  const {url}=await setup()
+  for(const path of ['/health','/api/health']) {
+    const response=await wire(url+path)
+    expect(response.status).toBe(200)
+    const health=response.json()
+    expect(health).toEqual({status:'ready',labels:expect.any(Object),faults:false,answerRatings:ratings==='1',embeddings,...(profile==='real'?{corpusProfile:'real'}:{})})
+  }
+})

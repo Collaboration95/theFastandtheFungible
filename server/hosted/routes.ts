@@ -88,7 +88,7 @@ export function hostedRouter(context: ApiContext, config: Config, limits: Hosted
   // The shared payer's balance against 30 XRP, for the owner's alert only (H7). It never changes what a visitor sees:
   // readiness and the ask gate do not read it. 503 only for a reading below the line; no reading is 200 `unknown`.
   router.get('/readyz/funds', (_req,res) => { const funds = payerFunds(); res.status(funds === 'low' ? 503 : 200).json({ funds }) })
-  router.get(['/health','/api/health'], async (_req,res) => res.json({ status: (await status()).state, labels: context.labels, faults: false }))
+  router.get(['/health','/api/health'], async (_req,res) => res.json({ status: (await status()).state, ...(config.CORPUS_PROFILE === 'real' ? {corpusProfile:'real'} : {}), answerRatings: config.ANSWER_RATINGS === '1', embeddings: config.EMBEDDING_PROVIDER === 'local' ? 'local' : config.SEARCH_EMBEDDINGS === 'live' ? 'cloudflare' : 'off', labels: context.labels, faults: false }))
   router.get('/api/demo/status', async (_req,res) => {
     const principal = res.locals.hostedSession.principal
     const own = ownHistory(principal).map(r => limits.forRun(r.runId)!).filter(h => queue.position(h.run_id!) !== null)
