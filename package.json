@@ -66,7 +66,10 @@
     "check:paid-bodies": "node scripts/check-paid-bodies.mjs",
     "proof:model": "tsx scripts/proof/run-model.ts",
     "proof:sim": "node scripts/chaos.mjs --proof-sim",
-    "proof:redteam": "vitest run tests/proof/redteam"
+    "proof:redteam": "vitest run tests/proof/redteam",
+    "proof:testnet-run": "node --import tsx scripts/testnet-1000/run.mjs",
+    "proof:testnet-verify": "node scripts/testnet-1000/verify.mjs",
+    "proof:testnet-test": "node --import tsx --test scripts/testnet-1000/verify.test.mjs"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",
