@@ -86,7 +86,8 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
     return () => window.removeEventListener('demo-pause', pause)
   }, [])
   const [pace, setPace] = useState<Pace>(() => initialPace(recording))
-  const [health, setHealth] = useState<{ labels?: ModeLabels; faults: boolean; answerRatings: boolean }>({ faults: false, answerRatings: false })
+  const [health, setHealth] = useState<{ labels?: ModeLabels; faults: boolean; answerRatings: boolean; realCorpus?: boolean }>({ faults: false, answerRatings: false })
+
   const [notify, setNotify] = useState(() => !recording && prefs.get(notifyKey) === '1')
   const [sending, setSending] = useState(false)
   const [stopping, setStopping] = useState(false)
@@ -147,7 +148,8 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
 
   useEffect(() => {
     let cancelled = false
-    void fetch('/api/health').then(response => response.json()).then(data => { if (!cancelled) setHealth({ labels: ModeLabelsSchema.safeParse(data.labels).data, faults: data.faults === true, answerRatings: data.answerRatings === true }) }).catch(() => { if (!cancelled) setHealthError(true) })
+    void fetch('/api/health').then(response => response.json()).then(data => { if (!cancelled) setHealth({ labels: ModeLabelsSchema.safeParse(data.labels).data, faults: data.faults === true, answerRatings: data.answerRatings === true, realCorpus: data.corpusProfile === 'real' }) }).catch(() => { if (!cancelled) setHealthError(true) })
+
     // Home is the default; a run opens only when the URL names it (a refresh keeps it). Past runs live in the sidebar.
     const id = new URLSearchParams(window.location.search).get('run')
     if (id) void getRun(id).then(value => { if (!cancelled) { setRun(value); setScreen('run') } }).catch(() => {
@@ -453,7 +455,7 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   })
-  const labels = <>{(replaying || recording || browserDemo) && <span className="ra-caption">Replay</span>}<nav className="ra-main-views" aria-label="Workspace views"><button aria-current={screen !== 'settings' && tab === 'run' ? 'page' : undefined} onClick={() => switchView('run')}>Run <kbd>{modifier}1</kbd></button><button aria-current={screen !== 'settings' && tab === 'writers' ? 'page' : undefined} onClick={() => switchView('writers')}>Writers <kbd>{modifier}2</kbd></button></nav>{!browserDemo && (hosted ? <HostedEnv hosted={hosted} /> : <EnvIndicator labels={shown?.labels ?? health.labels} recording={recording} />)}<button className="ra-command-trigger" onClick={() => setPalette('commands')} aria-label="Open commands"><Icon name="search" size={16} /><kbd>{modifier}K</kbd></button></>
+  const labels = <>{(replaying || recording || browserDemo) && <span className="ra-caption">Replay</span>}<nav className="ra-main-views" aria-label="Workspace views"><button aria-current={screen !== 'settings' && tab === 'run' ? 'page' : undefined} onClick={() => switchView('run')}>Run <kbd>{modifier}1</kbd></button><button aria-current={screen !== 'settings' && tab === 'writers' ? 'page' : undefined} onClick={() => switchView('writers')}>Writers <kbd>{modifier}2</kbd></button></nav>{!browserDemo && (hosted ? <HostedEnv hosted={hosted} /> : <EnvIndicator realCorpus={health.realCorpus} labels={shown?.labels ?? health.labels} recording={recording} />)}<button className="ra-command-trigger" onClick={() => setPalette('commands')} aria-label="Open commands"><Icon name="search" size={16} /><kbd>{modifier}K</kbd></button></>
   const toggle = <NavToggle open={navOpen} onToggle={() => { prefs.set(navKey, navOpen ? 'rail' : 'open'); setNavOpen(!navOpen) }} />
   // The active run's row follows the paced replay, so the sidebar never shows a purchase before the stage does.
   const listed = shown ? past.map(item => item.runId === shown.runId ? { ...item, phase: model.phase === 'recovering' ? 'READ_PAID' : finished ? shown.phase : 'SEARCH', stopped: finished && shown.stopped, spentMinor: shown.spentMinor } : item) : past
@@ -482,7 +484,7 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
   if (detecting && !hosted) return <Connecting />
   if (tab === 'writers') return provide(<Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}><main id="main" tabIndex={-1} className="ra-writers-view"><h1>Writers</h1>{writersError && <p role="alert">{writersError}</p>}{writersLoading ? <p role="status" className="ra-writer-loading"><AgentSprite animation="search" />Loading writer reputation…</p> : <Suspense fallback={<p role="status" style={{ minHeight: 420 }}>Loading writers…</p>}><ReputationPanel records={reputation} run={shown} full={run} /></Suspense>}{overlays}</main></Layout>)
   if (screen === 'settings' && !hosted) return provide(<Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
-    <Suspense fallback={<main id="main" tabIndex={-1} className="ra-settings"><h1>Settings</h1><p role="status">Loading settings…</p></main>}><Settings universal={universal} budgetMinor={universalMinor} settlement={settlement} notify={notify} onBack={closeSettings} onNotify={chooseNotify}
+    <Suspense fallback={<main id="main" tabIndex={-1} className="ra-settings"><h1>Settings</h1><p role="status">Loading settings…</p></main>}><Settings realCorpus={health.realCorpus} universal={universal} budgetMinor={universalMinor} settlement={settlement} notify={notify} onBack={closeSettings} onNotify={chooseNotify}
       onUniversal={on => { setUniversal(on); prefs.set(universalKey, on ? '1' : '0') }} onBudget={minor => { setUniversalMinor(minor); prefs.set(universalMinorKey, String(minor)) }} /></Suspense>
     {overlays}
   </Layout>)

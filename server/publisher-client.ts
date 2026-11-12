@@ -117,7 +117,7 @@ export class PublisherClient {
     return JSON.parse((await boundedBody(response, path.includes('/articles/') ? 2 * 1024 * 1024 : 256 * 1024)).toString('utf8'))
   }
   async registry(): Promise<RegistryPublisher[]> {
-    const publishers = RegistrySchema.parse(await this.getJson('/registry')).publishers.slice(0, 50)
+    const publishers = RegistrySchema.parse(await this.getJson('/registry')).publishers.filter(p=>loadConfig().CORPUS_PROFILE !== 'real' || p.synthetic === false).slice(0, 50)
     for (const p of publishers) if (p.wallet) this.sellerWallets.set(p.slug, p.wallet)
     // Registry metadata alone is not proof of possession of the seller key.
     return publishers.map(p => ({ ...p, verification: { status: 'unverified' as const } }))
@@ -180,7 +180,7 @@ export class PublisherClient {
     return ContentEnvelopeSchema.parse({ source: hit.source, profileId: hit.publisherSlug, resourceId: hit.articleId, version: hit.version, title: article.title, publisher: publisherName, body: article.body, verification: article.verification, spans: article.passages.map(p => ({ id: p.id, text: p.text, ...(p.url ? { url: p.url } : {}), ...(p.heading ? { label: p.heading } : {}) })) })
   }
 }
-const RegistryPublisherSchema = z.object({ slug: z.string().min(1), name: z.string().min(1), kind: z.enum(['masthead', 'independent', 'records']), domain: z.string().optional(), wallet: z.string().optional(), synthetic: z.boolean().optional(), authorship: z.literal('team-authored').optional(), verification: WriterVerificationSchema.optional() })
+const RegistryPublisherSchema = z.object({ slug: z.string().min(1), name: z.string().min(1), kind: z.enum(['masthead', 'independent', 'records']), domain: z.string().optional(), licence: z.string().optional(), wallet: z.string().optional(), synthetic: z.boolean().optional(), authorship: z.literal('team-authored').optional(), verification: WriterVerificationSchema.optional() })
 const RegistrySchema = z.object({ publishers: z.array(RegistryPublisherSchema) })
 const FreeArticleSchema = z.object({ publisherSlug: z.string(), articleId: z.string(), version: z.string(), title: z.string().min(1), tier: z.literal('FREE'), verification: z.object({ manifest: ManifestSchema, salts: z.array(z.string()) }).optional(), body: z.string().min(1), passages: z.array(PassageSchema).min(1) })
 export type RegistryPublisher = z.infer<typeof RegistryPublisherSchema>

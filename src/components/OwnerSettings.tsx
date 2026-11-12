@@ -68,8 +68,10 @@ const KEY_LABEL: Record<string, string> = {
 }
 export default function OwnerSettings({
   children,
-  notifications
+  notifications,
+  realCorpus = false
 }: {
+  realCorpus?: boolean
   children?: ReactNode
   notifications?: ReactNode
 }) {
@@ -453,9 +455,7 @@ export default function OwnerSettings({
         {section === 'Network' && (
           <>
             <p>
-              Offline demo: fictional writers, simulated payments, no real
-              money. XRPL Testnet tokens have no real value. A network change
-              restarts the engine.
+              {realCorpus ? 'A network change restarts the engine.' : 'Offline demo: fictional writers, simulated payments, no real money. XRPL Testnet tokens have no real value. A network change restarts the engine.'}
             </p>
             {field('SETTLEMENT_RAIL', 'Network', ['simulated', 'xrpl-testnet'])}
           </>

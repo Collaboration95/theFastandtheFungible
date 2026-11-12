@@ -89,3 +89,11 @@ LEDGER_PROJECT_ACCOUNTS=rPcGTrh6sBaNhXNJyQjMZzrevnAp3p5hvf,rKvkhPm45VPStAW5EgKo6
 ### Unmeasured global escrow scan
 
 Three complete public-node pages at ledger 108279002 / `1E6D961CB7B6FDAAC5591B9C89311DBF0584D53B941A1BCAA473A9E4ECE2B0EA` returned zero Escrow objects but still carried a marker. That is **not a zero escrow total**. Global escrow reports are disabled: startup does not compute them, the corpus excludes them, search cannot list them and no new purchase can quote them. Calling their computation entry point fails explicitly. A complete, measured scan is required before future admission. The four-minute scan cap remains unchanged for enabled reports.
+
+During real-profile integration, clean head `47536f0cf6101a669c86840b0d48f2fc29b31707` passed `check:fast` (3,233 tests; four existing skips) but its full gate timed out the existing paid-site leak audit at 30 seconds. Receipt `1794488629187-62523-9a437b23-2211-4761-a0a9-d37482b6e6fd.json` retains the failure; the replay browser suite passed. The cause is not established. Verification is rerun with the original timeout, leak threshold and checks unchanged.
+
+## Real corpus profile
+
+`CORPUS_PROFILE=real` (default unset / `default`) implies the public-docs free tier and ledger-analytics writer. It admits project team notes and author-supplied local/published writers whose corpus marks them non-synthetic. All eight bundled fictional publishers are excluded: alphaleak, basis-points, kopi-contrarian, load-factor, marketpulse-digest, notfinancialtimes, open-records and the-fab-floor. Their current roster files all mark `synthetic: true`; Open Records' operator authorship flag does not make its fictional records real.
+
+Newly discovered publisher registries are also filtered by explicit non-synthetic provenance under the real profile. Missing provenance is not treated as real. Public documentation has its upstream name, MIT/Apache licence and a “Public documentation” writer badge. The ledger writer and team notes retain “Team-authored”; no independent-writer identity is claimed. Default fixtures, evaluations and all eight fictional roster files remain unchanged. Cheap profile tests cover admission, article/writer references, real locally published authors, free-source substitution and rendered badge labels.
