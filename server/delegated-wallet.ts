@@ -37,6 +37,8 @@ export function delegatedWallets(context: ApiContext) {
     let valid = false
     try { valid = !!c && c.until >= Date.now() && deriveAddress(input.publicKey) === input.address && verify(c.message, input.signature, input.publicKey) } catch { /* bad proof */ }
     if (!valid) return res.sendStatus(403)
+    const info = await context.payer!.ledger.request({ command: 'account_info', account: input.address, ledger_index: 'validated' })
+    if (Number(info.result.account_data.Flags) & 0x00100000) return res.sendStatus(403) // disabled master key cannot bind a visitor session
     if (!(await hasEscrowDelegation(context.payer!.ledger, input.address, context.payer!.address!))) return res.status(409).json({ error: 'EscrowCreate delegation is not active.' })
     if (bindings.size >= 5000 && !bindings.has(key)) return res.sendStatus(429)
     bindings.set(key, input.address); res.json({ address: input.address })
