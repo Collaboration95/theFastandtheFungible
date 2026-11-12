@@ -1,4 +1,4 @@
-// One header for the explainers site (#272). Run: node scripts/site-header.mjs [--check]
+// One header for the explainers site. Run: node scripts/site-header.mjs [--check]
 // Writes the same self-contained header block (markup + scoped CSS) between
 // <!-- site-header:start --> and <!-- site-header:end --> right after <body> on each page.
 // --check exits 1 if any page is out of date (used by repo-hygiene). Offline, no dependencies.
@@ -21,11 +21,11 @@ const NAV = [
   ['developers', 'developers/', 'Developers'], ['feedback', 'builder-feedback/', 'Builder feedback'],
 ]
 const MORE = [
-  ['ledger', 'ledger/', 'Testnet ledger'], ['build', 'evolution/#archive', 'Archive'],
+  ['ledger', 'ledger/', 'Ledger'], ['build', 'evolution/#archive', 'Archive'],
 ]
 // Presentation and app pages fill the viewport; they keep the header but get no footer.
 const NO_FOOTER = new Set(['demo', 'slides', 'notes'])
-const ENVIRONMENT = 'XRPL Testnet demo · no real value'
+const ENVIRONMENT = 'XRPL Testnet demo'
 const START = '<!-- site-header:start -->'
 const END = '<!-- site-header:end -->'
 const FOOT_START = '<!-- site-footer:start -->'

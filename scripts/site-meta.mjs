@@ -8,6 +8,7 @@ const root = join(import.meta.dirname, '..'), site = join(root, 'site'), check =
 const esc = s => s.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;')
 const base = 'https://collaboration95.github.io/theFastandtheFungible/'
 const descriptions = {
+  'try/index.html': 'Open ResearchAgent: ask a question, set a budget and check the delivery key.',
   'index.html': 'Search expertise. Buy missing evidence within your budget. Try the hosted sandbox, replay key reveal, or inspect the proof.',
   'demo/index.html': `Replay of a recorded key-reveal run on XRPL Testnet, ${replayDate()}. No real value; fixture models and fictional demo writers.`,
   'talk/index.html': 'Key-reveal escrow explained, plus the historical 9 October walkthrough. Refunds require writer cooperation; refunds do not restore budget.',

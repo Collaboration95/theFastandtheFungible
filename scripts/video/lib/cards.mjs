@@ -1,6 +1,6 @@
 // HTML → image helpers: the title and close cards, and the caption overlays the assembler burns in.
 // Fonts are the app's own Geist and Geist Mono, read from node_modules (no network).
-import { mkdirSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { chromium } from 'playwright'
@@ -40,19 +40,19 @@ export function titleCardHtml({ mark }) {
     p.sub{font-size:38px;color:var(--muted);margin:0 0 54px;letter-spacing:-.01em}
     img{height:84px}</style>
     <div class="wrap"><img src="${pathToFileURL(mark)}" alt=""><h1>ResearchAgent</h1><p class="sub">Paid on delivery. Proven on the ledger.</p>
-    <span class="pill"><span class="dot"></span>XRPL Testnet · no real value</span></div>`
+    <span class="pill"><span class="dot"></span>Research with a wallet</span></div>`
 }
 
 /** Shot 8: the README's own opening (lockup, tagline, the one-sentence description), then the repository address. */
-export function closeCardHtml({ lockup, repo }) {
+export function closeCardHtml({ lockup }) {
+  const card = JSON.parse(readFileSync(join(ROOT, 'docs/submission/video/shots.json'), 'utf8')).endCard
+  const qr = pathToFileURL(join(ROOT, card.qr))
   return `<!doctype html><meta charset="utf-8"><style>${base}
-    img{height:96px;margin-bottom:34px}
-    h1{font-size:60px;letter-spacing:-.03em;font-weight:620;margin:0 0 20px}
-    p.lede{font-size:30px;line-height:1.45;color:var(--muted);max-width:1060px;margin:0 0 52px}
-    p.url{font:500 36px 'Geist Mono',monospace;color:var(--ink);margin:0 0 40px}</style>
-    <div class="wrap"><img src="${pathToFileURL(lockup)}" alt="ResearchAgent"><h1>Paid on delivery. Proven on the ledger.</h1>
-    <p class="lede">It answers from free sources first, then pays writers for the articles it is still missing, over x402 on the XRP Ledger, inside a budget you set. Only policy code can pay.</p>
-    <p class="url" style="font-size:25px">Sandbox: ra-front-651013803640.asia-southeast1.run.app<br>Replay: collaboration95.github.io/theFastandtheFungible/demo/<br>${repo}</p><span class="pill"><span class="dot"></span>XRPL Testnet only · no real value</span></div>`
+    h1{font-size:72px;margin:20px} .logo{height:70px}.qr{height:220px;margin:18px}
+    .url{font-size:28px}.limits{font-size:23px;line-height:1.5;max-width:1450px;color:var(--muted)}
+    </style><div class="wrap"><img class="logo" src="${pathToFileURL(lockup)}" alt="ResearchAgent">
+    <h1>Check the key. It matches.</h1><img class="qr" src="${qr}" alt="Open hosted demo">
+    <p class="url">${card.url}</p><p class="limits"><b>Status and limits.</b> ${card.limits}</p></div>`
 }
 
 /** Historical RPC output, rendered from the unchanged committed probe. Never a submitted transaction. */

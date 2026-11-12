@@ -153,10 +153,10 @@ describe('the video stays honest', () => {
     const ids = new Set(SCENES.map(s => s.id))
     for (const shot of spec.shots) for (const segment of shot.segments) expect(ids.has(segment.scene), `${shot.id}: ${segment.scene}`).toBe(true)
   })
-  it('puts a label that says what is real on every shot (hard gate 5)', () => {
+  it('labels the environment once and preserves per-shot recording provenance (hard gate 5)', () => {
     for (const shot of enabled) for (const label of labelsOf(shot)) {
-      const text = label.startsWith('{') ? 'no real value' : label // tokens resolve to the recorder's caption, checked below
-      expect(/no real value|Testnet|Replay of a recorded|checked live from your browser/.test(text), `${shot.id}: "${label}"`).toBe(true)
+      const text = label.startsWith('{') ? 'Recorded' : label // tokens resolve to the recorder's caption, checked below
+      expect(/Testnet|record|replay|verifier|policy rules|Check the key/i.test(text), `${shot.id}: "${label}"`).toBe(true)
       expect(/live service|production|mainnet ready/i.test(label), `${shot.id}: "${label}"`).toBe(false)
     }
   })
@@ -167,10 +167,11 @@ describe('the video stays honest', () => {
   })
   it('marks replay footage as a replay and the writer kinds as what they are', () => {
     const refund = spec.shots.find(s => s.id === 's3-refund')
-    expect(refund.label).toMatch(/Local replay.*recorded Testnet escrow/)
-    expect(refund.label).toMatch(/fictional writers/)
+    expect(refund.label).toMatch(/Local replay.*recorded escrow/)
+    expect(refund.label).toMatch(/fictional writer/)
     const claude = spec.shots.find(s => s.id === 's4-claude')
-    expect(claude.label).toMatch(/team-authored writer · real content · not an independent writer/)
+    expect(claude.label).toMatch(/Recorded Claude Code/ )
+    expect(spec.shots.find(s => s.id === 's2-sandbox').label).toContain('two team-authored paid writers')
   })
   it('keeps the voice-over word for word in the owner-facing script', () => {
     for (const shot of spec.shots) expect(norm(script), `${shot.id} voice-over is not in demo-video-script.md`).toContain(norm(shot.vo))
@@ -187,7 +188,7 @@ describe('the video stays honest', () => {
     expect(corner.segments.every(s => s.scene === 'hosted-ask')).toBe(true)
     expect(corner.label).toContain('featured run 421bae3d · 12 Nov · 5/5 gates Held')
     expect(corner.vo).toContain('twenty-four checks passed and two not checked')
-    expect(spec.shots.indexOf(corner)).toBeLessThan(spec.shots.findIndex(s => s.id === 's2-sandbox'))
+    expect(spec.shots.indexOf(corner)).toBeGreaterThan(spec.shots.findIndex(s => s.id === 's2-sandbox'))
     // "outlook" and "prices" match the open central-bank records, which answer from free sources and leave no refusal to prove.
     expect(QUESTIONS.decline).not.toMatch(/\b(outlook|prices?|rates?|yields?|bonds?|bank|inflation|forecast)\b/i)
     for (const question of [QUESTIONS.buy, QUESTIONS.decline]) expect(norm(script), question).toContain(norm(question.replace(/\s+/g, ' ')))
@@ -215,7 +216,9 @@ describe('the video stays honest', () => {
       expect(text).not.toMatch(/(?<!Testnet )Permissioned Domain/)
     }
     expect(spec.shots.find(s => s.id === 's2-sandbox').vo).toContain("The key that unlocks the article is the same key that releases the writer's payment.")
-    expect(voice).toContain('Signed submission can expose the key before validation.')
+    expect(voice).not.toContain('Signed submission can expose the key before validation')
+    expect(spec.endCard.limits).toContain('Signed submission can expose the key before validation')
+    expect(spec.shots.at(-1).vo).toContain('The key matches the payment lock.')
   })
   it('starts terminal sessions from an allowlist: no key, token or seed is inherited', () => {
     const before = { ...process.env }
@@ -250,7 +253,7 @@ describe('VID-3 release pins and local recording boundaries', () => {
   it('enables hosted scenes and includes the primary hosted ask in the full cut', () => {
     for (const id of ['hosted-ask', 'hosted-decline', 'ledger']) expect(SCENES.find(s => s.id === id).defer).toBeUndefined()
     expect(spec.shots.find(s => s.id === 's2-sandbox').deferred).toBeUndefined()
-    expect(spec.shots.find(s => s.id === 's2-sandbox').label).toContain('live answers, rule-based buying')
+    expect(spec.shots.find(s => s.id === 's2-sandbox').label).toContain('policy rules decide purchases')
   })
   it('keeps the five-second spending plan at 1× while compressing surrounding waits', () => {
     const shot = spec.shots.find(s => s.id === 's2-sandbox')

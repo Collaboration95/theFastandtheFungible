@@ -24,12 +24,12 @@ const steps = [
   { from: 'Policy', to: 'XRP', text: 'EscrowCreate · locked to sha256(key)' },
   { from: 'Writer', to: 'XRP', text: 'EscrowFinish publishes key · writer paid' },
   { note: 'Policy', text: 'Decrypt · check every signed promise' },
-  { from: 'Writer', to: 'Policy', text: 'Refund if a promise broke · writer-signed', dashed: true },
+  { from: 'Policy', to: 'Writer', text: 'Request refund for a broken promise', dashed: true },
   { from: 'Policy', to: 'XRP', text: 'Anchor the answer · memo = audit head' },
 ]
 const top = 84, gap = 52, bottom = top + gap * steps.length + 8
 const label = (x, y, text, size = 13) => { const w = text.length * size * 0.56 + 12; return `<rect x="${(x - w / 2).toFixed(1)}" y="${y - size - 2}" width="${w.toFixed(1)}" height="${size + 8}" fill="${PAPER}"/><text x="${x}" y="${y}" font-size="${size}" text-anchor="middle">${esc(text)}</text>` }
-const seq = `<svg xmlns="http://www.w3.org/2000/svg" width="840" height="${bottom + 40}" viewBox="0 0 840 ${bottom + 40}" role="img" aria-label="Key-reveal escrow in five steps: policy code locks payment to the hash of the article key; the writer publishes the key on the ledger and is paid; the buyer decrypts and checks every promise; a broken promise is refunded by the writer; the answer is anchored on the ledger">
+const seq = `<svg xmlns="http://www.w3.org/2000/svg" width="840" height="${bottom + 40}" viewBox="0 0 840 ${bottom + 40}" role="img" aria-label="Key-reveal escrow in five steps: policy code locks payment to the hash of the article key; the writer publishes the key on the ledger and is paid; the buyer decrypts and checks every promise; a broken promise can trigger a refund request; the answer is anchored on the ledger">
 <rect width="840" height="${bottom + 40}" fill="${PAPER}"/>
 <defs><marker id="head" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="none" stroke="${INK}"/></marker></defs>
 <g font-family="system-ui,sans-serif" fill="${INK}">
@@ -42,7 +42,7 @@ ${steps.map((s, i) => {
   const a = X[s.from], b = X[s.to], dir = Math.sign(b - a)
   return `${n}<path d="M${a} ${y}L${b - dir * 2} ${y}" stroke="${INK}"${s.dashed ? ' stroke-dasharray="5 4"' : ''} marker-end="url(#head)"/>${label((a + b) / 2, y - 9, s.text)}`
 }).join('\n')}
-<text x="32" y="${bottom + 26}" font-size="12" fill="${MUTED}">XRPL Testnet · no real value · key reveal makes delivery atomic; a refund after the key is out needs the writer's signature</text></g></svg>\n`
+<text x="32" y="${bottom + 26}" font-size="12" fill="${MUTED}">Key reveal binds article access to payment; inspect the create, finish and answer anchor.</text></g></svg>\n`
 
 const outputs = [['docs/media/architecture.svg', svg], ['docs/media/key-reveal.svg', seq]]
 for (const [file, content] of outputs) {

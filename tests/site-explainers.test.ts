@@ -35,8 +35,8 @@ describe('explainer destinations and provenance', () => {
       expect([...doc.querySelectorAll('.ra-hdr-menu a')].map(a => a.textContent), file).toEqual([...nav, 'GitHub'])
       const footer = doc.querySelector('footer.ra-ftr')
       if (/slides|notes|demo/.test(file)) { expect(footer, file).toBeNull(); continue }
-      expect(footer?.querySelector('.ra-ftr-env')?.textContent, file).toBe('XRPL Testnet demo · no real value')
-      expect([...footer!.querySelectorAll('a')].map(a => a.textContent), file).toEqual(['Testnet ledger', 'Archive', 'README', 'Releases'])
+      expect(footer?.querySelector('.ra-ftr-env')?.textContent, file).toBe('XRPL Testnet demo')
+      expect([...footer!.querySelectorAll('a')].map(a => a.textContent), file).toEqual(['Ledger', 'Archive', 'README', 'Releases'])
     }
   })
   it('keeps guide links to local fragments reachable', () => {
@@ -68,7 +68,7 @@ describe('explainer destinations and provenance', () => {
     // One link row in the hero (S10); the AI Tinkerers card carries no keyboard shortcuts (S25).
     expect(home.querySelector('main > p a[href="developers/"]')).toBeNull()
     expect(home.querySelector('main kbd')).toBeNull()
-    expect(home.querySelector('.env-pill')?.textContent).toBe('XRPL Testnet demo · no real value')
+    expect(home.querySelector('.ra-ftr-env')?.textContent).toBe('XRPL Testnet demo')
   })
   it('loads only self-hosted fonts on site pages, including the code font', () => {
     const pages = readdirSync('site', { recursive: true }).map(String).filter(f => f.endsWith('.html') && !f.startsWith('demo/'))

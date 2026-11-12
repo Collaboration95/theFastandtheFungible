@@ -20,7 +20,7 @@ export const milestones = [
     summary: 'The prototype that took us to the finals: one web page, synthetic sources, a language model proposing what to buy, and a person approving every quote.',
     bullets: [
       'A research desk that bought synthetic premium sources within an XRP budget and wrote a cited dossier.',
-      'A language model proposed each purchase and a person approved every quote before payment (manual approval was required in the event build); payment was a fixture by default, with optional Testnet settlement.',
+      'A language model proposed each purchase and a person approved every quote before payment (manual approval was required in the event build); payment was a simulated by default, with optional development-network settlement.',
       { template: 'The frozen prototype held {baseline.files} files and {baseline.codeLines} lines of code (tag hackathon-baseline).' },
     ],
     image: { tag: 'hackathon-baseline', path: 'prototypes/ResearchAgent/assets/research-agent-dossier.png', alt: 'The SingHacks prototype: a verified dossier page with supporting and challenging evidence', caption: 'Prototype dossier, from the hackathon-baseline tag' },
@@ -29,12 +29,12 @@ export const milestones = [
   {
     id: 'first-testnet',
     date: { pr: 101 },
-    title: 'First payment on the XRPL Testnet',
-    summary: 'Writers were paid at their own Testnet wallets, and the run showed the ledger entry.',
+    title: 'First payment on the XRP Ledger',
+    summary: 'Writers were paid at their own development-network wallets, and the run showed the ledger entry.',
     bullets: [
-      'Each writer gets its own Testnet wallet and is paid there directly.',
+      'Each writer gets its own development-network wallet and is paid there directly.',
       'The run shows the ledger transaction instead of a simulated receipt.',
-      'Testnet money has no real value; that label has stayed on every surface since.',
+      'Ledger links and receipts make each recorded payment inspectable.',
     ],
     image: { path: 'site/evolution/img/ui-oct5.jpg', alt: 'The October app: a question box with a budget and suggested questions', caption: 'The app in early October' },
     proofs: [{ label: 'Pull request', pr: 101 }, { label: 'Wallet per writer', pr: 103 }],
@@ -78,26 +78,26 @@ export const releases = {
   'v0.6.0': { image: { path: 'docs/design/ux2/12-uc3-done.jpg', alt: 'A finished answer with the lead finding, one refunded and one verified purchase', caption: 'Finished answer: one kept, one refunded' } },
   'v0.7.0': { snippet: { path: 'docs/evidence/round4-j2/python-verifier.txt', caption: 'Offline verifier output (Python), recorded 7 Nov' } },
   'v0.8.0': { image: { path: 'docs/evidence/settings/connect-an-agent.png', alt: 'Settings page: connect an agent with its own capped allowance', caption: 'Connect an agent with its own allowance (Settings, captured 7 Nov)' }, tx: { path: 'docs/evidence/agents-280.md' } },
-  'v1.0.0-rc.1': { title: 'Fair exchange: the writer is paid by publishing the key', image: { path: 'docs/evidence/u1-ux/after/1440x900/15-testnet-key-reveal-done.jpg', alt: 'A finished Testnet run: escrow created, writer published the key, the hash matches, the article decrypts', caption: 'Key-reveal run on Testnet (captured 7 Nov)' }, tx: { ledger: 'keyReveal' } },
-  'v1.0.0-rc.2': { title: 'Real Testnet without cloning the repo', image: { path: 'docs/evidence/settings/zero-clone-cap-audited.png', alt: 'The zero-clone Testnet app with an audited budget change', caption: 'Zero-clone Testnet app, budget change audited (captured 7 Nov)' } },
+  'v1.0.0-rc.1': { title: 'Fair exchange: the writer is paid by publishing the key', image: { path: 'docs/evidence/u1-ux/after/1440x900/15-testnet-key-reveal-done.jpg', alt: 'A finished development-network run: escrow created, writer published the key, the hash matches, the article decrypts', caption: 'Key-reveal run on development-network (captured 7 Nov)' }, tx: { ledger: 'keyReveal' } },
+  'v1.0.0-rc.2': { title: 'Real development-network without cloning the repo', image: { path: 'docs/evidence/settings/zero-clone-cap-audited.png', alt: 'The zero-clone development-network app with an audited budget change', caption: 'Zero-clone development-network app, budget change audited (captured 7 Nov)' } },
   'v1.0.0': { title: 'One command to a verified purchase', snippet: { path: 'docs/evidence/round4-j2/try-output.txt', lines: [1, 7], tail: 1, caption: 'try --testnet, cold run (docs/evidence/round4-j2)' }, tx: { path: 'docs/evidence/round4-j2/try-output.txt' } },
   'v1.0.1': { title: 'Answers lead with the fact you paid for', image: { path: 'docs/evidence/u1-ux/after/1440x900/06-answer.jpg', alt: 'An answer whose first sentence is the purchased fact, with its citation', caption: 'Answer-first layout (captured 7 Nov)' } },
   'v1.0.2': { title: 'Honest states for anchors and no-purchase runs', image: { path: 'docs/evidence/r5-k/decline-state.png', alt: 'A no-purchase run listing each article considered and why none cleared the value bar', caption: 'A no-purchase run explains each decision (captured 7 Nov, before the v1.0.2 anchor label)' } },
-  'v1.1.0': { title: 'A hosted demo for judges, and receipts that verify from it', image: { path: 'docs/media/readme-answer.png', alt: 'A hosted-demo answer on XRPL Testnet next to its payment card: each article paid by key reveal, every step linked to its transaction', caption: 'Hosted demo, XRPL Testnet, 11 Nov' } },
-  'v1.1.1': { title: 'First-click fixes and hosted receipt verification', snippet: { path: 'docs/submission/evidence/v1.1.1/verify-python.txt', caption: 'Published v1.1.1 Python wheel checking the committed hosted export, read-only Testnet, 11 Nov' } },
+  'v1.1.0': { title: 'A hosted demo for judges, and receipts that verify from it', image: { path: 'docs/media/readme-answer.png', alt: 'A hosted-demo answer on XRP Ledger next to its payment card: each article paid by key reveal, every step linked to its transaction', caption: 'Hosted demo, XRP Ledger, 11 Nov' } },
+  'v1.1.1': { title: 'First-click fixes and hosted receipt verification', snippet: { path: 'docs/submission/evidence/v1.1.1/verify-python.txt', caption: 'Published v1.1.1 Python wheel checking the committed hosted export, read-only development-network, 11 Nov' } },
 }
 
 // Then → now. `prs` resolve to the merge date and the first release tag containing them.
 export const capabilities = [
   { name: 'Who decides to buy', then: 'A language model proposed; a person approved every quote', now: 'Policy code buys within the budget you set, after one plan confirmation; a decision model only scores', prs: [], tag: 'known-good-2026-10-08', evidence: 'docs/FINAL-PUSH.md' },
-  { name: 'Payment', then: 'A fixture by default; Testnet optional', now: 'Each writer paid at its own Testnet wallet, one charge per intent', prs: [101, 103] },
+  { name: 'Payment', then: 'A simulated by default; development-network optional', now: 'Each writer paid at its own development-network wallet, one charge per intent', prs: [101, 103] },
   { name: 'Agents', then: 'One web page', now: 'An MCP server for Claude Code and Codex, plus TypeScript and Python SDKs', prs: [266, 333] },
   { name: 'Refunds', then: 'None', now: 'Quality refunds need the writer’s signature (cooperative); no-show refunds use automatic EscrowCancel after the deadline', prs: [308] },
   { name: 'Mac app', then: 'None', now: 'An installable Mac app with keys in the Keychain (unsigned)', prs: [303] },
   { name: 'Proof', then: 'Citations checked inside the app', now: 'An offline verifier anyone can run: citations, receipts and ledger checks', prs: [322] },
-  { name: 'Writers', then: 'Synthetic sources only', now: 'Anyone can publish a folder of notes as a paid Testnet writer', prs: [300, 389] },
+  { name: 'Writers', then: 'Synthetic sources only', now: 'Anyone can publish a folder of notes as a paid development-network writer', prs: [300, 389] },
   { name: 'Fair exchange', then: 'Pay first, then read', now: 'Key-reveal escrow: the writer is paid only by publishing the key', prs: [369] },
-  { name: 'Stablecoin path', then: 'XRP only', now: 'Token escrow in TEST-SGD, our Testnet stand-in for RLUSD', prs: [381, 384] },
+  { name: 'Stablecoin path', then: 'XRP only', now: 'Token escrow in TEST-SGD, our development-network stand-in for RLUSD', prs: [381, 384] },
   { name: 'Audit trail', then: 'None', now: 'Validated answer anchors are recorded on the ledger, even when nothing is bought; pending or unavailable anchors are labelled', prs: [366, 403] },
   { name: 'First try', then: 'Clone, install, add a model key', now: 'One npx command ends in RESULT PASS with six ledger links', prs: [387] },
 ]
@@ -114,10 +114,10 @@ export const misses = [
 ]
 
 export const next = [
-  { status: 'Done', title: 'Hosted sandbox for judges, 13–19 Nov', body: 'A public web version on Testnet, live since 11 Nov, so nothing needs installing.' },
+  { status: 'Done', title: 'Hosted sandbox for judges, 13–19 Nov', body: 'A public web version on development-network, live since 11 Nov, so nothing needs installing.' },
   { status: 'Next', id: 'v5', title: 'Blind held-out v5', body: null },
   { status: 'Next', title: 'Publish to npm, PyPI and the MCP Registry', body: 'Packages are built and tested from a clean install on GitHub Releases; registry publishing comes next.' },
-  { status: 'Not claimed', title: 'Mainnet', body: 'Everything here runs on the XRPL Testnet with no real value. The gaps are listed in the builder feedback.' },
+  { status: 'Not claimed', title: 'Mainnet', body: 'See the README Status and limits for deployment readiness.' },
   { status: 'Not claimed', id: 'writers', title: 'Independent writers', body: null },
   { status: 'Not claimed', title: 'A signed Mac app', body: 'The DMG is unsigned and not notarised.' },
 ]

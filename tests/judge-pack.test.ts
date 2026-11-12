@@ -137,33 +137,30 @@ describe('judge pack: one true story', () => {
     expect(hits).toEqual([])
   })
 
-  it('states the current Testnet identity and token scope, and recorded RLUSD verdicts', () => {
-    for (const file of ['README.md', 'docs/submission/qa-prep.md', 'docs/submission/compliance-slide.md', 'docs/submission/deck/index.html']) {
+  it('keeps identity, token scope and recorded refusals in the limits homes', () => {
+    for (const file of ['README.md', 'docs/submission/qa-prep.md', 'docs/submission/deck/index.html']) {
       const text = read(file)
-      expect(text, file).toMatch(/accepted.*(?:Testnet|XRPL Testnet)|accepted XRPL Testnet/)
-      expect(text, file).toMatch(/Testnet Permissioned Domain/)
-      expect(text, file).not.toMatch(/No Permissioned Domains|none in the live sandbox|sandbox's team writers are unverified/)
+      expect(text, file).toMatch(/accepted operator-issued/)
+      expect(text, file).toMatch(/(?:operator-issued|Testnet)\s+Permissioned\s+Domain/)
+      expect(text, file).toContain('tecNO_PERMISSION')
+      expect(text, file).not.toMatch(/No Permissioned Domains|predicted refusal|one issuer flag away/)
     }
-    for (const file of ['README.md', 'docs/submission/short-description.md', 'docs/submission/qa-prep.md', 'docs/submission/deck/index.html']) {
-      expect(read(file), file).toMatch(/live (?:sandbox|demo) pays in Testnet XRP/)
-      expect(read(file), file).toContain('tecNO_PERMISSION')
-      expect(read(file), file).not.toMatch(/predicted refusal|one issuer flag away/)
-    }
-    expect(read('docs/submission/qa-prep.md')).toMatch(/Testnet and Mainnet both have TokenEscrow enabled/)
+    expect(read('docs/submission/qa-prep.md')).toContain('Testnet and Mainnet both have TokenEscrow enabled')
   })
 
-  it('makes the initial market a hypothesis and discloses the absence of traction', () => {
-    for (const file of ['docs/submission/qa-prep.md', 'docs/submission/deck/index.html', 'docs/submission/short-description.md']) {
+  it('names the first buyer and places unvalidated demand in the limits homes', () => {
+    for (const file of ['README.md', 'docs/submission/qa-prep.md', 'docs/submission/deck/index.html']) {
       const text = read(file).replace(/\s+/g, ' ')
-      expect(text, file).toMatch(/initial.market hypothesis/i)
       expect(text, file).toContain('XRPL/x402 integrators')
-      expect(text, file).toMatch(/coding agents/)
+      expect(text, file).toContain('coding agents')
       expect(text, file).toMatch(/No independent writers, customers, pilots or revenue/i)
-      expect(text, file).toContain('product-writer-paid.json')
+      expect(text, file).toMatch(/not yet validated/)
     }
+    expect(read('docs/submission/deck/index.html')).toContain('Who buys first')
+    expect(read('docs/submission/short-description.md')).not.toMatch(/No independent writers|No real value|not validated/)
   })
 
-  it('uses one hosted run for the useful-answer card and leaves absent model cost unmeasured', () => {
+  it('preserves the historical paid-answer evidence and keeps its telemetry gap in Q&A', () => {
     const source = JSON.parse(read('docs/submission/evidence/hosted-answer-nov12/summary.json'))
     const receipts = JSON.parse(read('docs/submission/evidence/hosted-answer-nov12/receipts.json'))
     expect(source.runId).toBe(receipts.runId)
@@ -186,16 +183,13 @@ describe('judge pack: one true story', () => {
     expect(receipts.answers.at(-1).openGaps).toEqual([])
     expect(source.evidence).toHaveLength(4)
     expect(source.evidence[2].text).toMatch(/validated transaction releases the payment/)
-    for (const file of ['README.md', 'docs/submission/deck/index.html']) {
-      expect(read(file), file).toContain(source.transactions.finish)
-      expect(read(file), file).toContain('65.8')
-      expect(read(file), file).toContain('unmeasured')
-      expect(read(file), file).toMatch(/initial.*fixture/)
-    }
+    expect(read('docs/submission/qa-prep.md')).toMatch(/65\.8 s/)
+    expect(read('docs/submission/qa-prep.md')).toContain('unmeasured')
+    for (const file of ['README.md', 'docs/submission/deck/index.html']) expect(read(file), file).toContain('live_model_usd')
   })
 
   it('says who pays which part of the fee: the buyer locks (12), the writer reveals (423), rippled needs 360', () => {
-    for (const file of ['README.md', 'docs/numbers.md', 'docs/submission/qa-prep.md', 'docs/submission/short-description.md', 'docs/submission/pitch-2min.md', 'docs/submission/deck/index.html']) {
+    for (const file of ['docs/numbers.md', 'docs/submission/qa-prep.md']) {
       expect(read(file), file).toMatch(/paid by the buyer|from the buyer/)
       expect(read(file), file).toMatch(/by the writer|from the writer|paid by the writer/)
     }
@@ -213,19 +207,16 @@ describe('judge pack: one true story', () => {
     for (const file of publicFiles) expect(read(file), file).not.toMatch(/\bone team-authored writer\b|\bA team-authored writer is\b/i)
   })
 
-  it('states the held-out scope everywhere it quotes the v5 numbers: fixture models, answers written offline, Testnet', () => {
-    const scope = /fixture research and decision models/
-    for (const file of ['README.md', 'docs/submission/short-description.md', 'docs/submission/qa-prep.md', 'docs/submission/pitch-2min.md']) {
-      expect(read(file), file).toMatch(scope)
+  it('labels the held-out measurement where it is quoted, without requiring repeats', () => {
+    for (const file of ['README.md', 'docs/submission/short-description.md', 'docs/submission/qa-prep.md', 'docs/submission/pitch-2min.md', 'docs/submission/deck/index.html']) {
+      const text = read(file)
+      if (/16\/20|heldout_line/.test(text)) expect(text, file).toMatch(/fixture research and decision models with answers written offline/)
     }
-    expect(read('docs/submission/qa-prep.md')).toMatch(/answers written offline/)
-    // The held-out claim links the packet it comes from (v5), and the Q&A cites the commit v5 actually ran on.
-    for (const file of ['docs/submission/pitch-2min.md', 'docs/submission/qa-prep.md', 'docs/submission/short-description.md']) {
-      expect(read(file), file).toContain('evidence/v5-heldout/README.md')
-    }
+    const qa = read('docs/submission/qa-prep.md')
+    expect(qa).toContain('evidence/v5-heldout/README.md')
     const ran = read('docs/evidence/v5-heldout/README.md').match(/on `main` at `([0-9a-f]{40})`/)?.[1]
     expect(ran).toBeTruthy()
-    expect(read('docs/submission/qa-prep.md')).toContain(`\`${ran!.slice(0, 8)}\``)
+    expect(qa).toContain(`\`${ran!.slice(0, 8)}\``)
   })
 
   it('describes the purchase rule and the sandbox honestly on the hand-written site pages', () => {
@@ -235,9 +226,10 @@ describe('judge pack: one true story', () => {
     // The October replay keeps its own labels; the page footer no longer calls today's writers all synthetic.
     expect(talk).toContain('October replay: writers and articles SYNTHETIC')
     const home = read('site/index.html')
-    expect(home).toContain('Shared XRPL Testnet demo · live answers, rule-based buying · no real value')
-    expect(home).toContain('Replay · XRPL Testnet, recorded 11 Nov 2026 · fictional writers · no real value')
-    expect(home).toContain('The recorded replay uses fixture models and fictional writers.')
+    expect(home).toContain('XRPL Testnet demo')
+    expect(home).toContain('recorded run (fixture models, fictional writers)')
+    expect(home).toContain('Two team-authored writers')
+    expect(home).not.toContain('no real value')
   })
 
   it('has a release-note title for the latest CHANGELOG release, so /progress/ builds the day it is published', () => {

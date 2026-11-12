@@ -1,84 +1,55 @@
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="design/brand/lockup-on-dark.svg">
-    <img src="design/brand/lockup.svg" alt="ResearchAgent" height="48">
-  </picture>
-</p>
+ResearchAgent is a search engine for agent-readable expertise, with a wallet. **The Fast and the Fungible** is our team and repository name.
 
+<p align="center"><img src="design/brand/lockup.svg" alt="ResearchAgent" height="48"></p>
 <h3 align="center">Paid on delivery. Proven on the ledger.</h3>
 
-<p align="center">
-  ResearchAgent is research with a wallet. Policy buys articles within your budget over x402
-  on XRPL Testnet. Writers collect by publishing article keys; your browser checks the escrow lock.
-</p>
+Ask a question and set a budget. ResearchAgent searches free sources, then policy
+rules decide purchases that could fill the gaps. The key that unlocks the article
+is the same key that releases the writer’s payment. Your browser checks the match.
+
+**XRPL Testnet demo · 13–19 Nov 2026.**
+
+[**Try it in your browser →**](https://collaboration95.github.io/theFastandtheFungible/try/) ·
+[Check a recorded run without asking a question](https://ra-front-651013803640.asia-southeast1.run.app) ·
+[Watch a recorded run](https://collaboration95.github.io/theFastandtheFungible/demo/)
 
 <p align="center">
-  <a href="https://ra-front-651013803640.asia-southeast1.run.app"><b>Check a recorded run — no question used →</b></a>
-  &nbsp;·&nbsp;
-  <a href="https://collaboration95.github.io/theFastandtheFungible/demo/">Watch a recorded run</a>
-  &nbsp;·&nbsp;
-  <a href="https://collaboration95.github.io/theFastandtheFungible/progress/">Progress since SingHacks</a>
+<a href="https://github.com/Collaboration95/theFastandtheFungible/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/Collaboration95/theFastandtheFungible?style=flat-square&label=release&color=24211E"></a>
+<a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-24211E?style=flat-square"></a>
+<a href="docs/key-reveal-escrow.md"><img alt="Key-reveal escrow" src="https://img.shields.io/badge/delivery-key%20reveal-2F6B4F?style=flat-square"></a>
 </p>
 
-<p align="center">
-  <a href="https://github.com/Collaboration95/theFastandtheFungible/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/Collaboration95/theFastandtheFungible?style=flat-square&label=release&color=24211E"></a>
-  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-24211E?style=flat-square"></a>
-  <a href="docs/x402-xrpl.md"><img alt="XRPL Testnet" src="https://img.shields.io/badge/XRPL-Testnet-24211E?style=flat-square"></a>
-</p>
+<p align="center"><img src="docs/media/readme-answer.png" width="900" alt="A cited answer beside its payment card: payment locked, key revealed, key matches, article unlocked."></p>
+<p align="center"><sub>Recorded hosted answer, 11 Nov 2026 · <a href="docs/evidence/hosted-export-nov11/README.md">receipts and ledger links</a></sub></p>
 
-**One hosted run: the browser check shows all five gates held.**
-Verify without asking a question in the judges’ corner. **Check the key yourself**
-recomputes `sha256(key) = lock`; a match proves reveal, not quality or identity.
+## Live demo numbers
 
-Shared Testnet demo: **13–19 Nov 2026**, no real value. Or run locally (Node ≥ 22.13):
+**Hosted XRPL Testnet demo since 11 Nov, team test runs included, as of <!--f:live_asof-->12 Nov 2026, 12:24 SGT<!--/f-->.**
 
-```sh
-REL=https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1
-npx -y $REL/researchagent-mcp-1.1.1.tgz try --testnet
-```
-
-<p align="center">
-  <img src="docs/media/readme-answer.png" width="900" alt="The hosted demo after an XRPL Testnet run. Question: what HTTP headers does x402 use on XRPL, and how does the server know the payment actually settled? The lead finding: an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. The payment card shows a net cost of S$0.80 of a S$2.00 budget for two articles, each paid by key reveal: payment locked in escrow, writer released the key, key matches the escrow lock, article unlocked. The answer is anchored on XRPL Testnet.">
-</p>
-<p align="center"><sub>Historical screenshot: 11 Nov 2026 hosted build, before #510 · XRPL Testnet · live answers, rule-based buying · team-authored writers · no real value · <a href="docs/evidence/hosted-export-nov11/README.md">its five transactions and receipts</a></sub></p>
-
-## One paid answer · hosted Testnet
-
-**“How does the writer get paid, and what stops the agent from reading the article and then refusing to pay?”**
-
-| Evidence and result | HOSTED-12, 12 Nov 2026 |
+| Measurement | Recorded result |
 |---|---|
-| Free draft | No citable answer; <!--f:paid_before-->2<!--/f--> recorded open gaps. |
-| Missing fact | What binds key publication to payment? |
-| Bought passage | [Team-authored passage p3](data/corpus/v2/articles/team-xrpl-explainers/product-writer-paid.json): historical validated-finish explanation. Signed submission can expose the key earlier; escrow stays claimable until CancelAfter. |
-| Final answer | The writer publishes the key to collect escrow payment; <!--f:paid_after-->0<!--/f--> recorded open gaps. Run record, not independent scoring. |
-| Same-run cost and time | <!--f:paid_articles-->1<!--/f--> article, <!--f:paid_passages-->4<!--/f--> passages; S$<!--f:paid_spend-->0.40<!--/f--> = <!--f:paid_principal-->40,000<!--/f--> Testnet drops (fixed demo rate, not FX); no refunds. <!--f:paid_seconds-->65.8<!--/f--> s Start→Done, excluding planning and the five-second confirmation modal. Buyer create <!--f:paid_create-->12<!--/f--> drops; writer finish <!--f:paid_finish-->423<!--/f-->; buyer anchor another <!--f:paid_anchor-->12<!--/f-->. Model cost: **<!--f:paid_model_cost-->unmeasured<!--/f-->** (usage not retained). |
+| Questions | <!--f:live_questions-->62<!--/f--> |
+| Settled purchases | <!--f:live_purchases-->74<!--/f--> |
+| Median / p90 answer time | <!--f:live_median_s-->22.316<!--/f--> s / <!--f:live_p90_s-->61.061<!--/f--> s (<!--f:live_timing_n-->49<!--/f--> timed runs) |
+| Median model cost per question | US$<!--f:live_model_usd-->0.0020035<!--/f--> |
+| Recorded gate violations | <!--f:live_violations-->0<!--/f--> across <!--f:live_audits-->50<!--/f--> audited runs; <!--f:live_audit_unavailable-->12<!--/f--> audits unavailable |
 
-One hosted run on 12 Nov, DEPLOY-3 · live DeepSeek plan/final answer, rule-based buying ·
-initial draft fixture · keyword fallback · team-authored writer · XRPL Testnet XRP, no real value.
-No general quality claim. [Evidence and receipts](docs/submission/evidence/hosted-answer-nov12/README.md) ·
-[lock](https://testnet.xrpl.org/transactions/CB872E5FEF205F8E31BB522A57EF5CFCC7F815DE4770F29A9856EA1F724E04A6) ·
-[key/payment](https://testnet.xrpl.org/transactions/EF66F5C9FD1DE68E8167189CF4FAF5DB94ABD3FA561C65F9D4DACA8828177930) ·
-[anchor](https://testnet.xrpl.org/transactions/EC4ABD3FBCAFC035E71D5BA74C01529D9AA52D45D9A228896A24BD8C44187EF6).
-
-## What it does
-
-- **Ask with a budget** via browser, MCP, SDKs or Mac app.
-- **Free sources first.** Signed promises and trust inform selection. Only policy buys:
-  one article per round, up to three rounds.
-- **Check delivery and payment receipts.** Answers cite delivered passages. Broken
-  promises can receive writer-signed refunds; writers could refuse. No-show recovery
-  requires validated EscrowCancel after the deadline. Completed Testnet answers can be
-  anchored; claim anchoring only after validation.
+[Snapshot and definitions](docs/submission/evidence/hosted-stats-nov12/README.md) ·
+[Live scoreboard](https://ra-front-651013803640.asia-southeast1.run.app/api/demo/stats).
+Model cost is separate from article prices and ledger fees.
 
 ## How it works
 
-![Key-reveal escrow: policy locks payment; writer publishes the key to collect; buyer checks signed promises and cites delivered passages](docs/media/key-reveal.svg)
+![Policy locks payment; writer publishes the article key to collect; buyer verifies and cites the delivered passages](docs/media/key-reveal.svg)
 
-The article's key is the only thing that opens the writer's escrow. The app shows the article only after that escrow finish validates on the ledger, and once the key is public anyone (the writer first) can still claim the payment before the deadline.
+1. **Ask with a budget.** Confirm the plan in a five-second action sheet.
+2. **Search free sources first.** Writers return abstracts and signed promises.
+3. **Buy missing evidence.** Only policy code pays, at most one article per round for three rounds.
+4. **Check the key and cite.** The app grants access after the escrow finish validates;
+   the browser hashes the published key against the escrow lock.
 
-Key reveal proves delivery, not quality. [Mechanism and refund limits](docs/key-reveal-escrow.md) ·
-[architecture](docs/capabilities.md#how-a-run-works).
+Two team-authored writers, Build notes and XRPL explainers, provide paid practitioner
+notes; Open Records supplies free records. [Publish your notes](docs/publishing.md).
 
 ### Hard guarantees
 
@@ -94,107 +65,68 @@ Every gate has regression tests and a [read-only audit rule](scripts/gate-audit.
 
 ## Use it from your agent
 
-Give Claude Code a Testnet research wallet. The model cannot raise environment caps:
+Give Claude Code the same research tools. The calling model cannot raise environment caps:
 
 ```sh
 claude mcp add researchagent -e MCP_MAX_BUDGET_MINOR=200 -e MCP_DAILY_CAP_MINOR=500 -- npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz --testnet
 ```
 
-Or call it from code:
+Or run the complete purchase-and-verification path (Node ≥ 22.13):
+
+```sh
+REL=https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1
+npx -y $REL/researchagent-mcp-1.1.1.tgz try --testnet
+```
 
 ```sh
 npm i https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-sdk-1.1.1.tgz
 pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-1.1.1-py3-none-any.whl
 ```
 
-- **Agent hires agent.** Add `--hire`: Testnet service fee and writer royalties · [how](docs/hire.md).
-- **Writers.** Publish Markdown notes on Testnet · [publishing](docs/publishing.md).
-- [Install guide](docs/install.md): Codex, Claude Desktop, TEST-SGD, web and Mac apps.
+[Install guide: TypeScript, Python, web and Mac](docs/install.md) ·
+[Agent hires agent, with writer royalties](docs/hire.md).
 
 ## Verify it yourself
 
-[Open the judges’ corner](https://ra-front-651013803640.asia-southeast1.run.app) →
-**Check our work · recorded run and ledger** → **Run the checks**. Read pass/skip groups
-separately. The page, receipt file and public node must be reachable.
+Open **Home → Verify → Run the checks**. The featured 12 Nov run shows all five
+gates Held: browser/TS **<!--f:featured_browser-->24<!--/f--> passed, 0 failed, 2 not checked**;
+Python **<!--f:featured_wheel-->25<!--/f--> passed, 0 failed, 2 skipped**.
+The run bought one S$0.40 article in <!--f:featured_seconds-->31.1<!--/f--> s Start→Done,
+excluding planning and the modal; its initial draft used fixture extracts and keyword search.
+[Its receipts and ledger checks](docs/evidence/hosted-export-nov12/README.md).
 
-<details>
-<summary>Featured run: one hosted run, 12 Nov · all five gates Held</summary>
+Export any run’s receipts to check them outside the app. Separately written
+TypeScript and Python verifiers agree on <!--f:vectors-->224<!--/f--> conformance cases.
+[Receipt format](docs/receipt-spec.md) · [Public ledger page](https://collaboration95.github.io/theFastandtheFungible/ledger/).
 
-**One hosted run, 12 Nov:** 09:07:38.656–09:08:09.738 SGT; **<!--f:featured_seconds-->31.1<!--/f--> s, S$0.40,
-1 article, no refund; five gates Held** (grant 1953 < reads 1954–1957).
-Browser/TS **<!--f:featured_browser-->24<!--/f--> passed / 0 failed / 2 not checked/skipped**; wheel **<!--f:featured_wheel-->25<!--/f-->/0/2**; Testnet **6/6**.
-[Receipts, labels and timing scope](docs/evidence/hosted-export-nov12/README.md) ·
-[lock](https://testnet.xrpl.org/transactions/F4A608E20BE054B77F4FF2D4B1ED3EBC3EF54FC7D0A144CE56975163C6E7D795) ·
-[key/payment](https://testnet.xrpl.org/transactions/01A6A7E07652216B102DFD1FED13462539D43475DFFBBA5A3C6E0FB12F643F1D) ·
-[anchor](https://testnet.xrpl.org/transactions/E71B20085CBF1DE65153462931D5BAD7F40D23AA54A372D70DF547AFD2722ECA).
+## Progress and builder feedback
 
-</details>
-
-<details>
-<summary>Six Testnet transactions from one recorded run, and how to re-check them</summary>
-
-| Step | Transaction on XRPL Testnet |
-|---|---|
-| Escrow created for AlphaLeak (fictional writer) | [319923F5…2AA3EB](https://testnet.xrpl.org/transactions/319923F5F4863F3E1505424E6FC8F20B365E7A926F1086197CB68DF6842AA3EB) |
-| Key published; the article then broke its promise | [57BA72D4…EC4B2B8C](https://testnet.xrpl.org/transactions/57BA72D45D4A6B39097B678E06CF9F8FF38F426879791138461425CEEC4B2B8C) |
-| Refund, signed by the writer | [BB71016D…16B2DA82](https://testnet.xrpl.org/transactions/BB71016D63ACF759E8C5B4B99E118C17DDD1E7C01F3770327C5C316864B2DA82) |
-| Escrow created for The Fab Floor (fictional writer) | [7FC899B5…6CA94C60](https://testnet.xrpl.org/transactions/7FC899B54AC439BB7FC3DC7BF9A57837FB06BAECF998D92F86841DA61CA94C60) |
-| Key published · sha256(K) = Condition ✓ | [8A8A3A8E…A947E366](https://testnet.xrpl.org/transactions/8A8A3A8E1770BE5FD5FD5192DF1C37E84854320373D91BDBB4D806E5A947E366) |
-| Answer anchored (memo = audit head) | [7501BAD9…F37A4BE1](https://testnet.xrpl.org/transactions/7501BAD9994552932D7F52AA96A53313163207C86438C9C01D33B069F37A4BE1) |
-
-Re-check the whole run with Python and no Node (read-only lookups on s.altnet), after the
-`pip install` above:
-
-```sh
-curl -LO https://raw.githubusercontent.com/Collaboration95/theFastandtheFungible/v1.1.1/docs/evidence/lane-b3/UC3.receipts.json
-researchagent verify UC3.receipts.json --ledger
-```
-
-It ends with `RESULT PASS`. Also check exported `receipts.json` from the [live demo](https://ra-front-651013803640.asia-southeast1.run.app) (use v1.1.0 or later;
-v1.0.2 cannot recompute the newer answer commitment). Without Python:
-`npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz verify receipts.json --ledger`. The [ledger page](https://collaboration95.github.io/theFastandtheFungible/ledger/)
-re-validates all <!--f:transactions-->61<!--/f--> recorded Testnet transactions from your browser.
-Independent TypeScript and Python verifiers agree on <!--f:vectors-->224<!--/f-->
-shared conformance cases ([receipt format](docs/receipt-spec.md)).
-
-</details>
-
-## Numbers
-
-| What we measured | Result | Scope and date |
-|---|---|---|
-| Blind held-out judge questions (<!--f:heldout_bank-->v5<!--/f-->) | <!--f:heldout-->16/20<!--/f--> bought and cited; <!--f:offtopic-->0/10<!--/f--> off-topic purchases; <!--f:heldout_violations-->0<!--/f--> gate violations | run once on <!--f:heldout_on-->11 Nov<!--/f--> on XRPL Testnet; fixture research and decision models, answers written offline (the hosted demo writes live with DeepSeek); team-authored writers |
-| One line to a verified purchase | <!--f:try_s-->84.2<!--/f--> s cold; <!--f:try_misses-->2 of 4<!--/f--> cold runs overran 90 s | one Mac, empty npm cache, 7 Nov |
-| Network fees per key-reveal purchase | <!--f:fee_drops-->435<!--/f--> drops: <!--f:fee_create-->12<!--/f--> paid by the buyer to lock, <!--f:fee_finish-->423<!--/f--> by the writer to reveal | XRPL Testnet, measured as we sign |
-| Progress since SingHacks | <!--f:prs-->305<!--/f--> PRs merged since <!--f:since-->21 Sep<!--/f-->; <!--f:releases-->15<!--/f--> releases | counted at <!--f:sha-->e37be882<!--/f--> on <!--f:as_of-->12 Nov 2026<!--/f--> |
-
-[Numbers and limitations](docs/numbers.md) · [Progress and retained misses](https://collaboration95.github.io/theFastandtheFungible/progress/).
-
-## Builder feedback
-
+<!--f:prs-->308<!--/f--> pull requests merged since <!--f:since-->21 Sep<!--/f-->;
+<!--f:releases-->15<!--/f--> releases, counted at <!--f:sha-->c50199e5<!--/f--> on
+<!--f:as_of-->12 Nov 2026<!--/f-->.
 <!--f:feedback_line-->7 ranked findings with runnable repros · 35 numbered findings (B01–B35) · 15 submissions on 4–5 Sep · 8 upstream drafts, 0 filed<!--/f-->.
-Top finding: [unsigned rippled probes](docs/evidence/dry-run-nov12/README.md) returned
-`tecNO_PERMISSION` for RLUSD escrow on Testnet and Mainnet; TEST-SGD control `tesSUCCESS`
-on Testnet. Nothing signed or submitted.
-[Read it in 90 seconds](docs/BUILDER-FEEDBACK.md) · [mainnet checklist](docs/BUILDER-FEEDBACK.md#mainnet-readiness-checklist).
+
+[Progress since SingHacks](https://collaboration95.github.io/theFastandtheFungible/progress/) ·
+[Reproducible builder feedback](docs/BUILDER-FEEDBACK.md).
 
 ## Status and limits
 
-- **XRPL Testnet only, no real value.** Mainnet signing is disabled. [Readiness gaps](docs/BUILDER-FEEDBACK.md#mainnet-readiness-checklist).
-- **Writers.** Two team-authored writers, Build notes and XRPL explainers, supply paid notes; Open Records supplies free records. All three hold accepted XRPL Testnet Credentials from our operator; one Testnet Permissioned Domain lists accepted issuers. Identity only, not KYC or quality. Fictional writers stay unverified; hosted badges require configuration. **No independent writers, customers,
-  pilots or revenue yet.** Outside writers will be labelled **real person · Testnet · no real value**. ([Identity evidence](docs/evidence/writer-credentials-nov12/README.md)).
-- **New writers get one labelled probe:** one matching article, up to S$0.30 within budget (*probe purchase · new writer*).
-- **TEST-SGD stands in for RLUSD** in token escrow (CLI and evidence; the live demo pays in Testnet XRP); official RLUSD payments work on Testnet.
-- **Live demo.** Live answers, rule-based buying; fixture fallbacks labelled. One shared payer, visitor caps, owner controls off.
-- **Packages** are on GitHub Releases, not yet on npm, PyPI or the MCP Registry. The Mac app is an
-  unsigned DMG.
-- `theFastandtheFungible` is the team and repository name; the product is **ResearchAgent**.
+- **Environment and assets.** This is a development network; mainnet signing is disabled.
+  The live demo pays in XRP. The CLI’s TEST-SGD is an unbacked stand-in for RLUSD.
+  Recorded unsigned RLUSD escrow probes returned `tecNO_PERMISSION` on both networks;
+  the matched TEST-SGD control succeeded. [Recorded verdicts](docs/evidence/dry-run-nov12/README.md).
+- **Market.** No independent writers, customers, pilots or revenue yet. Demand among
+  XRPL/x402 integrators using coding agents is not yet validated.
+- **Delivery and refunds.** Signed submission can expose the key before validation;
+  escrow stays claimable until CancelAfter. A key match proves reveal, not quality.
+  Quality refunds need the writer’s signature and cooperation; a real writer could refuse.
+  No-show recovery requires a validated EscrowCancel after the deadline.
+- **Identity.** Three accepted operator-issued Credentials and an operator-issued
+  Permissioned Domain support identity display only, not KYC, quality or payment permission.
+- **Operations.** One shared payer, visitor caps, explicitly labelled per-run model
+  fallbacks. Cold installs depend on npm and faucet latency; [timings and misses](docs/submission/qa-prep.md).
+  Packages are on GitHub Releases; registry publication and Mac signing remain pending.
+  A regulated launch also needs custody, screening, KYB and licensing work.
 
-[Docs](docs/README.md) · [Install](docs/install.md) · [Capabilities](docs/capabilities.md) ·
-[Numbers](docs/numbers.md) · [Engineering](docs/engineering.md) ·
-[Progress](https://collaboration95.github.io/theFastandtheFungible/progress/) ·
-[Deck (PDF)](docs/submission/ResearchAgent-SFF-deck.pdf) ·
-[Explainers](https://collaboration95.github.io/theFastandtheFungible/) ·
-[Changelog](CHANGELOG.md) · [Contributing](.github/CONTRIBUTING.md) · [Security](.github/SECURITY.md) ·
-[MIT license](LICENSE)
-<!-- Video slot: once the demo video is uploaded, add a "Video" link after "Progress" in the line above (see VIDEO_URL in docs/submission/README.md). -->
+[Docs](docs/README.md) · [Numbers](docs/numbers.md) · [Deck (PDF)](docs/submission/ResearchAgent-SFF-deck.pdf) ·
+[Q&A](docs/submission/qa-prep.md) · [Contributing](.github/CONTRIBUTING.md) · [Security](.github/SECURITY.md) · [MIT license](LICENSE)
