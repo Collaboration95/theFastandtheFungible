@@ -42,7 +42,9 @@ it('anonymous SDK ask uses web quotas, identity, receipts and pause checks; reje
     const call = async (c:Client,name:string,args:Record<string,unknown>={}) => {
       const r=await c.callTool({name,arguments:args});expect(r.isError,JSON.stringify(r)).not.toBe(true);return JSON.parse((r.content as {text:string}[])[0].text)
     }
-    expect((await call(client,'search_expertise',{query:'x402 pricing'})).hits.length).toBeGreaterThan(0)
+    const metadata = await call(client,'search_expertise',{query:'x402 pricing'})
+    expect(metadata.hits.length).toBeGreaterThan(0)
+    expect(metadata.hits.some((hit: {writerProvenance:{synthetic:boolean}}) => hit.writerProvenance.synthetic === true)).toBe(true)
     const offline = vi.spyOn(PublisherClient.prototype,'searchPublisher').mockRejectedValueOnce(new Error('writer unavailable'))
     try { expect((await call(client,'search_expertise',{query:'x402 pricing'})).unavailable).toBe(true) } finally { offline.mockRestore() }
     const args = {question:USE_CASES.UC2.question,budget_sgd:2,idempotency_key:'reach-once'}
