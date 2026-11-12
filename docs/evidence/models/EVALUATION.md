@@ -1,6 +1,8 @@
 # Real-profile paired evaluation
 
-Status: pending the merged real content profile. Do not run the fictional default profile.
+Status: **pending real profile**. Runner-only delivery after the three-hour cutoff, 2026-11-12T13:08:31.610228+00:00. Main `f8dd17815e6c002ff7b614390f0246c1fe8bb4fd` still lacked the real-profile switch when checked at 2026-11-12T13:08:33.372159+00:00.
+
+No new model calls were made in this continuation. No paired bank was frozen and no 200 × two-arm result was produced. Cumulative retained exposure remains US$0.671020182 (US$0.594377682 reported plus US$0.076642500 unsettled holds). The protocol below is prepared for a follow-up after the real profile is merged.
 
 Both arms use `CORPUS_PROFILE=real FREE_TIER=public-docs EMBEDDING_PROVIDER=local DECISION_PROVIDER=fixture`, live DeepSeek Flash planning/writing and explicitly simulated settlement. Free-only budget is S$0; paid budget is S$2. No ledger writes or XRPL transactions are made. The content writer may read public Mainnet/Testnet ledgers through a strict command allowlist; those reads are not Testnet settlement evidence.
 
