@@ -1,0 +1,49 @@
+From 929b1e66b2c9fc7035bdd43dca4d4805dd51b291 Mon Sep 17 00:00:00 2001
+From: ResearchAgent contributors <contributors@example.invalid>
+Date: Thu, 12 Nov 2026 19:55:28 +0800
+Subject: [PATCH] docs: explain uncommitted ALLORNOTHING inner transaction
+ hashes
+
+---
+ docs/concepts/transactions/batch-transactions.md     | 4 +++-
+ docs/references/protocol/transactions/types/batch.md | 2 +-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/docs/concepts/transactions/batch-transactions.md b/docs/concepts/transactions/batch-transactions.md
+index 58b7e3b..6f93658 100644
+--- a/docs/concepts/transactions/batch-transactions.md
++++ b/docs/concepts/transactions/batch-transactions.md
+@@ -72,6 +72,8 @@ Each inner transaction contains the metadata for its own processing. Only the in
+ 
+ There is also a pointer back to the outer transaction (`ParentBatchID`).
+ 
++For `ALLORNOTHING`, if any inner transaction fails, none of the inner transactions are committed. Their hashes can return `txnNotFound` from `tx`; there is no committed inner metadata containing the failure code. The outer `tesSUCCESS` confirms only outer sequence and fee processing. Before treating missing inner hashes as a rollback, verify that the server has the complete validated ledger containing the outer transaction. Check all expected inner hashes in that ledger; a missing response from an unavailable server or one with incomplete history is not proof of rollback. Do not report purchase success or blindly submit a new payment based on the outer result alone.
++
+ 
+ ## Security for XRPL Batch Transactions
+ 
+@@ -111,7 +113,7 @@ Inner transactions cannot be broadcast (and won't be accepted if they happen to
+ 
+ - Since the outer transaction returns `tesSUCCESS` even when inner transactions fail (see [Metadata](#metadata)), you must check each inner transaction's metadata and result codes to determine its actual outcome.
+ - If inner transactions are validated, they are included in the same ledger as the outer transaction. If an inner transaction appears in a different ledger, it is likely a fraud attempt.
+-- Systems that don't specifically handle `Batch` transactions should be able to support them without any changes, since each inner transaction is a valid transaction on its own. All inner transactions that have a `tes` (success) or `tec` result code are accessible via standard transaction-fetching mechanisms such as [`tx`](/docs/references/http-websocket-apis/public-api-methods/transaction-methods/tx.md) and [`account_tx`](/docs/references/http-websocket-apis/public-api-methods/account-methods/account_tx.md).
++- Systems that don't specifically handle `Batch` transactions should be able to support them without any changes, since each inner transaction is a valid transaction on its own. All **committed** inner transactions that have a `tes` (success) or `tec` result code are accessible via standard transaction-fetching mechanisms such as [`tx`](/docs/references/http-websocket-apis/public-api-methods/transaction-methods/tx.md) and [`account_tx`](/docs/references/http-websocket-apis/public-api-methods/account-methods/account_tx.md).
+ - In a multi-account `Batch` transaction, the batch signers sign the outer transaction's account, sequence, and batch mode flags, as well as each inner transaction hash; changing any of these afterward invalidates the signatures. The fee is the only part of the outer transaction that is _not_ signed, so the submitter can set it without coordinating with the other parties.
+ 
+ The following sections cover additional recommendations for specific types of integrations.
+diff --git a/docs/references/protocol/transactions/types/batch.md b/docs/references/protocol/transactions/types/batch.md
+index acb8080..d8fb366 100644
+--- a/docs/references/protocol/transactions/types/batch.md
++++ b/docs/references/protocol/transactions/types/batch.md
+@@ -139,7 +139,7 @@ Each inner transaction:
+ - Must include either a `TicketSequence` or `Sequence` value greater than zero.
+ 
+ {% admonition type="warning" name="Caution" %}
+-A `Batch` transaction returns `tesSUCCESS` on the outer transaction even if some or all _inner_ transactions fail. To confirm that inner transactions succeeded, look up each transaction by its hash and check its own result and metadata. See [Metadata](../../../../concepts/transactions/batch-transactions.md#metadata) and [Check Batch transaction result](../../../../tutorials/best-practices/transaction-sending/send-a-single-account-batch-transaction.md#6-check-batch-transaction-result) to learn more.
++A `Batch` transaction returns `tesSUCCESS` on the outer transaction even if some or all _inner_ transactions fail. To confirm that inner transactions succeeded, look up each transaction by its hash and check its own result and metadata. With `tfAllOrNothing`, rolled-back inner transactions are not committed: their hashes can return `txnNotFound`, with no published inner failure code. Establish complete coverage of the outer transaction's validated ledger before interpreting missing inner hashes as a rollback. See [Metadata](../../../../concepts/transactions/batch-transactions.md#metadata) and [Check Batch transaction result](../../../../tutorials/best-practices/transaction-sending/send-a-single-account-batch-transaction.md#6-check-batch-transaction-result) to learn more.
+ {% /admonition %}
+ 
+ ### BatchSigners
+-- 
+2.54.0
+

@@ -1,0 +1,27 @@
+From 8e4276dfee05abad23797f131db3b22a800577f0 Mon Sep 17 00:00:00 2001
+From: ResearchAgent contributors <contributors@example.invalid>
+Date: Thu, 12 Nov 2026 19:55:28 +0800
+Subject: [PATCH] docs: distinguish endpoint history from transaction failure
+
+---
+ docs/tutorials/public-servers.md | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/docs/tutorials/public-servers.md b/docs/tutorials/public-servers.md
+index 0802b7f..b690f42 100644
+--- a/docs/tutorials/public-servers.md
++++ b/docs/tutorials/public-servers.md
+@@ -27,6 +27,10 @@ If you don't [run your own `xrpld` server](../infrastructure/installation/index.
+ 
+ ## Test Networks
+ 
++Public endpoints can retain different ledger ranges. A `txnNotFound` response from one server does not prove that a transaction never validated. Check the server's `complete_ledgers` range using `server_info`, or the `searched_all` response when using a bounded `tx` lookup. Clio also reports its available range in `complete_ledgers`. If the server does not cover the requested ledger, try a server with that history; retain the validated ledger index with every receipt.
++
++Browser HTTP JSON-RPC also requires the endpoint to allow the page's origin through CORS. The table notes advertised CORS support; absence of a note is not a guarantee either way. Check the actual response headers for your origin. HTTP CORS does not describe WebSocket availability. Endpoint policy and retained history can change, so re-check both before relying on a public server for receipt verification.
++
+ | Operator  | [Network][] | JSON-RPC URL | WebSocket URL | Notes                |
+ |:----------|:------------|:-------------|:--------------|:---------------------|
+ | Ripple[¹][]   | Testnet     | `https://s.altnet.rippletest.net:51234/` | `wss://s.altnet.rippletest.net:51233/` | Testnet public server |
+-- 
+2.54.0
+
