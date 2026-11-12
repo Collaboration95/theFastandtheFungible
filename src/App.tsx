@@ -511,7 +511,7 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
         <MobileSpend run={shown} onRetry={id => void retry(id)} onReceipt={setReceipt} />
         <RunActivity run={shown} actualTerminal={!!run && isTerminal(run)} onStop={() => void stopRun()} stopping={stopping} onShowWork={() => setWork(true)} />
         {hosted && <HostedRunNotice hosted={hosted} run={shown} stopping={stopping} onCancel={() => void stopRun()} />}
-        <Suspense fallback={<p role="status">Loading payment steps…</p>}><PaymentStepper run={shown} /></Suspense>
+        {shown.intents.some(intent => intent.escrow?.mode === 'key-reveal') && <Suspense fallback={<p role="status">Loading payment steps…</p>}><PaymentStepper run={shown} /></Suspense>}
         {/* Replace the draft reading surface when the activity timeline closes. */}
         <Fragment key={`${shown.runId}:${finished ? 'final' : 'draft'}`}>
         {model.phase === 'recovering' && <Notice>Payment verified. Resume the answer to finish recovery. <button className="ra-link" onClick={() => { const paid = shown.intents.find(i => i.status === 'VERIFIED' && (!shown.checkpoint?.intentId || i.intentId === shown.checkpoint.intentId)); if (paid) void retry(paid.intentId) }}>Resume answer</button></Notice>}

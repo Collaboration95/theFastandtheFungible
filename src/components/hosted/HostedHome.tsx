@@ -22,7 +22,7 @@ export function HostedIntro({ hosted, state }: { hosted: Hosted; state: HomeStat
   const testnet = /testnet/i.test(hosted.status.labels.rail) && !/simulat/i.test(hosted.status.labels.rail)
   return <>
     <h1 className="ra-hero ra-hhero">Research with a wallet.</h1>
-    <p className="ra-hpromise">{testnet ? 'Paid on delivery. Proven on the ledger.' : 'Simulated payments. Receipts you can check.'}</p>
+    <p className="ra-hpromise">{testnet ? 'Paid on delivery. Proven on the ledger.' : 'Receipts you can check.'}</p>
     <p className="ra-home-description ra-hlede">Free sources first. Pay writers for missing evidence, within your budget.</p>
     <ol className="ra-hsteps" aria-label="How it works">
       <li>{icons.ask}<span><b>Ask with a budget</b><small>Up to {minorText(questionCap(hosted.status))} per question</small></span></li>

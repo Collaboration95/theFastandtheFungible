@@ -21,7 +21,7 @@ it('keeps the promise visible and provenance on writer badges, with a truthful s
   expect(screen.getByText('Paid on delivery. Proven on the ledger.')).toBeTruthy()
   expect(screen.queryByText(/Rule-based buying · team-authored/)).toBeNull()
   view.rerender(<HostedIntro hosted={{ status: { ...hosted.status, labels: { ...hosted.status.labels, rail: 'Simulated payments' } } }} state="ready" />)
-  expect(screen.getByText('Simulated payments. Receipts you can check.')).toBeTruthy()
+  expect(screen.getByText('Receipts you can check.')).toBeTruthy()
   expect(screen.queryByText('Paid on delivery. Proven on the ledger.')).toBeNull()
 })
 it('does not open successful promise checks when the proof arrives, but opens failures', async () => {

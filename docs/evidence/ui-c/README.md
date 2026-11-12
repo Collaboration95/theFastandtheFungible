@@ -23,7 +23,7 @@ The main run column now shows one payment stepper per key-reveal purchase. Pendi
 
 ## Verification
 
-- `npm run build` with Node 22.23.4: initial JS is **159,110 B gzip**, below 162,000 B (and the existing 160,000 B target).
+- `npm run build` with Node 22.23.4: initial JS is **159,104 B gzip**, below 162,000 B (and the existing 160,000 B target).
 - `npx vitest run tests/payment-stepper.test.tsx tests/ui-c-markers.test.tsx src/components/KeyRevealLifecycle.test.tsx`: all stepper states, snapshot updates, delayed delivery, multiple purchases, simulated-link suppression, replay event boundaries, one shared checker and existing key-check outcomes.
 - `npx playwright test --config tests/playwright/ui-c.config.ts`: desktop/phone states, exact transaction URLs, one Home marker, targets, axe and bundle budget.
 - `npm run build:demo` then `npx playwright test --config tests/playwright/ui-c-replay.config.ts`: actual recorded UC3 replay, two steppers, create/finish links and unchanged #512 provenance labels. Build only; no publication.
