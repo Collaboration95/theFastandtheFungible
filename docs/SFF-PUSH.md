@@ -10,6 +10,8 @@ something significant: a feature, a metric move, a finished deliverable. Don't
 add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
+- 13 Nov: Hosted startup validates holdback promotion and shared/delegated wallet overrides before using them; unknown names and invalid limits remain rejected.
+
 - 13 Nov: Hosted health advertises the configured real corpus, answer ratings and embedding provider so hosted presets and paid-answer feedback follow the active capabilities.
 
 - 12 Nov: Opt-in accepted-credential payment policy and independent publisher buyer guard; pinned OFAC XRP address screen, audited zero-charge refusals, and two validated Testnet regular-key rotations. Evidence: `docs/evidence/publish/PUBLISH.md`.

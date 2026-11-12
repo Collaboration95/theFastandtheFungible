@@ -1573,3 +1573,10 @@ Chromium creates the visitor key, obtains faucet XRP, binds public proof through
 - **Workaround:** rerun the unchanged corpus checks first, then the complete fast check with the existing `RA_TEST_WORKERS=1` configuration to reduce concurrent work. The full local gate still uses its standard worker plan. No timeout, assertion, corpus fixture or leak threshold is changed, and no failure is treated as admission.
 - **Suggested fix:** coordinate total worker budgets across the two shared heavy-gate slots and retain timing diagnostics for corpus mutation checks.
 - **Severity / mainnet impact:** low local verification reliability friction; no ledger submission or Mainnet operation.
+
+## 2026-11-13 — hosted holdback promotion rejected by startup allowlist (observed)
+
+- Evidence: DEPLOY-10 rollout of `9161e4b5`; source `docker/hosted/startup.sh` rejected ESCROW_HOLDBACK, HOLDBACK_PERCENT and HOLDBACK_CANCEL_AFTER_S after stopping the previous containers. No hosted questions or model spend. Private logs are represented by names-only configuration and suppressed startup failure evidence in the lane findings.
+- Workaround: restore DEPLOY-9's immutable images and prior runtime overrides, run paused smoke and qualified resume, then gate the startup allowlist correction before promotion. Keep own-wallet mode disabled through the existing shared default; WALLET_MODE=off is not a valid application enum.
+- Suggested fix: validate every promoted flag against the actual startup override loop and its enum/range constraints before rollout.
+- Severity: high for hosted availability. Mainnet impact: deployment reliability only; no mainnet write or fund loss observed.
