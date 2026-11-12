@@ -25,7 +25,10 @@ import { XrplPayer, FEE_CAP_DROPS, type DryRun } from './xrpl.js'
 import type { EscrowOperation } from './escrow-state.js'
 
 export function escrowSelected(store: Store, runId: string, c: PublicCandidate, optIn?: boolean): boolean {
-  if (loadConfig().ESCROW_MODE === 'key-reveal') return true
+  const config = loadConfig()
+  // Opted-in signed ledger snapshots use exact x402 payments. Their publisher deliberately offers no escrow.
+  if (config.LEDGER_ANALYTICS === '1' && c.profileId === 'ledger-analytics' && c.manifest?.ledgerFreshness) return false
+  if (config.ESCROW_MODE === 'key-reveal') return true
   const opted = optIn ?? (store.getRun(runId).checkpoint.escrow as boolean | undefined ?? (process.env.ESCROW_WRITERS ?? '').split(',').includes(c.profileId))
   const rep = c.wallet ? store.getReputation(c.wallet) : undefined
   return opted && (!rep || rep.passes === 0 || rep.T < 0.8)

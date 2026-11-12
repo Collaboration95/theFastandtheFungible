@@ -1492,3 +1492,10 @@ persistence or a mainnet deployment. No cloud resource or live ledger call ran.
 - **Severity:** medium packaging friction. **Mainnet impact:** none observed; this failed before engine startup, with no transaction or real funds.
 
 - 12 Nov 2026 · observed local tooling: pinned XRPL docs acquisition exceeded the 128 MiB child-process stdout buffer (`gh ENOBUFS`, 134,266,880 bytes), before any model call or cloud mutation. Evidence: DEPLOY-9 `corpus-build.log`, source `9bd8c80a`. Workaround/fix: stream authenticated gh output directly to a private archive file, then extract. Suggested upstream tooling practice: stream large pinned archive downloads rather than buffer them. Severity P2; no mainnet payment impact.
+
+## 12 November 2026: signed analytics reports conflict with global key-reveal selection (observed integration)
+
+- **Evidence:** DEPLOY-9 local preset 2 found the prewarmed RLUSD report but skipped all three policy-selected attempts: `Writer escrow unavailable; no paid fallback`. The writer intentionally offers exact x402 payments, while the buyer selected escrow for every writer under key-reveal mode. Two gates correctly remained Not checked; hosted was untouched.
+- **Fix:** opted-in ledger-analytics candidates with signed freshness metadata use their existing exact-payment path. Team notes retain key-reveal escrow and unsupported writers still fail closed. Existing budget, idempotency, delivery and freshness checks remain intact.
+- **Verification:** the existing ledger purchase suite with key-reveal mode reproduces four failures, then passes unchanged assertions after the fix; the zero-budget cases still skip. Full local qualification and gate follow before promotion.
+- **Severity / mainnet impact:** medium opt-in integration blocker; no Mainnet write or real-money payment.
