@@ -10,6 +10,7 @@ something significant: a feature, a metric move, a finished deliverable. Don't
 add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
+- 12 Nov: UI-B labels every recorded answer with fixture/fictional provenance and its own payment rail, aligns title/header dates to the run timestamp, reserves separate 44 px phone targets, and closes the drawer after New question/history navigation; 8 replay tests and zero serious/critical axe issues at 1280/390. [Evidence](evidence/ui-b/README.md).
 - 12 Nov: SB-FIX separates empty stopped runs from missing answer/payment anchors in the sandbox scoreboard and gives its anonymous stats route one 60-second public cache policy through both proxies; sessions and other API routes retain no-store.
 - 12 Nov: G1-TEL records one hash-only paid-read event per released passage after its verified grant in the anchored audit chain; fresh receipt exports show gate 1 Held, both published v1.1.1 verifiers pass, and historical exports stay unchanged. [Evidence](evidence/g1-tel/README.md).
 - 12 Nov: P5 adds five computed gate rows inside Spend’s collapsed run checks, with audit sequence references and verbatim labels; historical exports honestly leave paid-read order unchecked. Hosted/UC3 tamper isolation, lazy loading, 1280/390 px layout and axe checks pass. [Evidence](evidence/p5-gates/README.md).

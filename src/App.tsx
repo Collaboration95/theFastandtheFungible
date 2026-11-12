@@ -228,6 +228,7 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
   }
   const newQuestion = useCallback(() => {
     const url = new URL(window.location.href); url.searchParams.delete('run'); url.searchParams.delete('settings'); url.searchParams.delete('onboarding'); window.history.replaceState(null, '', url)
+    if (matchMedia('(max-width: 780px)').matches) setNavOpen(false)
     setTab('run'); setDraft(''); setReceipt(undefined); setScreen('home'); setPassage(undefined); setWork(false); setThread([]); setPending(undefined)
   }, [])
   const openSettings = () => {
@@ -458,7 +459,7 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
   // The active run's row follows the paced replay, so the sidebar never shows a purchase before the stage does.
   const listed = shown ? past.map(item => item.runId === shown.runId ? { ...item, phase: model.phase === 'recovering' ? 'READ_PAID' : finished ? shown.phase : 'SEARCH', stopped: finished && shown.stopped, spentMinor: shown.spentMinor } : item) : past
   const nav = <Sidebar onView={view => { switchView(view); setNavOpen(false) }} runs={listed} activeId={screen === 'run' ? runId : undefined} settingsOn={screen === 'settings'} onSettings={demo ? undefined : screen === 'settings' ? closeSettings : openSettings} onClose={() => setNavOpen(false)} hosted={demo ? { onClear: clearHistory } : undefined} busy={screen === 'run' && !!shown && !finished} open={navOpen} width={navWidth} onResize={width => { setNavWidth(width); prefs.set(navWidthKey, String(width)) }} onNew={newQuestion}
-    onOpenRun={id => void openRun(id)} onPin={(id, pinned) => void pinRun(id, pinned).then(setPast).catch(() => setError('Could not update the pin.'))} onDelete={id => void deletePast(id)} />
+    onOpenRun={id => { if (matchMedia('(max-width: 780px)').matches) setNavOpen(false); void openRun(id) }} onPin={(id, pinned) => void pinRun(id, pinned).then(setPast).catch(() => setError('Could not update the pin.'))} onDelete={id => void deletePast(id)} />
   // A run's toast seen from another screen (Home, or another run) gets a way back to that run.
   // A toast about the run in view repeats the screen, so it waits until you leave it.
   const wayBack = toasts.filter(toast => !(toast.runId && screen === 'run' && toast.runId === runId)).map(toast => toast.runId && !(screen === 'run' && toast.runId === runId) ? { ...toast, actions: [...(toast.actions ?? []), { label: 'Back to answer', primary: true, onClick: () => { dismiss(toast.id); void openRun(toast.runId!) } }] } : toast)
@@ -525,6 +526,7 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
         {shown.intents.filter(i => i.status === 'REFUNDED').map(i => <Notice key={i.intentId}>{candidateOf(shown, i)?.publisher ?? 'The writer'}’s article didn’t contain what it promised, so it was refunded and not used.</Notice>)}
         {banner}
         {!compare && <Sources run={shown} onOpen={candidate => setPassage({ candidate })} />}
+        {browserDemo && <p className="ra-replay-provenance ra-note">Recorded run · fixture answers · fictional writers and content · {shown.labels.settlement.includes('TESTNET') ? 'XRPL Testnet, no real value' : 'simulated payments, no real value'}</p>}
         <Answer run={shown} view={view} onView={setView} compare={compare} onCompare={() => { setView('latest'); setCompare(!compare) }}
           onCitation={citation => { const candidate = candidateOf(shown, citation); if (candidate) setPassage({ candidate, citation }) }}
           report={finished ? <ReportButton run={shown} onReport={downloadReport} onCompare={() => { setView('latest'); setCompare(true) }} /> : undefined} />
