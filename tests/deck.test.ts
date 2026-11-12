@@ -5,6 +5,7 @@
 import { describe, expect, it } from 'vitest'
 import { existsSync, readFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 // @ts-expect-error plain ESM script without types
 import { build, fill, markedFiles } from '../scripts/facts.mjs'
 
@@ -99,7 +100,14 @@ describe('finals deck', () => {
     for (const img of doc.querySelectorAll('img')) expect(existsSync(`docs/submission/deck/${img.getAttribute('src')}`), img.getAttribute('src')!).toBe(true)
     const shots = JSON.parse(readFileSync('docs/submission/deck/assets/shots.json', 'utf8'))
     expect(shots.label).toMatch(/XRPL Testnet.*no real value/)
-    expect(shots.deviceScaleFactor).toBe(2)
+    expect(shots.deviceScaleFactor).toBe(1)
+    expect(shots.deployedSha).toMatch(/^[a-f0-9]{40}$/)
+    for (const shot of shots.shots) {
+      const bytes = readFileSync(`docs/submission/deck/assets/${shot.file}`)
+      expect(createHash('sha256').update(bytes).digest('hex')).toBe(shot.sha256)
+      expect(bytes.readUInt32BE(16)).toBe(shot.viewport.width)
+      expect(bytes.readUInt32BE(20)).toBe(shot.viewport.height)
+    }
     const pdf = readFileSync('docs/submission/ResearchAgent-SFF-deck.pdf', 'latin1')
     expect(pdf.match(/\/Type\s*\/Page(?!s)/g)?.length).toBe(slides.length)
   })
