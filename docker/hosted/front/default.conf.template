@@ -9,7 +9,7 @@ server {
   server_tokens off;
   access_log off;
   error_log /dev/stderr crit;
-  client_max_body_size 16k;
+  client_max_body_size 32k;
   add_header Cache-Control no-store always;
   # Static text/JSON only here; the API compresses SSE with a flush per frame.
   gzip on;
@@ -22,6 +22,8 @@ server {
   proxy_pass_request_headers off;
   proxy_set_header Host $http_host;
   proxy_set_header Cookie $http_cookie;
+  proxy_set_header X-Publishing-Key $http_x_publishing_key;
+  proxy_set_header X-Operator-Token $http_x_operator_token;
   proxy_set_header Content-Type $http_content_type;
   proxy_set_header Accept $http_accept;
   proxy_set_header Accept-Encoding $http_accept_encoding;
@@ -65,6 +67,11 @@ server {
     proxy_pass http://${VM_UPSTREAM};
   }
   # Anonymous aggregate numbers have one public policy; session/API routes retain no-store.
+  location ~ ^/api/feed(?:/recorded)?$ {
+    proxy_hide_header Cache-Control;
+    add_header Cache-Control $upstream_http_cache_control always;
+    proxy_pass http://${VM_UPSTREAM};
+  }
   location = /api/demo/stats {
     proxy_hide_header Cache-Control;
     add_header Cache-Control "public, max-age=60" always;

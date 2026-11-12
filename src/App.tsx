@@ -419,7 +419,7 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
     { id: 'cmd-new', label: 'New question', hint: `${modifier}N`, run: focusAsk },
     { id: 'cmd-run', label: 'Run', hint: `${modifier}1`, run: () => switchView('run') },
     { id: 'cmd-writers', label: 'Writers', hint: `${modifier}2`, run: () => switchView('writers') },
-    ...exampleQuestions(browserDemo ? undefined : shown?.labels.settlement ?? health.labels?.settlement).map(preset => ({ id: `cmd-${preset.id}`, label: preset.text, group: 'Examples', run: () => { newQuestion(); setDraft(preset.text); requestAnimationFrame(() => document.querySelector<HTMLTextAreaElement>('.ra-qbox')?.focus()) } })),
+    ...exampleQuestions(browserDemo ? undefined : shown?.labels.settlement ?? health.labels?.settlement, health.realCorpus).map(preset => ({ id: `cmd-${preset.id}`, label: preset.text, group: 'Examples', run: () => { newQuestion(); setDraft(preset.text); requestAnimationFrame(() => document.querySelector<HTMLTextAreaElement>('.ra-qbox')?.focus()) } })),
     { id: 'cmd-budget', label: 'Set budget', run: () => { newQuestion(); requestAnimationFrame(() => document.querySelector<HTMLButtonElement>('.ra-budget-chip')?.click()) } },
     ...(shown ? [{ id: 'cmd-work', label: 'Show work', hint: 'W', run: () => { switchView('run'); setWork(true) } }] : []),
     ...past.slice(0, 3).map(item => ({ id: `cmd-recent-${item.runId}`, label: item.question, group: 'Recent runs', run: () => { setTab('run'); void openRun(item.runId) } })),
@@ -501,7 +501,7 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
       {hosted && state
         ? <Ask onAsk={sendAsk} busy={!canAsk(state) || sending || !!pending || !!waiting || (!!shown && !finished)} above={waiting ? <HostedWaiting hosted={hosted} onCancel={() => setWaiting(undefined)} /> : pendingCard} settlement={settlement} draft={draft} onDraft={setDraft} picked={Math.min(picked, Math.floor(questionCap(hosted.status) / 5) * 5)} onPick={setPicked}
             intro={<HostedIntro hosted={hosted} state={state} />} closed={!canAsk(state)} budgetMax={Math.floor(questionCap(hosted.status) / 5) * 5} composerNote={canAsk(state) ? <HostedComposerNote hosted={hosted} state={state} /> : undefined}
-            placeholder={settlement.startsWith('XRPL') ? 'Ask about XRPL payments, escrow, x402 or agent wallets…' : undefined} examplesLabel="Questions that answer well today" />
+            placeholder={settlement.startsWith('XRPL') ? 'Ask about XRPL payments, escrow, x402 or agent wallets…' : undefined} realCorpus={health.realCorpus} examplesLabel="Questions that answer well today" />
         : <Ask onAsk={sendAsk} busy={healthError || sending || !!pending || (!!shown && !finished)} above={pendingCard} settlement={settlement} universalMinor={!browserDemo && universal ? universalMinor : undefined} onSettings={openSettings} draft={draft} onDraft={setDraft} picked={picked} onPick={setPicked}
             />}
     </main>

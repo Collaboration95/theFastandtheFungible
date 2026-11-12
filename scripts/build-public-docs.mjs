@@ -1,7 +1,7 @@
 // Read-only, pinned GitHub acquisition. Archives and extraction stay outside the checkout.
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { readFileSync, writeFileSync, readdirSync, mkdirSync } from 'node:fs'
+import { readFileSync, writeFileSync, readdirSync, mkdirSync, openSync, closeSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 export const sources = [
@@ -77,8 +77,10 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     const root = process.env.PUBLIC_DOCS_ARCHIVES_DIR || temp
     if (!process.env.PUBLIC_DOCS_ARCHIVES_DIR) for (const s of sources) {
       const archive = join(temp, s.slug + '.tgz')
-      const bytes = execFileSync('gh', ['api', `repos/${s.repo}/tarball/${s.sha}`], {maxBuffer:128*1024*1024})
-      writeFileSync(archive, bytes); execFileSync('tar',['-xzf',archive,'-C',temp])
+      const fd = openSync(archive, 'w', 0o600)
+      try { execFileSync('gh', ['api', `repos/${s.repo}/tarball/${s.sha}`], {stdio:['ignore',fd,'pipe']}) }
+      finally { closeSync(fd) }
+      execFileSync('tar',['-xzf',archive,'-C',temp])
     }
     console.log(JSON.stringify(build(root, 'data/corpus/public-docs').sources.map(({slug,sha,licence,passageCount,articleCount}) => ({slug,sha,licence,passageCount,articleCount}))))
   } finally { await scope.close() }

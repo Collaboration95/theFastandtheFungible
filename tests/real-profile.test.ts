@@ -45,3 +45,13 @@ it('shows public-documentation and team-authored provenance on the writer badge'
   expect(renderToStaticMarkup(createElement(EnvFacts,{realCorpus:true}))).not.toContain('fictional')
   expect(renderToStaticMarkup(createElement(EnvFacts,{}))).toContain('fictional')
 })
+
+it('real profile presets select public documentation, ledger analytics and the retained escrow note',async()=>{
+ const {exampleQuestions,TESTNET_QUESTIONS,REAL_TESTNET_QUESTIONS}=await import('../shared/contracts/examples.js')
+ const {XRPL_LABEL}=await import('../shared/contracts/publisher.js')
+ expect(exampleQuestions(XRPL_LABEL)).toEqual(TESTNET_QUESTIONS)
+ expect(exampleQuestions(XRPL_LABEL,true)).toEqual(REAL_TESTNET_QUESTIONS)
+ expect(REAL_TESTNET_QUESTIONS[0].text).toContain('account_info')
+ expect(REAL_TESTNET_QUESTIONS[1].text).toContain('holder concentration')
+ expect(REAL_TESTNET_QUESTIONS[2].text).toBe(TESTNET_QUESTIONS[1].text)
+})

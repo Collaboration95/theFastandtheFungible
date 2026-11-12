@@ -114,7 +114,7 @@ if(!channel && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email||'
 // key too. A free-only writer's key only signs; it receives no payment and needs no funding (H6).
 const writerNames=readdirSync('data/writers').filter(f=>f.endsWith('.json')).map(f=>JSON.parse(readFileSync(join('data/writers',f))).publisher).map(w=>'XRPL_PUBLISHER_'+w.slug.toUpperCase().replaceAll('-','_')+'_SEED')
 // Writer seeds come from both data/writers and the environment; each secret is uploaded and mapped once.
-const mappings = [...new Set([...writerNames,'DEEPSEEK_API_KEY','OPENAI_API_KEY','PUBLISHER_SECRET','HOSTED_IP_HMAC_KEY',...Object.keys(process.env).filter(n=>/^XRPL_(PAYER|PUBLISHER_[A-Z0-9_]+)_(SEED|ADDRESS)$/.test(n))])]
+const mappings = [...new Set([...writerNames,...(process.env.OPERATOR_TOKEN ? ['OPERATOR_TOKEN'] : []),'DEEPSEEK_API_KEY','OPENAI_API_KEY','PUBLISHER_SECRET','HOSTED_IP_HMAC_KEY',...Object.keys(process.env).filter(n=>/^XRPL_(PAYER|PUBLISHER_[A-Z0-9_]+)_(SEED|ADDRESS)$/.test(n))])]
 if (!mappings.includes('XRPL_PAYER_SEED')) mappings.push('XRPL_PAYER_SEED')
 const secretMap = mappings.map(name=>[name,`ra-${name.toLowerCase().replaceAll('_','-')}-${sha.slice(0,12)}`])
 if(!dry) {
@@ -209,15 +209,17 @@ try {
     // /app unreadable to the image's UID 1000 (EACCES on start.mjs in cloud attempt 6).
     execFileSync('tar',['-xpf',join(scratch,'.source.tar'),'-C',scratch])
     rmSync(join(scratch,'.source.tar'))
+    execFileSync(process.execPath,['scripts/build-public-docs.mjs'],{cwd:scratch,stdio:'inherit'})
     gc(['auth','configure-docker',`${region}-docker.pkg.dev`,'--quiet'])
   }
   const digests = {}
   for (const target of ['api','publisher','web','front']) {
+    const buildTarget = process.env.EMBEDDING_PROVIDER === 'local' && ['api','publisher'].includes(target) ? target+'-models' : target
     const dockerfile = target === 'front' ? 'docker/hosted/front/Dockerfile' : 'docker/hosted/Dockerfile'
     const image = `${registry}/${target}:${sha}`
     if (dry) {
       console.log(`git archive --format=tar -o ${q(scratch+'/.source.tar')} ${sha} && tar -xpf ${q(scratch+'/.source.tar')} -C ${q(scratch)}`)
-      console.log(['docker','build','--platform=linux/amd64','-f',`${scratch}/${dockerfile}`,...(target==='front'?[]:['--target',target]),'-t',image,scratch].map(q).join(' '))
+      console.log(['docker','build','--platform=linux/amd64','-f',`${scratch}/${dockerfile}`,...(target==='front'?[]:['--target',buildTarget]),'-t',image,scratch].map(q).join(' '))
       console.log(`docker push ${q(image)}`)
       show(['artifacts','docker','images','describe',image,...p,'--format=value(image_summary.digest)'])
       digests[target]=`${registry}/${target}@sha256:RESOLVED_${target.toUpperCase()}_DIGEST`
@@ -225,7 +227,7 @@ try {
       let digest
       try { digest=execFileSync('gcloud',['artifacts','docker','images','describe',image,...p,'--format=value(image_summary.digest)'],{encoding:'utf8',stdio:['ignore','pipe','pipe']}).trim() } catch(e) { if (!MISSING.test(String(e.stderr))) throw Error('Image inventory failed') }
       if (!digest) {
-        execFileSync('docker',['build','--platform=linux/amd64','-f',`${scratch}/${dockerfile}`,...(target==='front'?[]:['--target',target]),'--label',`org.opencontainers.image.revision=${sha}`,'-t',image,scratch],{stdio:['ignore','pipe','pipe'],maxBuffer:256*1024*1024})
+        execFileSync('docker',['build','--platform=linux/amd64','-f',`${scratch}/${dockerfile}`,...(target==='front'?[]:['--target',buildTarget]),'--label',`org.opencontainers.image.revision=${sha}`,'-t',image,scratch],{stdio:['ignore','pipe','pipe'],maxBuffer:256*1024*1024})
         execFileSync('docker',['push',image],{stdio:['ignore','pipe','pipe'],maxBuffer:64*1024*1024})
         digest=gc(['artifacts','docker','images','describe',image,...p,'--format=value(image_summary.digest)'])
       }

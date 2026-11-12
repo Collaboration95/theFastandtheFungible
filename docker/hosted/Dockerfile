@@ -1,12 +1,12 @@
 # syntax=docker/dockerfile:1.7
-FROM node:24.21.0-alpine3.24@sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1 AS build
+FROM node:22.23.4-alpine@sha256:0e1754758c2df4cfa3e68d59e2e1b7374bb7fd9ea6328eaaacf15cc934af8202 AS build
 WORKDIR /src
 COPY package.json package-lock.json ./
 RUN npm ci --ignore-scripts --no-audit --no-fund
 COPY . .
 RUN npx vite build && node docker/bundle.mjs out
 
-FROM node:24.21.0-alpine3.24@sha256:ebfe2f90462722a7a4de65e91990e97fe0d401c70e0e762c5b53302f905ec1c1 AS runtime
+FROM node:22.23.4-alpine@sha256:0e1754758c2df4cfa3e68d59e2e1b7374bb7fd9ea6328eaaacf15cc934af8202 AS runtime
 RUN apk add --no-cache tini
 WORKDIR /app
 COPY --from=build /src/out/ dist/
@@ -40,16 +40,16 @@ HEALTHCHECK --interval=10s --timeout=3s CMD wget -qO /dev/null http://127.0.0.1:
 
 # Opt-in CPU model images. glibc is required by onnxruntime-node; existing Alpine
 # targets remain unchanged. Build --target api-models / publisher-models.
-FROM node:22.23.4-bookworm-slim AS build-models
+FROM node:22.23.4-bookworm-slim@sha256:5ec23b7c622b00547753bc6ffd78085dd868a68aeb41c8e0a1418f033e13d96d AS build-models
 WORKDIR /src
 COPY package.json package-lock.json ./
 RUN npm ci --ignore-scripts --no-audit --no-fund
 COPY . .
 RUN node --import tsx scripts/bake-embedding-model.mjs \
- && EMBEDDING_PROVIDER=local node --import tsx scripts/build-embeddings.mjs \
+ && CORPUS_PROFILE=real FREE_TIER=public-docs EMBEDDING_PROVIDER=local node --import tsx scripts/build-embeddings.mjs \
  && node docker/bundle.mjs out \
  && node scripts/prepare-embedding-runtime.mjs
-FROM node:22.23.4-bookworm-slim AS runtime-models
+FROM node:22.23.4-bookworm-slim@sha256:5ec23b7c622b00547753bc6ffd78085dd868a68aeb41c8e0a1418f033e13d96d AS runtime-models
 WORKDIR /app
 COPY --from=build-models /src/out/ dist/
 COPY --from=build-models /src/model-runtime node_modules/

@@ -192,3 +192,24 @@ describe('hosted front video link (J5)',()=>{
   for (const bad of ['http://youtu.be/abc','https://youtu.be/a,b=c','https://youtu.be/a"b','https://youtu.be/$host','https://youtu.be/a;b',"https://youtu.be/a'b",'https://user:pw@youtu.be/x','not a url']) expect(plan({HOSTED_VIDEO_URL:bad}).status,bad).not.toBe(0)
  })
 })
+
+it('selects CPU model targets and private operator mapping only when opted in',()=>{
+ const dir=resources().tempDir('ra-deploy9-models-')
+ const output=run('docker/hosted/ops.mjs',['deploy','--dry-run','--project','ra-ho-test','--billing-account','000000-000000-000000','--manifest',join(dir,'manifest.json'),'--notification-channel','projects/ops/notificationChannels/123'],{EMBEDDING_PROVIDER:'local',OPERATOR_TOKEN:'sentinel-private-operator'})
+ expect(output).toContain("'--target' 'api-models'")
+ expect(output).toContain("'--target' 'publisher-models'")
+ expect(output).toContain('ra-operator-token-')
+ expect(output).not.toContain('sentinel-private-operator')
+})
+
+it('retains promotion overrides in the actual startup loop and rejects unknown names',()=>{
+ const dir=resources().tempDir('ra-deploy9-flags-')
+ const flags='FREE_TIER=public-docs\nCORPUS_PROFILE=real\nLEDGER_ANALYTICS=1\nEMBEDDING_PROVIDER=local\nXRPL_STREAM_WAITS=1\nSETTLEMENT_TIMING=1\nPUBLIC_FEED=1\nAUDIENCE_COUNTS=1\nANSWER_RATINGS=1\nMCP_PUBLIC=on\nPAID_ENDPOINT_PUBLIC=on\nWEB_PUBLISHING=on\nAUTO_APPROVE=off\n'
+ const startup=readFileSync('docker/hosted/startup.sh','utf8')
+ const block=startup.slice(startup.indexOf('if [[ -f /etc/researchagent/env.local'),startup.indexOf('# Each value is immutable')).replaceAll('/etc/researchagent/',dir+'/').replaceAll('sed -i ','sed -i.bak ')
+ writeFileSync(join(dir,'env.local'),flags);writeFileSync(join(dir,'env.new'),'HOSTED=1\n')
+ expect(spawnSync('bash',['-euc',block]).status).toBe(0)
+ expect(readFileSync(join(dir,'env.new'),'utf8')).toBe('HOSTED=1\n'+flags)
+ writeFileSync(join(dir,'env.local'),'UNRECOGNIZED_OPTION=on\n')
+ expect(spawnSync('bash',['-euc',block]).status).toBe(1)
+})

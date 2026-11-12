@@ -1490,3 +1490,5 @@ persistence or a mainnet deployment. No cloud resource or live ledger call ran.
 - **Workaround:** the authenticated build emits JSON plus an identical TypeScript projection; runtime imports the projection and retains schema/hash validation. Tests require artifact parity. No desktop packager change or gate threshold change.
 - **Suggested fix:** compilation/staging tooling should enumerate imported non-code assets or report the worker import cause rather than only “Engine boot failed”.
 - **Severity:** medium packaging friction. **Mainnet impact:** none observed; this failed before engine startup, with no transaction or real funds.
+
+- 12 Nov 2026 · observed local tooling: pinned XRPL docs acquisition exceeded the 128 MiB child-process stdout buffer (`gh ENOBUFS`, 134,266,880 bytes), before any model call or cloud mutation. Evidence: DEPLOY-9 `corpus-build.log`, source `9bd8c80a`. Workaround/fix: stream authenticated gh output directly to a private archive file, then extract. Suggested upstream tooling practice: stream large pinned archive downloads rather than buffer them. Severity P2; no mainnet payment impact.

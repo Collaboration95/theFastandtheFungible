@@ -19,7 +19,7 @@ const probe=createServer((req,res)=>{
 const probePort=probe.address().port
 const apiServer=createServer().listen(0,'127.0.0.1');await once(apiServer,'listening')
 const origin=`https://127.0.0.1:${frontPort}`,url=`http://127.0.0.1:${frontPort}`
-Object.assign(process.env,{HOSTED:'1',MCP_PUBLIC:'on',PAID_ENDPOINT_PUBLIC:'off',HOSTED_ORIGIN:origin,HOSTED_TRUSTED_PROXY:'127.0.0.1',HOSTED_IP_HMAC_KEY:'local-proof-not-a-deployed-key-0001',HOSTED_CONTROL_PATH:join(dir,'control.json'),LLM_PROVIDER:'fixture',DECISION_PROVIDER:'fixture',SETTLEMENT_RAIL:'simulated',ANCHOR_RAIL:'off',LANGFUSE_ENABLED:'0'})
+Object.assign(process.env,{HOSTED:'1',MCP_PUBLIC:'on',PUBLIC_FEED:'1',AUDIENCE_COUNTS:'1',OPERATOR_TOKEN:'local-proof-operator-token-00000000',PAID_ENDPOINT_PUBLIC:'off',HOSTED_ORIGIN:origin,HOSTED_TRUSTED_PROXY:'127.0.0.1',HOSTED_IP_HMAC_KEY:'local-proof-not-a-deployed-key-0001',HOSTED_CONTROL_PATH:join(dir,'control.json'),LLM_PROVIDER:'fixture',DECISION_PROVIDER:'fixture',SETTLEMENT_RAIL:'simulated',ANCHOR_RAIL:'off',LANGFUSE_ENABLED:'0'})
 writeFileSync(process.env.HOSTED_CONTROL_PATH,JSON.stringify({admissionsPaused:false,spendingPaused:false,reasonCode:'local_proof',expiresAt:'2026-11-19T16:00:00Z'}))
 const {createPublisherApp}=await import('../../publisher/routes.ts'), {createApiApp}=await import('../../server/routes.ts')
 const pub=createPublisherApp({journal:':memory:',rail:'simulated',env:{}});await pub.locals.ready
@@ -43,6 +43,11 @@ try {
   assert(!tools.includes('hire'));assert(!tools.includes('pause_spending'))
   const init=await fetch(url+'/mcp',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json, text/event-stream'},body:JSON.stringify({jsonrpc:'2.0',id:20,method:'initialize',params:{protocolVersion:'2025-11-25',capabilities:{},clientInfo:{name:'sse-proof',version:'1'}}})})
   assert.match(init.headers.get('content-type'),/text\/event-stream/);assert.match(await init.text(),/event: message/)
+  const operator=await fetch(url+'/api/operator/session',{method:'POST',headers:{'X-Operator-Token':process.env.OPERATOR_TOKEN,Origin:origin}})
+  assert.equal(operator.status,200);assert((await operator.json()).internal);assert(operator.headers.get('set-cookie').startsWith('__Host-ra_operator='))
+  const rejectedOperator=await fetch(url+'/api/operator/session',{method:'POST',headers:{Authorization:'Bearer wrong-token',Origin:origin}});assert.equal(rejectedOperator.status,401)
+  const feed=await fetch(url+'/api/feed');assert.equal(feed.headers.get('cache-control'),'public, max-age=2')
+  const recorded=await fetch(url+'/api/feed/recorded');assert.equal(recorded.status,200);assert.equal(recorded.headers.get('cache-control'),'public, max-age=60')
   const search=await client.callTool({name:'search_expertise',arguments:{query:'x402 pricing'}})
   assert(!search.isError);const hits=JSON.parse(search.content[0].text).hits;assert(hits.length>0)
   assert(hits.every(hit=>new URL(hit.url).origin===origin&&/^\/w\/[^/]+\/blog\//.test(new URL(hit.url).pathname)))
@@ -57,10 +62,10 @@ try {
   const paidProbe=await fetch(url+'/v1/ask',{method:'POST',headers:{'Content-Type':'application/json','PAYMENT-SIGNATURE':'reach-proof-signature'},body:'{}'})
   assert.equal(paidProbe.status,404);assert.equal(paidSignature,'reach-proof-signature')
   const probeUrl=`http://127.0.0.1:${probeFrontPort}`
-  const forwarded=await(await fetch(probeUrl+'/headers',{headers:{'X-Forwarded-For':'1.2.3.4, 198.51.100.9',Authorization:'Bearer private-probe','X-Internal-Arbitrary':'private-probe','X-RA-Principal':'owner','MCP-Protocol-Version':'2025-11-25'}})).json()
+  const forwarded=await(await fetch(probeUrl+'/headers',{headers:{'X-Forwarded-For':'1.2.3.4, 198.51.100.9',Authorization:'Bearer private-probe','X-Internal-Arbitrary':'private-probe','X-RA-Principal':'owner','MCP-Protocol-Version':'2025-11-25','X-Publishing-Key':'local-publishing-capability','X-Operator-Token':'local-moderation-token'}})).json()
   assert.equal(forwarded['x-forwarded-for'],'198.51.100.9')
   assert(!forwarded.authorization&&!forwarded['x-internal-arbitrary']&&!forwarded['x-ra-principal'])
-  assert.equal(forwarded['mcp-protocol-version'],'2025-11-25')
+  assert.equal(forwarded['mcp-protocol-version'],'2025-11-25');assert.equal(forwarded['x-publishing-key'],'local-publishing-capability');assert.equal(forwarded['x-operator-token'],'local-moderation-token')
   const time=Date.now(),stream=await fetch(probeUrl+'/sse'),reader=stream.body.getReader()
   const first=await reader.read()
   assert(new TextDecoder().decode(first.value).includes('first')&&Date.now()-time<900,'SSE buffered')

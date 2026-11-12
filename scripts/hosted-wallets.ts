@@ -15,7 +15,7 @@ const url=testnetUrl()
 const dir=resolve(out)
 const root=resolve('.')
 if(dir.startsWith(root+'/')||dir===root) throw Error('Wallet files must stay outside the repository')
-const names=['XRPL_PAYER_SEED',...servedSlugs().map(seedEnvName)]
+const names=['XRPL_PAYER_SEED',...servedSlugs().map(seedEnvName),...(process.env.LEDGER_ANALYTICS === '1' || process.env.CORPUS_PROFILE === 'real' ? ['XRPL_PUBLISHER_LEDGER_ANALYTICS_SEED'] : [])]
 if(args.includes('--dry-run')) {
   for(const name of names) console.log(`gcloud secrets create ra-${name.toLowerCase().replaceAll('_','-')}-RELEASE --replication-policy=automatic --data-file=${join(dir,name)}`)
   console.log('planned: persist seeds, connect to allowlisted Testnet, read balances; at most one faucet call per unfunded wallet with --fund')

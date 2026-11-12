@@ -32,13 +32,14 @@ export interface AskProps {
   /** Between the composer and the examples: the first-visit environment note or a hosted state. */
   note?: ReactNode
   placeholder?: string
+  realCorpus?: boolean
   examplesLabel?: string
   askLabel?: string
   /** The hosted demo can't take a question (paused, ended, used up, on hold, offline): only the intro and its state card show, with no composer or examples to tempt a click. */
   closed?: boolean
 }
 /** Home: the question, the budget (the only spending authorisation) and Ask. */
-export default function Ask({ onAsk, busy = false, settlement, above, universalMinor, onSettings, draft = '', onDraft, picked = BUDGET.initialMinor, onPick, intro, budgetMax, composerNote, note, placeholder, examplesLabel = 'Try an example', askLabel, closed = false }: AskProps) {
+export default function Ask({ onAsk, busy = false, settlement, above, universalMinor, onSettings, draft = '', onDraft, picked = BUDGET.initialMinor, onPick, intro, budgetMax, composerNote, note, placeholder, examplesLabel = 'Try an example', realCorpus = false, askLabel, closed = false }: AskProps) {
   const browserDemo = import.meta.env.MODE === 'browser-demo'
   const id = useId()
   // Starts empty: the presets below fill it in one click.
@@ -92,7 +93,7 @@ export default function Ask({ onAsk, busy = false, settlement, above, universalM
     {/* The demo questions sit under the composer, one per row; a click fills the box. */}
     {!above && !closed && <div className="ra-presets" role="group" aria-label="Demo questions">
       <p className="ra-presets-h" aria-hidden="true">{examplesLabel}</p>
-      {exampleQuestions(import.meta.env.MODE === 'browser-demo' ? undefined : settlement).map((preset) => <button key={preset.id} type="button" className={`ra-preset${question === preset.text ? ' is-on' : ''}`} aria-pressed={question === preset.text} title={preset.text} disabled={disabled} onClick={() => setQuestion(preset.text)}>
+      {exampleQuestions(import.meta.env.MODE === 'browser-demo' ? undefined : settlement, realCorpus).map((preset) => <button key={preset.id} type="button" className={`ra-preset${question === preset.text ? ' is-on' : ''}`} aria-pressed={question === preset.text} title={preset.text} disabled={disabled} onClick={() => setQuestion(preset.text)}>
         <i aria-hidden="true">?</i><b>{preset.label}</b><span>{preset.text}</span></button>)}
     </div>}
     {!above && !closed && hosted && <HostedJudgesCorner hosted={hosted} detailsRef={corner} />}

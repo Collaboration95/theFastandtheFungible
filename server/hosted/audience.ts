@@ -25,7 +25,7 @@ export function audienceMiddleware(config: Config): RequestHandler {
 export function operatorSessionRouter(config: Config) {
   const router=Router({caseSensitive:true,strict:true})
   router.post('/api/operator/session',(req,res)=>{
-    const secret=config.OPERATOR_TOKEN, supplied=req.get('Authorization')?.match(/^Bearer (.+)$/i)?.[1]
+    const secret=config.OPERATOR_TOKEN, supplied=req.get('X-Operator-Token') ?? req.get('Authorization')?.match(/^Bearer (.+)$/i)?.[1]
     if(!secret || !supplied || !equal(secret,supplied)) {res.status(401).json({error:'Operator credential required.'});return}
     if(req.get('Origin') && req.get('Origin')!==config.HOSTED_ORIGIN && req.get('Origin')!==config.RA_WEB_ORIGIN) {res.status(403).json({error:'Origin denied.'});return}
     const expiry=String(Date.now()+86400000), signature=createHmac('sha256',secret).update(expiry).digest('hex')
