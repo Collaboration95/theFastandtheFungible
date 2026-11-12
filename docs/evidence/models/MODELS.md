@@ -54,3 +54,8 @@ docker builder prune -f
 ```
 
 Only builder cache was pruned after qualification. No image or volume was pruned. The Mac retrieval measurements above are historical lane measurements; this container test proves offline inference, not hosted latency or memory.
+
+
+## Node 22 verification setup
+
+The first `check:fast` stopped at ESLint because retained source snapshots under ignored `scratch/` introduced another TypeScript config root. The snapshot and scratch sources were preserved outside lint discovery; `scratch/retained-source-location.txt` records their local location. The unchanged lint command then passed with zero errors and 15 existing warnings. No check was loosened. Full clean-head admission is recorded by the PR's `local-gate` status.
