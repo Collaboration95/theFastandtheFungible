@@ -15,6 +15,7 @@ const percentiles = key => {
   return Object.fromEntries([50, 90, 99].map(p => ['p' + p, values[Math.max(0, Math.ceil(values.length * p / 100) - 1)] ?? null]))
 }
 const proofPath = 'docs/evidence/proof/testnet-1000-verify.json'
+const runMetadata = JSON.parse(readFileSync('data/evidence/testnet-1000/run.json', 'utf8'))
 const proof = existsSync(proofPath) ? JSON.parse(readFileSync(proofPath, 'utf8')) : null
 if (proof && proof.receiptsSha256 !== createHash('sha256').update(readFileSync('data/evidence/testnet-1000/receipts.jsonl')).digest('hex')) proof.success = false
 const summary = { network: 'xrpl-testnet', count: receipts.length, successes: success.length, successRate: receipts.length ? success.length / receipts.length : 0, totalSpentDrops: success.reduce((n, r) => n + BigInt(r.amountDrops), 0n).toString(), createMs: percentiles('createMs'), finishMs: percentiles('finishMs'), endToEndMs: percentiles('endToEndMs'), failures: Object.fromEntries([...new Set(receipts.filter(r => r.outcome !== 'success').map(r => r.failureCause))].map(c => [c, receipts.filter(r => r.failureCause === c).length])), independentlyVerified: proof?.receipts === receipts.length && proof?.success ? proof.verified : 0 }
@@ -22,11 +23,10 @@ writeFileSync('data/evidence/testnet-1000/summary.json', JSON.stringify(summary,
 // The feed consumes this explicit public projection; application delivery is a local observation.
 if (receipts.length && summary.independentlyVerified === receipts.length && rpc.length) {
   const validated = new Map(rpc.filter(e => e.kind === 'validated').map(e => [e.hash, e.at]))
-  const article = JSON.parse(readFileSync('data/corpus/v2/articles/team-xrpl-explainers/aml.json', 'utf8'))
   const feedRows = success.map(r => {
     const created = validated.get(r.createHash), finished = validated.get(r.finishHash)
-    if (r.resourceId !== article.articleId || !Number.isFinite(created) || !Number.isFinite(finished) || finished < created) throw Error('Feed requires matching resource metadata and validated timing observations')
-    return { id: createHash('sha256').update(r.intentId).digest('hex').slice(0, 24), time: new Date(created).toISOString(), topic: 'Agent payments', resourceTitle: article.title, writer: 'Team-authored XRPL explainers', priceMinor: r.priceMinor, createHash: r.createHash, createLedger: r.createLedger, finishHash: r.finishHash, keyCheck: 'match', gate: 'verified', state: 'finished', settlementSeconds: (finished - created) / 1000 }
+    if (r.resourceId !== runMetadata.resourceId || !Number.isFinite(created) || !Number.isFinite(finished) || finished < created) throw Error('Feed requires matching resource metadata and validated timing observations')
+    return { id: createHash('sha256').update(r.intentId).digest('hex').slice(0, 24), time: new Date(created).toISOString(), topic: 'Agent payments', resourceTitle: runMetadata.resourceTitle, writer: runMetadata.writerLabel, priceMinor: r.priceMinor, createHash: r.createHash, createLedger: r.createLedger, finishHash: r.finishHash, keyCheck: 'match', gate: 'verified', state: 'finished', settlementSeconds: (finished - created) / 1000 }
   }).sort((a, b) => b.time.localeCompare(a.time))
   const label = `${receipts.length.toLocaleString('en-US')} recorded purchases. Ledger independently checked; delivery observed locally.`
   writeFileSync('data/evidence/testnet-1000/feed.json', `{"schema":"public-feed-v1","label":${JSON.stringify(label)},"rows":[\n${feedRows.map(row => JSON.stringify(row)).join(',\n')}\n]}\n`)
@@ -37,6 +37,8 @@ const sample = success.slice(0, 5).map(r => `- ${r.intentId}: [create ${r.create
 writeFileSync('docs/evidence/proof/TESTNET-1000.md', `# Checkable XRPL Testnet purchases
 
 ${summary.successes.toLocaleString('en-US')} successful purchases / ${summary.count.toLocaleString('en-US')} recorded attempts (${(summary.successRate * 100).toFixed(2)}%); **${summary.independentlyVerified.toLocaleString('en-US')} independently verified**. Principal: ${Number(summary.totalSpentDrops) / 1e6} Testnet XRP (${summary.totalSpentDrops} drops). Transaction fees are separate in the verifier output. These are deterministic repeat purchases of team-authored content from fresh test accounts, not independent customers or writers. No LLM or hosted deployment was used.
+
+The purchase batch ran against product revision ${runMetadata.productBaseCommit}. [run.json](../../../data/evidence/testnet-1000/run.json) pins that revision and the public article metadata used by the recorded feed.
 
 | Phase (local observations) | p50 | p90 | p99 |
 |---|---|---|---|
@@ -57,13 +59,13 @@ This re-fetches both transactions for every receipt from a public Testnet node, 
 ## Reproduce and resume
 
 \`\`\`sh
-npm run proof:testnet-run -- --testnet --count 20
-npm run proof:testnet-run -- --testnet --count 1000
-node --import tsx --test scripts/testnet-1000/verify.test.mjs
-node scripts/testnet-1000/report.mjs
+npm run proof:testnet-run -- --testnet --count 20 --state /tmp/testnet-proof-new --receipts /tmp/testnet-proof-new/receipts.jsonl
+npm run proof:testnet-run -- --testnet --count 1000 --state /tmp/testnet-proof-new --receipts /tmp/testnet-proof-new/receipts.jsonl
+npm run proof:testnet-verify -- --receipts /tmp/testnet-proof-new/receipts.jsonl --out /tmp/testnet-proof-new/verify.json
+npm run proof:testnet-test
 \`\`\`
 
-The first command is the pilot. The second extends the same durable batch; the pilot's 20 purchases count toward 1,000. Defaults: eight purchases in flight, at most eight outstanding RPC calls across all local publishers and payers; exponential backoff capped at 30 s. Funding retries back off to 60 s. All ports are ephemeral and publisher ports are checkpointed for stable source identity on resume. The runner exposes only loopback publisher and snapshot endpoints and closes them on exit.
+These commands start a separate private batch on a fresh checkout. The first command is the pilot. The second extends the same durable batch; the pilot's 20 purchases count toward 1,000. Resuming the original committed batch requires its original private state and the default receipt destination. node scripts/testnet-1000/report.mjs regenerates this committed batch's summary, document and feed; --journal can select its matching private timing journal. Defaults: eight purchases in flight, at most eight outstanding RPC calls across all local publishers and payers; exponential backoff capped at 30 s. Funding retries back off to 60 s. All ports are ephemeral and publisher ports are checkpointed for stable source identity on resume. The runner exposes only loopback publisher and snapshot endpoints and closes them on exit.
 
 The explicit --testnet CLI flag is required; nothing runs by default. --count sets the target count (1..1100). --receipts optionally selects a separate JSONL output under /tmp or data/evidence/testnet-1000 (default the canonical receipt file). --state selects a private directory under /tmp (default /tmp/researchagent-testnet-1000). Seeds, publisher encryption keys, signed blobs, SQLite journals, a checkpoint and hash-only RPC observations are retained there with private permissions. Keep this directory until all obligations are reconciled. A process lock prevents concurrent owners. Completed receipt IDs are skipped on resume; incomplete intents reuse the product's persisted create blob. An incomplete last JSONL line is removed before recovery; complete rows are never rewritten. Reusing this evidence destination with a different state directory is refused.
 

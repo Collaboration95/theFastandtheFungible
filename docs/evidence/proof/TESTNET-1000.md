@@ -2,6 +2,8 @@
 
 1,000 successful purchases / 1,000 recorded attempts (100.00%); **1,000 independently verified**. Principal: 40 Testnet XRP (40000000 drops). Transaction fees are separate in the verifier output. These are deterministic repeat purchases of team-authored content from fresh test accounts, not independent customers or writers. No LLM or hosted deployment was used.
 
+The purchase batch ran against product revision 5a132431c448b5834c5761968ac8c5cbcb0c350b. [run.json](../../../data/evidence/testnet-1000/run.json) pins that revision and the public article metadata used by the recorded feed.
+
 | Phase (local observations) | p50 | p90 | p99 |
 |---|---|---|---|
 | createMs | 5.955 s | 6.635 s | 8.073 s |
@@ -23,13 +25,13 @@ This re-fetches both transactions for every receipt from a public Testnet node, 
 ## Reproduce and resume
 
 ```sh
-npm run proof:testnet-run -- --testnet --count 20
-npm run proof:testnet-run -- --testnet --count 1000
-node --import tsx --test scripts/testnet-1000/verify.test.mjs
-node scripts/testnet-1000/report.mjs
+npm run proof:testnet-run -- --testnet --count 20 --state /tmp/testnet-proof-new --receipts /tmp/testnet-proof-new/receipts.jsonl
+npm run proof:testnet-run -- --testnet --count 1000 --state /tmp/testnet-proof-new --receipts /tmp/testnet-proof-new/receipts.jsonl
+npm run proof:testnet-verify -- --receipts /tmp/testnet-proof-new/receipts.jsonl --out /tmp/testnet-proof-new/verify.json
+npm run proof:testnet-test
 ```
 
-The first command is the pilot. The second extends the same durable batch; the pilot's 20 purchases count toward 1,000. Defaults: eight purchases in flight, at most eight outstanding RPC calls across all local publishers and payers; exponential backoff capped at 30 s. Funding retries back off to 60 s. All ports are ephemeral and publisher ports are checkpointed for stable source identity on resume. The runner exposes only loopback publisher and snapshot endpoints and closes them on exit.
+These commands start a separate private batch on a fresh checkout. The first command is the pilot. The second extends the same durable batch; the pilot's 20 purchases count toward 1,000. Resuming the original committed batch requires its original private state and the default receipt destination. node scripts/testnet-1000/report.mjs regenerates this committed batch's summary, document and feed; --journal can select its matching private timing journal. Defaults: eight purchases in flight, at most eight outstanding RPC calls across all local publishers and payers; exponential backoff capped at 30 s. Funding retries back off to 60 s. All ports are ephemeral and publisher ports are checkpointed for stable source identity on resume. The runner exposes only loopback publisher and snapshot endpoints and closes them on exit.
 
 The explicit --testnet CLI flag is required; nothing runs by default. --count sets the target count (1..1100). --receipts optionally selects a separate JSONL output under /tmp or data/evidence/testnet-1000 (default the canonical receipt file). --state selects a private directory under /tmp (default /tmp/researchagent-testnet-1000). Seeds, publisher encryption keys, signed blobs, SQLite journals, a checkpoint and hash-only RPC observations are retained there with private permissions. Keep this directory until all obligations are reconciled. A process lock prevents concurrent owners. Completed receipt IDs are skipped on resume; incomplete intents reuse the product's persisted create blob. An incomplete last JSONL line is removed before recovery; complete rows are never rewritten. Reusing this evidence destination with a different state directory is refused.
 
