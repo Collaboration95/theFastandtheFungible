@@ -75,6 +75,11 @@ describe('timeline: references and segments', () => {
   it('splits a voice-over into its sentences', () => {
     expect(splitSentences('This is X: it works. Does it? Yes!  Mainnet is a checklist, not a claim.')).toEqual(['This is X: it works.', 'Does it?', 'Yes!', 'Mainnet is a checklist, not a claim.'])
   })
+  it('preserves decimal runtime, money and release labels through subtitle generation', () => {
+    const text = 'This run finished in 22.3 seconds and bought one S$0.40 article. Use v1.1.1. No refund.'
+    expect(splitSentences(text)).toEqual(['This run finished in 22.3 seconds and bought one S$0.40 article.', 'Use v1.1.1.', 'No refund.'])
+    expect(splitSubtitles(text).flat().join(' ')).toBe(text)
+  })
   it('formats the real-time clock', () => { expect(clockText(0)).toBe('0:00'); expect(clockText(75.4)).toBe('1:15') })
 })
 

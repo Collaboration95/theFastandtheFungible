@@ -79,7 +79,7 @@ export function fillTokens(text, values) {
 
 /** The sentences of a voice-over, in order (a cue is one sentence; `voAt` in shots.json gives each one's start). */
 export function splitSentences(text) {
-  return (text.replace(/\s+/g, ' ').trim().match(/[^.!?]+[.!?]+(?=\s|$)|[^.!?]+$/g) ?? []).map(s => s.trim()).filter(Boolean)
+  return text.replace(/\s+/g, ' ').trim().split(/(?<=[.!?])\s+/).filter(Boolean)
 }
 
 /**
