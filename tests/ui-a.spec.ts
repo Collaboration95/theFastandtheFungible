@@ -83,6 +83,7 @@ for (const width of [1280, 390]) test(`UI-A fixes at ${width}`, async ({ page })
   await page.getByRole('button', { name: 'Writers', exact: true }).click()
   await expect(page.getByText('24 sales')).toBeVisible()
   if (!before) {
+    await expect(page.getByText('Your purchases and demo-wide sales are shown separately.', { exact: false })).toBeVisible()
     await expect(page.getByText('Sales on this demo since 11 Nov', { exact: true })).toBeVisible()
     await expect(page.getByText('You haven’t bought from this writer yet')).toBeVisible()
     await expect(page.getByText('No sales yet', { exact: true })).toHaveCount(0)
