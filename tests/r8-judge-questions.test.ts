@@ -147,10 +147,14 @@ describe('round-8 judge questions, end to end with fixture models', () => {
     expect(bought).toEqual(['c5-xrpl-token-escrow-xls85'])
     expect(final.answers.at(-1)!.lead!.map(l => l.text).join(' ')).toContain('TokenEscrow amendment')
   }, 60_000)
-  it('B1 buys the crypto-condition explainer once and stops: the escrow references after it name nothing new', async () => {
+  it('B1 buys the crypto-condition explainer once and completes both facts without another round', async () => {
     const { bought, final } = await ask(CONDITION)
     expect(bought).toEqual(['c5-xrpl-crypto-condition-type'])
-    expect(final.decisions.at(-1)!.rows.filter(r => r.reason === REPEATS_PURCHASES).map(r => r.candidate.resourceId)).toContain('xrpl-tx-escrowcreate')
+    expect(final.phase).toBe('DONE')
+    expect(final.decisions).toHaveLength(1)
+    expect(final.answers.at(-1)!.openGaps).toEqual([])
+    const lead = final.answers.at(-1)!.lead!.map(item => item.text).join(' ')
+    for (const fact of ['PREIMAGE-SHA-256', 'Condition', 'Fulfillment']) expect(lead).toContain(fact)
   }, 60_000)
   it('B5 buys the CredentialCreate and CredentialAccept references, never CredentialDelete', async () => {
     expect((await ask(CREDENTIAL)).bought).toEqual(['xrpl-tx-credentialcreate', 'xrpl-tx-credentialaccept'])

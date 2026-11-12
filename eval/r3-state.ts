@@ -63,3 +63,31 @@ export function modelFallbacks(run: {labels:{plan?:string};answers:{provider:str
   const fixtureAnswers = run.answers.filter(a => a.provider === 'fixture').length
   return {plannerFallbacks,writerFallbacks,fixtureAnswers,fallbacks:plannerFallbacks+writerFallbacks,liveOnly:plannerFallbacks===0&&writerFallbacks===0&&fixtureAnswers===0}
 }
+
+/** Coverage guards do not make a call; provider/validation failures are unfinished live tasks. */
+export function providerFailures(run: {labels:{plan?:string};events:{type:string;label?:string;data?:unknown}[]}) {
+  const reasons: string[] = []
+  if (run.labels.plan?.includes('planner unavailable')) reasons.push('planner unavailable')
+  for (const event of run.events.filter(e => e.type === 'MODEL_FALLBACK')) {
+    const reason = (event.data as {reason?:string} | undefined)?.reason ?? event.label?.match(/fallback \(([^)]+)\)/)?.[1] ?? 'unavailable'
+    if (reason !== 'guard') reasons.push(`writer ${reason}`)
+  }
+  return [...new Set(reasons)]
+}
+
+export function providerTaskKey(arm: string, id: string, attempt: number) {
+  if (!Number.isSafeInteger(attempt) || attempt < 0) throw Error('Invalid provider attempt')
+  return `r3:${arm}:${id}${attempt ? `:provider-retry:${attempt}` : ''}`
+}
+
+/** A failed call is retained as an attempt; only uncharged tasks can receive a new admission. */
+export function recordProviderAttempt<T>(state: {results:T[];excludedAttempts:Record<string,unknown>[];providerAttempts:Record<string,number>;runIds:Record<string,string>;started:Record<string,number>}, taskKey: string, result: T, reasons: string[], requiresSameRunRecovery: boolean) {
+  if (!reasons.length) { state.results.push(result); return false }
+  state.excludedAttempts.push({result,reasons,requiresSameRunRecovery})
+  if (!requiresSameRunRecovery) {
+    state.providerAttempts[taskKey]=(state.providerAttempts[taskKey]||0)+1
+    delete state.runIds[taskKey]
+    delete state.started[taskKey]
+  }
+  return true
+}

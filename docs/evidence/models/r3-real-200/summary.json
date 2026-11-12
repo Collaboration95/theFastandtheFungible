@@ -1,38 +1,91 @@
 {
-  "summary": {
+  "status": "pending-provider-balance",
+  "accepted": 393,
+  "target": 400,
+  "pendingTasks": [
+    {
+      "arm": "paid",
+      "id": "R34",
+      "previousRunId": "93094489-2690-41ba-8355-64c3a593f3f6"
+    },
+    {
+      "arm": "paid",
+      "id": "R35",
+      "previousRunId": "e1f21b1a-0724-4c49-b008-a002d46544a2"
+    },
+    {
+      "arm": "paid",
+      "id": "R37",
+      "previousRunId": "bf09f08d-2254-48b4-8aa0-a02d0450438f"
+    },
+    {
+      "arm": "paid",
+      "id": "R36",
+      "previousRunId": "5ad7acd2-3436-46ca-a52e-ff03e3c1239d"
+    },
+    {
+      "arm": "paid",
+      "id": "R38",
+      "previousRunId": "b61b017b-963f-4de7-a7eb-df000205c0c6"
+    },
+    {
+      "arm": "paid",
+      "id": "R39",
+      "previousRunId": "55b5e9b0-3a77-43bc-8d0d-19764fb04aab"
+    },
+    {
+      "arm": "paid",
+      "id": "R40",
+      "previousRunId": "b0c99d80-3d06-4414-9d91-24922ba0fdb5"
+    }
+  ],
+  "arms": {
     "free": {
       "n": 200,
-      "answeredRate": 0.155,
-      "correctRate": 0.155,
-      "citationsValid": 463,
+      "answered": 31,
+      "correct": 31,
+      "liveOnlyCorrect": 31,
       "citations": 463,
+      "validCitations": 463,
+      "gateViolations": 0,
       "spendMinor": 0,
       "medianSpendMinor": 0,
+      "spendDistribution": {
+        "0": 200
+      },
       "latencyP50Ms": 6447,
       "latencyP90Ms": 10767,
-      "gateViolations": 0,
-      "fallbacks": 109,
       "plannerFallbacks": 0,
       "writerFallbacks": 109,
       "fixtureAnswers": 102,
-      "liveOnlyCorrectRate": 0.155
+      "phases": {
+        "DONE": 200
+      }
     },
     "paid": {
-      "n": 200,
-      "answeredRate": 0.25,
-      "correctRate": 0.25,
-      "citationsValid": 536,
-      "citations": 536,
+      "n": 193,
+      "answered": 49,
+      "correct": 49,
+      "liveOnlyCorrect": 45,
+      "citations": 472,
+      "validCitations": 472,
+      "gateViolations": 0,
       "spendMinor": 2040,
       "medianSpendMinor": 0,
+      "spendDistribution": {
+        "0": 150,
+        "40": 37,
+        "80": 4,
+        "120": 2
+      },
       "latencyP50Ms": 6932,
       "latencyP90Ms": 12630,
-      "gateViolations": 0,
-      "fallbacks": 123,
-      "plannerFallbacks": 6,
-      "writerFallbacks": 117,
-      "fixtureAnswers": 111,
-      "liveOnlyCorrectRate": 0.225
+      "plannerFallbacks": 0,
+      "writerFallbacks": 109,
+      "fixtureAnswers": 103,
+      "phases": {
+        "DONE": 193
+      }
     }
   },
   "costs": {
@@ -43,36 +96,5 @@
     "inputTokens": 6258916,
     "outputTokens": 493804
   },
-  "rail": "simulated",
-  "questions": 200,
-  "strata": {
-    "free": {
-      "historical-out-of-profile": {
-        "n": 100,
-        "correctRate": 0
-      },
-      "protocol-used-judge-bank": {
-        "n": 60,
-        "correctRate": 0.21666666666666667
-      },
-      "protocol-source-facts": {
-        "n": 40,
-        "correctRate": 0.45
-      }
-    },
-    "paid": {
-      "historical-out-of-profile": {
-        "n": 100,
-        "correctRate": 0
-      },
-      "protocol-used-judge-bank": {
-        "n": 60,
-        "correctRate": 0.5
-      },
-      "protocol-source-facts": {
-        "n": 40,
-        "correctRate": 0.5
-      }
-    }
-  }
+  "rail": "simulated"
 }

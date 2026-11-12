@@ -2,7 +2,7 @@ import { appendFileSync, readFileSync } from 'node:fs'
 import { expect, it } from 'vitest'
 import { resources } from './helpers/resource-scope'
 import { join } from 'node:path'
-import { atomicJson, readObservations, resumeState, lockLedger, assertRealCorpus, reserveModelCall, modelFallbacks } from '../eval/r3-state.js'
+import { atomicJson, readObservations, resumeState, lockLedger, assertRealCorpus, reserveModelCall, modelFallbacks, providerFailures, providerTaskKey, recordProviderAttempt } from '../eval/r3-state.js'
 it('retains completed runs and refuses a changed bank, provider or corpus on resume', () => {
   const dir = resources().tempDir('r3-resume-'), path = join(dir, 'results.json')
   const identity = { bank: 'bank-v1', decision: 'fixture', corpus: 'real' }
@@ -87,4 +87,42 @@ it('enforces a lower stop exposure before network admission without releasing ol
   expect(() => reserveModelCall(costs,10000,4.90)).toThrow('US$4.9 model-spend ceiling')
   expect(costs).toEqual(admitted)
   for (const cap of [0,-1,5.01,NaN,Infinity]) expect(() => reserveModelCall(costs,1,cap)).toThrow('Invalid model-spend ceiling')
+})
+
+it('does not count provider failures as completed live tasks, even before a later answer', () => {
+  const live = {labels:{plan:'DeepSeek · deepseek-flash'},events:[]}
+  expect(providerFailures(live)).toEqual([])
+  expect(providerFailures({...live,events:[{type:'MODEL_FALLBACK',label:'LLM fallback (guard) · labelled fixture'}]})).toEqual([])
+  expect(providerFailures({...live,events:[{type:'MODEL_FALLBACK',label:'LLM fallback (http) · labelled fixture'},{type:'MODEL_USAGE'}]})).toEqual(['writer http'])
+  expect(providerFailures({labels:{plan:'fixture · scope-fixture · planner unavailable'},events:[]})).toEqual(['planner unavailable'])
+  for (const reason of ['timeout','unavailable','invalid','cap']) expect(providerFailures({...live,events:[{type:'MODEL_FALLBACK',data:{reason}}]})).toEqual([`writer ${reason}`])
+})
+
+it('keeps retry admission identities distinct and stable without replaying the original task', () => {
+  expect(providerTaskKey('paid','R34',0)).toBe('r3:paid:R34')
+  expect(providerTaskKey('paid','R34',1)).toBe('r3:paid:R34:provider-retry:1')
+  expect(providerTaskKey('paid','R34',1)).toBe(providerTaskKey('paid','R34',1))
+  expect(providerTaskKey('paid','R34',2)).not.toBe(providerTaskKey('paid','R34',1))
+  for (const attempt of [-1,0.5,NaN]) expect(()=>providerTaskKey('paid','R34',attempt)).toThrow()
+})
+
+it('retains failed calls outside results and retries only uncharged tasks without touching completed work', () => {
+  const state={results:[{runId:'valid'}],excludedAttempts:[] as Record<string,unknown>[],providerAttempts:{} as Record<string,number>,runIds:{done:'valid',failed:'original'},started:{done:10,failed:20}}
+  expect(recordProviderAttempt(state,'failed',{runId:'original'},['writer http'],false)).toBe(true)
+  expect(state.results).toEqual([{runId:'valid'}])
+  expect(state.runIds).toEqual({done:'valid'})
+  expect(state.started).toEqual({done:10})
+  expect(state.providerAttempts).toEqual({failed:1})
+  expect(state.excludedAttempts).toEqual([{result:{runId:'original'},reasons:['writer http'],requiresSameRunRecovery:false}])
+  expect(recordProviderAttempt(state,'failed',{runId:'retry'},[],false)).toBe(false)
+  expect(state.results).toEqual([{runId:'valid'},{runId:'retry'}])
+})
+
+it('retains the original charged admission when provider recovery cannot safely replay it', () => {
+  const state={results:[] as {runId:string}[],excludedAttempts:[] as Record<string,unknown>[],providerAttempts:{},runIds:{charged:'paid-run'},started:{charged:20}}
+  expect(recordProviderAttempt(state,'charged',{runId:'paid-run'},['writer http'],true)).toBe(true)
+  expect(state.results).toEqual([])
+  expect(state.runIds).toEqual({charged:'paid-run'})
+  expect(state.started).toEqual({charged:20})
+  expect(state.providerAttempts).toEqual({})
 })
