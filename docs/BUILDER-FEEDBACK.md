@@ -1451,6 +1451,13 @@ persistence or a mainnet deployment. No cloud resource or live ledger call ran.
 - **Suggested fix:** document serialized header-size budgets for Batch examples, including base64 and issued-asset metadata, and use quote commitments rather than repeating the entire quote inside each inner transaction.
 - **Severity / mainnet impact:** medium interoperability failure. A Batch could lock principal before the client discovers its signature cannot fit the delivery header. Compact commitments fix that shape locally; no mainnet or official-RLUSD settlement is claimed.
 
+## 2026-11-12 — Corpus and paid-site audits time out in a clean-head gate (observed tooling)
+
+- **Evidence:** clean holdback head `f714e18115bf84dee5d83fbd66b483e355d706f8`; local-gate receipt `1794494374334-1512-a6879b4b-631d-4925-9979-8fd2bb3c1c8e.json`. Two `tests/corpus-v2.test.ts` cases exceeded 5 seconds and `tests/site-leak.test.ts` exceeded 30 seconds. The same head passed `check:fast` (3,279 tests, four skips); an unchanged targeted rerun passed all nine tests in 21.85 seconds. No ledger transaction was involved.
+- **Workaround:** retain the failed receipt, rerun the affected files with the original limits, then require a fresh full gate. Shared-host contention is a possible cause; it is not established from these timings alone. No test, leak threshold or timeout was changed.
+- **Suggested fix:** retain per-audit elapsed time and host-load data alongside the gate receipt, and give CPU-sensitive corpus/site audits an exclusive execution phase.
+- **Severity / mainnet impact:** low local verification friction; no content leak was observed and no mainnet operation was run. A timeout remains a failing gate until verification passes.
+
 ### 2026-11-12 — money spikes: delegation and Batch SDK (observed)
 
 - **Delegation works, including revocation (informational).** Evidence: `docs/evidence/money/a.json`, delegated EscrowCreate `3CA31F98B5137ED91ADAE2E4AD01DDE0841FC4911430B74042359492E0504015`, revoke `B376A2CBBD7BEED9004195B954A7D56D2300D7C07961381A2F18B96F96FB9E60`. Fee 12 drops comes from delegate; 100,000 principal from visitor. Payment and post-revoke create return `terNO_DELEGATE_PERMISSION` without validation. Workaround: none. Suggested fix: document fee payer and explicit negative probes beside the delegate example. Mainnet impact: permission scope must remain enforced by policy; no Mainnet write tested.
