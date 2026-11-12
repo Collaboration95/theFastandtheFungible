@@ -24,7 +24,7 @@ const steps = [
   { from: 'Policy', to: 'XRP', text: 'EscrowCreate · locked to sha256(key)' },
   { from: 'Writer', to: 'XRP', text: 'EscrowFinish publishes key · writer paid' },
   { note: 'Policy', text: 'Decrypt · check every signed promise' },
-  { from: 'Writer', to: 'Policy', text: 'Refund request for a broken promise', dashed: true },
+  { from: 'Policy', to: 'Writer', text: 'Request refund for a broken promise', dashed: true },
   { from: 'Policy', to: 'XRP', text: 'Anchor the answer · memo = audit head' },
 ]
 const top = 84, gap = 52, bottom = top + gap * steps.length + 8

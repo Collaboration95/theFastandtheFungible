@@ -10,19 +10,30 @@ const authored = readdirSync('docs/submission', { recursive: true }).map(String)
   .map(p => `docs/submission/${p}`)
 const files = ['docs/media/key-reveal.svg', 'README.md', ...authored, 'site/index.html', 'scripts/render-progress.mjs', 'scripts/progress-story.mjs', 'scripts/site-header.mjs']
 // Explicit budgets, not an ever-growing exemption list: README top + stats scope;
+// Three separately pasted form variants each need their own label.
 // Q&A environment + TokenEscrow networks + locally qualified identity answer.
 const environmentBudget: Record<string, number> = {
-  'README.md': 2, 'docs/submission/short-description.md': 1,
+  'README.md': 2, 'docs/submission/short-description.md': 3,
   'docs/submission/qa-prep.md': 4, 'docs/submission/deck/index.html': 1,
   'docs/submission/video/shots.json': 1, 'site/index.html': 1, 'scripts/site-header.mjs': 1,
 }
-const codenames = /\b(?:HOSTED[-_]\d+|DEPLOY[-_](?:\d+|FIX)|UC[123]|X1[abc]|MJ\d+(?:-FIX)?|L12R?|P[1-5]|DOC-1|FIN-(?:FINAL|prep)|VID-[1-4]|UI-[ABC]|LABELS9)\b|(?<!&)#\d+\b/g
+const codenames = /\b(?:HOSTED[-_][A-Za-z0-9-]+|DEPLOY[-_][A-Za-z0-9-]+|UC[123]|X1[abc]|MJ\d+(?:-FIX)?|L12R?|P[1-5]|DOC-1|FIN-(?:FINAL|prep)|VID-[1-4]|UI-[ABC]|LABELS9)\b|(?<!&)#\d+\b/g
 const prose = (s: string) => s.replace(/--testnet\b/g, '').replace(/<style>[^]*?<\/style>/g, '').replace(/\/Users\/[^\s]+/g, '').replace(/#[0-9A-Fa-f]{3,8}(?=[;}"', ])/g, '').replace(/```[\s\S]*?```/g, '').replace(/<!--[^]*?-->/g, '')
   .replace(/\[[^\]]*\]\([^)]*\)/g, m => m.slice(1, m.indexOf(']')))
   .replace(/https?:\/\/[^\s"'<>]+/g, '').replace(/<[^>]*>/g, '')
   .replace(/`[^`]*[/.][^`]*`/g, '')
 
 describe('judge-facing presentation contract', () => {
+  it.each(['HOSTED-12', 'HOSTED-FIX', 'DEPLOY-3', 'DEPLOY-FIX', 'UC1', 'UC2', 'UC3', 'X1a', 'MJ10', 'L12', 'P4', 'PR #510'])('rejects internal label %s', label => {
+    expect(prose(label).match(codenames)).not.toBeNull()
+  })
+  it('keeps every pasted form variant labelled and the short description at 50 words', () => {
+    const variants = read('docs/submission/short-description.md').split(/^## ~(?:50|150|300) words\n/m).slice(1)
+    expect(variants).toHaveLength(3)
+    expect(variants[0].trim().split(/\s+/)).toHaveLength(50)
+    for (const variant of variants) expect(variant.match(/XRPL Testnet/g)).toHaveLength(1)
+  })
+
   it.each(files)('%s keeps environment labels tight and internal lane names out of prose', file => {
     const text = prose(read(file))
     expect(text.match(codenames) ?? [], file).toEqual([])
