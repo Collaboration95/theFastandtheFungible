@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 // Record the demo video's scenes, each as its own clip in video-out/vid-3/clips (outside git).
 //
-//   node scripts/video/record.mjs                    every enabled local scene; hosted-URL scenes are deferred
+//   node scripts/video/record.mjs                    every enabled scene; local by default
 //   node scripts/video/record.mjs --scenes key-check,writer-credentials
 //   node scripts/video/record.mjs --target local     never touch the hosted demo (HOSTED=1 stack on ephemeral ports)
-//   Hosted-URL scenes are intentionally deferred until after redeploy.
+//   Use --target hosted deliberately after deployed-build acceptance.
 //
 // A local pass consumes no hosted questions. Each clip gets a sidecar
 // <id>.json naming where its footage came from (hosted, local stack, replay…), so captions never overclaim.
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { CLIPS, FPS, SCRATCH, scratchDir } from './config.mjs'
+import { CLIPS, FPS, MAX_LIVE_QUESTIONS, SCRATCH, scratchDir } from './config.mjs'
 import { renderHtml } from './lib/cards.mjs'
 import { must } from './lib/proc.mjs'
 import { recordScene } from './lib/browser.mjs'
@@ -18,19 +18,20 @@ import { startLocalStack, startReplay } from './lib/stack.mjs'
 import { captureSession, renderTranscript } from './lib/terminal.mjs'
 import { checkVideoPins } from './lib/release-pins.mjs'
 import { SCENES, claudeCwd, terminalEnv } from './scenes.mjs'
+import { resolveRecordingTarget } from './lib/target.mjs'
 
 const args = process.argv.slice(2)
 const flag = name => args.includes(`--${name}`)
 const option = (name, fallback) => { const i = args.indexOf(`--${name}`); return i >= 0 ? args[i + 1] : fallback }
 if (flag('help')) { console.log(readHelp()); process.exit(0) }
-function readHelp() { return 'usage: node scripts/video/record.mjs [--scenes a,b|all] [--target local] [--keep-going] [--render-only] [--list]' }
+function readHelp() { return 'usage: node scripts/video/record.mjs [--scenes a,b|all] [--target local|hosted] [--keep-going] [--render-only] [--list]' }
 
 const ORDER = ['judges-corner', 'key-check', 'writer-credentials', 'title-card', 'close-card', 'replay-key-reveal', 'ledger', 'builder-feedback', 'python-verify', 'try-testnet', 'claude-mcp', 'hosted-ask', 'hosted-decline']
 if (flag('list')) { for (const id of ORDER) console.log(id); process.exit(0) }
 const wanted = option('scenes', 'all') === 'all' ? ORDER : option('scenes').split(',').map(s => s.trim())
 for (const id of wanted) if (!SCENES.some(s => s.id === id)) { console.error(`unknown scene: ${id}`); process.exit(2) }
 const targetMode = option('target', 'local')
-if (targetMode !== 'local') throw new Error('VID-3 records local scenes only; hosted footage: record after redeploy')
+if (!['local', 'hosted'].includes(targetMode)) throw new Error('Use --target local or --target hosted')
 await checkVideoPins()
 mkdirSync(CLIPS, { recursive: true })
 rmSync(join(SCRATCH, 'tmp'), { recursive: true, force: true }) // folders a crashed earlier take left behind
@@ -38,9 +39,11 @@ rmSync(join(SCRATCH, 'tmp'), { recursive: true, force: true }) // folders a cras
 let local = null, replay = null, liveUsed = 0
 const pass = { startedAt: new Date().toISOString(), targetMode, scenes: [] }
 
-async function resolveTarget() {
-  if (!local) { console.log('starting the local HOSTED=1 stack (no hosted probe)'); local = await startLocalStack() }
-  return { kind: 'local', base: local.url }
+async function resolveTarget(localOnly = false) {
+  return resolveRecordingTarget(localOnly ? 'local' : targetMode, { startLocal: async () => {
+    if (!local) { console.log('starting the local HOSTED=1 stack (no hosted probe)'); local = await startLocalStack() }
+    return local
+  } })
 }
 
 async function recordCard(scene) {
@@ -77,9 +80,11 @@ async function recordTerminal(scene) {
 
 async function recordBrowser(scene) {
   if (scene.localReplay && !replay) replay = await startReplay()
-  const target = scene.localReplay ? { kind: 'local-replay', base: replay.url } : scene.local ? await resolveTarget() : scene.hosted ? await resolveTarget() : { kind: scene.source ?? 'site' }
+  const target = scene.localReplay ? { kind: 'local-replay', base: replay.url } : scene.local ? await resolveTarget(true) : scene.hosted ? await resolveTarget() : { kind: scene.source ?? 'site' }
   const labels = { ...scene.labels(target) }
-  if (target.kind === 'hosted') { liveUsed += scene.liveQuestions; labels.hostedLabels = target.status.labels; labels.hostedState = target.status.state }
+  if (target.kind === 'hosted') {
+    if (liveUsed + scene.liveQuestions > MAX_LIVE_QUESTIONS) throw new Error('Hosted question limit reached; no further take permitted')
+    liveUsed += scene.liveQuestions; labels.hostedLabels = target.status.labels; labels.hostedState = target.status.state }
   const options = typeof scene.contextOptions === 'function' ? scene.contextOptions(target) : {}
   const source = scene.local ? 'local-hosted-stack' : scene.localReplay ? 'local-replay' : scene.hosted ? (target.kind === 'hosted' ? 'hosted' : 'local-hosted-stack') : scene.source
   return recordScene({ id: scene.id, source, labels, contextOptions: options, run: rec => scene.run(rec, target) })
@@ -89,19 +94,15 @@ let failures = 0
 try {
   for (const id of wanted) {
     const scene = SCENES.find(s => s.id === id)
-    if (scene.defer) { console.log(`↷ ${id}: record after redeploy`); pass.scenes.push({ id, deferred: 'record after redeploy' }); continue }
     const t0 = Date.now()
     let outcome
-    for (let attempt = 1; attempt <= (scene.hosted ? 2 : 1); attempt++) {
-      try {
-        console.log(`▶ ${id}${attempt > 1 ? ` (attempt ${attempt})` : ''}`)
-        const sidecar = scene.kind === 'card' ? await recordCard(scene) : scene.kind === 'terminal' ? await recordTerminal(scene) : await recordBrowser(scene)
-        outcome = { id, ok: true, source: sidecar.source, seconds: Math.round((Date.now() - t0) / 1000), durationMs: sidecar.durationMs }
-        break
-      } catch (error) {
-        outcome = { id, ok: false, error: String(error.message ?? error).split('\n').slice(0, 6).join('\n') }
-        console.error(`✗ ${id}: ${outcome.error}`)
-      }
+    try {
+      console.log(`▶ ${id}`)
+      const sidecar = scene.kind === 'card' ? await recordCard(scene) : scene.kind === 'terminal' ? await recordTerminal(scene) : await recordBrowser(scene)
+      outcome = { id, ok: true, source: sidecar.source, seconds: Math.round((Date.now() - t0) / 1000), durationMs: sidecar.durationMs }
+    } catch (error) {
+      outcome = { id, ok: false, error: String(error.message ?? error).split('\n').slice(0, 6).join('\n') }
+      console.error(`✗ ${id}: ${outcome.error}`)
     }
     pass.scenes.push(outcome)
     if (!outcome.ok) { failures++; if (!flag('keep-going')) break }

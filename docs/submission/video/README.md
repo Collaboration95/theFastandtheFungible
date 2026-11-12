@@ -141,9 +141,35 @@ The authenticated gh download is launched with `npx --package <local-tgz>
 researchagent-mcp`, since a local archive passed as the executable returns
 Permission denied. No product or gate threshold changed.
 
-## State: second pass, 11 Nov
+## State: VID-4 hosted pass, 12 Nov
 
-This anchor preserves links to VID-2's historical acceptance. Its v1.1.0,
-2:55 hosted draft is superseded by the VID-3 local footage described above.
-The old cue times do not apply to this cut. Record hosted-URL scenes after
-redeploy and use the owner's voice.
+Explicit `--target hosted` is restored after DEPLOY-5 accepted deployed build
+`88c3a00b`. Local remains the default, with no hosted probe or automatic fallback.
+Hosted scenes and `s2-sandbox` are enabled. Hosted browser capture is 1280×720;
+assembly scales it to the existing 1920×1080 cut. Use `VIDEO_DIR` to keep media
+outside git. The recorder caps each pass at two hosted questions and stops on a
+failed take rather than automatically spending another question.
+
+VID-4 used **two hosted questions**, then stopped. Both answered and displayed a
+matching browser key check. The inherited selector incorrectly expected a text
+checkmark where the current UI renders SVG; both automated takes ended there,
+before Trace/Writers. A separate zero-question hosted Writers clip retains all
+three accepted Credential badges. The selector now checks the actual matching-result state,
+with a regression against the rendered production component and a mismatch case.
+Failed raw media and sidecars remain failed evidence; they are not clean takes.
+
+The hosted corner verified the featured 12 Nov bundle: **24 passed, 2 not checked**,
+with **all five gates Passed** (the UI word for Held) and zero question requests.
+The deployed header says **rule-based buying**; it deliberately separates the
+configured buying mode from each answer's provenance. No UI text was substituted.
+
+Artifacts are in `video-out/vid-4`: a full-length **NOVOICE review cut** retains
+observed hosted footage and explicitly marks the missing same-run Trace segment.
+It is not the completed submission video. VID-3 clips retain their original
+local/replay/published-tool labels. Owner text is unchanged because the observed
+one-article **S$0.40** purchase agrees with s2. Owner voice remains tracked in #265.
+
+For a review cut with external shot edits and captions, the assembler accepts
+`--spec /absolute/path/shots.json --docs-out /absolute/path/captions`. This avoids
+rewriting FIN-owned captions, voice text and timing files. No synthetic voice,
+video files, product/UI/server changes, or relaxed gates are included in this PR.

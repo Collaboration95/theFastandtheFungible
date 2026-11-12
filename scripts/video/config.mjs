@@ -37,8 +37,8 @@ export const QUESTIONS = {
   // The local fixture stack only buys for the fictional-writer examples; the hosted demo's examples are the XRPL notes.
   localBuy: 'Are Kestrel Semiconductor\'s advanced-packaging lead times in Malaysia getting shorter?',
 }
-/** A recording pass asks the hosted app at most this many questions (the brief caps it at 4). */
-export const MAX_LIVE_QUESTIONS = Math.min(4, Number(process.env.VIDEO_MAX_LIVE_QUESTIONS ?? 4))
+/** Hard cap for all hosted takes in one pass, including failed takes. */
+export const MAX_LIVE_QUESTIONS = Math.max(0, Math.min(2, Number(process.env.VIDEO_MAX_LIVE_QUESTIONS ?? 2) || 0))
 
 export const sleep = ms => new Promise(done => setTimeout(done, ms))
 
