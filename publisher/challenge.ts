@@ -1,3 +1,4 @@
+import { checkFreshness } from './writers/ledger-analytics/freshness.js'
 // POST /w/:slug/challenge (#132, D5): the writer re-runs the shared checker on the bytes and salts
 // it stored. A broken claim earns a refund Payment of the full amount back to the payer, with
 // InvoiceID = the original tx hash, write-once per payment and per intent. The publisher key
@@ -81,7 +82,8 @@ export function createChallenges(journal: PublisherJournal, manifests: Manifests
     const claim = manifest.claims.find(c => c.id === body.claimId && c.leaf === body.leaf)
     if (!claim) return { status: 'REJECTED' }
     // The shared checker on the stored bytes and salts, never on what the buyer sent.
-    const broken = verifyDelivery(article.body, article.passages, manifests.saltsFor(article), manifest).failedClaims.includes(claim.id)
+    const freshness = await checkFreshness(article.body, manifest, settlement.settledAt, undefined, settlement.ledgerIndex)
+    const broken = (!freshness.ok && freshness.failedClaimId === claim.id) || verifyDelivery(article.body, article.passages, manifests.saltsFor(article), manifest).failedClaims.includes(claim.id)
     if (!broken) return { status: 'REJECTED' }
     // Repeated or parallel challenges get the one stored refund back (resubmitted, never re-signed).
     return { status: 'REFUNDED', refundTxHash: await refundOnce(entry, body, settlement.payer, quote.amount, quote.asset) }

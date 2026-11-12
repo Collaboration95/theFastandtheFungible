@@ -1,4 +1,6 @@
 import { webPublishing, webQueueFile } from './publishing/web.js'
+import { startLedgerAnalytics, reportListed, type BackgroundOptions } from './writers/ledger-analytics/background.js'
+
 import { loadConfig } from '../server/config.js'
 import { TEAM_AUTHORED_PUBLISHERS } from '../shared/writer-authorship.js'
 import { requestBodyStatus } from '../server/body-limit.js'
@@ -39,6 +41,8 @@ export type PublisherConfig = {
   embedder?: Embedder
   embeddings?: EmbeddingCache
   env?: NodeJS.ProcessEnv
+  /** In-process ledger report prewarming; false is for static payment fixtures. */
+  ledgerAnalytics?: BackgroundOptions | false
   /** XRPL validation polling inside the facilitator (tests shorten it). */
   facilitatorTiming?: { pollMs: number; timeoutMs: number }
   /** Test-only toggle (#132): every challenge is refused (503), to cover the buyer's REFUSED branch. */
@@ -70,7 +74,8 @@ export function createPublisherApp(config: PublisherConfig = {}) {
   const app = express()
   const env = loadConfig(config.env ?? process.env)
   const assetFor = (slug: string): Asset => env[`XRPL_PUBLISHER_${slug.toUpperCase().replace(/-/g, '_')}_CURRENCY`] === 'RLUSD' ? AssetSchema.parse({ currency: RLUSD_CURRENCY, issuer: env.XRPL_RLUSD_ISSUER || RLUSD_TESTNET_ISSUER, label: !env.XRPL_RLUSD_ISSUER || env.XRPL_RLUSD_ISSUER === RLUSD_TESTNET_ISSUER ? 'RLUSD (Testnet)' : 'test USD (substitute for RLUSD)' }) : 'XRP'
-  const escrowEnabled = (slug: string) => rail === 'xrpl-testnet' && assetFor(slug) === 'XRP' && (slug.startsWith('community-') || (config.escrowWriters ?? (env.ESCROW_WRITERS ?? '').split(',')).includes(slug))
+  const escrowEnabled = (slug: string) => slug !== 'ledger-analytics' && rail === 'xrpl-testnet' && assetFor(slug) === 'XRP' && (slug.startsWith('community-') || (config.escrowWriters ?? (env.ESCROW_WRITERS ?? '').split(',')).includes(slug))
+
   const secret = config.secret ?? process.env.PUBLISHER_SECRET
   const faults = config.faults ?? process.env.PUBLISHER_FAULTS === '1'
   // The only Bearer secret left guards the fault toggle; payments carry their own signed proof.
@@ -92,7 +97,13 @@ export function createPublisherApp(config: PublisherConfig = {}) {
       if (env.EMBEDDING_PROVIDER === 'local' && !cache) throw new Error('Build local corpus embeddings before starting the publisher')
       return buildRegistry(corpus, { rail, env, embeddings: config.embeddings ?? (env.EMBEDDING_PROVIDER === 'local' ? cache : localEmbeddingCache(cache)) })
     })
-    .then(built => { for (const [slug, entry] of built) registry.set(slug, entry) })
+    .then(async built => {
+      for (const [slug, entry] of built) registry.set(slug, entry)
+      const analytics=registry.get('ledger-analytics')
+      if(analytics && config.ledgerAnalytics!==false) app.locals.ledgerAnalytics=await startLedgerAnalytics(analytics,config.ledgerAnalytics)
+    })
+
+
   void writersReady.catch(() => {})
   app.locals.writersReady = writersReady
   /** Startup readiness (kept for callers): the writer registry is the only corpus. */
@@ -235,7 +246,7 @@ export function createPublisherApp(config: PublisherConfig = {}) {
     const vector = entry.index.vectors && embedder ? await embedder(q) : undefined
     const { mode, ranked } = await searchIndex(entry.index, q, k, vector)
     const byId = new Map(entry.articles.map(a => [a.articleId, a]))
-    res.json(ranked.map(r => {
+    res.json(ranked.filter(r=>reportListed(entry,byId.get(r.articleId)!)).map(r => {
       const article = byId.get(r.articleId)!
       const relevance = reportedRelevance(entry.publisher.slug, r.relevance)
       return { ...toSearchHit(article, relevance, mode, manifests.manifestFor(entry, article, relevance)), ...(entry.publisher.verification ? { verification: entry.publisher.verification } : {}) }
@@ -256,6 +267,9 @@ export function createPublisherApp(config: PublisherConfig = {}) {
     const article = ArticleParam.test(req.params.id) ? entry.articles.find(a => a.articleId === req.params.id) : undefined
     if (!article) throw new PublisherError(404, 'Article not found')
     if (article.tier === 'PAID') {
+      // New purchases use the latest current snapshot. Already signed payments retain
+      // their immutable version for delivery/reconciliation and historical challenges.
+      if(!req.get('PAYMENT-SIGNATURE') && !reportListed(entry,article)) throw new PublisherError(404,'Report snapshot expired; search again')
       if (!entry.publisher.wallet) throw new PublisherError(503, 'Publisher wallet unavailable')
       await sellPaid(req, res, { ...article, publisher: entry.publisher.name, payTo: entry.publisher.wallet }); return
     }

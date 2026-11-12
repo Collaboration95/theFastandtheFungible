@@ -23,7 +23,7 @@ export async function candidateFrom(base: string, article = alphaLeakArticle): P
 }
 
 export async function payPath(options: { refuseChallenges?: boolean; storePath?: string; writers?: typeof alphaLeakCorpus } = {}) {
-  const app = createPublisherApp({ journal: ':memory:', rail: 'simulated', writers: options.writers ?? alphaLeakCorpus, env: {}, refuseChallenges: options.refuseChallenges })
+  const app = createPublisherApp({ journal: ':memory:', rail: 'simulated', writers: options.writers ?? alphaLeakCorpus, env: {}, refuseChallenges: options.refuseChallenges, ledgerAnalytics:false })
   await app.locals.ready; await app.locals.writersReady
   const server = app.listen(0, '127.0.0.1'); await once(server, 'listening')
   const base = `http://127.0.0.1:${(server.address() as { port: number }).port}`

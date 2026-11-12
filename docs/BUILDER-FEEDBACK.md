@@ -1294,3 +1294,20 @@ persistence or a mainnet deployment. No cloud resource or live ledger call ran.
 - **Workaround:** create and fund a custodial Testnet account, or use an operator-held matching signer. Browser inputs reject seeds. Faucet calls now have a 30-second local deadline; no faucet outage was observed.
 - **Suggested fix:** provide a wallet-signing publishing example that separately proves address ownership and signs manifests without exposing a seed to a web form.
 - **Mainnet impact:** a real deployment needs a noncustodial wallet integration and appropriate key custody; this Testnet flow establishes neither mainnet custody nor compliance.
+## 2026-11-12 — public ledger analytics needs complete scans (observed)
+
+- Evidence: `docs/evidence/content/CONTENT.md`, `rlusd-snapshot.json`, `ledger-analytics-sample.json`, `testnet-purchase.json`. RLUSD issuer pagination required 259 public reads and 135.574 seconds. A shorter 131-read probe was incomplete. Three filtered `ledger_data` pages returned no Escrow objects while still carrying a marker; they cannot establish a zero global escrow total. One later read returned JSON-RPC `tooBusy` over HTTP 200.
+- Workaround: fixed-ledger pagination, exact decimal aggregation, four-minute scan cap, background prewarming/periodic refresh, signed per-topic freshness (RLUSD K=256, AMM/project accounts K=64), withdrawal of expired snapshots, quarantine/refund on stale or unverifiable delivery, and backoff for both HTTP and RPC overload. Global escrow reports are disabled pending a complete measured scan. Never sell partial totals or wait for a scan in search. Suggested fix: a documented ledger-bound aggregate endpoint or indexed filtered pagination with completeness proofs.
+- Severity: Medium for on-demand analytics. Mainnet impact: observed read latency/overload only; no Mainnet writes. A live S$0.40 Testnet report purchase verified at `46D61B480AC861E5F35C5604510BFC9D1A7FA45D9287E1F6DA1AFAF4F3EDB4F4`; same-intent retry retained one receipt.
+
+## 2026-11-12 — Vite port zero selects a fixed port (observed tooling)
+
+- Evidence: `docs/evidence/content/CONTENT.md`, `.devcontainer/start.ts` and `tests/codespaces.test.ts`. The clean integration fast check at `8db4ca2d3615667473819be29056d1d17ebd93e5` failed only on `Port 5173 is already in use`; an isolated regression assertion confirmed that `webPort: 0` bound 5173 rather than an ephemeral port.
+- Workaround: bind Vite's public HTTP server to OS-assigned port zero for that fixture, retain exact host/origin checks, and close Vite if startup fails. Suggested fix: document and support port zero consistently in Vite's public listen API.
+- Severity: Low tooling friction, with intermittent parallel-suite failures. Mainnet impact: none; fixture-only startup, no ledger transaction, disabled check or changed timeout.
+
+## 2026-11-12 — replay receipt dismissal blocked an accessibility check (observed tooling)
+
+- Evidence: content full-gate receipt `1794485991609-26693-29efce53-0b1d-4cca-b975-a3e5e1fc72dc.json` at `35727b70aa8ae2dcc4c7f56025e6162b75aeef2d`; 19/20 checks passed. The desktop replay accessibility test sent a global Escape, then its citation click was intercepted by the still-open receipt dialog. No ledger transaction.
+- Workaround: wait for the complete lazy-loaded receipt, send Escape to that dialog and assert dismissal before the next interaction. Suggested fix: browser examples should synchronize modal readiness and closure explicitly around accessibility tooling. The standalone rerun also reproduced the previously documented lint discovery of copied source under `scratch/`; its generated Pages tree was retained outside the checkout rather than excluding checks.
+- Severity: Low tooling friction. Mainnet impact: none; existing accessibility, keyboard and timeout assertions are retained.

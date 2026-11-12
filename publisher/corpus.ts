@@ -1,3 +1,4 @@
+import { ledgerCorpus } from './writers/ledger-analytics/catalogue.js'
 import { loadPublicDocs } from './writers/public-docs.js'
 import { localWriterRegistrations } from '../server/local-writer-discovery.js'
 import { loadLocalWriters } from './local-writers.js'
@@ -42,8 +43,9 @@ export async function loadWriterCorpus(root = dataDirectory, options: { allowMin
     if (!articles.length) console.warn('Writer articles not generated yet (#120); serving the roster with no articles')
     const active = new Set(localWriterRegistrations().map(w => w.slug))
     const local = root === dataDirectory ? (await loadLocalWriters()).filter(c => !active.has(c.publishers[0].slug)) : []
-    return validateWriterCorpus({ publishers: [...publishers, ...(docs?.publishers ?? []), ...local.flatMap(c => c.publishers)],
-      writers: [...writers, ...(docs?.writers ?? []), ...local.flatMap(c => c.writers)], articles: [...articles, ...(docs?.articles ?? []), ...local.flatMap(c => c.articles)] })
+    const ledger = root === dataDirectory && process.env.LEDGER_ANALYTICS === '1' ? ledgerCorpus() : undefined
+    return validateWriterCorpus({ publishers: [...publishers, ...(docs?.publishers ?? []), ...(ledger?.publishers ?? []), ...local.flatMap(c => c.publishers)],
+      writers: [...writers, ...(docs?.writers ?? []), ...(ledger?.writers ?? []), ...local.flatMap(c => c.writers)], articles: [...articles, ...(docs?.articles ?? []), ...(ledger?.articles ?? []), ...local.flatMap(c => c.articles)] })
   }
   if (options.allowMini === false || !existsSync(miniCorpusFile)) throw new Error('No writer roster in data/writers/')
   console.warn('Writer corpus not generated yet; serving the mini corpus (SYNTHETIC test fixture)')

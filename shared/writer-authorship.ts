@@ -3,5 +3,6 @@
 export const TEAM_AUTHORED_PUBLISHERS: ReadonlySet<string> = new Set([
   'open-records',
   'team-builder-notes',
+  'ledger-analytics',
   'team-xrpl-explainers',
 ])

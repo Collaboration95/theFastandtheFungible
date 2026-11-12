@@ -154,7 +154,10 @@ for (const width of [1440, 390]) test(`replay UI accessibility at ${width}`, asy
   await expect(page.getByRole('link',{name:'Ask your own question'})).toHaveAttribute('href','https://ra-front-651013803640.asia-southeast1.run.app')
   if(width===390)await page.locator('.demo-shell > summary').click()
   if(width===390){await page.locator('.ra-mobile-spend > button').click();await capture('mobile-spend')}
-  await page.getByRole('button',{name:/Receipt/}).first().click();await capture('receipt');await page.keyboard.press('Escape')
+  await page.getByRole('button',{name:/Receipt/}).first().click()
+  const receiptDialog=page.getByRole('dialog',{name:'Receipt',exact:true})
+  await expect(receiptDialog.getByRole('heading',{name:'What this payment bought'})).toBeVisible()
+  await capture('receipt');await receiptDialog.press('Escape');await expect(receiptDialog).toBeHidden()
   await page.locator('.ra-cite').first().click();await capture('citation');await page.keyboard.press('Escape')
   await page.keyboard.press('w');await page.getByRole('tab',{name:'Ledger',exact:true}).click();await capture('ledger');await page.keyboard.press('Escape')
   await page.keyboard.press('ControlOrMeta+,');await expect(page.getByRole('heading',{name:'About this replay'})).toBeVisible();await capture('settings')

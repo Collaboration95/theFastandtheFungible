@@ -1,0 +1,503 @@
+{
+  "provenance": "Live read-only background prewarm; locally writer-signed; no purchase, model calls or ledger writes.",
+  "measuredAt": "2026-11-12T10:27:31.917Z",
+  "policy": {
+    "rlusd": {
+      "refreshMs": 600000,
+      "maxLedgerLag": 256,
+      "network": "mainnet"
+    },
+    "amm": {
+      "refreshMs": 120000,
+      "maxLedgerLag": 64,
+      "network": "mainnet"
+    },
+    "project-activity": {
+      "refreshMs": 120000,
+      "maxLedgerLag": 64,
+      "network": "testnet"
+    }
+  },
+  "results": [
+    {
+      "topic": "amm",
+      "computeTimeMs": 2498,
+      "stamp": {
+        "network": "mainnet",
+        "ledgerIndex": 108280168,
+        "ledgerHash": "74EB2B9396371EE7BDABACBE65243058639073335610635536B278E6D8BC1055",
+        "computedAt": "2026-11-12T10:25:20.015Z",
+        "maxLedgerLag": 64
+      },
+      "article": {
+        "articleId": "ledger-amm-a3b38c61a7ab5f92ba301a5d",
+        "version": "a3b38c61a7ab5f92ba301a5d",
+        "publisherSlug": "ledger-analytics",
+        "writerSlug": "ledger-analytics",
+        "title": "RLUSD/XRP AMM pool statistics",
+        "publishedAt": "2026-11-12T10:25:20.015Z",
+        "tier": "PAID",
+        "priceMinor": 40,
+        "abstract": "On-demand public ledger analysis of rlusd/xrp amm pool statistics; signed snapshot with a bounded freshness promise.",
+        "tags": [
+          "amm",
+          "ledger",
+          "analytics",
+          "RLUSD",
+          "XRP"
+        ],
+        "family": "ledger-amm",
+        "sources": [
+          {
+            "url": "https://livenet.xrpl.org/ledgers/108280168",
+            "accessedAt": "2026-11-12"
+          }
+        ],
+        "body": "As of validated ledger 108280168 (hash 74EB2B9396371EE7BDABACBE65243058639073335610635536B278E6D8BC1055), computed at 2026-11-12T10:25:20.015Z. Network: mainnet. The writer promises this report is no more than 64 validated ledgers old at purchase. This timestamp describes a public ledger snapshot, not a market forecast or a statement about another network.\n\nComputed ledger measurements: {\"account\":\"rhWTXC2m2gGGA9WozUaoMm6kLAVPb1tcS3\",\"amount\":\"2016899585910\",\"amount2\":{\"currency\":\"524C555344000000000000000000000000000000\",\"issuer\":\"rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De\",\"value\":\"2121498.462453569\"},\"lpToken\":{\"currency\":\"03B245BE580EC4F4386A751C084489EC4B514A2F\",\"issuer\":\"rhWTXC2m2gGGA9WozUaoMm6kLAVPb1tcS3\",\"value\":\"1747616949.403583\"},\"tradingFee\":315,\"scope\":\"Single native AMM for the canonical RLUSD issuer and XRP; quantities and fee units as returned by amm_info.\"}. These values come only from public ledger read methods and refer to the exact validated ledger identified above. The report does not initiate ledger writes, transfer assets, infer the identity of beneficial owners, or estimate off-ledger balances.\n\nVerification method: query the public mainnet node with ledger_index 108280168, confirm ledger_hash 74EB2B9396371EE7BDABACBE65243058639073335610635536B278E6D8BC1055, then repeat amm_info for XRP and the canonical RLUSD issuer. All pages must use the same ledger index. An incomplete scan is an error and is never published as a zero total.\n\nEvidence limits: Single native AMM for the canonical RLUSD issuer and XRP; quantities and fee units as returned by amm_info. Read the ledger header on an independent public node or explorer. A writer signature binds these exact report passages to the normal purchase manifest; it proves who signed the measurements, not that the node operator or issuer is trustworthy. Freshness must be checked at purchase on this report's network. A stale report is a broken promise and its content must not support an answer.",
+        "passages": [
+          {
+            "id": "p1",
+            "text": "As of validated ledger 108280168 (hash 74EB2B9396371EE7BDABACBE65243058639073335610635536B278E6D8BC1055), computed at 2026-11-12T10:25:20.015Z. Network: mainnet. The writer promises this report is no more than 64 validated ledgers old at purchase. This timestamp describes a public ledger snapshot, not a market forecast or a statement about another network."
+          },
+          {
+            "id": "p2",
+            "text": "Computed ledger measurements: {\"account\":\"rhWTXC2m2gGGA9WozUaoMm6kLAVPb1tcS3\",\"amount\":\"2016899585910\",\"amount2\":{\"currency\":\"524C555344000000000000000000000000000000\",\"issuer\":\"rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De\",\"value\":\"2121498.462453569\"},\"lpToken\":{\"currency\":\"03B245BE580EC4F4386A751C084489EC4B514A2F\",\"issuer\":\"rhWTXC2m2gGGA9WozUaoMm6kLAVPb1tcS3\",\"value\":\"1747616949.403583\"},\"tradingFee\":315,\"scope\":\"Single native AMM for the canonical RLUSD issuer and XRP; quantities and fee units as returned by amm_info.\"}. These values come only from public ledger read methods and refer to the exact validated ledger identified above. The report does not initiate ledger writes, transfer assets, infer the identity of beneficial owners, or estimate off-ledger balances."
+          },
+          {
+            "id": "p3",
+            "text": "Verification method: query the public mainnet node with ledger_index 108280168, confirm ledger_hash 74EB2B9396371EE7BDABACBE65243058639073335610635536B278E6D8BC1055, then repeat amm_info for XRP and the canonical RLUSD issuer. All pages must use the same ledger index. An incomplete scan is an error and is never published as a zero total."
+          },
+          {
+            "id": "p4",
+            "text": "Evidence limits: Single native AMM for the canonical RLUSD issuer and XRP; quantities and fee units as returned by amm_info. Read the ledger header on an independent public node or explorer. A writer signature binds these exact report passages to the normal purchase manifest; it proves who signed the measurements, not that the node operator or issuer is trustworthy. Freshness must be checked at purchase on this report's network. A stale report is a broken promise and its content must not support an answer."
+          }
+        ]
+      },
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "ledger-analytics",
+        "articleId": "ledger-amm-a3b38c61a7ab5f92ba301a5d",
+        "version": "a3b38c61a7ab5f92ba301a5d",
+        "wallet": "rPcGTrh6sBaNhXNJyQjMZzrevnAp3p5hvf",
+        "pubKey": "EDC8FC6C1D4C5A71497A69E9C6814023CA483A1ADEABC148DFBB508A9052CB3F6A",
+        "priceMinor": 40,
+        "leaves": [
+          "d437d7cc0a189156d5d0c6568a279ea877946fde3e05291d7c15d0d950fae591",
+          "7a5f501d1a97ff420599a1c428ac4850bac4c26545221639a4709e672d2aaed3",
+          "a8850e9a33333859779e7d128fd9f6c62b23e72a896b28685bd08e1cc16a7552",
+          "533dac5e6e1544138ccc778cd46722413dc0c1889ef031571c0221732989a238"
+        ],
+        "root": "81d0847110dda67033bfbffef642f91ffacae5d96d0556cc2ed5f832392c631a",
+        "claims": [
+          {
+            "id": "p1:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "d437d7cc0a189156d5d0c6568a279ea877946fde3e05291d7c15d0d950fae591"
+          }
+        ],
+        "wordCount": 265,
+        "publishedAt": "2026-11-12T10:25:20.015Z",
+        "ledgerFreshness": {
+          "topic": "amm",
+          "network": "mainnet",
+          "ledgerIndex": 108280168,
+          "ledgerHash": "74EB2B9396371EE7BDABACBE65243058639073335610635536B278E6D8BC1055",
+          "computedAt": "2026-11-12T10:25:20.015Z",
+          "maxLedgerLag": 64
+        },
+        "relevance": 1,
+        "sig": "CC267F716771F0CE5A951965606E3A0C30A9D5FB2A87F16DF579BE89C676D75CA2C65DCE1AC696080F5B5FDDD91B5D176A7CBE509594F8869B6AB857D2787F04"
+      },
+      "salts": [
+        "622ecab4f6d5018f2e58387a5da0180b",
+        "22d3aa913af05a4468b0c559b7b4f862",
+        "5066f2a2834fe7bd742423a57ac33943",
+        "028dc5287222929da3712dcf1a6fd380"
+      ]
+    },
+    {
+      "topic": "project-activity",
+      "computeTimeMs": 1981,
+      "stamp": {
+        "network": "testnet",
+        "ledgerIndex": 22265288,
+        "ledgerHash": "37FC788995CD504416FA823F09FB077BC0968CC512DD926173DC154CC58CAA66",
+        "computedAt": "2026-11-12T10:25:21.499Z",
+        "maxLedgerLag": 64
+      },
+      "article": {
+        "articleId": "ledger-project-activity-f41fef0e17818b6cea9c55eb",
+        "version": "f41fef0e17818b6cea9c55eb",
+        "publisherSlug": "ledger-analytics",
+        "writerSlug": "ledger-analytics",
+        "title": "ResearchAgent Testnet account activity",
+        "publishedAt": "2026-11-12T10:25:21.499Z",
+        "tier": "PAID",
+        "priceMinor": 40,
+        "abstract": "On-demand public ledger analysis of researchagent testnet account activity; signed snapshot with a bounded freshness promise.",
+        "tags": [
+          "project-activity",
+          "ledger",
+          "analytics",
+          "RLUSD",
+          "XRP"
+        ],
+        "family": "ledger-project-activity",
+        "sources": [
+          {
+            "url": "https://testnet.xrpl.org/ledgers/22265288",
+            "accessedAt": "2026-11-12"
+          }
+        ],
+        "body": "As of validated ledger 22265288 (hash 37FC788995CD504416FA823F09FB077BC0968CC512DD926173DC154CC58CAA66), computed at 2026-11-12T10:25:21.499Z. Network: testnet. The writer promises this report is no more than 64 validated ledgers old at purchase. This timestamp describes a public ledger snapshot, not a market forecast or a statement about another network.\n\nComputed ledger measurements: {\"accounts\":[{\"account\":\"rPcGTrh6sBaNhXNJyQjMZzrevnAp3p5hvf\",\"balanceDrops\":\"100040000\",\"sequence\":22264107,\"ownerCount\":0,\"previousTransaction\":\"46D61B480AC861E5F35C5604510BFC9D1A7FA45D9287E1F6DA1AFAF4F3EDB4F4\"},{\"account\":\"rKvkhPm45VPStAW5EgKo6zqCJSH5uQBP6k\",\"balanceDrops\":\"99959988\",\"sequence\":22264167,\"ownerCount\":0,\"previousTransaction\":\"46D61B480AC861E5F35C5604510BFC9D1A7FA45D9287E1F6DA1AFAF4F3EDB4F4\"}],\"scope\":\"Configured project-owned Testnet accounts only. Current sequence, owned objects and previous transaction show account activity; no Mainnet account activity is inferred.\"}. These values come only from public ledger read methods and refer to the exact validated ledger identified above. The report does not initiate ledger writes, transfer assets, infer the identity of beneficial owners, or estimate off-ledger balances.\n\nVerification method: query the public testnet node with ledger_index 22265288, confirm ledger_hash 37FC788995CD504416FA823F09FB077BC0968CC512DD926173DC154CC58CAA66, then repeat account_info for each listed project account. All pages must use the same ledger index. An incomplete scan is an error and is never published as a zero total.\n\nEvidence limits: Configured project-owned Testnet accounts only. Current sequence, owned objects and previous transaction show account activity; no Mainnet account activity is inferred. Read the ledger header on an independent public node or explorer. A writer signature binds these exact report passages to the normal purchase manifest; it proves who signed the measurements, not that the node operator or issuer is trustworthy. Freshness must be checked at purchase on this report's network. A stale report is a broken promise and its content must not support an answer.",
+        "passages": [
+          {
+            "id": "p1",
+            "text": "As of validated ledger 22265288 (hash 37FC788995CD504416FA823F09FB077BC0968CC512DD926173DC154CC58CAA66), computed at 2026-11-12T10:25:21.499Z. Network: testnet. The writer promises this report is no more than 64 validated ledgers old at purchase. This timestamp describes a public ledger snapshot, not a market forecast or a statement about another network."
+          },
+          {
+            "id": "p2",
+            "text": "Computed ledger measurements: {\"accounts\":[{\"account\":\"rPcGTrh6sBaNhXNJyQjMZzrevnAp3p5hvf\",\"balanceDrops\":\"100040000\",\"sequence\":22264107,\"ownerCount\":0,\"previousTransaction\":\"46D61B480AC861E5F35C5604510BFC9D1A7FA45D9287E1F6DA1AFAF4F3EDB4F4\"},{\"account\":\"rKvkhPm45VPStAW5EgKo6zqCJSH5uQBP6k\",\"balanceDrops\":\"99959988\",\"sequence\":22264167,\"ownerCount\":0,\"previousTransaction\":\"46D61B480AC861E5F35C5604510BFC9D1A7FA45D9287E1F6DA1AFAF4F3EDB4F4\"}],\"scope\":\"Configured project-owned Testnet accounts only. Current sequence, owned objects and previous transaction show account activity; no Mainnet account activity is inferred.\"}. These values come only from public ledger read methods and refer to the exact validated ledger identified above. The report does not initiate ledger writes, transfer assets, infer the identity of beneficial owners, or estimate off-ledger balances."
+          },
+          {
+            "id": "p3",
+            "text": "Verification method: query the public testnet node with ledger_index 22265288, confirm ledger_hash 37FC788995CD504416FA823F09FB077BC0968CC512DD926173DC154CC58CAA66, then repeat account_info for each listed project account. All pages must use the same ledger index. An incomplete scan is an error and is never published as a zero total."
+          },
+          {
+            "id": "p4",
+            "text": "Evidence limits: Configured project-owned Testnet accounts only. Current sequence, owned objects and previous transaction show account activity; no Mainnet account activity is inferred. Read the ledger header on an independent public node or explorer. A writer signature binds these exact report passages to the normal purchase manifest; it proves who signed the measurements, not that the node operator or issuer is trustworthy. Freshness must be checked at purchase on this report's network. A stale report is a broken promise and its content must not support an answer."
+          }
+        ]
+      },
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "ledger-analytics",
+        "articleId": "ledger-project-activity-f41fef0e17818b6cea9c55eb",
+        "version": "f41fef0e17818b6cea9c55eb",
+        "wallet": "rPcGTrh6sBaNhXNJyQjMZzrevnAp3p5hvf",
+        "pubKey": "EDC8FC6C1D4C5A71497A69E9C6814023CA483A1ADEABC148DFBB508A9052CB3F6A",
+        "priceMinor": 40,
+        "leaves": [
+          "64dd1e1d20b2e437addcd4c1d8a29eaec80b70d87cb9c0bcaecb296fcb47a279",
+          "6d4912968d6044c1517e4cf9b5075c896f08b0be394079bec879496877eb4ae9",
+          "0b3bbff153a72aa155eda552a5023c1a0eb63f486f8a6975a6c9ad391adb6ac7",
+          "3f71f4a72145fd64f559080b920daabf151e1b88aee425e685d9f1dfe44afc07"
+        ],
+        "root": "f224b699678954799a324c2fcd5414ce9afbfee6774ba4dcbc02dad390926c45",
+        "claims": [
+          {
+            "id": "p1:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "64dd1e1d20b2e437addcd4c1d8a29eaec80b70d87cb9c0bcaecb296fcb47a279"
+          }
+        ],
+        "wordCount": 268,
+        "publishedAt": "2026-11-12T10:25:21.499Z",
+        "ledgerFreshness": {
+          "topic": "project-activity",
+          "network": "testnet",
+          "ledgerIndex": 22265288,
+          "ledgerHash": "37FC788995CD504416FA823F09FB077BC0968CC512DD926173DC154CC58CAA66",
+          "computedAt": "2026-11-12T10:25:21.499Z",
+          "maxLedgerLag": 64
+        },
+        "relevance": 1,
+        "sig": "DD45A86A763B5E5F0E084B3A58CF10B7807D198825F5E7AA5855C79363FBB15C1705353DDBA377DEA586E27F35D5336B390D9832C04223C552F2AAED92FD4608"
+      },
+      "salts": [
+        "81890f41298d46adac2e65e19a03433a",
+        "9a0ca860ce5e2b1e19847e3009082198",
+        "09c8b0ddb00d4419d2d210c66b5bae37",
+        "3fb5d6a55af0381f7a7c272849b82796"
+      ]
+    },
+    {
+      "topic": "amm",
+      "computeTimeMs": 2599,
+      "stamp": {
+        "network": "mainnet",
+        "ledgerIndex": 108280199,
+        "ledgerHash": "13323091072B00881C08B0F95A2713E90087A9758AEC1F7DA4E5CAC62FFF9085",
+        "computedAt": "2026-11-12T10:27:20.121Z",
+        "maxLedgerLag": 64
+      },
+      "article": {
+        "articleId": "ledger-amm-7d6705a620043aa6f4c1e6fd",
+        "version": "7d6705a620043aa6f4c1e6fd",
+        "publisherSlug": "ledger-analytics",
+        "writerSlug": "ledger-analytics",
+        "title": "RLUSD/XRP AMM pool statistics",
+        "publishedAt": "2026-11-12T10:27:20.121Z",
+        "tier": "PAID",
+        "priceMinor": 40,
+        "abstract": "On-demand public ledger analysis of rlusd/xrp amm pool statistics; signed snapshot with a bounded freshness promise.",
+        "tags": [
+          "amm",
+          "ledger",
+          "analytics",
+          "RLUSD",
+          "XRP"
+        ],
+        "family": "ledger-amm",
+        "sources": [
+          {
+            "url": "https://livenet.xrpl.org/ledgers/108280199",
+            "accessedAt": "2026-11-12"
+          }
+        ],
+        "body": "As of validated ledger 108280199 (hash 13323091072B00881C08B0F95A2713E90087A9758AEC1F7DA4E5CAC62FFF9085), computed at 2026-11-12T10:27:20.121Z. Network: mainnet. The writer promises this report is no more than 64 validated ledgers old at purchase. This timestamp describes a public ledger snapshot, not a market forecast or a statement about another network.\n\nComputed ledger measurements: {\"account\":\"rhWTXC2m2gGGA9WozUaoMm6kLAVPb1tcS3\",\"amount\":\"2016074231179\",\"amount2\":{\"currency\":\"524C555344000000000000000000000000000000\",\"issuer\":\"rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De\",\"value\":\"2122369.721441488\"},\"lpToken\":{\"currency\":\"03B245BE580EC4F4386A751C084489EC4B514A2F\",\"issuer\":\"rhWTXC2m2gGGA9WozUaoMm6kLAVPb1tcS3\",\"value\":\"1747616949.403583\"},\"tradingFee\":315,\"scope\":\"Single native AMM for the canonical RLUSD issuer and XRP; quantities and fee units as returned by amm_info.\"}. These values come only from public ledger read methods and refer to the exact validated ledger identified above. The report does not initiate ledger writes, transfer assets, infer the identity of beneficial owners, or estimate off-ledger balances.\n\nVerification method: query the public mainnet node with ledger_index 108280199, confirm ledger_hash 13323091072B00881C08B0F95A2713E90087A9758AEC1F7DA4E5CAC62FFF9085, then repeat amm_info for XRP and the canonical RLUSD issuer. All pages must use the same ledger index. An incomplete scan is an error and is never published as a zero total.\n\nEvidence limits: Single native AMM for the canonical RLUSD issuer and XRP; quantities and fee units as returned by amm_info. Read the ledger header on an independent public node or explorer. A writer signature binds these exact report passages to the normal purchase manifest; it proves who signed the measurements, not that the node operator or issuer is trustworthy. Freshness must be checked at purchase on this report's network. A stale report is a broken promise and its content must not support an answer.",
+        "passages": [
+          {
+            "id": "p1",
+            "text": "As of validated ledger 108280199 (hash 13323091072B00881C08B0F95A2713E90087A9758AEC1F7DA4E5CAC62FFF9085), computed at 2026-11-12T10:27:20.121Z. Network: mainnet. The writer promises this report is no more than 64 validated ledgers old at purchase. This timestamp describes a public ledger snapshot, not a market forecast or a statement about another network."
+          },
+          {
+            "id": "p2",
+            "text": "Computed ledger measurements: {\"account\":\"rhWTXC2m2gGGA9WozUaoMm6kLAVPb1tcS3\",\"amount\":\"2016074231179\",\"amount2\":{\"currency\":\"524C555344000000000000000000000000000000\",\"issuer\":\"rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De\",\"value\":\"2122369.721441488\"},\"lpToken\":{\"currency\":\"03B245BE580EC4F4386A751C084489EC4B514A2F\",\"issuer\":\"rhWTXC2m2gGGA9WozUaoMm6kLAVPb1tcS3\",\"value\":\"1747616949.403583\"},\"tradingFee\":315,\"scope\":\"Single native AMM for the canonical RLUSD issuer and XRP; quantities and fee units as returned by amm_info.\"}. These values come only from public ledger read methods and refer to the exact validated ledger identified above. The report does not initiate ledger writes, transfer assets, infer the identity of beneficial owners, or estimate off-ledger balances."
+          },
+          {
+            "id": "p3",
+            "text": "Verification method: query the public mainnet node with ledger_index 108280199, confirm ledger_hash 13323091072B00881C08B0F95A2713E90087A9758AEC1F7DA4E5CAC62FFF9085, then repeat amm_info for XRP and the canonical RLUSD issuer. All pages must use the same ledger index. An incomplete scan is an error and is never published as a zero total."
+          },
+          {
+            "id": "p4",
+            "text": "Evidence limits: Single native AMM for the canonical RLUSD issuer and XRP; quantities and fee units as returned by amm_info. Read the ledger header on an independent public node or explorer. A writer signature binds these exact report passages to the normal purchase manifest; it proves who signed the measurements, not that the node operator or issuer is trustworthy. Freshness must be checked at purchase on this report's network. A stale report is a broken promise and its content must not support an answer."
+          }
+        ]
+      },
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "ledger-analytics",
+        "articleId": "ledger-amm-7d6705a620043aa6f4c1e6fd",
+        "version": "7d6705a620043aa6f4c1e6fd",
+        "wallet": "rPcGTrh6sBaNhXNJyQjMZzrevnAp3p5hvf",
+        "pubKey": "EDC8FC6C1D4C5A71497A69E9C6814023CA483A1ADEABC148DFBB508A9052CB3F6A",
+        "priceMinor": 40,
+        "leaves": [
+          "be35ed9a8095558267a24382837f7ea7ae6a94deb6160dce9cfc9d5d1c56fb33",
+          "7d279d92285f27c0cafb68fc234a421d1ecfc6e3dbfbdc5eaf6e33a706eb8ac1",
+          "175a71ed95a2e3d75563ad3f42fc27e25959afbddab863232116341c2f91ed35",
+          "0410414a667c6146897f62fb6765d5f524970881b1e71d0c3f66e90299befa68"
+        ],
+        "root": "3c93b3a64b73d20dbfc88b57c945bfa483f63e456ff22d2be8eb89023a21af0f",
+        "claims": [
+          {
+            "id": "p1:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "be35ed9a8095558267a24382837f7ea7ae6a94deb6160dce9cfc9d5d1c56fb33"
+          }
+        ],
+        "wordCount": 265,
+        "publishedAt": "2026-11-12T10:27:20.121Z",
+        "ledgerFreshness": {
+          "topic": "amm",
+          "network": "mainnet",
+          "ledgerIndex": 108280199,
+          "ledgerHash": "13323091072B00881C08B0F95A2713E90087A9758AEC1F7DA4E5CAC62FFF9085",
+          "computedAt": "2026-11-12T10:27:20.121Z",
+          "maxLedgerLag": 64
+        },
+        "relevance": 1,
+        "sig": "0CABE23B0E5780ABAB7D96F425E1AFEEE8F9994F9FC887C3E67A8455EB209B24B10603F4D873AF9EE90A690AA87A43EB29E73789F94DF65D5AB20593DC310309"
+      },
+      "salts": [
+        "eb82fd8e23ea0f194e532e55a4dd9e51",
+        "94371b3461fb7a73bbe726c7cfb1f784",
+        "3743ace7d0c5f1820b7be311aa4bc276",
+        "039a5c5187ad9d01b847b6d258d2e3f1"
+      ]
+    },
+    {
+      "topic": "project-activity",
+      "computeTimeMs": 1498,
+      "stamp": {
+        "network": "testnet",
+        "ledgerIndex": 22265324,
+        "ledgerHash": "DF49D32760B4D5CC10AA0866943E3FF1E48A870E13D749303E28A0781A09B959",
+        "computedAt": "2026-11-12T10:27:21.023Z",
+        "maxLedgerLag": 64
+      },
+      "article": {
+        "articleId": "ledger-project-activity-0e4cc207b5d9fa01a95f886e",
+        "version": "0e4cc207b5d9fa01a95f886e",
+        "publisherSlug": "ledger-analytics",
+        "writerSlug": "ledger-analytics",
+        "title": "ResearchAgent Testnet account activity",
+        "publishedAt": "2026-11-12T10:27:21.023Z",
+        "tier": "PAID",
+        "priceMinor": 40,
+        "abstract": "On-demand public ledger analysis of researchagent testnet account activity; signed snapshot with a bounded freshness promise.",
+        "tags": [
+          "project-activity",
+          "ledger",
+          "analytics",
+          "RLUSD",
+          "XRP"
+        ],
+        "family": "ledger-project-activity",
+        "sources": [
+          {
+            "url": "https://testnet.xrpl.org/ledgers/22265324",
+            "accessedAt": "2026-11-12"
+          }
+        ],
+        "body": "As of validated ledger 22265324 (hash DF49D32760B4D5CC10AA0866943E3FF1E48A870E13D749303E28A0781A09B959), computed at 2026-11-12T10:27:21.023Z. Network: testnet. The writer promises this report is no more than 64 validated ledgers old at purchase. This timestamp describes a public ledger snapshot, not a market forecast or a statement about another network.\n\nComputed ledger measurements: {\"accounts\":[{\"account\":\"rPcGTrh6sBaNhXNJyQjMZzrevnAp3p5hvf\",\"balanceDrops\":\"100040000\",\"sequence\":22264107,\"ownerCount\":0,\"previousTransaction\":\"46D61B480AC861E5F35C5604510BFC9D1A7FA45D9287E1F6DA1AFAF4F3EDB4F4\"},{\"account\":\"rKvkhPm45VPStAW5EgKo6zqCJSH5uQBP6k\",\"balanceDrops\":\"99959988\",\"sequence\":22264167,\"ownerCount\":0,\"previousTransaction\":\"46D61B480AC861E5F35C5604510BFC9D1A7FA45D9287E1F6DA1AFAF4F3EDB4F4\"}],\"scope\":\"Configured project-owned Testnet accounts only. Current sequence, owned objects and previous transaction show account activity; no Mainnet account activity is inferred.\"}. These values come only from public ledger read methods and refer to the exact validated ledger identified above. The report does not initiate ledger writes, transfer assets, infer the identity of beneficial owners, or estimate off-ledger balances.\n\nVerification method: query the public testnet node with ledger_index 22265324, confirm ledger_hash DF49D32760B4D5CC10AA0866943E3FF1E48A870E13D749303E28A0781A09B959, then repeat account_info for each listed project account. All pages must use the same ledger index. An incomplete scan is an error and is never published as a zero total.\n\nEvidence limits: Configured project-owned Testnet accounts only. Current sequence, owned objects and previous transaction show account activity; no Mainnet account activity is inferred. Read the ledger header on an independent public node or explorer. A writer signature binds these exact report passages to the normal purchase manifest; it proves who signed the measurements, not that the node operator or issuer is trustworthy. Freshness must be checked at purchase on this report's network. A stale report is a broken promise and its content must not support an answer.",
+        "passages": [
+          {
+            "id": "p1",
+            "text": "As of validated ledger 22265324 (hash DF49D32760B4D5CC10AA0866943E3FF1E48A870E13D749303E28A0781A09B959), computed at 2026-11-12T10:27:21.023Z. Network: testnet. The writer promises this report is no more than 64 validated ledgers old at purchase. This timestamp describes a public ledger snapshot, not a market forecast or a statement about another network."
+          },
+          {
+            "id": "p2",
+            "text": "Computed ledger measurements: {\"accounts\":[{\"account\":\"rPcGTrh6sBaNhXNJyQjMZzrevnAp3p5hvf\",\"balanceDrops\":\"100040000\",\"sequence\":22264107,\"ownerCount\":0,\"previousTransaction\":\"46D61B480AC861E5F35C5604510BFC9D1A7FA45D9287E1F6DA1AFAF4F3EDB4F4\"},{\"account\":\"rKvkhPm45VPStAW5EgKo6zqCJSH5uQBP6k\",\"balanceDrops\":\"99959988\",\"sequence\":22264167,\"ownerCount\":0,\"previousTransaction\":\"46D61B480AC861E5F35C5604510BFC9D1A7FA45D9287E1F6DA1AFAF4F3EDB4F4\"}],\"scope\":\"Configured project-owned Testnet accounts only. Current sequence, owned objects and previous transaction show account activity; no Mainnet account activity is inferred.\"}. These values come only from public ledger read methods and refer to the exact validated ledger identified above. The report does not initiate ledger writes, transfer assets, infer the identity of beneficial owners, or estimate off-ledger balances."
+          },
+          {
+            "id": "p3",
+            "text": "Verification method: query the public testnet node with ledger_index 22265324, confirm ledger_hash DF49D32760B4D5CC10AA0866943E3FF1E48A870E13D749303E28A0781A09B959, then repeat account_info for each listed project account. All pages must use the same ledger index. An incomplete scan is an error and is never published as a zero total."
+          },
+          {
+            "id": "p4",
+            "text": "Evidence limits: Configured project-owned Testnet accounts only. Current sequence, owned objects and previous transaction show account activity; no Mainnet account activity is inferred. Read the ledger header on an independent public node or explorer. A writer signature binds these exact report passages to the normal purchase manifest; it proves who signed the measurements, not that the node operator or issuer is trustworthy. Freshness must be checked at purchase on this report's network. A stale report is a broken promise and its content must not support an answer."
+          }
+        ]
+      },
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "ledger-analytics",
+        "articleId": "ledger-project-activity-0e4cc207b5d9fa01a95f886e",
+        "version": "0e4cc207b5d9fa01a95f886e",
+        "wallet": "rPcGTrh6sBaNhXNJyQjMZzrevnAp3p5hvf",
+        "pubKey": "EDC8FC6C1D4C5A71497A69E9C6814023CA483A1ADEABC148DFBB508A9052CB3F6A",
+        "priceMinor": 40,
+        "leaves": [
+          "6621980ff369eacd79ae67cae83fbeed01c519377d345fec3cc252f98373ebd1",
+          "1feb7ea3d3ada9996a27c88be7f608a371e45c14f6203f7e71300b96d118face",
+          "60700f093898dde6ec4beecf188379270c41c09617e0966be000a8978e68dd60",
+          "6beb158fca11a5750565dac463ee6c6f6b0acefe5a4e4a202cfad8693fb3ae8c"
+        ],
+        "root": "c8f15443a995b292c52e784f5bb2bb4cae5bfca6613fb1e6362734f69e6aa7c0",
+        "claims": [
+          {
+            "id": "p1:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "6621980ff369eacd79ae67cae83fbeed01c519377d345fec3cc252f98373ebd1"
+          }
+        ],
+        "wordCount": 268,
+        "publishedAt": "2026-11-12T10:27:21.023Z",
+        "ledgerFreshness": {
+          "topic": "project-activity",
+          "network": "testnet",
+          "ledgerIndex": 22265324,
+          "ledgerHash": "DF49D32760B4D5CC10AA0866943E3FF1E48A870E13D749303E28A0781A09B959",
+          "computedAt": "2026-11-12T10:27:21.023Z",
+          "maxLedgerLag": 64
+        },
+        "relevance": 1,
+        "sig": "19E9C6707B56F140AAB22DC8BD917C4D7CEFCD987EFAA7DBC1FD8499E5B0AE2D0E94738ADC2596B945B5DAB15BA0D9AE16C6FBA2EB2F529C5A5D3109CAFB1804"
+      },
+      "salts": [
+        "8d210b59e19dbc6b24f823044daab239",
+        "b5d7213f768a5958be5a19695a9593c9",
+        "5f557249780f06d4fbe7ba28620757a0",
+        "4f4401c497c961231684ce3cc7b549d1"
+      ]
+    },
+    {
+      "topic": "rlusd",
+      "computeTimeMs": 136384,
+      "stamp": {
+        "network": "mainnet",
+        "ledgerIndex": 108280168,
+        "ledgerHash": "74EB2B9396371EE7BDABACBE65243058639073335610635536B278E6D8BC1055",
+        "computedAt": "2026-11-12T10:27:31.911Z",
+        "maxLedgerLag": 256
+      },
+      "article": {
+        "articleId": "ledger-rlusd-4a7b2c70aa2d42c41203e1b4",
+        "version": "4a7b2c70aa2d42c41203e1b4",
+        "publisherSlug": "ledger-analytics",
+        "writerSlug": "ledger-analytics",
+        "title": "RLUSD supply, trust-line holders and concentration",
+        "publishedAt": "2026-11-12T10:27:31.911Z",
+        "tier": "PAID",
+        "priceMinor": 40,
+        "abstract": "On-demand public ledger analysis of rlusd supply, trust-line holders and concentration; signed snapshot with a bounded freshness promise.",
+        "tags": [
+          "rlusd",
+          "ledger",
+          "analytics",
+          "RLUSD",
+          "XRP"
+        ],
+        "family": "ledger-rlusd",
+        "sources": [
+          {
+            "url": "https://livenet.xrpl.org/ledgers/108280168",
+            "accessedAt": "2026-11-12"
+          }
+        ],
+        "body": "As of validated ledger 108280168 (hash 74EB2B9396371EE7BDABACBE65243058639073335610635536B278E6D8BC1055), computed at 2026-11-12T10:27:31.911Z. Network: mainnet. The writer promises this report is no more than 256 validated ledgers old at purchase. This timestamp describes a public ledger snapshot, not a market forecast or a statement about another network.\n\nComputed ledger measurements: {\"rlusdSupply\":\"885245927.4516457065906179796876168862004000003\",\"positiveBalanceTrustLines\":68070,\"rlusdTrustLines\":102531,\"top10Balance\":\"697358673.64536441\",\"top10SharePercent\":\"78.775699725933598602267693607303021312025991852866641245815912389420585576637972068496066739273053\",\"topHolders\":[{\"account\":\"rEq4b7nbL2ep44Fgk9bPwpynGRjyESpf5B\",\"balance\":\"145850041.6700765\"},{\"account\":\"rfKSkASYSGwrTvk9FeH65QC5CWiiEjYFpp\",\"balance\":\"143000008\"},{\"account\":\"rPz2qA93PeRCyHyFCqyNggnyycJR1N4iNf\",\"balance\":\"125608106.884\"},{\"account\":\"rKWoRYn65imVUUF2Hmtpp78E6NAjTf6ExL\",\"balance\":\"105000000.0000102\"},{\"account\":\"r39TAwuqkA5BNxxfL5YXewRGtCgBcADjcx\",\"balance\":\"68842216.9240507\"},{\"account\":\"r9c6A65SmhhZALrkMTpqc9X3kGjv5gtNNk\",\"balance\":\"25000000\"},{\"account\":\"raRwevcTC4NafoNUP28JfmfrKYtdeQWwZ2\",\"balance\":\"22899936\"},{\"account\":\"rMrjxnZGdsbfCuX3GKjFpAjwNw3XdWy9cu\",\"balance\":\"21679985.62\"},{\"account\":\"rBPQ7bVL1RPYe3bqq5hm2uX5S5unf8eByh\",\"balance\":\"21500100.006\"},{\"account\":\"rJWA8Q18Wrbu3t3gngEWpL8k5jAb3Jmpm1\",\"balance\":\"17978278.54122701\"}],\"scope\":\"XRPL-issued RLUSD only; trust-line accounts, not unique beneficial owners. Issuer-side negative balances count as issued supply; positive issuer balances are excluded.\"}. These values come only from public ledger read methods and refer to the exact validated ledger identified above. The report does not initiate ledger writes, transfer assets, infer the identity of beneficial owners, or estimate off-ledger balances.\n\nVerification method: query the public mainnet node with ledger_index 108280168, confirm ledger_hash 74EB2B9396371EE7BDABACBE65243058639073335610635536B278E6D8BC1055, then repeat account_lines for the RLUSD issuer, following every marker. All pages must use the same ledger index. An incomplete scan is an error and is never published as a zero total.\n\nEvidence limits: XRPL-issued RLUSD only; trust-line accounts, not unique beneficial owners. Issuer-side negative balances count as issued supply; positive issuer balances are excluded. Read the ledger header on an independent public node or explorer. A writer signature binds these exact report passages to the normal purchase manifest; it proves who signed the measurements, not that the node operator or issuer is trustworthy. Freshness must be checked at purchase on this report's network. A stale report is a broken promise and its content must not support an answer.",
+        "passages": [
+          {
+            "id": "p1",
+            "text": "As of validated ledger 108280168 (hash 74EB2B9396371EE7BDABACBE65243058639073335610635536B278E6D8BC1055), computed at 2026-11-12T10:27:31.911Z. Network: mainnet. The writer promises this report is no more than 256 validated ledgers old at purchase. This timestamp describes a public ledger snapshot, not a market forecast or a statement about another network."
+          },
+          {
+            "id": "p2",
+            "text": "Computed ledger measurements: {\"rlusdSupply\":\"885245927.4516457065906179796876168862004000003\",\"positiveBalanceTrustLines\":68070,\"rlusdTrustLines\":102531,\"top10Balance\":\"697358673.64536441\",\"top10SharePercent\":\"78.775699725933598602267693607303021312025991852866641245815912389420585576637972068496066739273053\",\"topHolders\":[{\"account\":\"rEq4b7nbL2ep44Fgk9bPwpynGRjyESpf5B\",\"balance\":\"145850041.6700765\"},{\"account\":\"rfKSkASYSGwrTvk9FeH65QC5CWiiEjYFpp\",\"balance\":\"143000008\"},{\"account\":\"rPz2qA93PeRCyHyFCqyNggnyycJR1N4iNf\",\"balance\":\"125608106.884\"},{\"account\":\"rKWoRYn65imVUUF2Hmtpp78E6NAjTf6ExL\",\"balance\":\"105000000.0000102\"},{\"account\":\"r39TAwuqkA5BNxxfL5YXewRGtCgBcADjcx\",\"balance\":\"68842216.9240507\"},{\"account\":\"r9c6A65SmhhZALrkMTpqc9X3kGjv5gtNNk\",\"balance\":\"25000000\"},{\"account\":\"raRwevcTC4NafoNUP28JfmfrKYtdeQWwZ2\",\"balance\":\"22899936\"},{\"account\":\"rMrjxnZGdsbfCuX3GKjFpAjwNw3XdWy9cu\",\"balance\":\"21679985.62\"},{\"account\":\"rBPQ7bVL1RPYe3bqq5hm2uX5S5unf8eByh\",\"balance\":\"21500100.006\"},{\"account\":\"rJWA8Q18Wrbu3t3gngEWpL8k5jAb3Jmpm1\",\"balance\":\"17978278.54122701\"}],\"scope\":\"XRPL-issued RLUSD only; trust-line accounts, not unique beneficial owners. Issuer-side negative balances count as issued supply; positive issuer balances are excluded.\"}. These values come only from public ledger read methods and refer to the exact validated ledger identified above. The report does not initiate ledger writes, transfer assets, infer the identity of beneficial owners, or estimate off-ledger balances."
+          },
+          {
+            "id": "p3",
+            "text": "Verification method: query the public mainnet node with ledger_index 108280168, confirm ledger_hash 74EB2B9396371EE7BDABACBE65243058639073335610635536B278E6D8BC1055, then repeat account_lines for the RLUSD issuer, following every marker. All pages must use the same ledger index. An incomplete scan is an error and is never published as a zero total."
+          },
+          {
+            "id": "p4",
+            "text": "Evidence limits: XRPL-issued RLUSD only; trust-line accounts, not unique beneficial owners. Issuer-side negative balances count as issued supply; positive issuer balances are excluded. Read the ledger header on an independent public node or explorer. A writer signature binds these exact report passages to the normal purchase manifest; it proves who signed the measurements, not that the node operator or issuer is trustworthy. Freshness must be checked at purchase on this report's network. A stale report is a broken promise and its content must not support an answer."
+          }
+        ]
+      },
+      "manifest": {
+        "schemaVersion": 2,
+        "publisherSlug": "ledger-analytics",
+        "articleId": "ledger-rlusd-4a7b2c70aa2d42c41203e1b4",
+        "version": "4a7b2c70aa2d42c41203e1b4",
+        "wallet": "rPcGTrh6sBaNhXNJyQjMZzrevnAp3p5hvf",
+        "pubKey": "EDC8FC6C1D4C5A71497A69E9C6814023CA483A1ADEABC148DFBB508A9052CB3F6A",
+        "priceMinor": 40,
+        "leaves": [
+          "6e6158b2fd6ad22fceefe76db8511b9a37b9b051a58aed72bedde2cf8e82f841",
+          "f8c0788f6b2775722a6b7b2abe331b7fdf695dc1b22e9f31d32fc21727317d42",
+          "80f43dd1b0a88d7eb793ff2897b38d63f9511a700d4fa806f46d22f983eb4135",
+          "20c98612542702b3797a86eed2f0fe3b4872302fbbca113e6c0f4b493bb74380"
+        ],
+        "root": "010ba58fe8ecd269b61ba4fb8da645d3c431ee9d18a0974a5f85713ff287bdb5",
+        "claims": [
+          {
+            "id": "p1:dated-figure",
+            "kind": "dated-figure",
+            "leaf": "6e6158b2fd6ad22fceefe76db8511b9a37b9b051a58aed72bedde2cf8e82f841"
+          }
+        ],
+        "wordCount": 314,
+        "publishedAt": "2026-11-12T10:27:31.911Z",
+        "ledgerFreshness": {
+          "topic": "rlusd",
+          "network": "mainnet",
+          "ledgerIndex": 108280168,
+          "ledgerHash": "74EB2B9396371EE7BDABACBE65243058639073335610635536B278E6D8BC1055",
+          "computedAt": "2026-11-12T10:27:31.911Z",
+          "maxLedgerLag": 256
+        },
+        "relevance": 1,
+        "sig": "3F4F6F021A31F3977CFF9ADDF967D1DFD9B745D435A87ECD7D6DAA3CB77A1125533223DC49ABF3807E21EAA1EB6999E5CCD2596E04619B727D9D92FDDB361902"
+      },
+      "salts": [
+        "f0ece697c3909a9071cfb27df4273947",
+        "71f224096883576e3d59f5af2cc23ac8",
+        "9080f0f66a8f2ba9e8ce31df0d909563",
+        "13ddab3e2c3d5492fa9532c1d3aaebe9"
+      ]
+    }
+  ]
+}
