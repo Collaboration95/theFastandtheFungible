@@ -19,13 +19,14 @@ const probe=createServer((req,res)=>{
 const probePort=probe.address().port
 const apiServer=createServer().listen(0,'127.0.0.1');await once(apiServer,'listening')
 const origin=`https://127.0.0.1:${frontPort}`,url=`http://127.0.0.1:${frontPort}`
-Object.assign(process.env,{HOSTED:'1',MCP_PUBLIC:'on',HOSTED_ORIGIN:origin,HOSTED_TRUSTED_PROXY:'127.0.0.1',HOSTED_IP_HMAC_KEY:'local-proof-not-a-deployed-key-0001',HOSTED_CONTROL_PATH:join(dir,'control.json'),LLM_PROVIDER:'fixture',DECISION_PROVIDER:'fixture',SETTLEMENT_RAIL:'simulated',ANCHOR_RAIL:'off',LANGFUSE_ENABLED:'0'})
+Object.assign(process.env,{HOSTED:'1',MCP_PUBLIC:'on',PAID_ENDPOINT_PUBLIC:'off',HOSTED_ORIGIN:origin,HOSTED_TRUSTED_PROXY:'127.0.0.1',HOSTED_IP_HMAC_KEY:'local-proof-not-a-deployed-key-0001',HOSTED_CONTROL_PATH:join(dir,'control.json'),LLM_PROVIDER:'fixture',DECISION_PROVIDER:'fixture',SETTLEMENT_RAIL:'simulated',ANCHOR_RAIL:'off',LANGFUSE_ENABLED:'0'})
 writeFileSync(process.env.HOSTED_CONTROL_PATH,JSON.stringify({admissionsPaused:false,spendingPaused:false,reasonCode:'local_proof',expiresAt:'2026-11-19T16:00:00Z'}))
 const {createPublisherApp}=await import('../../publisher/routes.ts'), {createApiApp}=await import('../../server/routes.ts')
 const pub=createPublisherApp({journal:':memory:',rail:'simulated',env:{}});await pub.locals.ready
 const publisher=pub.listen(0,'127.0.0.1');await once(publisher,'listening')
 const api=await createApiApp({dbPath:join(dir,'app.db'),publisherUrl:`http://127.0.0.1:${publisher.address().port}`,hostedReadiness:async()=>true})
-apiServer.on('request',api.app)
+let paidSignature
+apiServer.on('request',(req,res)=>{if(req.url==='/v1/ask')paidSignature=req.headers['payment-signature'];api.app(req,res)})
 const nginx=process.env.NGINX_BIN||'/opt/homebrew/bin/nginx'
 const front=readFileSync('docker/hosted/front/default.conf.template','utf8').replace('listen 8080',`listen 127.0.0.1:${frontPort}`).replaceAll('${VM_UPSTREAM}',`127.0.0.1:${vmPort}`).replace('${HOSTED_VIDEO_URL}','').replace('/usr/share/nginx/html',join(root,'docker/hosted'))
 let vm=readFileSync('docker/hosted/nginx.conf','utf8');vm=vm.slice(vm.indexOf('  server {'),vm.lastIndexOf('}')).replace('listen 8080',`listen 127.0.0.1:${vmPort}`).replaceAll('/etc/nginx/proxy-headers.conf',join(dir,'headers.conf')).replaceAll('http://api:8788',`http://127.0.0.1:${apiServer.address().port}`).replace('/usr/share/nginx/html',join(root,'dist'))
@@ -53,6 +54,8 @@ try {
   assert(run.citations.length>0&&run.citations.every(citation=>new URL(citation.url).origin===origin),JSON.stringify({citationUrls:run.citations.map(citation=>citation.url)}))
   const again=await client.callTool({name:'ask_expert',arguments:args});assert.equal(JSON.parse(again.content[0].text).run_id,run.run_id)
   const verified=await client.callTool({name:'verify_answer',arguments:{run_id:run.run_id}});assert.equal(JSON.parse(verified.content[0].text).ok,true)
+  const paidProbe=await fetch(url+'/v1/ask',{method:'POST',headers:{'Content-Type':'application/json','PAYMENT-SIGNATURE':'reach-proof-signature'},body:'{}'})
+  assert.equal(paidProbe.status,404);assert.equal(paidSignature,'reach-proof-signature')
   const probeUrl=`http://127.0.0.1:${probeFrontPort}`
   const forwarded=await(await fetch(probeUrl+'/headers',{headers:{'X-Forwarded-For':'1.2.3.4, 198.51.100.9',Authorization:'Bearer private-probe','X-Internal-Arbitrary':'private-probe','X-RA-Principal':'owner','MCP-Protocol-Version':'2025-11-25'}})).json()
   assert.equal(forwarded['x-forwarded-for'],'198.51.100.9')
@@ -64,7 +67,7 @@ try {
   await reader.cancel();probe.closeAllConnections();await new Promise(r=>probe.close(r))
   const unreachable=await fetch(probeUrl+'/unreachable')
   assert.equal(unreachable.status,503);assert((await unreachable.text()).includes('shared demo is paused'))
-  console.log(JSON.stringify({kind:'native-two-nginx-hosted-gateway',models:'fixture',settlement:'simulated',readiness:'test override; no Testnet balance proof',tools,sse:true,ask:run.phase,purchases:run.purchases.length,retrySameRun:true,receiptsVerified:true,publicLinks:true,headerWhitelist:true,oneForwardedHop:true,sseUnbuffered:true,unreachablePaused503:true,cloud:false}))
+  console.log(JSON.stringify({kind:'native-two-nginx-hosted-gateway',models:'fixture',settlement:'simulated',readiness:'test override; no Testnet balance proof',tools,sse:true,ask:run.phase,purchases:run.purchases.length,retrySameRun:true,receiptsVerified:true,publicLinks:true,paidRouteFlagOff:true,paidSignatureForwarded:true,headerWhitelist:true,oneForwardedHop:true,sseUnbuffered:true,unreachablePaused503:true,cloud:false}))
 } finally {
   probe.closeAllConnections();probe.close()
   await client.close();processNginx.kill('SIGTERM');await once(processNginx,'exit').catch(()=>{})

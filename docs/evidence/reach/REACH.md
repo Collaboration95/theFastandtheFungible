@@ -5,7 +5,8 @@
 
 ## Local MCP proof (12 November 2026)
 
-Reproduce under Node 22.23.4:
+Reproduce under Node 22.23.4 with local nginx installed. Set `NGINX_BIN` and
+`NGINX_MIME` if its paths differ from Homebrew:
 
 ```sh
 node --import tsx docker/hosted/prove-local.mjs
@@ -68,3 +69,22 @@ bearer token. Public hire is disabled in MCP.
 
 None for the local MCP proof: its settlement is simulated. Package acceptance
 will add real hashes here; none are inferred from fixtures.
+
+## Hosted paid-answer route
+
+`PAID_ENDPOINT_PUBLIC=on` (default off) exposes `/v1/ask` through both proxies.
+`docs/reach/paid-answer.md` has curl and installed SDK examples. Public hosted
+budgets accept 100 or 200 cents and respect the configured question cap; the
+service fee remains 20 cents. No public MCP hire tool is added.
+
+`npx vitest run tests/reach-paid.test.ts tests/hire.test.ts` checks opt-in,
+Testnet-only refusal, hostile Host, oversized budget refusal before signing,
+durable quota binding, synthetic-ledger settlement/retry, operator pause and
+same-IP MCP access to a paid run, its receipts and verification (other-IP
+access is refused). The public route uses its anonymous session for run
+ownership while preserving the verified wallet for settlement and change.
+This is synthetic-ledger evidence for the hosted paid route, distinct from the
+real Testnet package acceptance below. No hosted endpoint was contacted. The native proof additionally checks that
+`/v1/ask` reaches the API and returns 404 with the flag off, and that a dummy
+`PAYMENT-SIGNATURE` arrives unchanged through both nginx proxies. It submits no
+payment.
