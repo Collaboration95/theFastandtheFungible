@@ -104,9 +104,18 @@ export function build() {
 
   const PAID = 'docs/submission/evidence/hosted-answer-nov12/summary.json'
   const paid = json(PAID)
+  const FEATURED = 'docs/evidence/hosted-export-nov12/summary.json'
+  const featured = json(FEATURED)
   const IDENTITY = 'docs/evidence/writer-credentials-nov12/ledger.json'
   const identity = json(IDENTITY)
   const facts = {
+    featured_grant: fact(featured.grantSeq, FEATURED, 'explicit grant sequence before each paid read'),
+    featured_reads: fact(`${featured.paidReadSeqs[0]}–${featured.paidReadSeqs.at(-1)}`, FEATURED, 'featured paid-read audit sequence range'),
+    featured_failed: fact(featured.browser.failed, FEATURED, 'featured browser failures; not skipped checks'),
+    featured_spend: fact((featured.spentMinor / 100).toFixed(2), FEATURED, 'featured preset-2 nominal SGD display spend, not FX'),
+    featured_seconds: fact((featured.startToDoneMs / 1000).toFixed(1), FEATURED, 'one hosted preset-2 run on 12 Nov; Start to Done excludes planning/modal'),
+    featured_browser: fact(featured.browser.passed, FEATURED, 'featured browser and published TS checks passed; two identity/origin checks not checked'),
+    featured_wheel: fact(featured.wheel.passed, FEATURED, 'featured published v1.1.1 wheel checks passed; zero failed, two skipped'),
     identity_writers: fact(identity.writers.length, IDENTITY, 'operator writer Credentials in the validated Testnet identity snapshot; identity only'),
     identity_domains: fact(identity.domain.validated && identity.domain.index === identity.domainId ? 1 : 0, IDENTITY, 'retained validated Testnet Permissioned Domain, identity display only'),
     identity_ledger: fact(identity.ledgerIndex, IDENTITY, 'validated Testnet identity snapshot ledger; 11 Nov 2026'),

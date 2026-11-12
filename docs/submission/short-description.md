@@ -22,7 +22,7 @@ pilots or revenue. No real value.
 ResearchAgent is research with a wallet on XRPL Testnet. Set a question and budget.
 It reads free sources first; policy can buy one article per round. Writers collect by
 publishing article keys in native escrow. Your browser hashes the public key against the lock.
-Verify a recorded run in the judges’ corner without asking a question.
+Verify one hosted 12 Nov run where the browser check shows all five gates held, without asking a question. Identity/origin skips remain.
 
 Our initial-market hypothesis: XRPL/x402 integrators using coding agents to buy practitioner
 implementation notes and reproducible failure paths. They implement endpoints or diagnose
@@ -105,7 +105,7 @@ key-reveal example are in the repo. What worked: escrow semantics, Credentials, 
 
 | Claim | Label | Source |
 |---|---|---|
-| "<!--f:prs-->299<!--/f--> pull requests merged since <!--f:since-->21 Sep<!--/f-->" | Merged into `main` on or after 21 Sep 2026 SGT, counted at <!--f:sha-->8c6b9018<!--/f--> on <!--f:as_of-->12 Nov 2026<!--/f--> | [facts.json](facts.json) `prs` ← `site/progress/data.json` queries |
+| "<!--f:prs-->304<!--/f--> pull requests merged since <!--f:since-->21 Sep<!--/f-->" | Merged into `main` on or after 21 Sep 2026 SGT, counted at <!--f:sha-->88c3a00b<!--/f--> on <!--f:as_of-->12 Nov 2026<!--/f--> | [facts.json](facts.json) `prs` ← `site/progress/data.json` queries |
 | "<!--f:releases-->15<!--/f--> releases" | Published GitHub releases reachable from the counted commit, prereleases included | same |
 | Live sandbox | Shared XRPL Testnet sandbox, no real value, open 13–19 Nov 2026; one pre-funded Testnet payer, per-visitor caps; each answer labels live or fixture models | [hosted-web.md](../hosted-web.md) |
 | "buys an article only when policy judges it fills a gap, at most one per round" | The plan modal's rule: at most one article per round, up to 3 rounds, within the budget; a new writer may get one labelled probe purchase up to S$0.30 | `shared/contracts/run.ts` `PURCHASE_RULE` |

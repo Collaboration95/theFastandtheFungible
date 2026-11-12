@@ -27,9 +27,10 @@
   <a href="docs/x402-xrpl.md"><img alt="XRPL Testnet" src="https://img.shields.io/badge/XRPL-Testnet-24211E?style=flat-square"></a>
 </p>
 
-**Verify a recorded run without asking a question** in the judges’ corner. A payment’s
-**Check the key yourself** recomputes `sha256(key) = lock`. A match proves key reveal,
-not quality or identity; pending/unavailable is not a pass.
+**One hosted run where the browser check shows all five gates held.**
+Verify it without asking a question in the judges’ corner. A payment’s
+**Check the key yourself** recomputes `sha256(key) = lock`. A match proves reveal,
+not quality or identity.
 
 Shared Testnet demo: **13–19 Nov 2026**, no real value. Or run locally (Node ≥ 22.13):
 
@@ -41,7 +42,7 @@ npx -y $REL/researchagent-mcp-1.1.1.tgz try --testnet
 <p align="center">
   <img src="docs/media/readme-answer.png" width="900" alt="The hosted demo after an XRPL Testnet run. Question: what HTTP headers does x402 use on XRPL, and how does the server know the payment actually settled? The lead finding: an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. The payment card shows a net cost of S$0.80 of a S$2.00 budget for two articles, each paid by key reveal: payment locked in escrow, writer released the key, key matches the escrow lock, article unlocked. The answer is anchored on XRPL Testnet.">
 </p>
-<p align="center"><sub>Historical screenshot: the live demo, 11 Nov 2026 · XRPL Testnet · live answers, rule-based buying · team-authored writers · no real value · <a href="docs/evidence/hosted-export-nov11/README.md">its five transactions and receipts</a></sub></p>
+<p align="center"><sub>Historical screenshot: 11 Nov 2026 hosted build, before #510 · XRPL Testnet · live answers, rule-based buying · team-authored writers · no real value · <a href="docs/evidence/hosted-export-nov11/README.md">its five transactions and receipts</a></sub></p>
 
 ## One useful paid answer · hosted Testnet run
 
@@ -53,7 +54,7 @@ npx -y $REL/researchagent-mcp-1.1.1.tgz try --testnet
 | Missing fact | What binds key publication to payment? |
 | Bought passage | [Team-authored passage p3](data/corpus/v2/articles/team-xrpl-explainers/product-writer-paid.json): validated EscrowFinish publishes the key and releases payment together. |
 | Final answer | The writer publishes the key to collect escrow payment; <!--f:paid_after-->0<!--/f--> recorded open gaps. This is the run’s answer record, not independent quality scoring. |
-| Same-run cost and time | <!--f:paid_articles-->1<!--/f--> article, <!--f:paid_passages-->4<!--/f--> passages; S$<!--f:paid_spend-->0.40<!--/f--> = <!--f:paid_principal-->40,000<!--/f--> Testnet drops at the fixed demo rate, not FX; no refunds. <!--f:paid_seconds-->65.8<!--/f--> s Start→Done, excluding planning and the five-second confirmation modal. Buyer create <!--f:paid_create-->12<!--/f--> drops; writer finish <!--f:paid_finish-->423<!--/f-->; buyer anchor another <!--f:paid_anchor-->12<!--/f-->. Model cost: **<!--f:paid_model_cost-->unmeasured<!--/f-->** (usage not retained). |
+| Same-run cost and time | <!--f:paid_articles-->1<!--/f--> article, <!--f:paid_passages-->4<!--/f--> passages; S$<!--f:paid_spend-->0.40<!--/f--> = <!--f:paid_principal-->40,000<!--/f--> Testnet drops (fixed demo rate, not FX); no refunds. <!--f:paid_seconds-->65.8<!--/f--> s Start→Done, excluding planning and the five-second confirmation modal. Buyer create <!--f:paid_create-->12<!--/f--> drops; writer finish <!--f:paid_finish-->423<!--/f-->; buyer anchor another <!--f:paid_anchor-->12<!--/f-->. Model cost: **<!--f:paid_model_cost-->unmeasured<!--/f-->** (usage not retained). |
 
 One hosted run on 12 Nov, DEPLOY-3 · live DeepSeek plan/final answer, rule-based buying ·
 initial draft fixture · keyword fallback · team-authored writer · XRPL Testnet XRP, no real value.
@@ -119,9 +120,9 @@ separately. The page, receipt file and public node must be reachable.
 <details>
 <summary>Featured run: one hosted run, 12 Nov · all five gates Held</summary>
 
-**One hosted run, 12 Nov:** 09:07:38.656–09:08:09.738 SGT; **31.1 s, S$0.40,
+**One hosted run, 12 Nov:** 09:07:38.656–09:08:09.738 SGT; **<!--f:featured_seconds-->31.1<!--/f--> s, S$0.40,
 1 article, no refund; five gates Held** (grant 1953 < reads 1954–1957).
-Browser/TS **24 passed / 0 failed / 2 skipped**; wheel **25/0/2**; Testnet **6/6**.
+Browser/TS **<!--f:featured_browser-->24<!--/f--> passed / 0 failed / 2 not checked/skipped**; wheel **<!--f:featured_wheel-->25<!--/f-->/0/2**; Testnet **6/6**.
 [Receipts, labels and timing scope](docs/evidence/hosted-export-nov12/README.md) ·
 [lock](https://testnet.xrpl.org/transactions/F4A608E20BE054B77F4FF2D4B1ED3EBC3EF54FC7D0A144CE56975163C6E7D795) ·
 [key/payment](https://testnet.xrpl.org/transactions/01A6A7E07652216B102DFD1FED13462539D43475DFFBBA5A3C6E0FB12F643F1D) ·
@@ -166,7 +167,7 @@ shared conformance cases ([receipt format](docs/receipt-spec.md)).
 | Blind held-out judge questions (<!--f:heldout_bank-->v5<!--/f-->) | <!--f:heldout-->16/20<!--/f--> bought and cited; <!--f:offtopic-->0/10<!--/f--> off-topic purchases; <!--f:heldout_violations-->0<!--/f--> gate violations | run once on <!--f:heldout_on-->11 Nov<!--/f--> on XRPL Testnet; fixture research and decision models, answers written offline (the hosted demo writes live with DeepSeek); team-authored writers |
 | One line to a verified purchase | <!--f:try_s-->84.2<!--/f--> s cold; <!--f:try_misses-->2 of 4<!--/f--> cold runs overran 90 s | one Mac, empty npm cache, 7 Nov |
 | Network fees per key-reveal purchase | <!--f:fee_drops-->435<!--/f--> drops: <!--f:fee_create-->12<!--/f--> paid by the buyer to lock, <!--f:fee_finish-->423<!--/f--> by the writer to reveal | XRPL Testnet, measured as we sign |
-| Progress since SingHacks | <!--f:prs-->299<!--/f--> PRs merged since <!--f:since-->21 Sep<!--/f-->; <!--f:releases-->15<!--/f--> releases | counted at <!--f:sha-->8c6b9018<!--/f--> on <!--f:as_of-->12 Nov 2026<!--/f--> |
+| Progress since SingHacks | <!--f:prs-->304<!--/f--> PRs merged since <!--f:since-->21 Sep<!--/f-->; <!--f:releases-->15<!--/f--> releases | counted at <!--f:sha-->88c3a00b<!--/f--> on <!--f:as_of-->12 Nov 2026<!--/f--> |
 
 [Numbers and limitations](docs/numbers.md) · [Progress and retained misses](https://collaboration95.github.io/theFastandtheFungible/progress/).
 
