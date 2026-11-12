@@ -6,7 +6,21 @@ import { join } from 'node:path'
 import { checkPair, verify, checkHistory } from './verify.mjs'
 import { append, rows, receiptIndex, atomic } from './state.mjs'
 import { ResourceScope } from '../../shared/resource-scope.ts'
+import { fundingPlan } from './funding.mjs'
 const sha = hex => createHash('sha256').update(Buffer.from(hex, 'hex')).digest('hex').toUpperCase()
+test('one 100-XRP grant covers bootstrap, maximum principal, reserves and capped fees', () => {
+  const xrp = 1000000n, transferFee = 2000n
+  const initialBuyer = 100n * xrp - 15n * 6n * xrp - 15n * transferFee
+  // The original plan overdraws the fresh buyer before purchasing anything.
+  assert.ok(initialBuyer - 7n * 14n * xrp < 0n)
+  const buyer = initialBuyer + BigInt(fundingPlan.writerToBuyerDrops) - 7n * (BigInt(fundingPlan.buyerToPayerDrops) + transferFee)
+  const payer = 6n * xrp + BigInt(fundingPlan.buyerToPayerDrops)
+  const buysPerPayer = BigInt(Math.ceil(1100 / 8))
+  const payerRequired = buysPerPayer * (40000n + transferFee) + 1200000n
+  assert.ok(buyer >= payerRequired); assert.ok(payer >= payerRequired)
+  const writer = 6n * xrp - BigInt(fundingPlan.writerToBuyerDrops) - transferFee
+  assert.ok(writer - buysPerPayer * transferFee >= xrp)
+})
 function fixture() {
   const key = 'AB'.repeat(32), fulfillment = 'A0228020' + key, condition = 'A0258020' + sha(key) + '810120'
   const receipt = { schemaVersion: 1, network: 'xrpl-testnet', intentId: 'one', priceMinor: 40, priceCurrency: 'SGD', asset: 'XRP', amountDrops: '40000', payer: 'buyer', payee: 'writer', createHash: 'A'.repeat(64), finishHash: 'B'.repeat(64), createLedger: 10, finishLedger: 11, createSequence: 2, condition, fulfillmentSha256: sha(fulfillment), fulfillmentHashMatch: true, grantSeq: 10, firstReadPaidSeq: 11, grantAt: '2026-11-12T00:00:00Z', firstReadPaidAt: '2026-11-12T00:00:00Z', createMs: 10, finishMs: 10, endToEndMs: 30, retries: 0, outcome: 'success' }

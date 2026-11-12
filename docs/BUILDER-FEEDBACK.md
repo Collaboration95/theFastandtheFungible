@@ -1263,3 +1263,11 @@ persistence or a mainnet deployment. No cloud resource or live ledger call ran.
 - Workaround: independent local publisher journals and writer wallets for the scale batch; at most eight purchases and eight RPC requests in flight. The same team-authored resource is served on each isolated publisher; these wallets are not independent writers.
 - Suggested fix: document how account sequence queues affect multi-buyer throughput, expose queue wait separately from ledger validation, and add a multiple-buyer/single-writer load example.
 - Severity: Medium for throughput and tail latency. Mainnet impact: analogous account sequencing constraints; no mainnet load measured. No Testnet faucet or node errors had been observed in the completed pilot.
+
+
+## 2026-11-12 — Fresh scale-runner funding allocation (code-derived, then live acceptance)
+
+- Evidence: the original runner combined 90 XRP of helper allocations with 98 XRP of planned payer top-ups from a 100-XRP grant. The offline funding regression reproduces that shortfall; no failed live funding transaction is claimed. The earlier 1,000 run had staged pilot funding. The final fresh bootstrap independently verifies 20/20 purchases in `data/evidence/testnet-1000/fresh-pilot-verify.json`: create `C06F0C74CA725AAB27A7B9C9082D476E6544B38B039569FCE1E423E80286AF60`, finish `33F56BD6118E98F14A3070607DB21C77B42E95EF44DD431632771920B1D2E246`. Setup hashes are in `fresh-funding.json` alongside that result.
+- Workaround: return 4.2 XRP from one funded writer to the buyer, then top up each other payer by 1 XRP. All eight payers retain enough principal, reserves and maximum capped fees for up to 1,100 purchases of this 40-minor resource; writer fee reserves remain funded. Persist the funding-complete checkpoint so a resume does not request an unnecessary faucet refill.
+- Suggested fix: expose a helper's planned allocation and remaining buyer balance before signing fleet top-ups. This was an integration error in our scale tooling, not an observed faucet or XRPL node defect.
+- Severity: Medium for reproducibility. Mainnet impact: the same allocation arithmetic needs checking for any wallet fleet; no mainnet funding or payment was attempted.

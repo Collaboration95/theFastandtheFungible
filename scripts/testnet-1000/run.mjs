@@ -6,9 +6,10 @@ import { createHash } from 'node:crypto'
 import express from 'express'
 import { Wallet, decode, hashes } from 'xrpl'
 import { atomic, append, rows, receiptIndex, delay, cause } from './state.mjs'
+import { fundingPlan } from './funding.mjs'
 
 const args = process.argv.slice(2)
-if (!args.includes('--testnet') || args.some(a => a.startsWith('--') && !['--testnet', '--count', '--state'].includes(a))) throw Error('Use --testnet --count 20|1000 [--state /tmp/PRIVATE_DIRECTORY]')
+if (!args.includes('--testnet') || args.some(a => a.startsWith('--') && !['--testnet', '--count', '--state', '--receipts'].includes(a))) throw Error('Use --testnet --count 20|1000 [--state /tmp/PRIVATE_DIRECTORY] [--receipts FILE.jsonl]')
 const count = Number(args[args.indexOf('--count') + 1])
 if (!Number.isSafeInteger(count) || count < 1 || count > 1100) throw Error('count must be 1..1100')
 const root = resolve(args.includes('--state') ? args[args.indexOf('--state') + 1] : '/tmp/researchagent-testnet-1000')
@@ -27,8 +28,9 @@ if (existsSync(lock)) {
 const lockFd = openSync(lock, 'wx', 0o600)
 const { writeSync } = await import('node:fs'); writeSync(lockFd, String(process.pid)); closeSync(lockFd)
 const checkpoint = join(root, 'checkpoint.json'), rpcFile = join(root, 'rpc.jsonl')
-const receiptsFile = resolve('data/evidence/testnet-1000/receipts.jsonl')
-mkdirSync(resolve('data/evidence/testnet-1000'), { recursive: true })
+const receiptsFile = resolve(args.includes('--receipts') ? args[args.indexOf('--receipts') + 1] : 'data/evidence/testnet-1000/receipts.jsonl')
+if (!receiptsFile.endsWith('.jsonl') || !['/tmp/', '/private/tmp/', resolve('data/evidence/testnet-1000') + '/'].some(prefix => receiptsFile.startsWith(prefix))) throw Error('Receipts must be JSONL under /tmp or data/evidence/testnet-1000')
+mkdirSync(resolve(receiptsFile, '..'), { recursive: true })
 const state = existsSync(checkpoint) ? JSON.parse(readFileSync(checkpoint, 'utf8')) : { version: 1, batch: `t1000-${Date.now()}`, jobs: [], publisherPort: 0, workers: 8 }
 const workers = 8
 state.workers = workers
@@ -89,8 +91,9 @@ try {
   let seeds
   for (let attempt = 0; ; attempt++) {
     try {
-      if (state.provisioned) { seeds = JSON.parse(readFileSync(join(root, 'wallets.private.json'), 'utf8')); break }
+      if (state.provisioned || state.walletsProvisioned) { seeds = JSON.parse(readFileSync(join(root, 'wallets.private.json'), 'utf8')); break }
       seeds = await new TestnetProvisioner({ ledger: { ...ledger, close: async () => {} }, faucet: fetch, walletStore: { file: join(root, 'wallets.private.json'), allowedRoot: root } }).prepare({ writers: [...Array.from({ length: workers - 1 }, (_, i) => `payer-${i + 1}`), slug, ...Array.from({ length: workers - 1 }, (_, i) => `writer-${i + 1}`)] })
+      state.walletsProvisioned = true; atomic(checkpoint, state)
       break
     } catch (error) {
       append(rpcFile, { kind: 'funding-retry', at: Date.now(), cause: cause(error), retry: attempt + 1 })
@@ -102,8 +105,13 @@ try {
   // Top-ups have the same persist-before-submit rule as purchases.
   const fundingFile = join(root, 'funding.json')
   const funding = existsSync(fundingFile) ? JSON.parse(readFileSync(fundingFile, 'utf8')) : {}
-  for (const name of payerNames.slice(1)) {
-    if (!funding[name]) { funding[name] = await signPayment(Wallet.fromSeed(seeds.buyer), { Destination: Wallet.fromSeed(seeds[name]).classicAddress, Amount: '14000000', InvoiceID: createHash('sha256').update(state.batch + name).digest('hex').toUpperCase() }, ledger); atomic(fundingFile, funding) }
+  const transfers = [
+    // Existing provisioned batches keep their historical funding plan on resume.
+    ...(!state.provisioned ? [{ name: 'writer-to-buyer', signer: slug, destination: 'buyer', amount: fundingPlan.writerToBuyerDrops }] : []),
+    ...payerNames.slice(1).map(name => ({ name, signer: 'buyer', destination: name, amount: fundingPlan.buyerToPayerDrops })),
+  ]
+  for (const { name, signer, destination, amount } of transfers) {
+    if (!funding[name]) { funding[name] = await signPayment(Wallet.fromSeed(seeds[signer]), { Destination: Wallet.fromSeed(seeds[destination]).classicAddress, Amount: amount, InvoiceID: createHash('sha256').update(state.batch + name).digest('hex').toUpperCase() }, ledger); atomic(fundingFile, funding) }
     const tx = funding[name]
     let found = await lookupTx(ledger, tx.txHash)
     if (found.state !== 'validated') await ledger.request({ command: 'submit', tx_blob: tx.txBlob })
