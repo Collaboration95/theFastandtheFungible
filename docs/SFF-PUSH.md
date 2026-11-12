@@ -762,3 +762,4 @@ Live read-only ledger: **27.5 s → 1.970 s**, 45/45, first verified row 1.143 s
 - 7 Nov: P1 fixture-only threshold dev sweep; UC rows preserved, dev waste ceiling missed (30.30% > 18.75%); keep 0.20, v4 reserved for orchestrator. Evidence: `docs/evidence/p1-threshold/`.
 
 - 12 Nov · FIN phase 2: featured 421bae3d five-gate proof, four public DEPLOY-5 captures, inspected 14-page PDF and current-main replay; zero new questions; no site publication.
+- 12 Nov: guarded resumable paired-evaluation runner requires the real public-docs profile, pins corpus/bank/source identities and retains cumulative US$5 cost exposure; evidence and real-profile run status in `docs/evidence/models/EVALUATION.md`.
