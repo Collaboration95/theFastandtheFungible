@@ -5,7 +5,7 @@ Evidence context: XRPL Testnet demo. Use these answers when asked; the pitch end
 ## 1. What is the product?
 
 ResearchAgent is a search engine for agent-readable expertise, with a wallet. It
-reads free sources, then policy rules decide purchases within a question’s budget.
+reads free sources, the XRPL and x402 documentation, then policy rules decide purchases within a question’s budget. <!-- HOSTED-PENDING -->
 The Fast and the Fungible is the team and repository name.
 
 ## 2. Can the model spend?
@@ -26,14 +26,16 @@ after ledger validation. Public sharing is explicit and subject to retention.
 We target XRPL/x402 integrators using coding agents to implement paid endpoints or
 diagnose settlement failures. The expected benefit is a cited practitioner detail
 without reconstructing the failure alone. This initial-market hypothesis is not yet
-validated. No independent writers, customers, pilots or revenue.
+validated. No outside customers, pilots or revenue.
 [Example note](../../data/corpus/v2/articles/team-xrpl-explainers/product-writer-paid.json).
 
 ## 5. Who wrote the articles?
 
-Two team-authored writers, Build notes and XRPL explainers, supply paid notes; Open
-Records supplies free records. Historical adversarial replays use fictional writers.
-A copied corpus is not evidence of an external seller market.
+The free tier is the XRPL and x402 documentation, with upstream names and licences. <!-- HOSTED-PENDING -->
+Paid reports come from a ledger-analytics writer, signed “as of validated ledger N”; Build
+notes and XRPL explainers are two team-authored writers. The real-content profile excludes
+all eight fictional publishers; older recorded replays and the frozen evaluations still
+use them. A copied corpus is not evidence of an external seller market.
 
 ## 6. What does key reveal enforce?
 
@@ -87,6 +89,9 @@ Unsigned autofill probes measured different fees and charge nothing.
 Recorded unsigned probes returned `tecNO_PERMISSION` for RLUSD on both networks;
 the matched TEST-SGD control returned `tesSUCCESS`. Nothing was signed or submitted.
 Testnet and Mainnet both have TokenEscrow enabled; issuer permissions still matter.
+A 12 Nov read of both official issuers’ account flags shows the locking bit switched off,
+so exact RLUSD escrow waits for Ripple. A stand-in token completed one purchase through
+the product’s own path in 16.6 s. [Spike evidence](../evidence/money/SPIKES.md).
 Official development-network RLUSD payments were demonstrated separately on 3 Nov.
 [Recorded ledger verdicts](../evidence/dry-run-nov12/result.json).
 
@@ -152,14 +157,17 @@ Retention and owner controls are described in the hosted runbook.
 ## 21. Where do I install it?
 
 GitHub Releases has the published MCP package, TypeScript SDK and Python wheel.
-They are not yet on npm, PyPI or the MCP Registry. The Mac DMG is unsigned pending
-a Developer ID. The browser link avoids installation.
+They are not yet on npm, PyPI or the MCP Registry, and neither are the Express, Hono
+and FastAPI seller packages. The Mac DMG is unsigned pending a Developer ID. The
+browser link avoids installation. Agents can also connect by URL. <!-- HOSTED-PENDING -->
 
 ## 22. Is it ready for regulated deployment?
 
-No. Custody needs KMS/HSM and rotation; screening needs a sanctions provider and
-writer KYB; audit retention policy, maker-checker controls, velocity limits,
-licensing and legal review remain. The hire flow holds funds in transit.
+No. The opt-in regulated mode refuses payees without an accepted credential and
+screens them against one dated OFAC XRP address list, with every refusal audited; that
+is a control, not clearance. Custody needs KMS/HSM and rotation; screening needs a
+sanctions provider and writer KYB; audit retention policy, maker-checker controls,
+velocity limits, licensing and legal review remain. The hire flow holds funds in transit.
 [Compliance map](../COMPLIANCE.md).
 
 ## 23. How do agents hire it?
@@ -172,6 +180,8 @@ was demonstrated once. [Hire evidence](../evidence/hire-274.md).
 
 <!--f:feedback_line-->7 ranked findings with runnable repros · 35 numbered findings (B01–B35) · 15 submissions on 4–5 Sep · 8 upstream drafts, 0 filed<!--/f-->.
 Keep submitted historical feedback separate from the currently unfiled drafts.
+Five more items, with transaction hashes and three patches, are verified and ready to
+file; filing waits for the owner. [Bundle](../feedback/upstream/r3/README.md).
 [Builder feedback](../BUILDER-FEEDBACK.md).
 
 ## 25. What is the simplest thing to verify?
@@ -179,3 +189,58 @@ Keep submitted historical feedback separate from the currently unfiled drafts.
 Open the hosted demo, choose Verify and run the checks without asking a question.
 Then open a payment’s “Check the key yourself”. Read the actual result and follow
 both transaction links. [Try it](https://collaboration95.github.io/theFastandtheFungible/try/).
+
+## 26. How strong is the 1,000-purchase result?
+
+<!--f:proof_purchases-->1,000<!--/f--> of <!--f:proof_purchases-->1,000<!--/f--> attempts completed, and an independent script that re-reads every
+transaction from a public node verified all <!--f:proof_purchases-->1,000<!--/f-->: median <!--f:proof_p50_s-->20.3<!--/f--> s end to end, p90 22.6 s.
+They are scripted repeats of one team-authored note, bought by fresh accounts through
+the product’s escrow service, with no model or hosted service involved. That proves the
+payment path at volume, not demand. `npm run proof:testnet-verify` reproduces it.
+[Run and verifier](../evidence/proof/TESTNET-1000.md).
+
+## 27. What do the model checker and the simulations prove?
+
+The checker explored <!--f:proof_states-->210,480<!--/f--> bounded protocol states with no violation and caught all <!--f:proof_mutations-->seven<!--/f-->
+deliberately seeded bugs. <!--f:proof_schedules-->1,000,000<!--/f--> simulated crash and retry schedules ran against the
+real purchase code on an in-memory ledger, also with no violation; <!--f:proof_attacks-->34<!--/f--> attacks on the local
+stack found no breach. They do not prove the code matches the model, nor cover ledger
+consensus or disk corruption, and the schedules are seeded repetitions of a finite fault
+matrix. [Proof report](../evidence/proof/PROOF-REPORT.md).
+
+## 28. Why policy rules and not a calibrated decision model?
+
+We fitted one on 778 usable historical decisions and tested it on held-out questions.
+The rules scored better on all three measures: Brier 0.0355 against 0.0369, calibration
+error 0.044 against 0.059 and AUC 0.983 against 0.971. We removed the model; hosted
+keeps policy rules. This is a retrospective test on reconstructed data, not a live result.
+[Models evidence](../evidence/models/MODELS.md).
+
+## 29. What search runs, and does it call an API?
+
+Hybrid ranking with local BGE-small embeddings on the server’s CPU: no embedding API.
+A query embeds in about 2.6 ms at the median on a Mac. The tuning bank is not
+independent evidence of generalisation. <!-- HOSTED-PENDING -->
+
+## 30. Can anyone publish, and has anyone?
+
+Anyone can submit an original note of 150–3,000 words; moderation prechecks it and an
+operator approves it before it goes live. A scripted note took <!--f:publish_live_s-->12.4<!--/f--> s to go live and <!--f:publish_sale_s-->34.5<!--/f--> s
+to a verified sale, measured locally; typing time and hosted latency are unmeasured. No
+outside writer has published yet. <!-- HOSTED-PENDING -->
+[Publishing evidence](../evidence/publish/PUBLISH.md).
+
+## 31. How do other agents and sellers reach it?
+
+Agents connect over MCP at a URL, with generated one-click links for Cursor and VS Code
+and steps for Claude; we did not install each native client. They can also buy answers
+over x402 at `/v1/ask`, with hosted budgets of 100 or 200 cents. <!-- HOSTED-PENDING -->
+A separate Python buyer completed a real purchase and an expiry cancellation against a
+Hono seller installed from the seller package. A key-reveal scheme for x402 is drafted,
+not filed. [Reach evidence](../evidence/reach/REACH.md).
+
+## 32. What does the live page show?
+
+Each validated escrow and key check, as it happens, and a scoreboard that separates
+outside visitors from operator tests. <!-- HOSTED-PENDING -->
+[Feed evidence](../evidence/feed/FEED.md).

@@ -91,13 +91,14 @@ export const releases = {
 export const capabilities = [
   { name: 'Who decides to buy', then: 'A language model proposed; a person approved every quote', now: 'Policy code buys within the budget you set, after one plan confirmation; a decision model only scores', prs: [], tag: 'known-good-2026-10-08', evidence: 'docs/FINAL-PUSH.md' },
   { name: 'Payment', then: 'A simulated by default; development-network optional', now: 'Each writer paid at its own development-network wallet, one charge per intent', prs: [101, 103] },
-  { name: 'Agents', then: 'One web page', now: 'An MCP server for Claude Code and Codex, plus TypeScript and Python SDKs', prs: [266, 333] },
+  { name: 'Agents', then: 'One web page', now: 'An MCP server any agent can reach by URL, an x402 paid endpoint and TypeScript and Python SDKs', prs: [266, 333, 523, 538] },
   { name: 'Refunds', then: 'None', now: 'Quality refunds need the writer’s signature (cooperative); no-show refunds use automatic EscrowCancel after the deadline', prs: [308] },
   { name: 'Mac app', then: 'None', now: 'An installable Mac app with keys in the Keychain (unsigned)', prs: [303] },
-  { name: 'Proof', then: 'Citations checked inside the app', now: 'An offline verifier anyone can run: citations, receipts and ledger checks', prs: [322] },
-  { name: 'Writers', then: 'Synthetic sources only', now: 'Anyone can publish a folder of notes as a paid development-network writer', prs: [300, 389] },
+  { name: 'Proof', then: 'Citations checked inside the app', now: 'An offline verifier anyone can run, a protocol model, simulated crash schedules, and a large batch of real purchases each re-read from a public node', prs: [322, 530, 533] },
+  { name: 'Sources', then: 'Synthetic sources only', now: 'The real XRPL and x402 documentation, plus ledger reports signed to a validated ledger', prs: [527, 536, 537] },
+  { name: 'Writers', then: 'Team-run only', now: 'Anyone can publish a folder of notes, or a note from a phone through moderation, as a paid writer', prs: [300, 389, 532] },
   { name: 'Fair exchange', then: 'Pay first, then read', now: 'Key-reveal escrow: the writer is paid only by publishing the key', prs: [369] },
-  { name: 'Stablecoin path', then: 'XRP only', now: 'Token escrow in TEST-SGD, our development-network stand-in for RLUSD', prs: [381, 384] },
+  { name: 'Stablecoin path', then: 'XRP only', now: 'Token escrow in TEST-SGD, our stand-in: official RLUSD issuers have escrow locking off, so RLUSD cannot be escrowed yet', prs: [381, 384, 525] },
   { name: 'Audit trail', then: 'None', now: 'Validated answer anchors are recorded on the ledger, even when nothing is bought; pending or unavailable anchors are labelled', prs: [366, 403] },
   { name: 'First try', then: 'Clone, install, add a model key', now: 'One npx command ends in RESULT PASS with six ledger links', prs: [387] },
 ]

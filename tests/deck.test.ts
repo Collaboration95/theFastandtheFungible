@@ -15,6 +15,12 @@ const doc = new DOMParser().parseFromString(html, 'text/html')
 const slides = [...doc.querySelectorAll('section.slide')]
 const data = build() as { facts: Record<string, { value: string }>; links: Record<string, string | null> }
 const fact = (key: string) => data.facts[key].value
+/** Slides are found by title, so adding or reordering one does not silently retarget a check. */
+const slideTitled = (title: string) => {
+  const found = slides.find(s => s.getAttribute('data-title') === title)
+  if (!found) throw new Error(`no slide titled "${title}"`)
+  return found
+}
 
 describe('finals deck', () => {
   it('fills every number from facts.json, like the README', () => {
@@ -37,28 +43,40 @@ describe('finals deck', () => {
       expect(slide.querySelector('img[src="../../../site/try/qr.svg"]')).not.toBeNull()
     }
     expect((doc.body.textContent?.match(/Testnet/g) ?? []).length).toBe(1)
-    expect(slides[8].textContent).toContain(fact('live_asof'))
+    expect(slideTitled('Live usage, measured cost, auditable purchases').textContent).toContain(fact('live_asof'))
     expect(fact('try_line')).toBe(execFileSync(process.execPath, ['scripts/install-snippets.mjs', '--tag', fact('release'), '--try'], { encoding: 'utf8' }).trim())
   })
 
-  it('links slide 3 to unchanged release evidence without repeating the terminal caveats', () => {
-    expect(slides[2].textContent).toContain('docs/submission/evidence/v1.1.1/try-output.txt')
-    expect(slides[2].textContent).toContain(fact('try_line'))
-    expect(slides[2].textContent).toContain('fixture models')
+  it('links the reach slide to unchanged release evidence without repeating the terminal caveats', () => {
+    const reach = slideTitled('Connect your agent by URL')
+    expect(reach.textContent).toContain('docs/submission/evidence/v1.1.1/try-output.txt')
+    expect(reach.textContent).toContain(fact('try_line'))
+    expect(reach.textContent).toContain('fixture models')
     const output = readFileSync('docs/submission/evidence/v1.1.1/try-output.txt', 'utf8')
     expect(output).toContain('RESULT PASS')
-    expect(slides[2].textContent).not.toMatch(/84\.2|2 of 4|cold runs overran/)
+    expect(reach.textContent).not.toMatch(/84\.2|2 of 4|cold runs overran/)
   })
 
-  it('preserves the featured verifier result and actual per-run substitution on slide 7', () => {
-    const text = slides[6].textContent ?? ''
+  it('preserves the featured verifier result and actual per-run substitution on the hosted-run slide', () => {
+    const hostedRun = slideTitled('One hosted run. All five gates held.')
+    const text = hostedRun.textContent ?? ''
     expect(text).toContain(`${fact('featured_browser')} passed`)
     expect(text).toContain(`${fact('featured_wheel')} passed`)
     expect(text).toContain('two not checked')
     expect(text).toContain('initial draft from recorded extracts')
-    expect(slides[6].querySelector('a[href="https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs/evidence/hosted-export-nov12/README.md"]')).not.toBeNull()
+    expect(hostedRun.querySelector('a[href="https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs/evidence/hosted-export-nov12/README.md"]')).not.toBeNull()
     expect(text).toContain('Paid passages were read after access was granted.')
     expect(text).not.toMatch(/1953|1954|421bae3d|preset 2|No question used/)
+  })
+
+  it('leads with what is proven and reachable, and keeps the new numbers as facts', () => {
+    const titles = slides.map(s => s.getAttribute('data-title'))
+    expect(titles.indexOf('Proof at scale')).toBeLessThan(titles.indexOf('Live usage, measured cost, auditable purchases'))
+    const proof = slideTitled('Proof at scale').textContent ?? ''
+    for (const key of ['proof_purchases', 'proof_states', 'proof_schedules', 'proof_attacks', 'proof_p50_s']) expect(proof, key).toContain(fact(key))
+    expect(slideTitled('Real sources, and reports signed to a ledger').textContent).toContain(fact('content_passages'))
+    expect(slideTitled('Anyone can publish a paid note').textContent).toContain(fact('publish_live_s'))
+    expect(slideTitled('RLUSD cannot be escrowed today').textContent).toContain('tecNO_PERMISSION')
   })
 
   it('links every Testnet hash to the explorer page of that exact hash', () => {

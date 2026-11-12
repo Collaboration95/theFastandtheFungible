@@ -193,6 +193,29 @@ export function build() {
     live_violations: fact(['readBeforeGrant', 'buyWithoutPolicy', 'overBudget', 'duplicateIntent', 'receiptWithoutIntent'].reduce((n, k) => n + stats.audit[k], 0), STATS, 'sum of recorded gate violation counters across available audits'),
     live_asof: fact(captured.asOfSgt, 'docs/submission/evidence/hosted-stats-nov12/capture.json', 'snapshot fetch time in Singapore'),
   })
+  // Round 3 evidence: proof at scale, real content, publishing. Each is read from a committed evidence file, never typed.
+  const PROOF = 'docs/evidence/proof'
+  const modelRuns = json(`${PROOF}/model-summary.json`)
+  const sim = json(`${PROOF}/sim-summary.json`)
+  const verified = json(`${PROOF}/testnet-1000-verify.json`)
+  const t1000 = json('data/evidence/testnet-1000/summary.json')
+  const attacks = read(`${PROOF}/PROOF-REPORT.md`).match(/(\d+) local HTTP-stack attacks: (\d+) passed, (\d+) breaches/)
+  if (!attacks || attacks[1] !== attacks[2]) need(null, `a passing attack line in ${PROOF}/PROOF-REPORT.md`)
+  const docsManifest = json('data/corpus/public-docs/manifest.json')
+  const phone = json('docs/evidence/publish/phone-live.json')
+  const grouped = n => Number(n).toLocaleString('en-US')
+  Object.assign(facts, {
+    proof_purchases: fact(grouped(verified.verified), `${PROOF}/testnet-1000-verify.json`, 'real key-reveal purchases the independent script re-read from a public node and verified'),
+    proof_p50_s: fact((t1000.endToEndMs.p50 / 1000).toFixed(1), 'data/evidence/testnet-1000/summary.json', 'median seconds end to end across the 1,000 purchases'),
+    proof_states: fact(grouped(modelRuns.models.reduce((n, m) => n + need(m.states, 'model states'), 0)), `${PROOF}/model-summary.json`, 'bounded protocol states explored across four model configurations'),
+    proof_mutations: fact(spoken(modelRuns.mutations.length), `${PROOF}/model-summary.json`, 'deliberately seeded model bugs, spoken; each is reported with a counterexample'),
+    proof_schedules: fact(grouped(sim.runs), `${PROOF}/sim-summary.json`, 'simulated crash and retry schedules run against the real purchase code'),
+    proof_attacks: fact(attacks[1], `${PROOF}/PROOF-REPORT.md`, 'attacks against the local stack that passed; zero breaches'),
+    proof_violations: fact(Object.values(sim.violations).reduce((a, b) => a + b, 0) + modelRuns.models.reduce((n, m) => n + (m.violations?.length ?? 0), 0), `${PROOF}/sim-summary.json`, 'violations across the simulated schedules and the model checker'),
+    content_passages: fact(grouped(docsManifest.sources.reduce((n, x) => n + x.passageCount, 0)), 'data/corpus/public-docs/manifest.json', 'XRPL and x402 documentation passages in the free tier'),
+    publish_live_s: fact(phone.submitToVisibleLiveSeconds.toFixed(1), 'docs/evidence/publish/phone-live.json', 'seconds from phone-width form submission to a live note, measured locally'),
+    publish_sale_s: fact(phone.totalToVisibleSaleSeconds.toFixed(1), 'docs/evidence/publish/phone-live.json', 'seconds from submission to a visible verified sale, measured locally'),
+  })
   const v = k => facts[k].value
   // Canonical sentences other surfaces reuse word for word (deck, Q&A, form).
   const copy = {
