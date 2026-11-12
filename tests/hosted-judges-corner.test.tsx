@@ -18,13 +18,13 @@ vi.mock('../src/ledger-check', async original => ({ ...await original<typeof imp
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.doUnmock('../src/verify/browser'); vi.resetModules() })
 
 it('pins the recorded caption to the final answer and audited decision providers', () => {
-  const bundle = JSON.parse(readFileSync('public/judge/hosted-run-nov11.receipts.json', 'utf8'))
+  const bundle = JSON.parse(readFileSync('public/judge/hosted-run-nov12.receipts.json', 'utf8'))
   const answer = bundle.answers.at(-1)
   expect(answer.provider).toBe('deepseek')
   const decisions = bundle.audit.entries.filter((entry: { kind: string }) => entry.kind === 'decision')
   expect(decisions.length).toBeGreaterThan(0)
   expect(decisions.every((entry: { data: { provider: string } }) => entry.data.provider === 'fixture')).toBe(true)
-  expect(JUDGE_RUN.caption).toBe('Recorded on this demo, 11 Nov 2026 · XRPL Testnet · live answers, rule-based buying · team-authored writers · no real value')
+  expect(JUDGE_RUN.caption).toBe('Recorded on this demo, 12 Nov 2026 · XRPL Testnet · live answers, rule-based buying · team-authored writers · no real value. One hosted run, 12 Nov · 31.1 s Start→Done · 1 article · S$0.40 · no refund')
 })
 
 const status = (patch: Partial<HostedDemoStatus> = {}): HostedDemoStatus => ({
@@ -48,17 +48,17 @@ const showHome = async (h: Hosted, state: HomeState) => {
 }
 
 describe('the committed recorded run', () => {
-  it('is the hosted export of 11 Nov, byte for byte, with the pinned SHA-256', async () => {
-    const served = readFileSync('public/judge/hosted-run-nov11.receipts.json')
-    const evidence = readFileSync('docs/evidence/hosted-export-nov11/receipts.json')
-    expect(createHash('sha256').update(served).digest('hex')).toBe('1f2fe4de4de58fedb68c8e04c9f2106fa0b66004c1839ae93f29bb0662ee13ee')
+  it('is the hosted export of 12 Nov, byte for byte, with the pinned SHA-256', async () => {
+    const served = readFileSync('public/judge/hosted-run-nov12.receipts.json')
+    const evidence = readFileSync('docs/evidence/hosted-export-nov12/receipts.json')
+    expect(createHash('sha256').update(served).digest('hex')).toBe('8cedc67bdbdc51e2e13ad1bb68ed6a5b78e76d75afa7b47e37e7a97cec71f2ae')
     expect(Buffer.compare(served, evidence)).toBe(0)
-    expect(JUDGE_RUN.bundleUrl).toBe('/judge/hosted-run-nov11.receipts.json')
+    expect(JUDGE_RUN.bundleUrl).toBe('/judge/hosted-run-nov12.receipts.json')
   })
   it('contains the EscrowFinish the strip links to', async () => {
-    const bundle = readFileSync('public/judge/hosted-run-nov11.receipts.json', 'utf8')
+    const bundle = readFileSync('public/judge/hosted-run-nov12.receipts.json', 'utf8')
     expect(bundle).toContain(JUDGE_RUN.keyTx)
-    expect(explorerTx(JUDGE_RUN.keyTx)).toBe('https://testnet.xrpl.org/transactions/4CCB4E56137D738847E853535B068329562AD490DA4D9F5551CEC2EB1AC70638')
+    expect(explorerTx(JUDGE_RUN.keyTx)).toBe('https://testnet.xrpl.org/transactions/01A6A7E07652216B102DFD1FED13462539D43475DFFBBA5A3C6E0FB12F643F1D')
   })
 })
 
@@ -122,7 +122,7 @@ describe('using it costs no question', () => {
     await showHome(h, state)
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Run the checks' })) })
     expect((await screen.findByText(/passed/, { selector: '.ra-hv-head' })).textContent).toBe('26 passed · 2 not checked')
-    expect(fetchSpy.mock.calls.map(call => String((call as unknown[])[0]))).toEqual(['/judge/hosted-run-nov11.receipts.json'])
+    expect(fetchSpy.mock.calls.map(call => String((call as unknown[])[0]))).toEqual(['/judge/hosted-run-nov12.receipts.json'])
     expect(JSON.stringify(h.status.remaining)).toBe(before)
     expect(screen.getByText(JUDGE_RUN.caption)).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Run again' })).toBeTruthy()

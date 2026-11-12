@@ -16,7 +16,7 @@ fintech operator; **Y**, a YC-style partner. Their hardest questions come first.
 |---|---|---|---|
 | **<!--f:identity_writers-->3<!--/f--> Credentials / <!--f:identity_domains-->1<!--/f--> domain** | accepted operator-issued writer Credentials and retained Testnet Permissioned Domain | identity only, not KYC or quality; snapshot ledger <!--f:identity_ledger-->22244375<!--/f-->, 11 Nov; distinct from two paid team writers and zero independent writers | [identity evidence](../evidence/writer-credentials-nov12/README.md) |
 | **RLUSD `tecNO_PERMISSION` / TEST-SGD `tesSUCCESS`** | recorded unsigned create probes: RLUSD on Testnet and Mainnet; matched control on Testnet | no signature, submission or fee charged | [verdicts](../evidence/dry-run-nov12/result.json) |
-| **Browser 45 passed / 2 not checked; Python 46 passed / 0 failed / 2 skipped** | different verifiers checking the same historical hosted bundle; not HOSTED-12 | 11 Nov bundle, public Testnet reads; no identity pass inferred | [browser](../evidence/judges-corner/README.md), [Python](evidence/v1.1.1/verify-python.txt) |
+| **Featured browser/TS 24 passed / 0 failed / 2 not checked; Python 25 passed / 0 failed / 2 skipped; five gates Held** | same preset-2 export; Testnet 6/6 each; separate from the earlier HOSTED-12 answer card | one hosted run, 12 Nov, 09:07 SGT; 31.1 s, 1 article, S$0.40; identity skips retained | [receipts, counts and all three tx links](../evidence/hosted-export-nov12/README.md) |
 | **<!--f:try_s-->84.2<!--/f--> s** | `try --testnet`: empty npm cache → six Testnet links → `RESULT PASS` | Testnet, fixture models, one Mac, 7 Nov; <!--f:try_misses-->2 of 4<!--/f--> cold attempts overran 90 s | [#387](https://github.com/Collaboration95/theFastandtheFungible/pull/387), [round4-j2](../evidence/round4-j2/README.md) |
 | **<!--f:mcp_mb-->3.4<!--/f--> MB / <!--f:mcp_init_s-->6.3<!--/f--> s** | MCP package size / cold initialize (was 21.4 MB / 56.5 s) | local packed build, fresh npm cache | same |
 | **<!--f:app_ready_s-->27.0<!--/f--> s** | zero-clone app ready (was 134 s) | same | same |
@@ -264,7 +264,7 @@ still narrow: the same agent wrote both, and the questions follow templates."
 
 **Say:** "Yes, use the judges' corner to check a public recorded sandbox bundle without a research admission. It needs the static page, receipt file and reachable public node. Read passed and not-checked items separately. Offline tools can check signed bundle contents, but that is not a fresh ledger lookup."
 
-**Behind it:** [Judges' corner evidence](../evidence/judges-corner/README.md). The cold-read review observed the hosted button complete 45 passed, 2 not checked; this is the historical 11 Nov bundle, not HOSTED-12's 26/2 result. A missing transaction is pending, and network failure is unavailable. An HTTP 200 alone does not establish JSON or successful verification.
+**Behind it:** [Featured receipts](../evidence/hosted-export-nov12/README.md): one hosted run, 12 Nov, preset 2 at 09:07 SGT; 31.1 s, S$0.40, one article and no refund. Browser/TS 24 passed, 0 failed, 2 not checked/skipped; wheel 25/0/2; public Testnet 6/6 each. All five gates Held, with grant 1953 before reads 1954–1957. The 11 Nov export remains historical, with its original gate-1 gap. A missing transaction is pending, and network failure is unavailable. An HTTP 200 alone does not establish JSON or successful verification.
 
 ### 25. Why did you keep rule-based buying?
 

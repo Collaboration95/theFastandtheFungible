@@ -41,7 +41,7 @@ npx -y $REL/researchagent-mcp-1.1.1.tgz try --testnet
 <p align="center">
   <img src="docs/media/readme-answer.png" width="900" alt="The hosted demo after an XRPL Testnet run. Question: what HTTP headers does x402 use on XRPL, and how does the server know the payment actually settled? The lead finding: an HTTP 402 response offers payment requirements in PAYMENT-REQUIRED; the client chooses supported terms, authorizes payment and retries with PAYMENT-SIGNATURE. The payment card shows a net cost of S$0.80 of a S$2.00 budget for two articles, each paid by key reveal: payment locked in escrow, writer released the key, key matches the escrow lock, article unlocked. The answer is anchored on XRPL Testnet.">
 </p>
-<p align="center"><sub>The live demo, 11 Nov 2026 · XRPL Testnet · live answers, rule-based buying · team-authored writers · no real value · <a href="docs/evidence/hosted-export-nov11/README.md">its five transactions and receipts</a></sub></p>
+<p align="center"><sub>Historical screenshot: the live demo, 11 Nov 2026 · XRPL Testnet · live answers, rule-based buying · team-authored writers · no real value · <a href="docs/evidence/hosted-export-nov11/README.md">its five transactions and receipts</a></sub></p>
 
 ## One useful paid answer · hosted Testnet run
 
@@ -115,6 +115,19 @@ pip install https://github.com/Collaboration95/theFastandtheFungible/releases/do
 [Open the judges’ corner](https://ra-front-651013803640.asia-southeast1.run.app) →
 **Check our work · recorded run and ledger** → **Run the checks**. Read pass/skip groups
 separately. The page, receipt file and public node must be reachable.
+
+<details>
+<summary>Featured run: one hosted run, 12 Nov · all five gates Held</summary>
+
+**One hosted run, 12 Nov:** 09:07:38.656–09:08:09.738 SGT; **31.1 s, S$0.40,
+1 article, no refund; five gates Held** (grant 1953 < reads 1954–1957).
+Browser/TS **24 passed / 0 failed / 2 skipped**; wheel **25/0/2**; Testnet **6/6**.
+[Receipts, labels and timing scope](docs/evidence/hosted-export-nov12/README.md) ·
+[lock](https://testnet.xrpl.org/transactions/F4A608E20BE054B77F4FF2D4B1ED3EBC3EF54FC7D0A144CE56975163C6E7D795) ·
+[key/payment](https://testnet.xrpl.org/transactions/01A6A7E07652216B102DFD1FED13462539D43475DFFBBA5A3C6E0FB12F643F1D) ·
+[anchor](https://testnet.xrpl.org/transactions/E71B20085CBF1DE65153462931D5BAD7F40D23AA54A372D70DF547AFD2722ECA).
+
+</details>
 
 <details>
 <summary>Six Testnet transactions from one recorded run, and how to re-check them</summary>

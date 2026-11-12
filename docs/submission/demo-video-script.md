@@ -88,7 +88,7 @@ the optional refusal question is “Which airlines ordered new narrowbody jets a
 After redeploy the recorder must be deliberately re-enabled for those scenes.
 
 The key shot is a local current-main replay with real recorded Testnet escrow;
-the corner checks the unchanged 11 Nov sandbox bundle. Writers uses X2's local
+the existing corner clip checks the unchanged 11 Nov sandbox bundle. Future captures use the shared featured path: one hosted run, 12 Nov (24 passed, 0 failed, 2 not checked; five gates Held). [Receipts and transaction links](../evidence/hosted-export-nov12/README.md). Writers uses X2's local
 HOSTED=1 harness and existing private writer keys, with real public-node identity
 observations. It neither funds wallets nor creates credentials/domains. No UI hooks needed.
 The feedback card renders the committed unsigned ledger-dry-run output, retaining

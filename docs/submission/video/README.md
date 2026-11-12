@@ -86,7 +86,7 @@ CHECK_RELEASE_URLS=1 npx vitest run tests/video-kit.test.js
 ```
 
 Terminal assets are fetched using authenticated `gh release download`. Python
-receipts are copied from `public/judge/hosted-run-nov11.receipts.json`. No GitHub
+future receipts are copied from the featured path in `shared/judge-run.json` (currently `public/judge/hosted-run-nov12.receipts.json`). The existing VID-3 captures below retain their 11 Nov bundle. No GitHub
 browser access, raw-URL fetch or synthetic result substitution is used.
 Current-main features postdate v1.1.1; the published tools prove compatibility,
 not inclusion of those features in the release.
@@ -110,7 +110,22 @@ retain true source/model/writer labels, check a real key match and actual pass/s
 counts, and verify why-bought plus the Trace search comparison. Owner upload and
 public video links remain in pinned issue #265. No upload is performed here.
 
-## VID-3 recorded acceptance
+## Current featured receipts
+
+The featured export is **one hosted run, 12 Nov**, preset 2, run
+`421bae3d-564c-48f8-b5e8-5034b195860a`: **09:07:38.656–09:08:09.738 SGT,
+31.1 s Start→Done**, one article / four passages for **S$0.40**, no refund.
+Planning and the five-second modal are excluded; model cost is unmeasured.
+Browser and published v1.1.1 TS: **24 passed, 0 failed, 2 not checked/skipped**;
+published v1.1.1 wheel: **25 passed, 0 failed, 2 skipped**; Testnet **6/6** each.
+All five browser gates are **Held**; explicit grant **1953** precedes paid reads
+**1954–1957**. Identity skips remain explicit. Live DeepSeek plan/final answer,
+rule-based buying, initial fixture draft and keyword fallback; team-authored writer;
+XRPL Testnet, no real value.
+
+[Evidence and transaction links](../../evidence/hosted-export-nov12/README.md). Existing clips below are historical; changing the featured path does not re-record them.
+
+## VID-3 historical recorded acceptance
 
 Browser clips refreshed from main base `16bfffd2` after the shipping rebase, with
 published v1.1.1 CLI artifacts. Nine clean scene clips are in video-out/vid-3/clips.
