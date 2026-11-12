@@ -180,7 +180,8 @@ test('paused, ended, used-up, on-hold and offline each say what happened and wha
   await expect(question(page)).toHaveCount(0)
   await expect(page.getByRole('group', { name: 'Demo questions' })).toHaveCount(0)
   await expect(card.getByRole('link', { name: /Watch the recorded walkthrough/ })).toBeVisible()
-  await expect(page.getByRole('button', { name: /paused/ })).toBeVisible()
+  // Operator state stays in the card; the environment chip keeps one quiet rail label.
+  await expect(page.getByRole('button', { name: 'Simulated payments', exact: true })).toBeVisible()
   await shot(page, 'paused-1440')
   control({})
   // Recovers on its own once the control file is back to ready.
@@ -219,7 +220,7 @@ test('paused, ended, used-up, on-hold and offline each say what happened and wha
   await statusAs(page, status => ({ ...status, state: 'ended', capabilities: { ...(status.capabilities as object), ask: false, scope: false } }))
   await page.reload()
   await expect(card).toContainText('New questions closed on 20 November, 00:00 SGT.')
-  await expect(page.getByRole('button', { name: /ended/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Simulated payments', exact: true })).toBeVisible()
   expect(await serious(page)).toEqual([])
   await context.close()
 })
@@ -265,7 +266,7 @@ test('hosted writers have public pages, honest earnings and narrow reads in two 
     expect(await response.text()).toContain('TEAM-AUTHORED')
     expect((await v.context.request.get(path! + '/.well-known/agent-publisher.json')).status()).toBe(200)
     for (const suffix of ['/search', '/articles/private', '/facilitator/supported', '/__faults']) expect((await v.context.request.get(path! + suffix)).status()).toBe(404)
-    const articles = catalogue.locator('details').first()
+    const articles = catalogue.locator('details').filter({ has: v.page.getByText('Articles and prices', { exact: true }) }).first()
     await articles.locator('summary').click()
     const article = await articles.locator('a').first().getAttribute('href')
     expect((await v.context.request.get(article!)).status()).toBe(200)

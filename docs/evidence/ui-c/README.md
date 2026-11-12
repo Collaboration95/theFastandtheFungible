@@ -27,7 +27,7 @@ The main run column now shows one payment stepper per key-reveal purchase. Pendi
 - `npx vitest run tests/payment-stepper.test.tsx tests/ui-c-markers.test.tsx src/components/KeyRevealLifecycle.test.tsx`: all stepper states, snapshot updates, delayed delivery, multiple purchases, simulated-link suppression, replay event boundaries, one shared checker and existing key-check outcomes.
 - `npx playwright test --config tests/playwright/ui-c.config.ts`: desktop/phone states, exact transaction URLs, one Home marker, targets, axe and bundle budget.
 - `npm run build:demo` then `npx playwright test --config tests/playwright/ui-c-replay.config.ts`: actual recorded UC3 replay, two steppers, create/finish links and unchanged #512 provenance labels. Build only; no publication.
-- Copy assertions updated in `hosted-judges-corner.test.tsx`, `p2-builders-corner.test.tsx`, `ui-a-copy.test.tsx`, `ui-a.spec.ts`, `hosted-ui.spec.ts`, `foundation.spec.ts`, `e2e.spec.ts`, `ux.spec.ts`, `ux2.spec.ts`, `coverage-environment.test.tsx`, `declutter.test.tsx`, `presentation-components.test.tsx`, `web-panels.test.tsx`, and `src/fixtures/{internals,wpui}.test.tsx`.
+- Copy assertions updated in `hosted-judges-corner.test.tsx`, `p2-builders-corner.test.tsx`, `ui-a-copy.test.tsx`, `ui-a.spec.ts`, `hosted-ui.spec.ts`, `judges-corner.spec.ts`, `foundation.spec.ts`, `e2e.spec.ts`, `ux.spec.ts`, `ux2.spec.ts`, `coverage-environment.test.tsx`, `declutter.test.tsx`, `presentation-components.test.tsx`, `web-panels.test.tsx`, and `src/fixtures/{internals,wpui}.test.tsx`.
 
 ## Intentional assertion changes
 
