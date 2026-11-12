@@ -1,0 +1,211 @@
+{
+  "label": "SYNTHETIC in-memory ledger; real PurchaseManager/SQLite Store; logical crash exceptions, pre-signed fixture blobs; no Testnet or live models",
+  "testedCommit": "40720d34162257b7db32c118931cddd9b93194ee",
+  "worktreeDirty": false,
+  "sourceSha256": {
+    "server/purchases.ts": "5d2e106f1246351e4e2397830cb451d7d9277168b851035d1ff460a5a3ad3817",
+    "server/store.ts": "5b4d15c42f8046de186e675c8fb5271506af291323ba85fca197cb543478bd66",
+    "server/proofs.ts": "5da59e5e3dc9063afe38c45eaaab21c9d59ef9998d8e717be493d42fe78b123a",
+    "server/xrpl.ts": "dd47dd3218a23302ffd40aaf704f100aaa881cbcc7e1132ca30ec56777c5d43c",
+    "scripts/proof/simulation.ts": "12781c8e841cb4559dd4d7a86de4dabb010501828776d40eeec6b397c08b2d27",
+    "scripts/proof/sim.mjs": "70b1a8be654669815e2aeec8b34397f59070693b04be9f3b7416301ccf1cb0a8",
+    "scripts/proof/sim-worker.mjs": "5acadea0f6af18634934216378db223c64f618da1d2b7d05663fb071f80357e3"
+  },
+  "startedAt": "2026-11-12T09:20:06.282Z",
+  "nodeVersion": "v22.23.4",
+  "platform": "darwin",
+  "runs": 1000000,
+  "seed": 279,
+  "workers": 4,
+  "durationMs": 728513.11075,
+  "schedulesPerSecond": 1372.6588928104613,
+  "violations": {
+    "G1": 0,
+    "G2": 0,
+    "G3": 0,
+    "G4": 0,
+    "G5": 0
+  },
+  "results": [
+    {
+      "runs": 250000,
+      "seed": 279,
+      "violations": {
+        "G1": 0,
+        "G2": 0,
+        "G3": 0,
+        "G4": 0,
+        "G5": 0
+      },
+      "byFault": {
+        "reserveIntent": 19309,
+        "claimSubmitting": 19250,
+        "recordSubmission": 19118,
+        "recordSettlement": 19154,
+        "addGrant": 19142,
+        "recordProof": 19264,
+        "before-submit": 19336,
+        "after-submit": 19402,
+        "duplicate-submit": 19224,
+        "ledger-delay": 19246,
+        "validation-failure": 18948,
+        "bad-delivery": 19146,
+        "none": 19461
+      },
+      "exercised": {
+        "reserveIntent": 19309,
+        "claimSubmitting": 16374,
+        "recordSubmission": 16250,
+        "recordSettlement": 16340,
+        "addGrant": 16334,
+        "recordProof": 16344,
+        "before-submit": 16463,
+        "after-submit": 16496,
+        "duplicate-submit": 16300,
+        "ledger-delay": 16245,
+        "validation-failure": 16123,
+        "bad-delivery": 16241
+      },
+      "outcomes": {
+        "VERIFIED": 233014,
+        "SKIPPED": 234489,
+        "FAILED_NOT_SETTLED": 32497
+      }
+    },
+    {
+      "runs": 250000,
+      "seed": 280,
+      "violations": {
+        "G1": 0,
+        "G2": 0,
+        "G3": 0,
+        "G4": 0,
+        "G5": 0
+      },
+      "byFault": {
+        "reserveIntent": 19349,
+        "claimSubmitting": 19503,
+        "recordSubmission": 19381,
+        "recordSettlement": 19300,
+        "addGrant": 19158,
+        "recordProof": 19090,
+        "before-submit": 19223,
+        "after-submit": 19071,
+        "duplicate-submit": 19131,
+        "ledger-delay": 19415,
+        "validation-failure": 19358,
+        "bad-delivery": 18944,
+        "none": 19077
+      },
+      "exercised": {
+        "reserveIntent": 19349,
+        "claimSubmitting": 16544,
+        "recordSubmission": 16457,
+        "recordSettlement": 16414,
+        "addGrant": 16324,
+        "recordProof": 16212,
+        "before-submit": 16285,
+        "after-submit": 16299,
+        "duplicate-submit": 16128,
+        "ledger-delay": 16483,
+        "validation-failure": 16433,
+        "bad-delivery": 16168
+      },
+      "outcomes": {
+        "VERIFIED": 232255,
+        "SKIPPED": 234768,
+        "FAILED_NOT_SETTLED": 32977
+      }
+    },
+    {
+      "runs": 250000,
+      "seed": 281,
+      "violations": {
+        "G1": 0,
+        "G2": 0,
+        "G3": 0,
+        "G4": 0,
+        "G5": 0
+      },
+      "byFault": {
+        "reserveIntent": 19215,
+        "claimSubmitting": 19094,
+        "recordSubmission": 19339,
+        "recordSettlement": 19182,
+        "addGrant": 19394,
+        "recordProof": 19360,
+        "before-submit": 19229,
+        "after-submit": 19130,
+        "duplicate-submit": 19084,
+        "ledger-delay": 19584,
+        "validation-failure": 19163,
+        "bad-delivery": 19242,
+        "none": 18984
+      },
+      "exercised": {
+        "reserveIntent": 19215,
+        "claimSubmitting": 16172,
+        "recordSubmission": 16543,
+        "recordSettlement": 16285,
+        "addGrant": 16434,
+        "recordProof": 16462,
+        "before-submit": 16326,
+        "after-submit": 16206,
+        "duplicate-submit": 16221,
+        "ledger-delay": 16707,
+        "validation-failure": 16284,
+        "bad-delivery": 16292
+      },
+      "outcomes": {
+        "VERIFIED": 233288,
+        "SKIPPED": 234256,
+        "FAILED_NOT_SETTLED": 32456
+      }
+    },
+    {
+      "runs": 250000,
+      "seed": 282,
+      "violations": {
+        "G1": 0,
+        "G2": 0,
+        "G3": 0,
+        "G4": 0,
+        "G5": 0
+      },
+      "byFault": {
+        "reserveIntent": 19315,
+        "claimSubmitting": 19263,
+        "recordSubmission": 19401,
+        "recordSettlement": 19060,
+        "addGrant": 19147,
+        "recordProof": 19259,
+        "before-submit": 18987,
+        "after-submit": 19000,
+        "duplicate-submit": 19448,
+        "ledger-delay": 19263,
+        "validation-failure": 19179,
+        "bad-delivery": 19380,
+        "none": 19298
+      },
+      "exercised": {
+        "reserveIntent": 19315,
+        "claimSubmitting": 16306,
+        "recordSubmission": 16476,
+        "recordSettlement": 16188,
+        "addGrant": 16339,
+        "recordProof": 16406,
+        "before-submit": 16169,
+        "after-submit": 16171,
+        "duplicate-submit": 16583,
+        "ledger-delay": 16445,
+        "validation-failure": 16257,
+        "bad-delivery": 16544
+      },
+      "outcomes": {
+        "VERIFIED": 232897,
+        "SKIPPED": 234540,
+        "FAILED_NOT_SETTLED": 32563
+      }
+    }
+  ]
+}
