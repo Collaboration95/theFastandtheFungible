@@ -1243,3 +1243,9 @@ persistence or a mainnet deployment. No cloud resource or live ledger call ran.
 - **Workaround:** opt-in `XRPL_STREAM_WAITS=1` retains validated metadata, wakes on ledger/transaction activity and polls on disconnect/refusal. A bounded watchdog handles silence. Writer finish metadata is reused instead of fetched again. Fake-ledger tests cover duplicates, out-of-order/proposed events, missed events, disconnect/refusal and LastLedgerSequence/sequence proof.
 - **Suggested fix:** x402/XRPL starter examples should subscribe before submitting, retain metadata and clearly separate local observations from ledger-certified facts. A validated ledger event can precede the matching transaction event; readers must handle that race (tested synthetically here, not claimed as a live incident).
 - **Severity / mainnet impact:** medium regional Testnet latency/RPC friction. Finish validation median did not improve (4.302 → 4.721 s); its tail did (7.214 → 6.053 s). Create validation p90 rose 5.935 → 6.221 s. This local fixture-content comparison does not establish hosted or mainnet speed. No mainnet transaction, production-cap change or relaxed gate.
+
+## 2026-11-12 — local build outputs race during the full gate (observed)
+
+- Evidence: content gate at `c074461afa56066445483eb850c535ff5bd825ff`; receipt `1794474650280-27304-f5d75ed4-a9e7-4193-a90d-58471695dcee.json`; `docs/evidence/content/CONTENT.md`. Hosted startup lost `dist/.vite/manifest.json` while desktop staging rebuilt the same directory. No transaction: local verification only.
+- Workaround: make desktop staging depend on completion of the hosted browser suite. Suggested fix: give independently scheduled build consumers separate output directories, or encode every shared-output dependency.
+- Severity: Medium tooling friction. Mainnet impact: no ledger incident; this blocks reliable release admission and does not establish mainnet readiness.

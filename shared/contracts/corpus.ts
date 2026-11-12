@@ -3,7 +3,7 @@ import { SourceIdentitySchema } from '../source-identity.js'
 import { z } from 'zod'
 import { ManifestSchema } from './manifest.js'
 export const PriceSchema = z.object({ amountMinor: z.number().int().nonnegative(), currency: z.literal('SGD') })
-export const SpanSchema = z.object({ id: z.string().min(1), text: z.string().min(1), label: z.string().optional() })
+export const SpanSchema = z.object({ id: z.string().min(1), text: z.string().min(1), label: z.string().optional(), url: z.string().url().regex(/^https:\/\//).optional() })
 /** Engine-side trust view of a seller of record (D6, D21); see ReputationRecordSchema in decision.ts. */
 export const ReputationSummarySchema = z.object({ H: z.number().min(0).max(1), C: z.number().min(0).max(1), T: z.number().min(0).max(1), status: z.enum(['active', 'quarantined', 'delisted']) })
 /**

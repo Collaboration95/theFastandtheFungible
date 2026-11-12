@@ -177,7 +177,7 @@ export class PublisherClient {
     }
     const signed = article.verification?.manifest
     if ((loadConfig().WRITER_CREDENTIAL_ISSUERS || loadConfig().WRITER_CREDENTIAL_DOMAIN) && signed && verifyManifestSignature(signed) && signed.wallet === this.sellerWallets.get(hit.publisherSlug) && signed.publisherSlug === hit.publisherSlug && signed.articleId === hit.articleId && signed.version === hit.version) hit.verification = await writerVerification(signed.wallet)
-    return ContentEnvelopeSchema.parse({ source: hit.source, profileId: hit.publisherSlug, resourceId: hit.articleId, version: hit.version, title: article.title, publisher: publisherName, body: article.body, verification: article.verification, spans: article.passages.map(p => ({ id: p.id, text: p.text, ...(p.heading ? { label: p.heading } : {}) })) })
+    return ContentEnvelopeSchema.parse({ source: hit.source, profileId: hit.publisherSlug, resourceId: hit.articleId, version: hit.version, title: article.title, publisher: publisherName, body: article.body, verification: article.verification, spans: article.passages.map(p => ({ id: p.id, text: p.text, ...(p.url ? { url: p.url } : {}), ...(p.heading ? { label: p.heading } : {}) })) })
   }
 }
 const RegistryPublisherSchema = z.object({ slug: z.string().min(1), name: z.string().min(1), kind: z.enum(['masthead', 'independent', 'records']), domain: z.string().optional(), wallet: z.string().optional(), synthetic: z.boolean().optional(), authorship: z.literal('team-authored').optional(), verification: WriterVerificationSchema.optional() })
