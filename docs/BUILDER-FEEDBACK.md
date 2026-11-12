@@ -1249,3 +1249,10 @@ persistence or a mainnet deployment. No cloud resource or live ledger call ran.
 - Evidence: content gate at `c074461afa56066445483eb850c535ff5bd825ff`; receipt `1794474650280-27304-f5d75ed4-a9e7-4193-a90d-58471695dcee.json`; `docs/evidence/content/CONTENT.md`. Hosted startup lost `dist/.vite/manifest.json` while desktop staging rebuilt the same directory. No transaction: local verification only.
 - Workaround: make desktop staging depend on completion of the hosted browser suite. Suggested fix: give independently scheduled build consumers separate output directories, or encode every shared-output dependency.
 - Severity: Medium tooling friction. Mainnet impact: no ledger incident; this blocks reliable release admission and does not establish mainnet readiness.
+
+## 12 November 2026: crash between x402 reservation and manifest persistence lost the delivery proof (observed local fixture)
+
+- **Evidence:** `tests/proof/recovery.test.ts`, `docs/evidence/proof/PROOF-REPORT.md`; the real PurchaseManager/Store plus HTTP publisher reproduced `CLAIM_FAILED` after a crash immediately following a committed reservation, although the article was honest. No Testnet transaction; this is our integration bug, not an observed upstream defect.
+- **Workaround / fix:** before signing a resumed RESERVED intent, recover the candidate's verified manifest only after quote/price/payee/signature binding passes. The manifest remains write-once; retries retain the same signed payment.
+- **Suggested fix:** x402 integration examples should persist the evaluated proof binding with the reservation, or explicitly recover it before signing; include a crash test between those operations.
+- **Severity / mainnet impact:** medium delivery/recovery bug. Without this repair the analogous crash could charge for content that stays quarantined; no leak or duplicate charge was observed, and mainnet was not exercised.

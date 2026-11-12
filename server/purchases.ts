@@ -112,6 +112,9 @@ export class PurchaseManager {
         this.store.appendEvent(runId, { type: 'PURCHASE', label: `FAILED_NOT_SETTLED · ${refusal}`, data: { intentId } })
         return intent
       }
+      // A crash can commit the reservation before its search manifest is saved.
+      // Restore the same verified binding before a resumed intent can be signed.
+      if (manifest && !this.store.getManifest(intentId)) this.store.recordManifest(intentId, manifest)
     }
     if (intent.status === 'RESERVED' && this.store.claimSubmitting(intentId)) {
       try { await this.payAndSettle(this.store.getIntent(intentId)!) } catch (error) {
