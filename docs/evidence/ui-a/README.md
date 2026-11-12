@@ -18,9 +18,13 @@ The repeatable tests use the committed no-show replay, a synthetic writers respo
 
 Separately, the shared preview opened the actual committed `public/judge/hosted-run-nov11.receipts.json` and checked it against the public Testnet node: **45 passed · 2 not checked**, gate 1 Not checked and gates 2–5 Passed. `after-live-recorded-verify-390.png` shows the result; `before-hosted-verify-390.png` is the supplied WALK-1 screenshot (historical hosted deployment, not the local baseline). No new question, payment, provider call or ledger write was made for that check.
 
+## Layout-shift regression
+
+The first locked gate found UC2 replay CLS **0.052649** against the unchanged **0.02** limit. A local layout-shift trace reproduced the same value and identified the stacked Activity badge. Activity now keeps its short disclosure inline, and a plain writer name already shown in a heading does not get a redundant disclosure. The diagnostic after the fix measured **0.019370**; the clean-head gate repeats the original performance check under the shared lock. No timing assertion or threshold changed.
+
 ## Bundle
 
-Node 22.23.4 manifest traversal, including static imports: **158,315 → 158,739 bytes gzip**, below the task’s **160,000 B** limit. Optional verifier/gates stay lazy. The repository’s existing 170,000-byte gate was not changed; the UI-A browser test separately enforces the stricter 160,000-byte requirement.
+Node 22.23.4 manifest traversal, including static imports: **158,315 → 158,782 bytes gzip**, below the task’s **160,000 B** limit. Optional verifier/gates stay lazy. The repository’s existing 170,000-byte gate was not changed; the UI-A browser test separately enforces the stricter 160,000-byte requirement.
 
 ## Reproduce
 
