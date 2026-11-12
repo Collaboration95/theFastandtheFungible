@@ -3,11 +3,11 @@
 import 'dotenv/config'
 import {createHash} from 'node:crypto'
 import {writeFileSync} from 'node:fs'
-import {loadBank,holds} from '../eval/questions/bank.js'
+import {BANK_FILE,loadBank,holds} from '../eval/questions/bank.js'
 import {loadWriterCorpus} from '../publisher/corpus.js'
 const corpus=await loadWriterCorpus(undefined,{allowMini:false})
 if(process.env.CORPUS_PROFILE!=='real'||process.env.FREE_TIER!=='public-docs')throw Error('Generate only against the real public-docs profile')
-const controls=loadBank().questions.slice(0,100).map(q=>({...q,stratum:'historical-out-of-profile'}))
+const controls=loadBank(BANK_FILE).questions.slice(0,100).map(q=>({...q,stratum:'historical-out-of-profile'}))
 const specs:[string,string][]=[
  ['AccountSet','Which XRPL transaction changes account options?'],
  ['TrustSet','Which XRPL transaction creates or modifies a trust line?'],
