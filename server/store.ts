@@ -45,6 +45,23 @@ export type PolicyPayment = ChainPayment & { submission?: Submission; confirmedA
 
 /** All mutations are synchronous SQLite transactions; no transaction crosses an await. */
 export class Store {
+  canRateAnswer(runId: string): boolean {
+    return !!this.prepare(`SELECT 1 FROM runs r WHERE r.id=? AND json_extract(r.json,'$.phase') IN ('DONE','STOPPED','FAILED')
+      AND EXISTS(SELECT 1 FROM answers WHERE run_id=r.id AND json_array_length(json_extract(json,'$.claims'))>0)
+      AND EXISTS(SELECT 1 FROM intents i JOIN receipts p ON p.intent_id=i.id WHERE i.run_id=r.id
+        AND json_extract(p.json,'$.amountMinor')>0 AND coalesce(json_extract(i.json,'$.escrow.state'),'')!='CANCELLED')`).get(runId)
+  }
+  answerRating(runId: string): boolean | null {
+    const row=this.prepare('SELECT yes FROM answer_ratings WHERE run_id=?').get(runId)
+    return row ? Boolean(row.yes) : null
+  }
+  rateAnswer(runId: string, yes: boolean): boolean {
+    return this.atomic(()=>{
+      if(!this.canRateAnswer(runId)) throw new Error('Paid answer not available')
+      this.prepare('INSERT OR IGNORE INTO answer_ratings VALUES (?,?,?)').run(runId,yes?1:0,new Date().toISOString())
+      return this.answerRating(runId)!
+    })
+  }
   recordMcpCall(id: string) {
     this.db.exec('CREATE TABLE IF NOT EXISTS mcp_calls (agent_id TEXT PRIMARY KEY, at TEXT NOT NULL)')
     this.db.prepare('INSERT OR REPLACE INTO mcp_calls VALUES (?,?)').run(id, new Date().toISOString())
@@ -80,6 +97,7 @@ export class Store {
       CREATE TABLE IF NOT EXISTS wallet_control (id INTEGER PRIMARY KEY CHECK(id=1), paused INTEGER NOT NULL);
       CREATE TABLE IF NOT EXISTS mcp_requests (key TEXT PRIMARY KEY, question TEXT NOT NULL, run_id TEXT UNIQUE NOT NULL, budget INTEGER NOT NULL, day TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS answer_anchors (head TEXT PRIMARY KEY, run_id TEXT NOT NULL, json TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS answer_ratings (run_id TEXT PRIMARY KEY REFERENCES runs(id), yes INTEGER NOT NULL CHECK(yes IN (0,1)), at TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS run_audience (run_id TEXT PRIMARY KEY, audience TEXT NOT NULL CHECK(audience IN ('internal','external')));
       CREATE TABLE IF NOT EXISTS runs (id TEXT PRIMARY KEY, json TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS events (id INTEGER PRIMARY KEY AUTOINCREMENT, run_id TEXT NOT NULL REFERENCES runs(id), json TEXT NOT NULL);
@@ -200,7 +218,8 @@ export class Store {
       phase: 'SEARCH', stopped: false, round: 0, candidates: [], contents: [], answers: [], decisions: [], intents: [], receipts: [], grants: [], events: [], checkpoint: {}, reportStatus: 'NONE',
       labels: labels ?? { research: 'fixture', decision: 'fixture', publisher: 'local', settlement: 'SIMULATED SGD · no real funds' } })
     this.prepare('INSERT INTO runs VALUES (?,?)').run(run.runId, JSON.stringify(run))
-    this.prepare('INSERT INTO run_audience VALUES (?,?)').run(run.runId, runAudience.getStore() ?? 'internal')
+    const audience = runAudience.getStore() ?? 'internal'
+    if (audience !== 'unclassified') this.prepare('INSERT INTO run_audience VALUES (?,?)').run(run.runId, audience)
     return run
   }
   createRun(question: string, budgetMinor: number, labels?: ModeLabels): RunSnapshot {

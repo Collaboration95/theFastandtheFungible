@@ -1,3 +1,4 @@
+import { answerRatingsRouter } from './api/answer-ratings.js'
 import { audienceMiddleware, operatorSessionRouter } from './hosted/audience.js'
 import { publicFeedRouter } from './api/feed.js'
 import { writeSse, endSse, sseBufferedBytes } from './api/sse.js'
@@ -73,7 +74,8 @@ async function createConfiguredApi(options: ApiOptions = {}) {
   const app = express()
   app.disable('x-powered-by')
   app.use((_req, res, next) => { res.set('Cache-Control', 'no-store'); res.set('X-Content-Type-Options', 'nosniff'); next() })
-  if (config.AUDIENCE_COUNTS === '1') { app.use(operatorSessionRouter(config)); app.use(audienceMiddleware(config)) }
+  if (config.AUDIENCE_COUNTS === '1') app.use(operatorSessionRouter(config))
+  app.use(audienceMiddleware(config))
   const streams = new Map<string, Set<Response>>()
   const snapshotTimers = new Map<string, ReturnType<typeof setTimeout>>()
   const lastSnapshot = new Map<string, number>()
@@ -247,7 +249,7 @@ async function createConfiguredApi(options: ApiOptions = {}) {
   // The web app asks this once at boot to learn whether it is the hosted judge demo. A local or desktop server answers
   // 200 {hosted:false} instead of a 404, so the browser console stays clean (the hosted gateway serves its own status above).
   if (!hosted) app.get('/api/demo/status', (_req, res) => res.json({ hosted: false }))
-  app.get(['/health', '/api/health'], (_req, res) => res.json({ status: 'ok', labels: { ...labels, ...(['faucet_unavailable', 'validation_timeout', 'wallet_cache_unavailable', 'network_unavailable'].includes(process.env.RA_TESTNET_FALLBACK ?? '') ? { testnetFallback: process.env.RA_TESTNET_FALLBACK } : {}) }, faults: faultsAvailable }))
+  app.get(['/health', '/api/health'], (_req, res) => res.json({ status: 'ok', answerRatings: config.ANSWER_RATINGS === '1', labels: { ...labels, ...(['faucet_unavailable', 'validation_timeout', 'wallet_cache_unavailable', 'network_unavailable'].includes(process.env.RA_TESTNET_FALLBACK ?? '') ? { testnetFallback: process.env.RA_TESTNET_FALLBACK } : {}) }, faults: faultsAvailable }))
   if (faultsAvailable) app.post('/api/demo/faults', async (req, res) => {
     z.object({ failNextDelivery: z.literal(true) }).parse(req.body)
     const response = await fetch(new URL('/__faults', publisherUrl), {
@@ -263,6 +265,7 @@ async function createConfiguredApi(options: ApiOptions = {}) {
   // Proof of refusal (W1): owner share routes under /api/runs/:id/proof, public read-only pages under /proof/:id.
   const refusal = refusalProofRouter(context, { hosted: !!hosted, origin: hosted ? config.HOSTED_ORIGIN : undefined })
   app.use(refusal.router)
+  if (config.ANSWER_RATINGS === '1') app.use(answerRatingsRouter(store))
   app.use(runsRouter(context))
   app.use(mcpRouter(context))
   app.use(reportsRouter(context))

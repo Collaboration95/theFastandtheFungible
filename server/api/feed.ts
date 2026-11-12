@@ -1,3 +1,5 @@
+import { XRPL_LABEL } from '../../shared/contracts/index.js'
+import { sameSource, sourceBinding, SourceIdentitySchema, type SourceIdentity } from '../../shared/source-identity.js'
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync } from 'node:fs'
 import { Router, type Response } from 'express'
@@ -13,28 +15,35 @@ const topic = (facets: unknown) => Array.isArray(facets) && facets.some(f => /xr
 /** Bounded, whitelisted SQL projection: never selects question, content, secrets, reveal keys or IPs. */
 export function feedSnapshot(store: Store, limit = 50, now = Date.now()): PublicFeed {
   return store.hostedState(db => {
-    const rows = db.prepare(`SELECT i.id, i.run_id,
-      json_extract(i.json,'$.resourceId') AS resource, json_extract(i.json,'$.profileId') AS profile,
+    const rows = db.prepare(`SELECT i.id, i.run_id, (SELECT yes FROM answer_ratings WHERE run_id=i.run_id) AS rating,
+      json_extract(i.json,'$.source') AS source, json_extract(i.json,'$.version') AS version, json_extract(i.json,'$.resourceId') AS resource, json_extract(i.json,'$.profileId') AS profile,
       json_extract(i.json,'$.amountMinor') AS price, json_extract(i.json,'$.escrow') AS escrow,
       json_extract(r.json,'$.candidates') AS candidates,
       (SELECT json_object('at',at,'hash',json_extract(data,'$.txHash'),'ledger',json_extract(data,'$.ledgerIndex')) FROM audit_log WHERE intent_id=i.id AND kind='ESCROW_CREATE' ORDER BY seq DESC LIMIT 1) AS created,
-      (SELECT at FROM audit_log WHERE intent_id=i.id AND kind IN ('ESCROW_FINISH','ESCROW_CANCEL') ORDER BY seq DESC LIMIT 1) AS ended
+      (SELECT json_object('at',at,'kind',kind,'hash',json_extract(data,'$.txHash')) FROM audit_log WHERE intent_id=i.id AND kind IN ('ESCROW_FINISH','ESCROW_CANCEL') ORDER BY seq DESC LIMIT 1) AS ended
       FROM intents i JOIN runs r ON r.id=i.run_id
-      WHERE json_extract(i.json,'$.escrow.createHash') IS NOT NULL
-      ORDER BY i.rowid DESC LIMIT ?`).all(Math.max(1,Math.min(100,Math.floor(limit))))
+      WHERE json_extract(r.json,'$.labels.settlement')=? AND json_extract(i.json,'$.escrow.createHash') IS NOT NULL AND EXISTS (SELECT 1 FROM audit_log WHERE intent_id=i.id AND kind='ESCROW_CREATE')
+      ORDER BY i.rowid DESC LIMIT ?`).all(XRPL_LABEL,Math.max(1,Math.min(100,Math.floor(limit))))
     const purchases: PublicPurchase[] = []
     for (const row of rows) {
       const escrow = JSON.parse(String(row.escrow)), created = row.created ? JSON.parse(String(row.created)) : undefined
       if (!created || !hash(created.hash) || !Number.isFinite(Date.parse(created.at))) continue // signed is not validated
-      const candidates = JSON.parse(String(row.candidates ?? '[]')) as { resourceId: string; profileId: string; title: string; publisher: string; facets?: string[] }[]
-      const candidate = candidates.find(c => c.resourceId === row.resource && c.profileId === row.profile)
-      const seconds = row.ended ? (Date.parse(String(row.ended)) - Date.parse(created.at))/1000 : null
+      const parsedSource = row.source ? SourceIdentitySchema.safeParse(JSON.parse(String(row.source))) : undefined
+      if (parsedSource && !parsedSource.success) continue
+      const identity = { resourceId: String(row.resource), version: String(row.version ?? ''), source: parsedSource?.data }
+      if (!sourceBinding({ ...identity, profileId: String(row.profile) })) continue
+      const candidates = JSON.parse(String(row.candidates ?? '[]')) as { resourceId: string; profileId: string; title: string; publisher: string; facets?: string[]; version?: string; source?: SourceIdentity }[]
+      const candidate = candidates.find(c => c.profileId === row.profile && sameSource({ ...c, version: c.version ?? '' }, identity))
+      const ended = row.ended ? JSON.parse(String(row.ended)) : undefined
+      const finished = ended?.kind === 'ESCROW_FINISH' && hash(ended.hash) !== null && ended.hash === escrow.finishHash
+      const cancelled = ended?.kind === 'ESCROW_CANCEL' && hash(ended.hash) !== null && ended.hash === escrow.cancelHash
+      const seconds = ended && (finished || cancelled) ? (Date.parse(ended.at) - Date.parse(created.at))/1000 : null
       const keyCheck = escrow.mode !== 'key-reveal' ? 'unavailable' : escrow.keyVerified === false ? 'mismatch' : escrow.keyVerified === true ? 'match' : 'pending'
-      const item = PublicPurchaseSchema.safeParse({ id: createHash('sha256').update(String(row.id)).digest('hex').slice(0,24), time: created.at,
-        topic: topic(candidate?.facets), resourceTitle: candidate?.title?.slice(0,240) || 'Published article', writer: candidate?.publisher?.slice(0,120) || 'Writer', priceMinor: Number(row.price),
-        createHash: hash(created.hash), createLedger: ledger(created.ledger), finishHash: escrow.state === 'RELEASED' ? hash(escrow.finishHash) : null,
-        keyCheck, gate: keyCheck === 'mismatch' || escrow.proofOk === false || escrow.decryptVerified === false ? 'failed' : escrow.state === 'RELEASED' && escrow.proofOk === true && escrow.decryptVerified === true && keyCheck === 'match' ? 'verified' : escrow.mode !== 'key-reveal' ? 'unavailable' : 'pending',
-        state: escrow.state === 'RELEASED' ? 'finished' : escrow.state === 'CANCELLED' ? 'cancelled' : 'locked', settlementSeconds: seconds !== null && Number.isFinite(seconds) && seconds >= 0 ? seconds : null })
+      const item = PublicPurchaseSchema.safeParse({ rating: row.rating === null ? null : Boolean(row.rating), id: createHash('sha256').update(String(row.id)).digest('hex').slice(0,24), time: created.at,
+        topic: topic(candidate?.facets), resourceTitle: candidate?.title?.slice(0,240) || 'Article title unavailable', writer: candidate?.publisher?.slice(0,120) || 'Writer unavailable', priceMinor: Number(row.price),
+        createHash: hash(created.hash), createLedger: ledger(created.ledger), finishHash: finished ? hash(ended.hash) : null,
+        keyCheck, gate: keyCheck === 'mismatch' || escrow.proofOk === false || escrow.decryptVerified === false ? 'failed' : finished && escrow.state === 'RELEASED' && escrow.proofOk === true && escrow.decryptVerified === true && keyCheck === 'match' ? 'verified' : escrow.mode !== 'key-reveal' ? 'unavailable' : 'pending',
+        state: finished ? 'finished' : cancelled ? 'cancelled' : 'locked', settlementSeconds: seconds !== null && Number.isFinite(seconds) && seconds >= 0 ? seconds : null })
       if (item.success) purchases.push(item.data)
     }
     return { rows: purchases, updatedAt: new Date(now).toISOString() }

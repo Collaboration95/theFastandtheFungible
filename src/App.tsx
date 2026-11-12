@@ -21,6 +21,7 @@ import Sources, { getAccessibleContent } from './components/Sources'
 import Answer, { validatedAnswers } from './components/Answer'
 import MobileSpend from './components/MobileSpend'
 import ReportButton from './components/ReportButton'
+const AnswerRating = lazy(() => import('./components/AnswerRating').catch(() => ({ default: () => null })))
 const PaymentStepper = lazy(() => import('./components/PaymentStepper'))
 import SpendPanel from './components/SpendPanel'
 import DecisionPanel from './components/DecisionPanel'
@@ -85,7 +86,7 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
     return () => window.removeEventListener('demo-pause', pause)
   }, [])
   const [pace, setPace] = useState<Pace>(() => initialPace(recording))
-  const [health, setHealth] = useState<{ labels?: ModeLabels; faults: boolean }>({ faults: false })
+  const [health, setHealth] = useState<{ labels?: ModeLabels; faults: boolean; answerRatings: boolean }>({ faults: false, answerRatings: false })
   const [notify, setNotify] = useState(() => !recording && prefs.get(notifyKey) === '1')
   const [sending, setSending] = useState(false)
   const [stopping, setStopping] = useState(false)
@@ -146,7 +147,7 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
 
   useEffect(() => {
     let cancelled = false
-    void fetch('/api/health').then(response => response.json()).then(data => { if (!cancelled) setHealth({ labels: ModeLabelsSchema.safeParse(data.labels).data, faults: data.faults === true }) }).catch(() => { if (!cancelled) setHealthError(true) })
+    void fetch('/api/health').then(response => response.json()).then(data => { if (!cancelled) setHealth({ labels: ModeLabelsSchema.safeParse(data.labels).data, faults: data.faults === true, answerRatings: data.answerRatings === true }) }).catch(() => { if (!cancelled) setHealthError(true) })
     // Home is the default; a run opens only when the URL names it (a refresh keeps it). Past runs live in the sidebar.
     const id = new URLSearchParams(window.location.search).get('run')
     if (id) void getRun(id).then(value => { if (!cancelled) { setRun(value); setScreen('run') } }).catch(() => {
@@ -529,6 +530,7 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
         <Answer run={shown} view={view} onView={setView} compare={compare} onCompare={() => { setView('latest'); setCompare(!compare) }}
           onCitation={citation => { const candidate = candidateOf(shown, citation); if (candidate) setPassage({ candidate, citation }) }}
           report={finished ? <ReportButton run={shown} onReport={downloadReport} onCompare={() => { setView('latest'); setCompare(true) }} /> : undefined} />
+        {!browserDemo && health.answerRatings && finished && shown.spentMinor > 0 && validatedAnswers(shown).length > 0 && <Suspense fallback={null}><AnswerRating key={shown.runId} runId={shown.runId} amountMinor={shown.spentMinor} /></Suspense>}
         </Fragment>
       </main>
       <aside className="ra-side" aria-label="Budget and purchases">

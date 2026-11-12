@@ -18,6 +18,7 @@ export default function Numbers({ compact = false }: { compact?: boolean }) {
   const all = stats.all ?? stats, external = stats.external
   const headline = external && external.questions > 0 ? external : all
   const metrics = [
+    ['Rated answers',fmt(headline.rating?.rated ?? 0)], ['Worth it · Yes',headline.rating?.yesPercent === null || headline.rating?.yesPercent === undefined ? '—' : `${fmt(headline.rating.yesPercent)}%`],
     ['Questions',fmt(headline.questions)], ['Purchase runs',fmt(headline.purchaseRuns)], ['Purchases settled',fmt(headline.purchasesSettled)], ['Refunds',fmt(headline.refunds)],
     ['Anchored',`${headline.anchored}/${headline.questions}`], ['Start → Done · median',fmt(headline.timing.medianMs === null ? null : headline.timing.medianMs/1000,' s')],
     ['Start → Done · p90',fmt(headline.timing.p90Ms === null ? null : headline.timing.p90Ms/1000,' s')], ['Spend per purchase run · median',headline.medianSpendMinor === null ? '—' : money(headline.medianSpendMinor)],
@@ -29,7 +30,7 @@ export default function Numbers({ compact = false }: { compact?: boolean }) {
   ]
   if (compact) return <section className="ra-sandbox-panel" aria-label="Sandbox scoreboard">
     <p className="ra-sandbox-label">{external && external.questions > 0 ? 'External visitors since 11 Nov' : 'All runs since 11 Nov, including internal tests'}</p>
-    <dl className="ra-sandbox-metrics">{metrics.slice(0,4).map(([label,value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
+    <dl className="ra-sandbox-metrics">{metrics.slice(2,6).map(([label,value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
     <details><summary>Recorded gate audit · all runs</summary><dl className="ra-sandbox-audit">{audits.map(([label,value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl><p>{stats.stoppedBeforeAnswer} stopped before an answer.</p></details>
     {error && <p role="status">Refresh unavailable. Showing the last recorded totals.</p>}
   </section>

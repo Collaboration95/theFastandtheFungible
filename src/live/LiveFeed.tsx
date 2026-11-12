@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { PublicFeed, PublicPurchase } from '../../shared/public-feed'
+import WriterProvenance from '../components/WriterProvenance'
 import Numbers from '../components/hosted/SandboxNumbersPanel'
 import { money, whenSGT } from '../../shared/presentation'
 import './live.css'
@@ -22,7 +23,7 @@ export default function LiveFeed() {
     return () => stream.close()
   },[tab])
   useEffect(() => { const sync=()=>{ if (!document.fullscreenElement) setBooth(false) }; document.addEventListener('fullscreenchange',sync); return ()=>document.removeEventListener('fullscreenchange',sync) },[])
-  const changeTab = (next: 'live'|'recorded') => { setRows([]); setStatus('Connecting…'); setTab(next) }
+  const changeTab = (next: 'live'|'recorded') => { if (next === tab) return; setRows([]); setStatus('Connecting…'); setTab(next) }
   const toggleBooth = async () => { if (booth) { if (document.fullscreenElement) await document.exitFullscreen(); setBooth(false) } else { setBooth(true); try { await document.documentElement.requestFullscreen() } catch { /* large type remains useful without fullscreen support */ } } }
   return <main className={`ra-live${booth?' is-booth':''}`}>
     <header><a href="/">ResearchAgent</a><span className="ra-chip">XRPL Testnet</span><button aria-pressed={booth} onClick={()=>void toggleBooth()}>Booth mode</button></header>
@@ -30,9 +31,9 @@ export default function LiveFeed() {
     <Numbers compact />
     <nav aria-label="Purchase source"><button aria-pressed={tab==='live'} onClick={()=>changeTab('live')}>Live purchases</button><button aria-pressed={tab==='recorded'} onClick={()=>changeTab('recorded')}>{recordedLabel}</button></nav>
     <p role="status">{status}</p>
-    {rows.length ? <div className="ra-live-table"><table><caption>{tab==='live'?'Latest 100 escrows':'Recorded Testnet purchases'}</caption><thead><tr>{['Time / topic','Article / writer','Price','Escrow','Key check','Delivery gate','Settlement'].map(s=><th key={s} scope="col">{s}</th>)}</tr></thead><tbody>{rows.map(row=><tr key={row.id} className={arrivals.has(row.id)?'ra-live-new':''}>
-      <td><time dateTime={row.time}>{whenSGT(row.time)}</time><small>{row.topic}</small></td><td>{row.resourceTitle}<small>{row.writer}</small></td><td>{money(row.priceMinor)}</td>
-      <td>{explorer(row.createHash,'Create')}<small>Ledger {row.createLedger ?? '—'} · {row.state}</small>{explorer(row.finishHash,'Finish')}</td><td>{row.keyCheck}</td><td>{row.gate}</td><td>{row.settlementSeconds===null?'—':`${row.settlementSeconds.toFixed(1)} s`}</td>
+    {rows.length ? <div className="ra-live-table"><table><caption>{tab==='live'?'Latest 100 escrows':'Recorded Testnet purchases'}</caption><thead><tr>{['Time / topic','Article / writer','Price','Escrow','Key check','Delivery gate','Settlement','Worth it?'].map(s=><th key={s} scope="col">{s}</th>)}</tr></thead><tbody>{rows.map(row=><tr key={row.id} className={arrivals.has(row.id)?'ra-live-new':''}>
+      <td><time dateTime={row.time}>{whenSGT(row.time)}</time><small>{row.topic}</small></td><td>{row.resourceTitle}<small>{row.writer.split(' · ')[0]}</small><WriterProvenance publisher={row.writer} nameShown /></td><td>{money(row.priceMinor)}</td>
+      <td>{explorer(row.createHash,'Create')}<small>Ledger {row.createLedger ?? '—'} · {row.state}</small>{explorer(row.finishHash,'Finish')}</td><td>{row.keyCheck}</td><td>{row.gate}</td><td>{row.settlementSeconds===null?'—':`${row.settlementSeconds.toFixed(1)} s`}</td><td>{row.rating===null || row.rating===undefined?'Unrated':row.rating?'Yes':'No'}</td>
     </tr>)}</tbody></table></div> : <section className="ra-live-empty"><h2>Ready for the next purchase</h2><p>Validated escrows will appear here, followed by the key check and settlement. Public article titles only; questions stay private.</p></section>}
     <p className="ra-live-note">Checks reflect stored observations, without a fresh ledger query. Pending and unavailable checks do not count as verified.</p>
   </main>

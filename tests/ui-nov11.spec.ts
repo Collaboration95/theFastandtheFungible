@@ -82,3 +82,31 @@ test('writer credential and domain have separate 44 px phone hit areas', async (
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await page.screenshot({ path: 'scratch/polish-1-writer-phone.png', fullPage: true })
 })
+
+// Synthetic paid-answer fixture: opt-in rating UI; no providers or ledger calls.
+for (const enabled of [false,true]) test(`answer value rating capability ${enabled?'enabled':'disabled'}`,async({page})=>{
+ let voted:boolean|null=null,reads=0,writes=0
+ await page.route('**/api/demo/status',r=>r.fulfill({json:{hosted:false}}))
+ await page.route('**/api/health',r=>r.fulfill({json:{...recording.health,answerRatings:enabled}}))
+ await page.route('**/api/runs',r=>r.fulfill({json:[]}))
+ await page.route('**/runs/*/events*',r=>r.fulfill({contentType:'text/event-stream',body:''}))
+ await page.route('**/runs/*',r=>r.fulfill({json:recording.run}))
+ await page.route('**/runs/*/rating',async r=>{
+  expect(enabled).toBe(true)
+  if(r.request().method()==='POST'){writes++;voted=r.request().postDataJSON().yes}else reads++
+  await r.fulfill({json:{yes:voted}})
+ })
+ const loaded=page.waitForResponse('**/api/health')
+ await page.goto(`/?run=${recording.run.runId}`);await loaded
+ await expect(page.locator('.ra-q')).toBeVisible()
+ if(enabled){
+  await expect(page.getByText(/^Worth S\$/)).toBeVisible()
+  await page.getByRole('button',{name:'Yes',exact:true}).click()
+  await expect(page.getByText('Thanks for your feedback.')).toBeVisible()
+  await page.reload();await expect(page.getByText('Thanks for your feedback.')).toBeVisible()
+  expect(reads).toBe(2);expect(writes).toBe(1)
+ }else{
+  await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))))
+  await expect(page.getByText(/^Worth S\$/)).toHaveCount(0);expect(reads).toBe(0);expect(writes).toBe(0)
+ }
+})

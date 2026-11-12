@@ -12,6 +12,7 @@ export const SCOREBOARD_LABEL = 'XRPL Testnet · test funds · includes our own 
 export const SCOREBOARD_SINCE = Date.parse('2026-11-11T00:00:00Z')
 const charged = new Set(['SETTLED', 'DELIVERY_PENDING', 'DELIVERY_FAILED', 'VERIFIED', 'CLAIM_FAILED', 'CHALLENGED', 'REFUNDED', 'CHALLENGE_REJECTED', 'CHALLENGE_REFUSED'])
 export type SandboxBreakdown = {
+  rating: { rated: number; yes: number; yesPercent: number | null };
   label: string; updatedAt: string; questions: number; purchaseRuns: number; purchasesSettled: number; refunds: number;
   completed: number; inProgress: number; excludedSimulated: number; anchored: number; anchorPending: number; stoppedBeforeAnswer: number;
   timing: { samples: number; medianMs: number | null; p90Ms: number | null };
@@ -34,7 +35,7 @@ type Decision = { round: number; selectedResourceId?: string; selectedSourceKey?
  * Each audit counter counts affected runs, not individual events. An absent trace is unavailable, never a pass.
  */
 function aggregatePopulation(db: DatabaseSync, now: number, audience?: 'external'): SandboxBreakdown {
-    const result: SandboxBreakdown = { label: audience ? 'XRPL Testnet · confirmed external visitors since 11 Nov' : SCOREBOARD_LABEL, updatedAt: new Date(now).toISOString(), questions: 0, purchaseRuns: 0, purchasesSettled: 0, refunds: 0, completed: 0, inProgress: 0, excludedSimulated: 0, anchored: 0, anchorPending: 0, stoppedBeforeAnswer: 0,
+    const result: SandboxBreakdown = { rating: {rated:0,yes:0,yesPercent:null}, label: audience ? 'XRPL Testnet · confirmed external visitors since 11 Nov' : SCOREBOARD_LABEL, updatedAt: new Date(now).toISOString(), questions: 0, purchaseRuns: 0, purchasesSettled: 0, refunds: 0, completed: 0, inProgress: 0, excludedSimulated: 0, anchored: 0, anchorPending: 0, stoppedBeforeAnswer: 0,
       timing: { samples: 0, medianMs: null, p90Ms: null }, medianSpendMinor: null, medianModelUsd: null,
       audit: { checked: 0, unavailable: 0, readBeforeGrant: 0, buyWithoutPolicy: 0, overBudget: 0, duplicateIntent: 0, receiptWithoutIntent: 0, unanchored: 0 } }
     const external = new Set(db.prepare("SELECT run_id FROM run_audience WHERE audience='external'").all().map(r=>String(r.run_id)))
@@ -48,6 +49,8 @@ function aggregatePopulation(db: DatabaseSync, now: number, audience?: 'external
     for (const row of db.prepare('SELECT run_id,json FROM decisions').iterate()) runs.get(String(row.run_id))?.decisions.push(JSON.parse(String(row.json)))
     // No inner join to intents: it would hide precisely the corruption this check must detect.
     for (const row of db.prepare("SELECT json_extract(json,'$.runId') AS run_id,json FROM receipts").iterate()) runs.get(String(row.run_id))?.receipts.push(JSON.parse(String(row.json)))
+    for (const rating of db.prepare('SELECT run_id,yes FROM answer_ratings').all()) if (runs.has(String(rating.run_id))) { result.rating.rated++; result.rating.yes+=Number(rating.yes) }
+    result.rating.yesPercent=result.rating.rated ? 100*result.rating.yes/result.rating.rated : null
     const times: number[] = [], spends: number[] = [], models: number[] = [], allIntentIds = new Map<string, number>()
     for (const run of runs.values()) for (const i of run.intents) allIntentIds.set(i.intentId, (allIntentIds.get(i.intentId) ?? 0) + 1)
     for (const [id, { row, intents, events, decisions, receipts }] of runs) {

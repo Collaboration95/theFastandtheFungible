@@ -26,7 +26,7 @@ it('defaults local scripts to internal and persists explicit browser context acr
  const reopened=new Store(store.path);try{reopened.hostedState(db=>{expect(db.prepare('SELECT audience FROM run_audience WHERE run_id=?').get(local.runId)?.audience).toBe('internal');expect(db.prepare('SELECT audience FROM run_audience WHERE run_id=?').get(external.runId)?.audience).toBe('external')})}finally{reopened.close()}
 })
 it('authenticates operator cookies and direct tokens without exposing the token or trusting spoofed headers',async()=>{
- const config=loadConfig({HOSTED:'1',HOSTED_ORIGIN:'https://demo.example',OPERATOR_TOKEN:'fixture-operator-only-token'}), app=express()
+ const config=loadConfig({HOSTED:'1',AUDIENCE_COUNTS:'1',HOSTED_ORIGIN:'https://demo.example',OPERATOR_TOKEN:'fixture-operator-only-token'}), app=express()
  expect(maskSecrets('error '+config.OPERATOR_TOKEN,config)).not.toContain(config.OPERATOR_TOKEN)
  app.use(operatorSessionRouter(config));app.use(audienceMiddleware(config));app.post('/classify',(_req,res)=>res.json({audience:runAudience.getStore()}))
  const server=app.listen(0,'127.0.0.1');await once(server,'listening');closers.push(()=>new Promise<void>(r=>server.close(()=>r())))
@@ -41,4 +41,14 @@ it('authenticates operator cookies and direct tokens without exposing the token 
  expect(await (await fetch(url+'/classify',{method:'POST',headers:{...headers,Cookie:cookie.split(';')[0]}})).json()).toEqual({audience:'internal'})
  expect(await (await fetch(url+'/classify',{method:'POST',headers:{...headers,Authorization:'Bearer '+config.OPERATOR_TOKEN}})).json()).toEqual({audience:'internal'})
  expect(await (await fetch(url+'/classify',{method:'POST',headers:{...headers,Cookie:cookie.split(';')[0]+'tampered'}})).json()).toEqual({audience:'external'})
+})
+it('keeps hosted visitors unclassified until audience attribution is enabled',async()=>{
+ const store=setup(), app=express(), config=loadConfig({HOSTED:'1',AUDIENCE_COUNTS:'0'})
+ app.use(audienceMiddleware(config));app.post('/classify',(_req,res)=>{
+  const run=store.createRun('private visitor question',0)
+  store.hostedState(db=>res.json({classified:!!db.prepare('SELECT audience FROM run_audience WHERE run_id=?').get(run.runId)}))
+ })
+ const server=app.listen(0,'127.0.0.1');await once(server,'listening');closers.push(()=>new Promise<void>(r=>server.close(()=>r())))
+ const url=`http://127.0.0.1:${(server.address() as {port:number}).port}`
+ expect(await (await fetch(url+'/classify',{method:'POST',headers:{Origin:'https://demo.example'}})).json()).toEqual({classified:false})
 })

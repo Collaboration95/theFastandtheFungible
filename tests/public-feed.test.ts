@@ -1,6 +1,7 @@
 import { afterEach, expect, it, vi } from 'vitest'
 import { once } from 'node:events'
 import express from 'express'
+import { XRPL_LABEL, SIMULATED_LABEL } from '../shared/contracts/index.js'
 import { Store } from '../server/store.js'
 import { feedSnapshot, publicFeedRouter } from '../server/api/feed.js'
 import { resources } from './helpers/resource-scope.js'
@@ -11,7 +12,7 @@ function seed(validated = true) {
   const store=new Store(join(resources().tempDir('feed-'),'app.db')); closers.push(()=>store.close())
   const run=store.createRun('PRIVATE_QUESTION',100)
   store.hostedState(db=>{
-    db.prepare("UPDATE runs SET json=json_set(json,'$.candidates',json(?)) WHERE id=?").run(JSON.stringify([{resourceId:'article',profileId:'writer',title:'Public title',publisher:'Public writer',facets:['XRPL']}]),run.runId)
+    db.prepare("UPDATE runs SET json=json_set(json,'$.labels.settlement',?,'$.candidates',json(?)) WHERE id=?").run(XRPL_LABEL,JSON.stringify([{resourceId:'article',profileId:'writer',title:'Public title',publisher:'Public writer',facets:['XRPL']}]),run.runId)
     db.prepare('INSERT INTO intents VALUES (?,?,?)').run('intent',run.runId,JSON.stringify({resourceId:'article',profileId:'writer',amountMinor:40,escrow:{mode:'key-reveal',state:'LOCKED',createHash:'A'.repeat(64)}}))
   })
   if (validated) store.recordAudit({runId:run.runId,intentId:'intent',kind:'ESCROW_CREATE',at:'2026-11-12T10:00:00.000Z',data:{txHash:'A'.repeat(64),ledgerIndex:123}})
@@ -93,4 +94,45 @@ it('updates an open stream from created escrow to finished payment with a matchi
     now.mockReturnValue(3001)
     const updated=new TextDecoder().decode((await reader.read()).value);expect(updated).toContain('"state":"finished"');expect(updated).toContain('"keyCheck":"match"');expect(updated).toContain('"settlementSeconds":4');expect(updated).not.toContain('PRIVATE_QUESTION')
   } finally {controller.abort();await reader.cancel().catch(()=>{})}
+})
+
+it('does not promote a signed finish hash without a matching terminal audit observation',()=>{
+  const {store}=seed()
+  store.hostedState(db=>db.prepare("UPDATE intents SET json=json_set(json,'$.escrow.state','RELEASED','$.escrow.finishHash',?,'$.escrow.keyVerified',json('true'),'$.escrow.decryptVerified',json('true'),'$.escrow.proofOk',json('true'))").run('B'.repeat(64)))
+  expect(feedSnapshot(store).rows[0]).toMatchObject({state:'locked',finishHash:null,settlementSeconds:null,gate:'pending'})
+})
+
+it('publishes only the saved whole-run rating on purchase rows',()=>{
+  const {store,run}=seed()
+  store.hostedState(db=>db.prepare('INSERT INTO answer_ratings VALUES (?,?,?)').run(run.runId,1,new Date().toISOString()))
+  expect(feedSnapshot(store).rows[0].rating).toBe(true)
+})
+
+it('does not let signed-only attempts evict validated purchases from a bounded snapshot',()=>{
+  const {store,run}=seed()
+  store.hostedState(db=>{for(let n=0;n<101;n++)db.prepare('INSERT INTO intents VALUES (?,?,?)').run('signed-'+n,run.runId,JSON.stringify({resourceId:'article',profileId:'writer',amountMinor:40,escrow:{mode:'key-reveal',state:'SIGNED',createHash:'B'.repeat(64)}}))})
+  expect(feedSnapshot(store,1).rows).toHaveLength(1)
+  expect(feedSnapshot(store,1).rows[0].createHash).toBe('A'.repeat(64))
+})
+
+it('keeps colliding publisher-local article metadata bound to the recorded source',()=>{
+ const {store,run}=seed()
+ const source=(origin:string)=>({schemaVersion:1,origin,sellerKey:origin,profileId:'writer',resourceId:'article',version:'v1'})
+ const first={resourceId:'article',profileId:'writer',version:'v1',title:'Wrong public article',publisher:'Wrong writer',source:source('https://first.example')}
+ const second={...first,title:'Correct public article',publisher:'Correct writer',source:source('https://second.example')}
+ store.hostedState(db=>{
+  db.prepare("UPDATE runs SET json=json_set(json,'$.candidates',json(?)) WHERE id=?").run(JSON.stringify([first,second]),run.runId)
+  db.prepare("UPDATE intents SET json=json_set(json,'$.source',json(?),'$.version','v1')").run(JSON.stringify(second.source))
+ })
+ expect(feedSnapshot(store).rows[0]).toMatchObject({resourceTitle:'Correct public article',writer:'Correct writer'})
+ store.hostedState(db=>db.prepare("UPDATE intents SET json=json_remove(json,'$.source')").run())
+ expect(feedSnapshot(store).rows[0]).toMatchObject({resourceTitle:'Article title unavailable',writer:'Writer unavailable'})
+})
+
+it('excludes simulated and unlabelled runs from the Testnet feed',()=>{
+ const {store}=seed();expect(feedSnapshot(store).rows).toHaveLength(1)
+ store.hostedState(db=>db.prepare("UPDATE runs SET json=json_set(json,'$.labels.settlement',?)").run(SIMULATED_LABEL))
+ expect(feedSnapshot(store).rows).toEqual([])
+ store.hostedState(db=>db.prepare("UPDATE runs SET json=json_remove(json,'$.labels.settlement')").run())
+ expect(feedSnapshot(store).rows).toEqual([])
 })
