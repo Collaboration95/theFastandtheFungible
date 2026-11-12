@@ -5,8 +5,9 @@ import react from '@vitejs/plugin-react'
 import { fileURLToPath } from 'node:url'
 import { packRecording } from './recording-codec'
 import recordingIndex from './recording-index.json'
-import { ENV, dateSGT } from '../shared/presentation'
+import { dateSGT } from '../shared/presentation'
 import { replayLoadingShell } from './loading-shell'
+import { replayLabel, replayShortLabel } from './replay-label'
 // The replay bundles the same App, so the lazy in-browser receipt verifier needs the same browser shims as the root vite.config.ts.
 const shim = (file: string) => fileURLToPath(new URL(`../src/verify/shims/${file}`, import.meta.url))
 export default defineConfig({
@@ -34,7 +35,7 @@ export default defineConfig({
           const chunk = Object.values(bundle).find(item => item.type === 'chunk' && item.moduleIds.some(id => id.endsWith(`/demo/traces/${scenario}.json`)))
           if (!chunk) throw Error(`Replay chunk missing: ${scenario}`)
           const at = JSON.parse(readFileSync(new URL(`./traces/${scenario}.json`, import.meta.url), 'utf8')).run.events[0].at
-          return [scenario, runId, chunk.fileName, question, ENV.replay(dateSGT(at), testnet), ENV.replayShort(testnet)] as const
+          return [scenario, runId, chunk.fileName, question, replayLabel(scenario, dateSGT(at), testnet), replayShortLabel(scenario, testnet)] as const
         })
         // Only the selected trace preloads. The shared app starts after the
         // question paint, leaving bandwidth for its font and public metadata.
