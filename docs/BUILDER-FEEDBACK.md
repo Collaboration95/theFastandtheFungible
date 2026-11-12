@@ -1352,6 +1352,6 @@ persistence or a mainnet deployment. No cloud resource or live ledger call ran.
 ## 12 November 2026: two-slot heavy queue can bypass its first pending ticket (observed wait; code-derived fairness failure)
 
 - **Evidence:** `scratch/heavy-lock-fairness.json` pins the shared wrapper hash, pending ticket order, holder process start times and observation time. This lane remained queued after becoming first pending while other holders changed. The wrapper admits both tickets where `position < SLOTS`; with one free slot, the later eligible ticket can win its 15-second polling race. The entire wait is not attributed to this race; active verification also held the slots.
-- **Workaround:** keep the original queue ticket and wait; no lock, process, slot count or gate was changed.
+- **Workaround:** preserve the original ticket and the two-slot limit. After repeated bypasses, wake only this lane's oldest queued waiter at two-second intervals to recheck admission; no other lane's process, shared wrapper, lock, slot count or gate is changed.
 - **Suggested fix:** reserve a free slot for the earliest pending ticket, or let only the front ticket claim any free slot before removing its ticket.
 - **Severity / mainnet impact:** medium local verification throughput issue; no model spend, XRPL transaction, policy change or mainnet impact.
