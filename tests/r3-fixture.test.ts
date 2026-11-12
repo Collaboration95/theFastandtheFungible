@@ -50,3 +50,9 @@ it('disambiguates the AMM fee-unit phrase without changing the eight-word oracle
  expect(()=>assertNoLeaks([{kind:'public',raw:'in units of 1 100 000 with a',grants:[]}],corpus(a))).not.toThrow()
  for(const raw of [a.passages[1].text,canary(a.articleId)])expect(()=>assertNoLeaks([{kind:'paid',raw,grants:[]}],corpus(a))).toThrow()
 })
+
+it('disambiguates the AMMDeposit phrase in the next immutable fixture revision',()=>{
+ const a=JSON.parse(readFileSync('data/corpus/v2/articles/team-xrpl-explainers/c5-xrpl-amm-create-deposit.json','utf8')) as Article
+ expect(()=>assertNoLeaks([{kind:'public',raw:'ammdeposit deposits funds into an amm instance and',grants:[]}],corpus(a))).not.toThrow()
+ for(const raw of [a.passages[2].text,canary(a.articleId)])expect(()=>assertNoLeaks([{kind:'paid',raw,grants:[]}],corpus(a))).toThrow()
+})

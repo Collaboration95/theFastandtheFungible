@@ -1,6 +1,6 @@
 {
   "articleId": "c5-xrpl-amm-create-deposit",
-  "version": "v2",
+  "version": "v3",
   "publisherSlug": "team-xrpl-explainers",
   "writerSlug": "team-xrpl-explainers",
   "title": "What do AMMCreate and AMMDeposit do on XRPL, and what is the maximum AMM trading fee?",
@@ -30,11 +30,11 @@
       "accessedAt": "2026-11-11"
     }
   ],
-  "body": "According to the XRPL AMMCreate reference, AMMCreate creates a new Automated Market Maker instance for a pair of assets, and its TradingFee is at most 1000, a 1% trading fee. The pair can be fungible tokens or XRP. [1]\n\nTradingFee represents increments of one hundred-thousandth; its lower bound is zero. Creating the pool burns at least the incremental owner reserve, listed as 0.2 XRP in the consulted reference. The pair permits no more than one XRP side and must identify two different assets. Relevant token issuers need Default Ripple. An existing pool for that pair causes tecDUPLICATE rather than a second pool. [1]\n\nAccording to the XRPL AMMDeposit reference, AMMDeposit deposits funds into an AMM instance and receives the AMM's liquidity provider tokens, called LP tokens. Flags select the mode: tfTwoAsset deposits specified amounts of both assets, tfSingleAsset deposits one asset, tfLPToken is a double-asset deposit that receives a specified amount of LP tokens, tfOneAssetLPToken is the single-asset equivalent, tfLimitLPToken sets an effective price, and tfTwoAssetIfEmpty is for an empty pool. A successful deposit creates a trust line to the AMM account, with limit 0, to hold the LP tokens. [2]\n\nAuthor interpretation: LP tokens are the depositor's claim on the pool, so an agent that deposits should record its LP token balance and the reserve for the new trust line, not only the assets it sent. Neither reference promises a return. Sources accessed 11 November 2026. [1][2]\n\nSCENARIO_PAID_CANARY_c5-xrpl-amm-create-deposit_9F13",
+  "body": "AMMCreate establishes an XRPL liquidity pool for two different assets. The supported pair can contain fungible tokens and at most one XRP side. Its TradingFee cap is 1000, equivalent to one percent. The creation transaction commits the initial pool funding and fee configuration described by the AMMCreate reference. [1]\n\nTradingFee represents increments of one hundred-thousandth; its lower bound is zero. Creating the pool burns at least the incremental owner reserve, listed as 0.2 XRP in the consulted reference. The pair permits no more than one XRP side and must identify two different assets. Relevant token issuers need Default Ripple. An existing pool for that pair causes tecDUPLICATE rather than a second pool. [1]\n\nAMMDeposit contributes liquidity to a pool in exchange for LP tokens. Choose tfTwoAsset for specified contributions on both sides or tfSingleAsset for a contribution on one side. The tfLPToken and tfOneAssetLPToken modes target an LP-token quantity; tfLimitLPToken constrains effective price, while tfTwoAssetIfEmpty applies to an empty pool. Successful deposit establishes the zero-limit trust line needed to hold the resulting LP tokens. [2]\n\nAuthor interpretation: an agent should reconcile both its pool contribution and received LP-token balance. The new LP-token trust line also affects reserve requirements. Providing liquidity is distinct from buying an article, and these transaction references make no investment-return promise. Documentation consulted on 11 November 2026. [1][2]\n\nSCENARIO_PAID_CANARY_c5-xrpl-amm-create-deposit_9F13",
   "passages": [
     {
       "id": "p1",
-      "text": "According to the XRPL AMMCreate reference, AMMCreate creates a new Automated Market Maker instance for a pair of assets, and its TradingFee is at most 1000, a 1% trading fee. The pair can be fungible tokens or XRP. [1]"
+      "text": "AMMCreate establishes an XRPL liquidity pool for two different assets. The supported pair can contain fungible tokens and at most one XRP side. Its TradingFee cap is 1000, equivalent to one percent. The creation transaction commits the initial pool funding and fee configuration described by the AMMCreate reference. [1]"
     },
     {
       "id": "p2",
@@ -42,11 +42,11 @@
     },
     {
       "id": "p3",
-      "text": "According to the XRPL AMMDeposit reference, AMMDeposit deposits funds into an AMM instance and receives the AMM's liquidity provider tokens, called LP tokens. Flags select the mode: tfTwoAsset deposits specified amounts of both assets, tfSingleAsset deposits one asset, tfLPToken is a double-asset deposit that receives a specified amount of LP tokens, tfOneAssetLPToken is the single-asset equivalent, tfLimitLPToken sets an effective price, and tfTwoAssetIfEmpty is for an empty pool. A successful deposit creates a trust line to the AMM account, with limit 0, to hold the LP tokens. [2]"
+      "text": "AMMDeposit contributes liquidity to a pool in exchange for LP tokens. Choose tfTwoAsset for specified contributions on both sides or tfSingleAsset for a contribution on one side. The tfLPToken and tfOneAssetLPToken modes target an LP-token quantity; tfLimitLPToken constrains effective price, while tfTwoAssetIfEmpty applies to an empty pool. Successful deposit establishes the zero-limit trust line needed to hold the resulting LP tokens. [2]"
     },
     {
       "id": "p4",
-      "text": "Author interpretation: LP tokens are the depositor's claim on the pool, so an agent that deposits should record its LP token balance and the reserve for the new trust line, not only the assets it sent. Neither reference promises a return. Sources accessed 11 November 2026. [1][2]"
+      "text": "Author interpretation: an agent should reconcile both its pool contribution and received LP-token balance. The new LP-token trust line also affects reserve requirements. Providing liquidity is distinct from buying an article, and these transaction references make no investment-return promise. Documentation consulted on 11 November 2026. [1][2]"
     }
   ],
   "factMenu": {
