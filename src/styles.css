@@ -654,6 +654,25 @@ details[open]:not(.ra-export) > summary::before { transform: translateY(-4px) ro
  .ra-settings { padding: var(--space-4); }
  .ra-receipt-sheet dl { grid-template-columns: 96px minmax(0, 1fr); } .ra-side { order: 2; }
 }
+/* Phone targets reserve their own space; glyphs and type retain their desktop size. */
+@media (max-width: 780px) {
+  .ra-nav-run { min-width: 44px; min-height: 44px; height: 44px; }
+  .ra-nav-more { width: 44px; height: 44px; opacity: 1; display: grid; place-items: center; }
+  .ra-newq { position: relative; isolation: isolate; height: 44px; min-height: 44px; background: none; border: 0; }
+  .ra-newq::before { content: ""; position: absolute; inset: 3px 0; z-index: -1; border: 1px solid var(--rule-2); border-radius: inherit; background: var(--sheet); }
+  .ra-newq:hover:not(:disabled)::before { border-color: var(--ink-2); }
+  .ra-mobile-views button { min-width: 44px; }
+  .ra-menu button { min-height: 44px; }
+  .ra-key-line a, .ra-key-reveal li > a, .ra-payment-links a,
+  .ra-receipt-sheet dl a[href^="https://testnet.xrpl.org/"],
+  .ra-ledger a {
+    display: inline-flex; align-items: center; min-width: 44px; min-height: 44px;
+  }
+  .ra-caption > a[href^="https://testnet.xrpl.org/transactions/"] { display: inline-block; min-width: 44px; min-height: 44px; padding: 6px 0; }
+  .ra-key-line a { justify-content: center; vertical-align: middle; }
+  /* The replay's site header and banner also sit above the drawer. */
+  .demo-banner ~ #root .ra-nav:not(.is-rail) { top: 100px; height: calc(100dvh - 100px); }
+}
 @media (prefers-reduced-motion: reduce) { .ra-bc-chev { transition: none; } *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } .ra-plan-bar i { width: 100%; } .ra-typing i { animation: none; }
 }
 /* Sweep fixes (11 Nov). */

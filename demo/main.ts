@@ -29,10 +29,18 @@ const testnetRun = (recording: Recording) => recording.run.labels.settlement.inc
 // Recording dates read in Singapore time, as the submission and the site do.
 const recordedOn = (recording: Recording) => { const at = recording.run.events[0]?.at; return at ? dateSGT(at) : 'date unavailable' }
 const scenarioOf = (recording: Recording) => { const key = recordingIndex.find(item => item.runId === recording.run.runId)?.scenario ?? ''; return key === 'UC3-key-reveal' ? '' : key }
+// The title and compact date reuse the canonical replay name.
+const replayName = ENV.replayShort().split(' · ')[0]
+const titlePrefix = () => `${replayName} · ${recordedOn(active)} · `
+const showTitle = () => {
+  const prefix = titlePrefix()
+  if (!document.title.startsWith(prefix)) document.title = prefix + document.title.replace(/^Replay · [^·]+ · /, '')
+}
 let updateTransactions: (() => Promise<void>) | undefined = undefined
 const showLabel = () => {
   for (const label of document.querySelectorAll('.demo-label')) label.textContent = ENV.replay(recordedOn(active), testnetRun(active))
-  document.querySelector('.demo-short')!.textContent = ENV.replayShort(testnetRun(active))
+  document.querySelector('.demo-short')!.textContent = `${replayName} · ${recordedOn(active)}`
+  showTitle()
   const picker = document.querySelector<HTMLSelectElement>('.demo-banner select')
   if (picker) picker.value = scenarioOf(active)
   void updateTransactions?.()
@@ -75,6 +83,9 @@ window.fetch = async (input, init) => {
 // Keep the labelled loading shell until the selected recording validates.
 // The shared app loads afterward so it does not compete with the public question.
 await activeReady
+showLabel()
+// App status titles can change as the replay advances; retain the selected run's date.
+new MutationObserver(showTitle).observe(document.querySelector('title')!, { childList: true })
 // Finish the question's font before handoff so its glyph area stays stable.
 await document.fonts.load('600 24px "Replay Geist Variable"', selected.question).catch(() => undefined)
 // Let the public question reach a paint before replacing the loading shell.

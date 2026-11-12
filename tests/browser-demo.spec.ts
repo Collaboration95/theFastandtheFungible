@@ -291,3 +291,6 @@ test('replay downloads only the requested recording, then loads another scenario
   }
  }finally{server.kill('SIGTERM');await once(server,'exit')}
 })
+
+// Replay provenance, phone hit areas and drawer navigation share this static build.
+import './ui-b.spec'
