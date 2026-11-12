@@ -2,6 +2,7 @@ import { answerRatingsRouter } from './api/answer-ratings.js'
 import { audienceMiddleware, operatorSessionRouter } from './hosted/audience.js'
 import { publicFeedRouter } from './api/feed.js'
 import { publishingGateway } from '../publisher/publishing/gateway.js'
+import { publicMcpRouter } from '../mcp/public.js'
 import { writeSse, endSse, sseBufferedBytes } from './api/sse.js'
 import { writersRouter } from './api/writers.js'
 import { hostedWriterPages } from './hosted/writers.js'
@@ -120,6 +121,8 @@ async function createConfiguredApi(options: ApiOptions = {}) {
   const store = new Store(options.dbPath ?? config.APP_DB ?? 'data/app.db', event => { try { traceEvent(event); logMoneyEvent(event, store) } catch { /* telemetry never blocks the run */ } publish(event) })
   const feed = config.PUBLIC_FEED === '1' ? publicFeedRouter(store) : undefined
   if (feed) app.use(feed.router)
+  const reach = express.Router()
+  app.use(reach)
   const hosted = config.HOSTED === '1' ? new HostedLimits(store, config) : undefined
   const queue = hosted ? new HostedQueue(config) : undefined
   if (hosted) {
@@ -198,6 +201,7 @@ async function createConfiguredApi(options: ApiOptions = {}) {
     const pending = job.then(() => {}, () => {})
     jobs.add(pending); void pending.then(() => jobs.delete(pending))
   }, sseGzip: config.HOSTED === '1' && config.HOSTED_SSE_GZIP !== '0', onStreamOpen: runId => { if (config.HOSTED === '1') { lastSnapshot.set(runId, Date.now()); if (['DONE','FAILED','STOPPED'].includes(store.getRun(runId).phase)) terminalSnapshots.add(runId) } }, onStreamEmpty: runId => { clearTimeout(snapshotTimers.get(runId)); snapshotTimers.delete(runId); lastSnapshot.delete(runId); terminalSnapshots.delete(runId) }, reportDir, reportJobs, progress }
+  if (hosted) reach.use(express.json({ limit: '16kb' }), publicMcpRouter(context, config, hosted))
   let readiness: HostedReadiness | undefined
   if (hosted && queue) {
     const payerWatch = new PayerWatch()
