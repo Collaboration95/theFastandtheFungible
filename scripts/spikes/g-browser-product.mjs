@@ -1,9 +1,8 @@
 // Browser-local visitor key + real identity API and product purchase, all on Testnet.
 // Development component harness; run admission uses HTTP, not the app's Ask/modal UI.
 import assert from 'node:assert/strict'
-import { mkdtemp, rm } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+// Verification resource tooling only; no settlement logic is imported.
+import { newScope } from '../local-gate.mjs'
 import { randomBytes } from 'node:crypto'
 import { spawn } from 'node:child_process'
 import { createRequire } from 'node:module'
@@ -16,9 +15,10 @@ const { chromium } = require('playwright')
 const c = await connect(), children = [], records = [], token = randomBytes(32).toString('hex')
 const api = 'http://127.0.0.1:9588'
 const question = 'Can an XRPL escrow hold RLUSD today, and what must the issuer enable before a buyer can lock it?'
-let vite, browser, cacheDir
+const scope = await newScope()
+let vite, browser
 try {
-  cacheDir = await mkdtemp(join(tmpdir(), 'r3-wallet-vite-'))
+  const cacheDir = scope.tempDir('r3-wallet-vite-')
   const agent = await funded(c), writer = Wallet.generate()
   const funding = await submit(c, agent, { TransactionType: 'Payment', Account: agent.address, Destination: writer.address, Amount: '6000000' }, { label: 'fund fresh writer' })
   assert.equal(funding.record.result, 'tesSUCCESS'); records.push(funding.record)
@@ -82,7 +82,7 @@ try {
   save('g-browser-product', result); console.log(JSON.stringify({ verdict: result.verdict, visitor, purchaseMs, spentMinor: run.spentMinor, revokedAdmission: after.admissionStatus, hashes: records.map(r => r.hash) }))
 } finally {
   await browser?.close(); await vite?.close()
-  if (cacheDir) await rm(cacheDir, { recursive: true, force: true })
+  await scope.close()
   for (const child of children) child.kill('SIGTERM')
   await Promise.all(children.map(child => new Promise(resolve => { if (child.exitCode !== null) return resolve(); child.once('exit', resolve); setTimeout(() => child.kill('SIGKILL'), 3000).unref() })))
   await c.disconnect()

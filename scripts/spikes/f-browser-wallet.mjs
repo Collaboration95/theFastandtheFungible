@@ -1,8 +1,7 @@
 // Targeted browser component acceptance: real SDK/faucet/DelegateSet, public identity API stub.
 import assert from 'node:assert/strict'
-import { mkdtemp, rm } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+// Verification resource tooling only; no settlement logic is imported.
+import { newScope } from '../local-gate.mjs'
 import { randomBytes } from 'node:crypto'
 import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
@@ -12,9 +11,10 @@ const { createServer } = await import(pathToFileURL(require.resolve('vite')).hre
 const { chromium } = require('playwright')
 const { deriveAddress, verify } = require('ripple-keypairs')
 const c = await connect()
-let vite, browser, cacheDir
+const scope = await newScope()
+let vite, browser
 try {
-  cacheDir = await mkdtemp(join(tmpdir(), 'r3-wallet-vite-'))
+  const cacheDir = scope.tempDir('r3-wallet-vite-')
   const agent = await funded(c), message = randomBytes(64).toString('hex').toUpperCase()
   let address, publicProofKeys
   vite = await createServer({ envFile: false, logLevel: 'silent', cacheDir,
@@ -68,4 +68,4 @@ try {
     browser: browser.version(), agent: agent.address, visitor, local, publicProofKeys, connectedMs, totalMs: Math.round(performance.now() - started), records }
   save('f-browser-wallet', result); console.log(JSON.stringify(result, null, 2))
 } finally { await browser?.close(); await vite?.close()
-  if (cacheDir) await rm(cacheDir, { recursive: true, force: true }); await c.disconnect() }
+  await scope.close(); await c.disconnect() }
