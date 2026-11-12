@@ -86,9 +86,16 @@ export async function chaos({ runs = 500, seed = 279, soakMs = 0, output = 'scra
   } finally { rmSync(work,{recursive:true,force:true}) }
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const args = process.argv.slice(2), value = name => { const i = args.indexOf(name); return i<0 ? undefined : args[i+1] }
+  const proofMode = process.argv.includes('--proof-sim')
+  const args = process.argv.slice(2).filter(a => a !== '--proof-sim'), value = name => { const i = args.indexOf(name); return i<0 ? undefined : args[i+1] }
+  if (proofMode) {
+    if (args.length%2 || args.some((a,i) => i%2===0 && !['--runs','--seed','--workers','--output'].includes(a))) throw new Error('Usage: npm run proof:sim -- [--runs 1000000] [--seed 279] [--workers 4] [--output path]')
+    const { proofSim } = await import('./proof/sim.mjs')
+    await proofSim({ runs: Number(value('--runs')??1000000), seed: Number(value('--seed')??279), workers: Number(value('--workers')??4), output: value('--output') })
+  } else {
   if (args.some((a,i) => i%2===0 && !['--runs','--seed','--soak','--output'].includes(a)) || args.length%2) throw new Error('Usage: npm run chaos -- [--runs 500] [--seed 279] [--soak 12h] [--output path]')
   let soakMs = 0
   if (value('--soak')) { const m = /^(\d+(?:\.\d+)?)(s|m|h)$/.exec(value('--soak')); if (!m || Number(m[1])<=0) throw new Error('Use --soak 12h (or 30m)'); soakMs = Number(m[1])*({s:1000,m:60000,h:3600000}[m[2]]) }
   const result = await chaos({ runs: Number(value('--runs')??500), seed: Number(value('--seed')??279), soakMs, output: value('--output') }); if (result.invariantViolations) process.exitCode = 1
+  }
 }

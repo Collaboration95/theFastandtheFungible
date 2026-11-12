@@ -1,0 +1,231 @@
+{
+  "label": "BOUNDED MODEL; abstract ledger, not Testnet",
+  "models": [
+    {
+      "bounds": {
+        "intents": 3,
+        "crashes": 2,
+        "retries": 2,
+        "mode": "key-reveal",
+        "budget": 1
+      },
+      "mutation": null,
+      "states": 29040,
+      "transitions": 101208,
+      "durationMs": 220.53691700000002,
+      "violations": [],
+      "trace": []
+    },
+    {
+      "bounds": {
+        "intents": 3,
+        "crashes": 2,
+        "retries": 2,
+        "mode": "conditional",
+        "budget": 1
+      },
+      "mutation": null,
+      "states": 30480,
+      "transitions": 105096,
+      "durationMs": 253.71337499999998,
+      "violations": [],
+      "trace": []
+    },
+    {
+      "bounds": {
+        "intents": 3,
+        "crashes": 2,
+        "retries": 2,
+        "mode": "key-reveal",
+        "budget": 2
+      },
+      "mutation": null,
+      "states": 72240,
+      "transitions": 269136,
+      "durationMs": 603.144791,
+      "violations": [],
+      "trace": []
+    },
+    {
+      "bounds": {
+        "intents": 3,
+        "crashes": 2,
+        "retries": 2,
+        "mode": "conditional",
+        "budget": 2
+      },
+      "mutation": null,
+      "states": 78720,
+      "transitions": 288312,
+      "durationMs": 618.7635,
+      "violations": [],
+      "trace": []
+    }
+  ],
+  "mutations": [
+    {
+      "bounds": {
+        "intents": 3,
+        "crashes": 1,
+        "retries": 1,
+        "mode": "key-reveal",
+        "budget": 1
+      },
+      "mutation": "early-body",
+      "states": 132,
+      "transitions": 305,
+      "durationMs": 0.36016700000004676,
+      "violations": [
+        "G1"
+      ],
+      "trace": [
+        "start",
+        "0: policy creates intent",
+        "0: quote binds price/resource/condition; label fixture",
+        "preview releases premium bytes"
+      ]
+    },
+    {
+      "bounds": {
+        "intents": 3,
+        "crashes": 1,
+        "retries": 1,
+        "mode": "key-reveal",
+        "budget": 1
+      },
+      "mutation": "budget-race",
+      "states": 831,
+      "transitions": 2245,
+      "durationMs": 2.165749999999889,
+      "violations": [
+        "G2"
+      ],
+      "trace": [
+        "start",
+        "0: policy creates intent",
+        "0: quote binds price/resource/condition; label fixture",
+        "0: atomic budget and resource reservation",
+        "2: policy creates intent",
+        "2: quote binds price/resource/condition; label fixture",
+        "2: atomic budget and resource reservation"
+      ]
+    },
+    {
+      "bounds": {
+        "intents": 3,
+        "crashes": 1,
+        "retries": 1,
+        "mode": "key-reveal",
+        "budget": 1
+      },
+      "mutation": "llm-intent",
+      "states": 32,
+      "transitions": 34,
+      "durationMs": 0.04795899999999165,
+      "violations": [
+        "G2"
+      ],
+      "trace": [
+        "start",
+        "0: LLM requests purchase (refused)"
+      ]
+    },
+    {
+      "bounds": {
+        "intents": 3,
+        "crashes": 1,
+        "retries": 1,
+        "mode": "key-reveal",
+        "budget": 1
+      },
+      "mutation": "invented-citation",
+      "states": 20,
+      "transitions": 29,
+      "durationMs": 0.03766700000005585,
+      "violations": [
+        "G4"
+      ],
+      "trace": [
+        "start",
+        "accept nonexistent model citation"
+      ]
+    },
+    {
+      "bounds": {
+        "intents": 3,
+        "crashes": 1,
+        "retries": 1,
+        "mode": "key-reveal",
+        "budget": 1
+      },
+      "mutation": "missing-label",
+      "states": 53,
+      "transitions": 110,
+      "durationMs": 0.09983399999987341,
+      "violations": [
+        "G5"
+      ],
+      "trace": [
+        "start",
+        "0: policy creates intent",
+        "0: quote binds price/resource/condition; label fixture"
+      ]
+    },
+    {
+      "bounds": {
+        "intents": 3,
+        "crashes": 1,
+        "retries": 1,
+        "mode": "key-reveal",
+        "budget": 1
+      },
+      "mutation": "duplicate-charge",
+      "states": 2182,
+      "transitions": 6255,
+      "durationMs": 18.270291999999927,
+      "violations": [
+        "G3"
+      ],
+      "trace": [
+        "start",
+        "0: policy creates intent",
+        "0: quote binds price/resource/condition; label fixture",
+        "0: atomic budget and resource reservation",
+        "0: CAS submit; persist exact create blob with condition",
+        "0: submit persisted create: validated success",
+        "0: verify ledger lock proof",
+        "0: writer EscrowFinish reveals key",
+        "0: retry/duplicate/reordered delivery uses same object"
+      ]
+    },
+    {
+      "bounds": {
+        "intents": 3,
+        "crashes": 1,
+        "retries": 1,
+        "mode": "key-reveal",
+        "budget": 1
+      },
+      "mutation": "crash-double-charge",
+      "states": 4537,
+      "transitions": 14059,
+      "durationMs": 38.521375000000035,
+      "violations": [
+        "G3"
+      ],
+      "trace": [
+        "start",
+        "0: policy creates intent",
+        "0: quote binds price/resource/condition; label fixture",
+        "0: atomic budget and resource reservation",
+        "0: CAS submit; persist exact create blob with condition",
+        "0: submit persisted create: validated success",
+        "0: verify ledger lock proof",
+        "0: writer EscrowFinish reveals key",
+        "crash after [7,0,0]",
+        "restart: durable outbox/grants/ledger retained",
+        "0: retry/duplicate/reordered delivery uses same object"
+      ]
+    }
+  ]
+}

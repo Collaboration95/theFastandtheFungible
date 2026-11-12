@@ -63,7 +63,10 @@
     "demo:capture": "tsx scripts/capture-browser-demo.ts",
     "test:demo": "npm run build:demo && playwright test --config tests/playwright/demo.config.ts",
     "test:judge": "npm run build:demo && playwright test --config tests/playwright/judge.config.ts",
-    "check:paid-bodies": "node scripts/check-paid-bodies.mjs"
+    "check:paid-bodies": "node scripts/check-paid-bodies.mjs",
+    "proof:model": "tsx scripts/proof/run-model.ts",
+    "proof:sim": "node scripts/chaos.mjs --proof-sim",
+    "proof:redteam": "vitest run tests/proof/redteam"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",
