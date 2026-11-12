@@ -59,6 +59,8 @@ The observed lead in T3-1 was:
 
 > the writer gets paid by publishing the article's key on the XRP Ledger: the payment waits in an escrow that only that key can open, so an agent cannot read the article unless the writer is paid.
 
+**12 Nov clarification (retained quote, not final narration):** the key that unlocks the article is the same key that releases the writer’s payment. The app shows it only after EscrowFinish validates. Signed submission exposes the key earlier; anyone (the writer first) can still claim with that key until CancelAfter.
+
 That local HOSTED=1 measurement used live DeepSeek, fixed buying rules and one
 **S$0.40** key-reveal purchase of `product-writer-paid` on XRPL Testnet.
 Its [EscrowFinish](https://testnet.xrpl.org/transactions/BC2B4BAD2D7E7615E3A3B6A74888899F433615EE99D4E0ACD75F5CC9C2BA9F01) is the T3-1 reference, not the old x402 payment.
