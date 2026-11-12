@@ -2,7 +2,7 @@ import { appendFileSync, readFileSync } from 'node:fs'
 import { expect, it } from 'vitest'
 import { resources } from './helpers/resource-scope'
 import { join } from 'node:path'
-import { atomicJson, readObservations, resumeState, lockLedger, assertRealCorpus } from '../eval/r3-state.js'
+import { atomicJson, readObservations, resumeState, lockLedger, assertRealCorpus, reserveModelCall } from '../eval/r3-state.js'
 it('retains completed runs and refuses a changed bank, provider or corpus on resume', () => {
   const dir = resources().tempDir('r3-resume-'), path = join(dir, 'results.json')
   const identity = { bank: 'bank-v1', decision: 'fixture', corpus: 'real' }
@@ -56,4 +56,18 @@ it('refuses an old/default corpus even when the caller sets real-profile flags',
   expect(() => assertRealCorpus({publishers:real.publishers.slice(1)})).toThrow('Real profile unavailable')
   expect(() => assertRealCorpus({publishers:[...real.publishers,{slug:'fictional',synthetic:true}]})).toThrow('fictional publishers')
   expect(() => assertRealCorpus({publishers:[...real.publishers,{slug:'unlabelled'}]})).toThrow('fictional publishers')
+})
+
+it('counts prior charges and interrupted-call holds against the shared US$5 ceiling', () => {
+  const costs = {actual:4.90,reserved:0.09,calls:1275,missingUsage:8}
+  reserveModelCall(costs,1000)
+  reserveModelCall(costs,1000)
+  const admitted = {...costs}
+  expect(costs.actual + costs.reserved).toBeLessThanOrEqual(5)
+  expect(() => reserveModelCall(costs,1000)).toThrow('US$5 model-spend ceiling')
+  expect(costs).toEqual(admitted)
+  expect(costs).toMatchObject({actual:4.90,calls:1277,missingUsage:10})
+  // A larger input cannot consume a hold that remains after a killed call.
+  expect(() => reserveModelCall(costs,1_000_000)).toThrow('US$5 model-spend ceiling')
+  expect(costs).toEqual(admitted)
 })

@@ -43,3 +43,14 @@ export function assertRealCorpus(corpus: { publishers: { slug: string; synthetic
     throw Error('Real profile unavailable or fictional publishers admitted; wait for CONTENT and build public docs')
   }
 }
+
+/** Peak input-byte/output-token bounds include all prior unsettled calls. */
+export function reserveModelCall(costs: {actual:number;reserved:number;calls:number;missingUsage:number}, requestBytes: number): number {
+  if (!Number.isSafeInteger(requestBytes) || requestBytes < 0) throw Error('Invalid model request size')
+  const reservation = ((requestBytes + 1024) * .3 + 3000 * 1.2) / 1e6
+  if (costs.actual + costs.reserved + reservation > 5) throw Error('US$5 model-spend ceiling reached')
+  costs.reserved += reservation
+  costs.calls++
+  costs.missingUsage++
+  return reservation
+}

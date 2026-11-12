@@ -1,7 +1,7 @@
 // Two paired live-DeepSeek arms, 200 existing questions each, simulated settlement.
 // No model-generated label is used as ground truth. Saves every completed run.
 import 'dotenv/config'
-import {atomicJson,readObservations,resumeState,lockLedger,assertRealCorpus} from './r3-state.js'
+import {atomicJson,readObservations,resumeState,lockLedger,assertRealCorpus,reserveModelCall} from './r3-state.js'
 import {once} from 'node:events'
 import {appendFileSync,existsSync,mkdirSync,readFileSync,writeFileSync} from 'node:fs'
 import {dirname,join,resolve} from 'node:path'
@@ -70,9 +70,8 @@ globalThis.fetch=(async (url,init)=>{
  const payload=JSON.parse(String(init?.body||'{}'))
  if(payload.model!=='deepseek-flash'||!Number.isSafeInteger(payload.max_tokens)||payload.max_tokens<1||payload.max_tokens>3000)throw new Error('Unqualified model budget')
  const multiplier=peak()?2:1
- const reservation=((Buffer.byteLength(String(init?.body||''))+1024)*.3+3000*1.2)/1e6
- if(costs.reserved+costs.actual+reservation>5)throw new Error('US$5 model-spend ceiling reached')
- costs.reserved+=reservation;costs.calls++;costs.missingUsage++;save()
+ const reservation=reserveModelCall(costs,Buffer.byteLength(String(init?.body||'')))
+ save()
  const response=await realFetch(url,init)
  if(!response.ok||!response.body){save();return response}
  let pending='',settled=false
