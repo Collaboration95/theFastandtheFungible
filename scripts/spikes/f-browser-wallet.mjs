@@ -1,5 +1,8 @@
 // Targeted browser component acceptance: real SDK/faucet/DelegateSet, public identity API stub.
 import assert from 'node:assert/strict'
+import { mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { randomBytes } from 'node:crypto'
 import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
@@ -9,11 +12,12 @@ const { createServer } = await import(pathToFileURL(require.resolve('vite')).hre
 const { chromium } = require('playwright')
 const { deriveAddress, verify } = require('ripple-keypairs')
 const c = await connect()
-let vite, browser
+let vite, browser, cacheDir
 try {
+  cacheDir = await mkdtemp(join(tmpdir(), 'r3-wallet-vite-'))
   const agent = await funded(c), message = randomBytes(64).toString('hex').toUpperCase()
   let address, publicProofKeys
-  vite = await createServer({ envFile: false, logLevel: 'silent', cacheDir: 'scratch/r3-browser-cache',
+  vite = await createServer({ envFile: false, logLevel: 'silent', cacheDir,
     server: { host: '127.0.0.1', port: 0, strictPort: false },
     plugins: [{ name: 'wallet-acceptance', configureServer(server) {
       server.middlewares.use('/__wallet-acceptance', async (req, res) => {
@@ -63,4 +67,5 @@ try {
   const result = { at: new Date().toISOString(), verdict: 'works', scope: 'Chromium development build of actual wallet component; identity HTTP stub; real Testnet faucet and ledger',
     browser: browser.version(), agent: agent.address, visitor, local, publicProofKeys, connectedMs, totalMs: Math.round(performance.now() - started), records }
   save('f-browser-wallet', result); console.log(JSON.stringify(result, null, 2))
-} finally { await browser?.close(); await vite?.close(); await c.disconnect() }
+} finally { await browser?.close(); await vite?.close()
+  if (cacheDir) await rm(cacheDir, { recursive: true, force: true }); await c.disconnect() }
