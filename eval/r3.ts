@@ -24,19 +24,21 @@ import {sameSource} from '../shared/source-identity.js'
 import {BUDGET,type RunSnapshot} from '../shared/contracts/index.js'
 
 type Question={id:string;question:string;gold?:string;requested?:Fact[];stratum:string}
+const modelCeilingUsd=Number(process.env.R3_MODEL_CAP_USD||5)
+if(!Number.isFinite(modelCeilingUsd)||modelCeilingUsd<=0||modelCeilingUsd>5)throw Error('R3_MODEL_CAP_USD must be greater than zero and at most 5')
 const bankFile=process.env.R3_BANK_FILE||'eval/questions/r3-real.v1.json'
 if(process.env.CORPUS_PROFILE!=='real'||process.env.FREE_TIER!=='public-docs')throw Error('R3 eval requires CORPUS_PROFILE=real and FREE_TIER=public-docs; fictional default evaluation is disabled')
 const bankBytes=readFileSync(bankFile,'utf8')
 const bank:Question[]=JSON.parse(bankBytes).questions
 if(bank.length!==200||new Set(bank.map(q=>q.id)).size!==200)throw Error('Expected 200 uniquely identified questions')
-if(process.argv.includes('--plan')){console.log(JSON.stringify({questions:bank.length,bankSha256:createHash('sha256').update(bankBytes).digest('hex'),arms:['free','paid'],runs:bank.length*2,budgetMinor:[0,BUDGET.initialMinor],modelSpendCapUsd:5,settlement:'simulated',providers:{writerPlanner:'deepseek-flash',decision:'fixture',embeddings:'local'}}));process.exit(0)}
+if(process.argv.includes('--plan')){console.log(JSON.stringify({questions:bank.length,bankSha256:createHash('sha256').update(bankBytes).digest('hex'),arms:['free','paid'],runs:bank.length*2,budgetMinor:[0,BUDGET.initialMinor],modelSpendCapUsd:modelCeilingUsd,settlement:'simulated',providers:{writerPlanner:'deepseek-flash',decision:'fixture',embeddings:'local'}}));process.exit(0)}
 const dir=resolve(process.env.R3_OUT||'scratch/r3-eval'), limit=Number(process.env.R3_LIMIT||200)
 if(!Number.isSafeInteger(limit)||limit<1||limit>200)throw new Error('R3_LIMIT must be 1..200')
 mkdirSync(dir,{recursive:true})
 process.env.LEDGER_REPORT_DIR=join(dir,'ledger-reports')
 const corpus=await loadWriterCorpus(undefined,{allowMini:false})
 assertRealCorpus(corpus)
-const identity={corpusSha256:createHash('sha256').update(JSON.stringify({...corpus,articles:corpus.articles.filter(a=>a.publisherSlug!=='ledger-analytics')})).digest('hex'),bankSha256:createHash('sha256').update(bankBytes).digest('hex'),profile:process.env.CORPUS_PROFILE||'default',freeTier:process.env.FREE_TIER||'default',decision:'fixture',embedding:'local',limit,revision:'r3-real-v3',sourceCommit:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim()}
+const identity={modelCeilingUsd,corpusSha256:createHash('sha256').update(JSON.stringify({...corpus,articles:corpus.articles.filter(a=>a.publisherSlug!=='ledger-analytics')})).digest('hex'),bankSha256:createHash('sha256').update(bankBytes).digest('hex'),profile:process.env.CORPUS_PROFILE||'default',freeTier:process.env.FREE_TIER||'default',decision:'fixture',embedding:'local',limit,revision:'r3-real-v3',sourceCommit:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim()}
 const previous=resumeState<{results:Record<string,unknown>[];started?:Record<string,number>;runIds?:Record<string,string>}>(join(dir,'results.json'),identity)
 const results:Record<string,unknown>[]=previous?.results||[]
 const started:Record<string,number>=previous?.started||{}
@@ -49,7 +51,7 @@ mkdirSync(dirname(costLedger),{recursive:true})
 const unlockLedger=lockLedger(costLedger)
 process.once('exit',unlockLedger)
 const costs:{reserved:number;actual:number;missingUsage:number;calls:number;inputTokens:number;outputTokens:number}=existsSync(costLedger)?JSON.parse(readFileSync(costLedger,'utf8')):JSON.parse(readFileSync('docs/evidence/models/model-cost.json','utf8'))
-if(Object.values(costs).some(n=>!Number.isFinite(n)||n<0)||costs.actual+costs.reserved>5)throw new Error('Invalid or exhausted cumulative cost ledger')
+if(Object.values(costs).some(n=>!Number.isFinite(n)||n<0)||costs.actual+costs.reserved>modelCeilingUsd)throw new Error('Invalid or exhausted cumulative cost ledger')
 const save=()=>{atomicJson(costLedger,costs);atomicJson(join(dir,'results.json'),{schema:'researchagent.r3/v2',identity,rail:'simulated',costs,results,started,runIds})}
 save()
 const key=process.env.DEEPSEEK_API_KEY||process.env.LLM_API_KEY
@@ -70,7 +72,7 @@ globalThis.fetch=(async (url,init)=>{
  const payload=JSON.parse(String(init?.body||'{}'))
  if(payload.model!=='deepseek-flash'||!Number.isSafeInteger(payload.max_tokens)||payload.max_tokens<1||payload.max_tokens>3000)throw new Error('Unqualified model budget')
  const multiplier=peak()?2:1
- const reservation=reserveModelCall(costs,Buffer.byteLength(String(init?.body||'')))
+ const reservation=reserveModelCall(costs,Buffer.byteLength(String(init?.body||'')),modelCeilingUsd)
  save()
  const response=await realFetch(url,init)
  if(!response.ok||!response.body){save();return response}

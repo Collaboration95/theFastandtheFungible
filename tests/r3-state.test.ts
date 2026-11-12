@@ -79,3 +79,12 @@ it('excludes labelled planner substitutions and fixture answers from live-only r
   expect(modelFallbacks({...live,answers:[{provider:'fixture'}]})).toMatchObject({fixtureAnswers:1,liveOnly:false})
   expect(modelFallbacks({...live,answers:[{provider:'fixture'}],events:[{type:'MODEL_FALLBACK'}]})).toMatchObject({writerFallbacks:1,fixtureAnswers:1,fallbacks:1,liveOnly:false})
 })
+
+it('enforces a lower stop exposure before network admission without releasing old holds', () => {
+  const costs = {actual:4.8,reserved:0.09,calls:10,missingUsage:2}
+  reserveModelCall(costs,1000,4.90)
+  const admitted = {...costs}
+  expect(() => reserveModelCall(costs,10000,4.90)).toThrow('US$4.9 model-spend ceiling')
+  expect(costs).toEqual(admitted)
+  for (const cap of [0,-1,5.01,NaN,Infinity]) expect(() => reserveModelCall(costs,1,cap)).toThrow('Invalid model-spend ceiling')
+})
