@@ -1,0 +1,389 @@
+[
+  {
+    "articleId": "c5-xrpl-destination-tag",
+    "version": "v2",
+    "publisherSlug": "team-xrpl-explainers",
+    "writerSlug": "team-xrpl-explainers",
+    "title": "What is an XRPL DestinationTag, and what does the RequireDest setting do?",
+    "publishedAt": "2026-11-11",
+    "tier": "PAID",
+    "priceMinor": 40,
+    "abstract": "Sourced guide to XRPL destination tags: what they identify, their format, the account setting that rejects untagged payments and how x402 carries them.",
+    "tags": [
+      "XRPL",
+      "XRP Ledger",
+      "DestinationTag",
+      "destination tag",
+      "RequireDest",
+      "exchange deposit",
+      "source tag",
+      "hosted recipient"
+    ],
+    "family": "c5-xrpl-destination-tag",
+    "sources": [
+      {
+        "url": "https://xrpl.org/docs/concepts/transactions/source-and-destination-tags",
+        "accessedAt": "2026-11-11"
+      },
+      {
+        "url": "https://xrpl.org/docs/references/protocol/transactions/types/payment",
+        "accessedAt": "2026-11-11"
+      },
+      {
+        "url": "https://github.com/coinbase/x402/blob/0e6e8c55d86b4f14234fb6e49a4052074fb93e57/specs/schemes/exact/scheme_exact_xrpl.md",
+        "accessedAt": "2026-11-11"
+      }
+    ],
+    "body": "XRPL DestinationTag is the recipient business’s customer-routing number. A shared deposit address identifies the business; this additional field tells its internal accounting system whose deposit arrived. This distinction matters for exchange and merchant deposits. The tag does not create a separate ledger account. [1]\n\nThe source-tag and destination-tag fields each hold an unsigned 32-bit integer. A Payment can carry DestinationTag to route a deposit inside a custodial service. If a customer omits that routing number, the service may need a manual investigation before crediting the deposit. Do not infer the customer from the shared destination address alone. [1][2]\n\nRequireDest is the recipient account’s defensive setting: an incoming payment without DestinationTag is rejected. The XRPL x402 exact scheme can advertise destinationTag in its requirements. When advertised, the buyer must copy the identical integer into its signed Payment. An amount or recipient-address match cannot compensate for a wrong tag. [1][3]\n\nAuthor interpretation: resolve the recipient’s deposit instructions before signing. Check the destination address, tag value and network together; retain those requirements with the payment receipt. A missing tag can cause rejection or manual deposit recovery. Documentation consulted on 11 November 2026. [1][2][3]\n\nSCENARIO_PAID_CANARY_c5-xrpl-destination-tag_9F13",
+    "passages": [
+      {
+        "id": "p1",
+        "text": "XRPL DestinationTag is the recipient business’s customer-routing number. A shared deposit address identifies the business; this additional field tells its internal accounting system whose deposit arrived. This distinction matters for exchange and merchant deposits. The tag does not create a separate ledger account. [1]"
+      },
+      {
+        "id": "p2",
+        "text": "The source-tag and destination-tag fields each hold an unsigned 32-bit integer. A Payment can carry DestinationTag to route a deposit inside a custodial service. If a customer omits that routing number, the service may need a manual investigation before crediting the deposit. Do not infer the customer from the shared destination address alone. [1][2]"
+      },
+      {
+        "id": "p3",
+        "text": "RequireDest is the recipient account’s defensive setting: an incoming payment without DestinationTag is rejected. The XRPL x402 exact scheme can advertise destinationTag in its requirements. When advertised, the buyer must copy the identical integer into its signed Payment. An amount or recipient-address match cannot compensate for a wrong tag. [1][3]"
+      },
+      {
+        "id": "p4",
+        "text": "Author interpretation: resolve the recipient’s deposit instructions before signing. Check the destination address, tag value and network together; retain those requirements with the payment receipt. A missing tag can cause rejection or manual deposit recovery. Documentation consulted on 11 November 2026. [1][2][3]"
+      }
+    ],
+    "factMenu": {
+      "p1": {
+        "entity": "destination tags",
+        "measure": "payment"
+      },
+      "p3": {
+        "entity": "XRPL",
+        "measure": "payment"
+      }
+    }
+  },
+  {
+    "articleId": "c5-xrpl-crypto-condition-type",
+    "version": "v2",
+    "publisherSlug": "team-xrpl-explainers",
+    "writerSlug": "team-xrpl-explainers",
+    "title": "Which crypto-condition type does XRPL conditional escrow support, and which fields carry it?",
+    "publishedAt": "2026-11-11",
+    "tier": "PAID",
+    "priceMinor": 40,
+    "abstract": "Sourced guide to the one crypto-condition type XRPL escrow accepts, the Condition and Fulfillment fields, who can finish a conditional escrow and what it costs.",
+    "tags": [
+      "XRPL",
+      "XRP Ledger",
+      "escrow",
+      "crypto-condition",
+      "PREIMAGE-SHA-256",
+      "Condition",
+      "Fulfillment",
+      "EscrowFinish",
+      "hash lock"
+    ],
+    "family": "c5-xrpl-crypto-condition-type",
+    "sources": [
+      {
+        "url": "https://xrpl.org/docs/concepts/payment-types/escrow",
+        "accessedAt": "2026-11-11"
+      },
+      {
+        "url": "https://xrpl.org/docs/references/protocol/transactions/types/escrowfinish",
+        "accessedAt": "2026-11-11"
+      }
+    ],
+    "body": "XRPL conditional escrow accepts PREIMAGE-SHA-256. Its lock commits to a SHA-256 digest, and release requires the corresponding preimage. Other crypto-condition algorithms are outside the supported escrow type. This is the documented primitive behind a hash-locked payment. [1]\n\nFor a conditional escrow, a valid EscrowFinish submission must satisfy its stored lock and any time restrictions. A third party may submit that finish when it knows the required fulfillment. Successful execution removes the escrow entry and credits the designated destination. After CancelAfter, recovery requires an explicit cancellation; the deadline alone does not return funds. [1]\n\nEscrowFinish carries Condition to identify the escrow lock and Fulfillment to supply the matching PREIMAGE-SHA-256 proof. The reference quotes a 330-drop fulfillment fee plus 10 additional drops per 16 preimage bytes. Construct the serialized proof correctly, verify that it matches the stored condition and budget its size-dependent fee before submission. [2]\n\nAuthor interpretation: a key-reveal delivery can tie decryption to the preimage accepted by EscrowFinish. Treat that preimage as disclosed when the finish transaction leaves the writer; do not rely on keeping a submitted fulfillment secret. The buyer still needs a validated finish and authenticated article delivery before a usable grant. Documentation consulted on 11 November 2026. [1][2]\n\nSCENARIO_PAID_CANARY_c5-xrpl-crypto-condition-type_9F13",
+    "passages": [
+      {
+        "id": "p1",
+        "text": "XRPL conditional escrow accepts PREIMAGE-SHA-256. Its lock commits to a SHA-256 digest, and release requires the corresponding preimage. Other crypto-condition algorithms are outside the supported escrow type. This is the documented primitive behind a hash-locked payment. [1]"
+      },
+      {
+        "id": "p2",
+        "text": "For a conditional escrow, a valid EscrowFinish submission must satisfy its stored lock and any time restrictions. A third party may submit that finish when it knows the required fulfillment. Successful execution removes the escrow entry and credits the designated destination. After CancelAfter, recovery requires an explicit cancellation; the deadline alone does not return funds. [1]"
+      },
+      {
+        "id": "p3",
+        "text": "EscrowFinish carries Condition to identify the escrow lock and Fulfillment to supply the matching PREIMAGE-SHA-256 proof. The reference quotes a 330-drop fulfillment fee plus 10 additional drops per 16 preimage bytes. Construct the serialized proof correctly, verify that it matches the stored condition and budget its size-dependent fee before submission. [2]"
+      },
+      {
+        "id": "p4",
+        "text": "Author interpretation: a key-reveal delivery can tie decryption to the preimage accepted by EscrowFinish. Treat that preimage as disclosed when the finish transaction leaves the writer; do not rely on keeping a submitted fulfillment secret. The buyer still needs a validated finish and authenticated article delivery before a usable grant. Documentation consulted on 11 November 2026. [1][2]"
+      }
+    ],
+    "factMenu": {
+      "p3": {
+        "entity": "EscrowFinish",
+        "measure": "costs"
+      },
+      "p4": {
+        "entity": "EscrowFinish",
+        "measure": "fulfillment",
+        "period": "twenty twenty six"
+      },
+      "p1": {
+        "entity": "escrow",
+        "measure": "crypto-condition"
+      }
+    }
+  },
+  {
+    "articleId": "c5-offercreate-flags",
+    "version": "v2",
+    "publisherSlug": "team-xrpl-explainers",
+    "writerSlug": "team-xrpl-explainers",
+    "title": "Which OfferCreate flags control passive, immediate-or-cancel, fill-or-kill and sell orders on XRPL?",
+    "publishedAt": "2026-11-11",
+    "tier": "PAID",
+    "priceMinor": 40,
+    "abstract": "Sourced guide to the four order-behaviour flags of an XRPL decentralized-exchange offer, with their hexadecimal values and the cases each one suits.",
+    "tags": [
+      "XRPL",
+      "XRP Ledger",
+      "OfferCreate",
+      "tfPassive",
+      "tfImmediateOrCancel",
+      "tfFillOrKill",
+      "tfSell",
+      "order flags",
+      "DEX"
+    ],
+    "family": "c5-offercreate-flags",
+    "sources": [
+      {
+        "url": "https://xrpl.org/docs/references/protocol/transactions/types/offercreate",
+        "accessedAt": "2026-11-11"
+      }
+    ],
+    "body": "OfferCreate supports four named trading-mode bits: tfPassive, tfImmediateOrCancel, tfFillOrKill and tfSell. Encode the selected bits in Flags. Their purposes differ, so an agent must choose its execution requirements before building the transaction. The OfferCreate reference specifies both the bit values and their consequences. [1]\n\nWith tfPassive (0x00010000), a matching price does not trigger immediate consumption; the offer trades against crossing prices. With tfImmediateOrCancel (0x00020000), execution can consume available liquidity immediately, including a partial fill. Any unfilled remainder does not become a standing order-book entry. Select this mode when the agent accepts partial execution but should leave nothing resting. [1]\n\ntfFillOrKill (0x00040000) requires all-or-nothing execution. Insufficient liquidity for the required complete fill cancels the order, and no remainder rests in the order book. The default complete-fill requirement refers to receiving TakerPays. tfSell (0x00080000) instead prioritizes exchanging all of TakerGets, allowing the proceeds to exceed TakerPays. [1]\n\nAuthor interpretation: define whether the agent requires a complete fill, accepts a partial fill, seeks a passive quote or prioritizes the quantity sold. Match that intent to the appropriate flag rather than assuming all OfferCreate submissions behave alike. Submission alone establishes no successful trade; reconcile the validated outcome before updating the agent’s inventory. Documentation consulted on 11 November 2026. [1]\n\nSCENARIO_PAID_CANARY_c5-offercreate-flags_9F13",
+    "passages": [
+      {
+        "id": "p1",
+        "text": "OfferCreate supports four named trading-mode bits: tfPassive, tfImmediateOrCancel, tfFillOrKill and tfSell. Encode the selected bits in Flags. Their purposes differ, so an agent must choose its execution requirements before building the transaction. The OfferCreate reference specifies both the bit values and their consequences. [1]"
+      },
+      {
+        "id": "p2",
+        "text": "With tfPassive (0x00010000), a matching price does not trigger immediate consumption; the offer trades against crossing prices. With tfImmediateOrCancel (0x00020000), execution can consume available liquidity immediately, including a partial fill. Any unfilled remainder does not become a standing order-book entry. Select this mode when the agent accepts partial execution but should leave nothing resting. [1]"
+      },
+      {
+        "id": "p3",
+        "text": "tfFillOrKill (0x00040000) requires all-or-nothing execution. Insufficient liquidity for the required complete fill cancels the order, and no remainder rests in the order book. The default complete-fill requirement refers to receiving TakerPays. tfSell (0x00080000) instead prioritizes exchanging all of TakerGets, allowing the proceeds to exceed TakerPays. [1]"
+      },
+      {
+        "id": "p4",
+        "text": "Author interpretation: define whether the agent requires a complete fill, accepts a partial fill, seeks a passive quote or prioritizes the quantity sold. Match that intent to the appropriate flag rather than assuming all OfferCreate submissions behave alike. Submission alone establishes no successful trade; reconcile the validated outcome before updating the agent’s inventory. Documentation consulted on 11 November 2026. [1]"
+      }
+    ],
+    "factMenu": {
+      "p1": {
+        "entity": "OfferCreate",
+        "measure": "flags"
+      }
+    }
+  },
+  {
+    "articleId": "c5-rlusd-currency-code",
+    "version": "v2",
+    "publisherSlug": "team-xrpl-explainers",
+    "writerSlug": "team-xrpl-explainers",
+    "title": "What is the RLUSD currency code on XRPL, and why is it a 40-character hexadecimal string?",
+    "publishedAt": "2026-11-11",
+    "tier": "PAID",
+    "priceMinor": 40,
+    "abstract": "Sourced guide to XRPL currency-code formats: three-character standard codes, 160-bit hexadecimal codes for longer names, and how an issued token is identified.",
+    "tags": [
+      "XRPL",
+      "XRP Ledger",
+      "RLUSD",
+      "currency code",
+      "hexadecimal",
+      "160-bit",
+      "issued currency",
+      "nonstandard currency code"
+    ],
+    "family": "c5-rlusd-currency-code",
+    "sources": [
+      {
+        "url": "https://xrpl.org/docs/references/protocol/data-types/currency-formats",
+        "accessedAt": "2026-11-11"
+      },
+      {
+        "url": "https://github.com/coinbase/x402/blob/0e6e8c55d86b4f14234fb6e49a4052074fb93e57/specs/schemes/exact/scheme_exact_xrpl.md",
+        "accessedAt": "2026-11-11"
+      }
+    ],
+    "body": "According to the XRPL currency formats reference, RLUSD is represented as the 160-bit hexadecimal code 524C555344000000000000000000000000000000, because a standard currency code is exactly 3 ASCII characters and RLUSD has five. [1]\n\nA standard code has three case-sensitive ASCII characters. Longer identifiers use a 160-bit representation displayed as forty hexadecimal digits. For a nonstandard identifier, avoid an initial 0x00 byte: although legal at the protocol level, it can lead an API to mistake the value for a standard code. Wallet interfaces often decode printable ASCII from the hexadecimal bytes, displaying the label RLUSD. This human-readable label does not replace the encoded currency in a transaction. [1]\n\nAccording to the x402 exact-scheme specification for XRPL, an issued currency is identified by the pair of currency code and issuer, and a 160-bit asset is written as 40 hexadecimal characters. Its IOU example uses the same RLUSD value. [2]\n\nAuthor interpretation: 524C555344 is the ASCII bytes of the letters R, L, U, S and D, followed by zero padding to 20 bytes. An agent that builds a trust line, payment or payment requirement for RLUSD should use the hexadecimal currency together with the issuer address, because the same code from another issuer is a different token. Sources accessed 11 November 2026. [1][2]\n\nSCENARIO_PAID_CANARY_c5-rlusd-currency-code_9F13",
+    "passages": [
+      {
+        "id": "p1",
+        "text": "According to the XRPL currency formats reference, RLUSD is represented as the 160-bit hexadecimal code 524C555344000000000000000000000000000000, because a standard currency code is exactly 3 ASCII characters and RLUSD has five. [1]"
+      },
+      {
+        "id": "p2",
+        "text": "A standard code has three case-sensitive ASCII characters. Longer identifiers use a 160-bit representation displayed as forty hexadecimal digits. For a nonstandard identifier, avoid an initial 0x00 byte: although legal at the protocol level, it can lead an API to mistake the value for a standard code. Wallet interfaces often decode printable ASCII from the hexadecimal bytes, displaying the label RLUSD. This human-readable label does not replace the encoded currency in a transaction. [1]"
+      },
+      {
+        "id": "p3",
+        "text": "According to the x402 exact-scheme specification for XRPL, an issued currency is identified by the pair of currency code and issuer, and a 160-bit asset is written as 40 hexadecimal characters. Its IOU example uses the same RLUSD value. [2]"
+      },
+      {
+        "id": "p4",
+        "text": "Author interpretation: 524C555344 is the ASCII bytes of the letters R, L, U, S and D, followed by zero padding to 20 bytes. An agent that builds a trust line, payment or payment requirement for RLUSD should use the hexadecimal currency together with the issuer address, because the same code from another issuer is a different token. Sources accessed 11 November 2026. [1][2]"
+      }
+    ],
+    "factMenu": {
+      "p3": {
+        "entity": "XRPL",
+        "measure": "issuer"
+      },
+      "p4": {
+        "entity": "RLUSD",
+        "measure": "payment",
+        "period": "twenty twenty six"
+      },
+      "p1": {
+        "entity": "RLUSD",
+        "measure": "currency code"
+      }
+    }
+  },
+  {
+    "articleId": "c5-xrpl-payment-channels",
+    "version": "v2",
+    "publisherSlug": "team-xrpl-explainers",
+    "writerSlug": "team-xrpl-explainers",
+    "title": "How do XRPL payment channels let an agent make many small XRP payments?",
+    "publishedAt": "2026-11-11",
+    "tier": "PAID",
+    "priceMinor": 40,
+    "abstract": "Sourced guide to XRPL payment channels: opening and funding a channel, signed off-ledger claims, settling a claim and closing the channel.",
+    "tags": [
+      "XRPL",
+      "XRP Ledger",
+      "payment channel",
+      "PaymentChannelCreate",
+      "PaymentChannelClaim",
+      "PaymentChannelFund",
+      "micropayments",
+      "off-ledger claims"
+    ],
+    "family": "c5-xrpl-payment-channels",
+    "sources": [
+      {
+        "url": "https://xrpl.org/docs/concepts/payment-types/payment-channels",
+        "accessedAt": "2026-11-11"
+      },
+      {
+        "url": "https://xrpl.org/docs/references/protocol/transactions/types/paymentchannelcreate",
+        "accessedAt": "2026-11-11"
+      },
+      {
+        "url": "https://xrpl.org/docs/references/protocol/transactions/types/paymentchannelclaim",
+        "accessedAt": "2026-11-11"
+      }
+    ],
+    "body": "XRPL payment channels support asynchronous XRP micropayments. The payer can issue signed claims between ledger transactions, while the recipient checks those signatures before later settlement. This reduces the need to submit one transaction for each small payment. Channel funds are XRP, with a designated receiving account. [1]\n\nPaymentChannelCreate opens the channel with its initial XRP allocation. Amount specifies drops reserved for Destination. PublicKey selects the secp256k1 or Ed25519 claim-signing key, and SettleDelay specifies the closing wait when money remains unclaimed. Closing returns the unused allocation to the source account. The transaction therefore establishes both the payment capacity and its authorized recipient. [2]\n\nPaymentChannelClaim lets the recipient settle a signed claim. Its Signature binds the channel identifier and claim amount; Balance records the cumulative delivered total. The tfClose bit asks to close the channel. Off-ledger claim verification can proceed faster than submitting every small increment to consensus, while later ledger settlement enforces the signed channel claim. [1][3]\n\nAuthor interpretation: use a channel for repeated payments to one provider when signed claims suit the delivery workflow. Opening and eventual settlement still require ledger transactions. A workload with a new recipient for every payment does not gain the same reuse. Track both the committed allocation and outstanding claims until the channel closes or funds are claimed. Documentation consulted on 11 November 2026. [1][2][3]\n\nSCENARIO_PAID_CANARY_c5-xrpl-payment-channels_9F13",
+    "passages": [
+      {
+        "id": "p1",
+        "text": "XRPL payment channels support asynchronous XRP micropayments. The payer can issue signed claims between ledger transactions, while the recipient checks those signatures before later settlement. This reduces the need to submit one transaction for each small payment. Channel funds are XRP, with a designated receiving account. [1]"
+      },
+      {
+        "id": "p2",
+        "text": "PaymentChannelCreate opens the channel with its initial XRP allocation. Amount specifies drops reserved for Destination. PublicKey selects the secp256k1 or Ed25519 claim-signing key, and SettleDelay specifies the closing wait when money remains unclaimed. Closing returns the unused allocation to the source account. The transaction therefore establishes both the payment capacity and its authorized recipient. [2]"
+      },
+      {
+        "id": "p3",
+        "text": "PaymentChannelClaim lets the recipient settle a signed claim. Its Signature binds the channel identifier and claim amount; Balance records the cumulative delivered total. The tfClose bit asks to close the channel. Off-ledger claim verification can proceed faster than submitting every small increment to consensus, while later ledger settlement enforces the signed channel claim. [1][3]"
+      },
+      {
+        "id": "p4",
+        "text": "Author interpretation: use a channel for repeated payments to one provider when signed claims suit the delivery workflow. Opening and eventual settlement still require ledger transactions. A workload with a new recipient for every payment does not gain the same reuse. Track both the committed allocation and outstanding claims until the channel closes or funds are claimed. Documentation consulted on 11 November 2026. [1][2][3]"
+      }
+    ],
+    "factMenu": {
+      "p1": {
+        "entity": "payment channels",
+        "measure": "payments"
+      },
+      "p2": {
+        "entity": "XRP",
+        "measure": "returns"
+      },
+      "p3": {
+        "entity": "XRP",
+        "measure": "rate"
+      }
+    }
+  },
+  {
+    "articleId": "c5-xrpl-amm-create-deposit",
+    "version": "v3",
+    "publisherSlug": "team-xrpl-explainers",
+    "writerSlug": "team-xrpl-explainers",
+    "title": "What do AMMCreate and AMMDeposit do on XRPL, and what is the maximum AMM trading fee?",
+    "publishedAt": "2026-11-11",
+    "tier": "PAID",
+    "priceMinor": 40,
+    "abstract": "Sourced guide to creating an XRPL automated market maker, its trading-fee range and reserve cost, and the deposit modes that return liquidity-provider tokens.",
+    "tags": [
+      "XRPL",
+      "XRP Ledger",
+      "AMM",
+      "AMMCreate",
+      "AMMDeposit",
+      "trading fee",
+      "LP tokens",
+      "liquidity pool",
+      "automated market maker"
+    ],
+    "family": "c5-xrpl-amm-create-deposit",
+    "sources": [
+      {
+        "url": "https://xrpl.org/docs/references/protocol/transactions/types/ammcreate",
+        "accessedAt": "2026-11-11"
+      },
+      {
+        "url": "https://xrpl.org/docs/references/protocol/transactions/types/ammdeposit",
+        "accessedAt": "2026-11-11"
+      }
+    ],
+    "body": "AMMCreate establishes an XRPL liquidity pool for two different assets. The supported pair can contain fungible tokens and at most one XRP side. Its TradingFee cap is 1000, equivalent to one percent. The creation transaction commits the initial pool funding and fee configuration described by the AMMCreate reference. [1]\n\nTradingFee represents increments of one hundred-thousandth; its lower bound is zero. Creating the pool burns at least the incremental owner reserve, listed as 0.2 XRP in the consulted reference. The pair permits no more than one XRP side and must identify two different assets. Relevant token issuers need Default Ripple. An existing pool for that pair causes tecDUPLICATE rather than a second pool. [1]\n\nAMMDeposit contributes liquidity to a pool in exchange for LP tokens. Choose tfTwoAsset for specified contributions on both sides or tfSingleAsset for a contribution on one side. The tfLPToken and tfOneAssetLPToken modes target an LP-token quantity; tfLimitLPToken constrains effective price, while tfTwoAssetIfEmpty applies to an empty pool. Successful deposit establishes the zero-limit trust line needed to hold the resulting LP tokens. [2]\n\nAuthor interpretation: an agent should reconcile both its pool contribution and received LP-token balance. The new LP-token trust line also affects reserve requirements. Providing liquidity is distinct from buying an article, and these transaction references make no investment-return promise. Documentation consulted on 11 November 2026. [1][2]\n\nSCENARIO_PAID_CANARY_c5-xrpl-amm-create-deposit_9F13",
+    "passages": [
+      {
+        "id": "p1",
+        "text": "AMMCreate establishes an XRPL liquidity pool for two different assets. The supported pair can contain fungible tokens and at most one XRP side. Its TradingFee cap is 1000, equivalent to one percent. The creation transaction commits the initial pool funding and fee configuration described by the AMMCreate reference. [1]"
+      },
+      {
+        "id": "p2",
+        "text": "TradingFee represents increments of one hundred-thousandth; its lower bound is zero. Creating the pool burns at least the incremental owner reserve, listed as 0.2 XRP in the consulted reference. The pair permits no more than one XRP side and must identify two different assets. Relevant token issuers need Default Ripple. An existing pool for that pair causes tecDUPLICATE rather than a second pool. [1]"
+      },
+      {
+        "id": "p3",
+        "text": "AMMDeposit contributes liquidity to a pool in exchange for LP tokens. Choose tfTwoAsset for specified contributions on both sides or tfSingleAsset for a contribution on one side. The tfLPToken and tfOneAssetLPToken modes target an LP-token quantity; tfLimitLPToken constrains effective price, while tfTwoAssetIfEmpty applies to an empty pool. Successful deposit establishes the zero-limit trust line needed to hold the resulting LP tokens. [2]"
+      },
+      {
+        "id": "p4",
+        "text": "Author interpretation: an agent should reconcile both its pool contribution and received LP-token balance. The new LP-token trust line also affects reserve requirements. Providing liquidity is distinct from buying an article, and these transaction references make no investment-return promise. Documentation consulted on 11 November 2026. [1][2]"
+      }
+    ],
+    "factMenu": {
+      "p1": {
+        "entity": "AMMCreate",
+        "measure": "trading fee"
+      },
+      "p2": {
+        "entity": "XRP",
+        "measure": "share"
+      },
+      "p3": {
+        "entity": "XRPL",
+        "measure": "price"
+      }
+    }
+  }
+]

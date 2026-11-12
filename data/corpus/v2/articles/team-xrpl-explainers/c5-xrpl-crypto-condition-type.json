@@ -1,6 +1,6 @@
 {
   "articleId": "c5-xrpl-crypto-condition-type",
-  "version": "v2",
+  "version": "v3",
   "publisherSlug": "team-xrpl-explainers",
   "writerSlug": "team-xrpl-explainers",
   "title": "Which crypto-condition type does XRPL conditional escrow support, and which fields carry it?",
@@ -30,11 +30,11 @@
       "accessedAt": "2026-11-11"
     }
   ],
-  "body": "XRPL conditional escrow accepts PREIMAGE-SHA-256. Its lock commits to a SHA-256 digest, and release requires the corresponding preimage. Other crypto-condition algorithms are outside the supported escrow type. This is the documented primitive behind a hash-locked payment. [1]\n\nFor a conditional escrow, a valid EscrowFinish submission must satisfy its stored lock and any time restrictions. A third party may submit that finish when it knows the required fulfillment. Successful execution removes the escrow entry and credits the designated destination. After CancelAfter, recovery requires an explicit cancellation; the deadline alone does not return funds. [1]\n\nEscrowFinish carries Condition to identify the escrow lock and Fulfillment to supply the matching PREIMAGE-SHA-256 proof. The reference quotes a 330-drop fulfillment fee plus 10 additional drops per 16 preimage bytes. Construct the serialized proof correctly, verify that it matches the stored condition and budget its size-dependent fee before submission. [2]\n\nAuthor interpretation: a key-reveal delivery can tie decryption to the preimage accepted by EscrowFinish. Treat that preimage as disclosed when the finish transaction leaves the writer; do not rely on keeping a submitted fulfillment secret. The buyer still needs a validated finish and authenticated article delivery before a usable grant. Documentation consulted on 11 November 2026. [1][2]\n\nSCENARIO_PAID_CANARY_c5-xrpl-crypto-condition-type_9F13",
+  "body": "According to the XRPL escrow-condition reference, XRPL conditional escrow accepts PREIMAGE-SHA-256. Its lock commits to a SHA-256 digest, and release requires the corresponding preimage. Other crypto-condition algorithms are outside the supported escrow type. This is the documented primitive behind a hash-locked payment. [1]\n\nFor a conditional escrow, a valid EscrowFinish submission must satisfy its stored lock and any time restrictions. A third party may submit that finish when it knows the required fulfillment. Successful execution removes the escrow entry and credits the designated destination. After CancelAfter, recovery requires an explicit cancellation; the deadline alone does not return funds. [1]\n\nEscrowFinish carries Condition to identify the escrow lock and Fulfillment to supply the matching PREIMAGE-SHA-256 proof. The reference quotes a 330-drop fulfillment fee plus 10 additional drops per 16 preimage bytes. Construct the serialized proof correctly, verify that it matches the stored condition and budget its size-dependent fee before submission. [2]\n\nAuthor interpretation: a key-reveal delivery can tie decryption to the preimage accepted by EscrowFinish. Treat that preimage as disclosed when the finish transaction leaves the writer; do not rely on keeping a submitted fulfillment secret. The buyer still needs a validated finish and authenticated article delivery before a usable grant. Sources accessed 11 November 2026. [1][2]\n\nSCENARIO_PAID_CANARY_c5-xrpl-crypto-condition-type_9F13",
   "passages": [
     {
       "id": "p1",
-      "text": "XRPL conditional escrow accepts PREIMAGE-SHA-256. Its lock commits to a SHA-256 digest, and release requires the corresponding preimage. Other crypto-condition algorithms are outside the supported escrow type. This is the documented primitive behind a hash-locked payment. [1]"
+      "text": "According to the XRPL escrow-condition reference, XRPL conditional escrow accepts PREIMAGE-SHA-256. Its lock commits to a SHA-256 digest, and release requires the corresponding preimage. Other crypto-condition algorithms are outside the supported escrow type. This is the documented primitive behind a hash-locked payment. [1]"
     },
     {
       "id": "p2",
@@ -46,22 +46,26 @@
     },
     {
       "id": "p4",
-      "text": "Author interpretation: a key-reveal delivery can tie decryption to the preimage accepted by EscrowFinish. Treat that preimage as disclosed when the finish transaction leaves the writer; do not rely on keeping a submitted fulfillment secret. The buyer still needs a validated finish and authenticated article delivery before a usable grant. Documentation consulted on 11 November 2026. [1][2]"
+      "text": "Author interpretation: a key-reveal delivery can tie decryption to the preimage accepted by EscrowFinish. Treat that preimage as disclosed when the finish transaction leaves the writer; do not rely on keeping a submitted fulfillment secret. The buyer still needs a validated finish and authenticated article delivery before a usable grant. Sources accessed 11 November 2026. [1][2]\n\nSCENARIO_PAID_CANARY_c5-xrpl-crypto-condition-type_9F13"
     }
   ],
   "factMenu": {
+    "p1": {
+      "entity": "escrow",
+      "measure": "crypto-condition"
+    },
+    "p2": {
+      "entity": "EscrowFinish",
+      "measure": "return"
+    },
     "p3": {
       "entity": "EscrowFinish",
-      "measure": "costs"
+      "measure": "supply"
     },
     "p4": {
       "entity": "EscrowFinish",
       "measure": "fulfillment",
       "period": "twenty twenty six"
-    },
-    "p1": {
-      "entity": "escrow",
-      "measure": "crypto-condition"
     }
   }
 }

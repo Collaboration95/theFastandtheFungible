@@ -1,6 +1,6 @@
 {
   "articleId": "c5-xrpl-destination-tag",
-  "version": "v2",
+  "version": "v3",
   "publisherSlug": "team-xrpl-explainers",
   "writerSlug": "team-xrpl-explainers",
   "title": "What is an XRPL DestinationTag, and what does the RequireDest setting do?",
@@ -33,11 +33,11 @@
       "accessedAt": "2026-11-11"
     }
   ],
-  "body": "XRPL DestinationTag is the recipient business’s customer-routing number. A shared deposit address identifies the business; this additional field tells its internal accounting system whose deposit arrived. This distinction matters for exchange and merchant deposits. The tag does not create a separate ledger account. [1]\n\nThe source-tag and destination-tag fields each hold an unsigned 32-bit integer. A Payment can carry DestinationTag to route a deposit inside a custodial service. If a customer omits that routing number, the service may need a manual investigation before crediting the deposit. Do not infer the customer from the shared destination address alone. [1][2]\n\nRequireDest is the recipient account’s defensive setting: an incoming payment without DestinationTag is rejected. The XRPL x402 exact scheme can advertise destinationTag in its requirements. When advertised, the buyer must copy the identical integer into its signed Payment. An amount or recipient-address match cannot compensate for a wrong tag. [1][3]\n\nAuthor interpretation: resolve the recipient’s deposit instructions before signing. Check the destination address, tag value and network together; retain those requirements with the payment receipt. A missing tag can cause rejection or manual deposit recovery. Documentation consulted on 11 November 2026. [1][2][3]\n\nSCENARIO_PAID_CANARY_c5-xrpl-destination-tag_9F13",
+  "body": "According to the XRPL source and destination tag reference, Destination tags are recipient-business customer-routing numbers carried with a payment. A shared deposit address identifies the business; this additional field tells its internal accounting system whose deposit arrived. This distinction matters for exchange and merchant deposits. The tag does not create a separate ledger account. [1]\n\nThe source-tag and destination-tag fields each hold an unsigned 32-bit integer. A Payment can carry DestinationTag to route a deposit inside a custodial service. If a customer omits that routing number, the service may need a manual investigation before crediting the deposit. Do not infer the customer from the shared destination address alone. [1][2]\n\nRequireDest is the recipient account’s defensive setting: an incoming payment without DestinationTag is rejected. The XRPL x402 exact scheme can advertise destinationTag in its requirements. When advertised, the buyer must copy the identical integer into its signed Payment. An amount or recipient-address match cannot compensate for a wrong tag. [1][3]\n\nAuthor interpretation: resolve the recipient’s deposit instructions before signing. Check the destination address, tag value and network together; retain those requirements with the payment receipt. A missing tag can cause rejection or manual deposit recovery. Sources accessed 11 November 2026. [1][2][3]\n\nSCENARIO_PAID_CANARY_c5-xrpl-destination-tag_9F13",
   "passages": [
     {
       "id": "p1",
-      "text": "XRPL DestinationTag is the recipient business’s customer-routing number. A shared deposit address identifies the business; this additional field tells its internal accounting system whose deposit arrived. This distinction matters for exchange and merchant deposits. The tag does not create a separate ledger account. [1]"
+      "text": "According to the XRPL source and destination tag reference, Destination tags are recipient-business customer-routing numbers carried with a payment. A shared deposit address identifies the business; this additional field tells its internal accounting system whose deposit arrived. This distinction matters for exchange and merchant deposits. The tag does not create a separate ledger account. [1]"
     },
     {
       "id": "p2",
@@ -49,7 +49,7 @@
     },
     {
       "id": "p4",
-      "text": "Author interpretation: resolve the recipient’s deposit instructions before signing. Check the destination address, tag value and network together; retain those requirements with the payment receipt. A missing tag can cause rejection or manual deposit recovery. Documentation consulted on 11 November 2026. [1][2][3]"
+      "text": "Author interpretation: resolve the recipient’s deposit instructions before signing. Check the destination address, tag value and network together; retain those requirements with the payment receipt. A missing tag can cause rejection or manual deposit recovery. Sources accessed 11 November 2026. [1][2][3]\n\nSCENARIO_PAID_CANARY_c5-xrpl-destination-tag_9F13"
     }
   ],
   "factMenu": {
@@ -60,6 +60,11 @@
     "p3": {
       "entity": "XRPL",
       "measure": "payment"
+    },
+    "p4": {
+      "entity": "XRPL",
+      "measure": "recovery",
+      "period": "twenty twenty six"
     }
   }
 }

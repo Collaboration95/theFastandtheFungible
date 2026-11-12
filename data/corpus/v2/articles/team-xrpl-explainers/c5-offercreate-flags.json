@@ -1,6 +1,6 @@
 {
   "articleId": "c5-offercreate-flags",
-  "version": "v2",
+  "version": "v3",
   "publisherSlug": "team-xrpl-explainers",
   "writerSlug": "team-xrpl-explainers",
   "title": "Which OfferCreate flags control passive, immediate-or-cancel, fill-or-kill and sell orders on XRPL?",
@@ -26,11 +26,11 @@
       "accessedAt": "2026-11-11"
     }
   ],
-  "body": "OfferCreate supports four named trading-mode bits: tfPassive, tfImmediateOrCancel, tfFillOrKill and tfSell. Encode the selected bits in Flags. Their purposes differ, so an agent must choose its execution requirements before building the transaction. The OfferCreate reference specifies both the bit values and their consequences. [1]\n\nWith tfPassive (0x00010000), a matching price does not trigger immediate consumption; the offer trades against crossing prices. With tfImmediateOrCancel (0x00020000), execution can consume available liquidity immediately, including a partial fill. Any unfilled remainder does not become a standing order-book entry. Select this mode when the agent accepts partial execution but should leave nothing resting. [1]\n\ntfFillOrKill (0x00040000) requires all-or-nothing execution. Insufficient liquidity for the required complete fill cancels the order, and no remainder rests in the order book. The default complete-fill requirement refers to receiving TakerPays. tfSell (0x00080000) instead prioritizes exchanging all of TakerGets, allowing the proceeds to exceed TakerPays. [1]\n\nAuthor interpretation: define whether the agent requires a complete fill, accepts a partial fill, seeks a passive quote or prioritizes the quantity sold. Match that intent to the appropriate flag rather than assuming all OfferCreate submissions behave alike. Submission alone establishes no successful trade; reconcile the validated outcome before updating the agent’s inventory. Documentation consulted on 11 November 2026. [1]\n\nSCENARIO_PAID_CANARY_c5-offercreate-flags_9F13",
+  "body": "According to the XRPL OfferCreate reference, OfferCreate supports four named trading-mode bits: tfPassive, tfImmediateOrCancel, tfFillOrKill and tfSell. Encode the selected bits in Flags. Their purposes differ, so an agent must choose its execution requirements before building the transaction. The OfferCreate reference specifies both the bit values and their consequences. [1]\n\nWith tfPassive (0x00010000), a matching price does not trigger immediate consumption; the offer trades against crossing prices. With tfImmediateOrCancel (0x00020000), execution can consume available liquidity immediately, including a partial fill. Any unfilled remainder does not become a standing order-book entry. Select this mode when the agent accepts partial execution but should leave nothing resting. [1]\n\ntfFillOrKill (0x00040000) requires all-or-nothing execution. Insufficient liquidity for the required complete fill cancels the order, and no remainder rests in the order book. The default complete-fill requirement refers to receiving TakerPays. tfSell (0x00080000) instead prioritizes exchanging all of TakerGets, allowing the proceeds to exceed TakerPays. [1]\n\nAuthor interpretation: define whether the agent requires a complete fill, accepts a partial fill, seeks a passive quote or prioritizes the quantity sold. Match that intent to the appropriate flag rather than assuming all OfferCreate submissions behave alike. Submission alone establishes no successful trade; reconcile the validated outcome before updating the agent’s inventory. Sources accessed 11 November 2026. [1]\n\nSCENARIO_PAID_CANARY_c5-offercreate-flags_9F13",
   "passages": [
     {
       "id": "p1",
-      "text": "OfferCreate supports four named trading-mode bits: tfPassive, tfImmediateOrCancel, tfFillOrKill and tfSell. Encode the selected bits in Flags. Their purposes differ, so an agent must choose its execution requirements before building the transaction. The OfferCreate reference specifies both the bit values and their consequences. [1]"
+      "text": "According to the XRPL OfferCreate reference, OfferCreate supports four named trading-mode bits: tfPassive, tfImmediateOrCancel, tfFillOrKill and tfSell. Encode the selected bits in Flags. Their purposes differ, so an agent must choose its execution requirements before building the transaction. The OfferCreate reference specifies both the bit values and their consequences. [1]"
     },
     {
       "id": "p2",
@@ -42,7 +42,7 @@
     },
     {
       "id": "p4",
-      "text": "Author interpretation: define whether the agent requires a complete fill, accepts a partial fill, seeks a passive quote or prioritizes the quantity sold. Match that intent to the appropriate flag rather than assuming all OfferCreate submissions behave alike. Submission alone establishes no successful trade; reconcile the validated outcome before updating the agent’s inventory. Documentation consulted on 11 November 2026. [1]"
+      "text": "Author interpretation: define whether the agent requires a complete fill, accepts a partial fill, seeks a passive quote or prioritizes the quantity sold. Match that intent to the appropriate flag rather than assuming all OfferCreate submissions behave alike. Submission alone establishes no successful trade; reconcile the validated outcome before updating the agent’s inventory. Sources accessed 11 November 2026. [1]\n\nSCENARIO_PAID_CANARY_c5-offercreate-flags_9F13"
     }
   ],
   "factMenu": {

@@ -1,6 +1,6 @@
 {
   "articleId": "c5-xrpl-payment-channels",
-  "version": "v2",
+  "version": "v3",
   "publisherSlug": "team-xrpl-explainers",
   "writerSlug": "team-xrpl-explainers",
   "title": "How do XRPL payment channels let an agent make many small XRP payments?",
@@ -33,11 +33,11 @@
       "accessedAt": "2026-11-11"
     }
   ],
-  "body": "XRPL payment channels support asynchronous XRP micropayments. The payer can issue signed claims between ledger transactions, while the recipient checks those signatures before later settlement. This reduces the need to submit one transaction for each small payment. Channel funds are XRP, with a designated receiving account. [1]\n\nPaymentChannelCreate opens the channel with its initial XRP allocation. Amount specifies drops reserved for Destination. PublicKey selects the secp256k1 or Ed25519 claim-signing key, and SettleDelay specifies the closing wait when money remains unclaimed. Closing returns the unused allocation to the source account. The transaction therefore establishes both the payment capacity and its authorized recipient. [2]\n\nPaymentChannelClaim lets the recipient settle a signed claim. Its Signature binds the channel identifier and claim amount; Balance records the cumulative delivered total. The tfClose bit asks to close the channel. Off-ledger claim verification can proceed faster than submitting every small increment to consensus, while later ledger settlement enforces the signed channel claim. [1][3]\n\nAuthor interpretation: use a channel for repeated payments to one provider when signed claims suit the delivery workflow. Opening and eventual settlement still require ledger transactions. A workload with a new recipient for every payment does not gain the same reuse. Track both the committed allocation and outstanding claims until the channel closes or funds are claimed. Documentation consulted on 11 November 2026. [1][2][3]\n\nSCENARIO_PAID_CANARY_c5-xrpl-payment-channels_9F13",
+  "body": "According to the XRPL payment-channel reference, XRPL payment channels support asynchronous XRP micropayments. The payer can issue signed claims between ledger transactions, while the recipient checks those signatures before later settlement. This reduces the need to submit one transaction for each small payment. Channel funds are XRP, with a designated receiving account. [1] These payments move XRP.\n\nPaymentChannelCreate opens the channel with its initial XRP allocation. Amount specifies drops reserved for Destination. PublicKey selects the secp256k1 or Ed25519 claim-signing key, and SettleDelay specifies the closing wait when money remains unclaimed. Closing returns the unused allocation to the source account. The transaction therefore establishes both the payment capacity and its authorized recipient. [2]\n\nPaymentChannelClaim lets the recipient settle a signed claim. Its Signature binds the channel identifier and claim amount; Balance records the cumulative delivered total. The tfClose bit asks to close the channel. Off-ledger claim verification can proceed faster than submitting every small increment to consensus, while later ledger settlement enforces the signed channel claim. [1][3]\n\nAuthor interpretation: use a channel for repeated payments to one provider when signed claims suit the delivery workflow. Opening and eventual settlement still require ledger transactions. A workload with a new recipient for every payment does not gain the same reuse. Track both the committed allocation and outstanding claims until the channel closes or funds are claimed. Sources accessed 11 November 2026. [1][2][3]\n\nSCENARIO_PAID_CANARY_c5-xrpl-payment-channels_9F13",
   "passages": [
     {
       "id": "p1",
-      "text": "XRPL payment channels support asynchronous XRP micropayments. The payer can issue signed claims between ledger transactions, while the recipient checks those signatures before later settlement. This reduces the need to submit one transaction for each small payment. Channel funds are XRP, with a designated receiving account. [1]"
+      "text": "According to the XRPL payment-channel reference, XRPL payment channels support asynchronous XRP micropayments. The payer can issue signed claims between ledger transactions, while the recipient checks those signatures before later settlement. This reduces the need to submit one transaction for each small payment. Channel funds are XRP, with a designated receiving account. [1] These payments move XRP."
     },
     {
       "id": "p2",
@@ -49,7 +49,7 @@
     },
     {
       "id": "p4",
-      "text": "Author interpretation: use a channel for repeated payments to one provider when signed claims suit the delivery workflow. Opening and eventual settlement still require ledger transactions. A workload with a new recipient for every payment does not gain the same reuse. Track both the committed allocation and outstanding claims until the channel closes or funds are claimed. Documentation consulted on 11 November 2026. [1][2][3]"
+      "text": "Author interpretation: use a channel for repeated payments to one provider when signed claims suit the delivery workflow. Opening and eventual settlement still require ledger transactions. A workload with a new recipient for every payment does not gain the same reuse. Track both the committed allocation and outstanding claims until the channel closes or funds are claimed. Sources accessed 11 November 2026. [1][2][3]\n\nSCENARIO_PAID_CANARY_c5-xrpl-payment-channels_9F13"
     }
   ],
   "factMenu": {
@@ -59,11 +59,12 @@
     },
     "p2": {
       "entity": "XRP",
-      "measure": "returns"
+      "measure": "allocation"
     },
-    "p3": {
-      "entity": "XRP",
-      "measure": "rate"
+    "p4": {
+      "entity": "XRPL",
+      "measure": "allocation",
+      "period": "twenty twenty six"
     }
   }
 }
