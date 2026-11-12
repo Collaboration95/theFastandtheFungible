@@ -24,7 +24,8 @@ The SDK connects without credentials. Its ask traverses front nginx, VM nginx,
 the hosted API, and the same `/runs` admission route as the web. MCP responses
 use SSE. The retained synthetic proxy checks also verify the header whitelist,
 one forwarded hop, a first SSE frame before 900 ms, and a paused 503 when the
-backend is unreachable. Both proxies disable buffering and caching. The test covers denied
+backend is unreachable. Both proxies disable buffering and caching and preserve the original Host
+authority, including an explicitly configured local port. The test covers denied
 Host/Origin/forwarded chains, other-IP run isolation, reconnect, idempotency,
 receipts, verification and an operator pause. Metadata keeps writer provenance
 and marks partial writer failures as `unavailable: true`. Local bearer MCP retains its
