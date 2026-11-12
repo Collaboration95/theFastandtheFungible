@@ -1229,3 +1229,10 @@ persistence or a mainnet deployment. No cloud resource or live ledger call ran.
 - **Workaround:** additive opt-in Debian model targets; copy the model dependency closure and only this platform's CPU binaries. Existing hosted defaults remain unchanged. No shared images, caches or volumes were deleted.
 - **Suggested fix:** publish a minimal CPU-only ONNX runtime distribution and document the supported libc and model-baking steps for offline servers.
 - **Severity / mainnet impact:** medium local packaging friction; no ledger defect or mainnet behaviour measured.
+
+## 12 November 2026: live planner text collided with a synthetic premium leak marker (observed local tooling)
+
+- **Evidence:** `docs/evidence/models/MODELS.md` and `docs/evidence/models/r3-partial.json`; Q02 runs `4274441f-d165-464d-b911-72c0b7ec7b5b` and `fc8b115c-72fe-47cf-bebf-24550b443351`. DeepSeek planner text matched an eight-word phrase in paid synthetic article `bp-jgb-curve-10s30s-analysis`; the unchanged `premium_leak` oracle flags checkpoint and PLAN event. Neither run purchased or received a grant. This is an observed marker collision, not established evidence of a paid-body read.
+- **Workaround:** stop the 200-question batch; retain every failed row and durable store. Keep the oracle and corpus unchanged. No claim of zero violations or paid-note lift.
+- **Suggested fix:** the corpus owner should investigate marker provenance and generic public phrasing before the public-docs evaluation; preserve detection of actual premium disclosure and document any oracle change explicitly.
+- **Severity / mainnet impact:** high local evaluation blocker. No XRPL or x402 defect established, no ledger transactions, and no mainnet impact measured.
