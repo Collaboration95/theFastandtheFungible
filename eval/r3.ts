@@ -1,7 +1,7 @@
 // Two paired live-DeepSeek arms, 200 existing questions each, simulated settlement.
 // No model-generated label is used as ground truth. Saves every completed run.
 import 'dotenv/config'
-import {atomicJson,readObservations,resumeState,lockLedger,assertRealCorpus,reserveModelCall} from './r3-state.js'
+import {atomicJson,readObservations,resumeState,lockLedger,assertRealCorpus,reserveModelCall,modelFallbacks} from './r3-state.js'
 import {once} from 'node:events'
 import {appendFileSync,existsSync,mkdirSync,readFileSync,writeFileSync} from 'node:fs'
 import {dirname,join,resolve} from 'node:path'
@@ -36,7 +36,7 @@ mkdirSync(dir,{recursive:true})
 process.env.LEDGER_REPORT_DIR=join(dir,'ledger-reports')
 const corpus=await loadWriterCorpus(undefined,{allowMini:false})
 assertRealCorpus(corpus)
-const identity={corpusSha256:createHash('sha256').update(JSON.stringify({...corpus,articles:corpus.articles.filter(a=>a.publisherSlug!=='ledger-analytics')})).digest('hex'),bankSha256:createHash('sha256').update(bankBytes).digest('hex'),profile:process.env.CORPUS_PROFILE||'default',freeTier:process.env.FREE_TIER||'default',decision:'fixture',embedding:'local',limit,revision:'r3-real-v2',sourceCommit:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim()}
+const identity={corpusSha256:createHash('sha256').update(JSON.stringify({...corpus,articles:corpus.articles.filter(a=>a.publisherSlug!=='ledger-analytics')})).digest('hex'),bankSha256:createHash('sha256').update(bankBytes).digest('hex'),profile:process.env.CORPUS_PROFILE||'default',freeTier:process.env.FREE_TIER||'default',decision:'fixture',embedding:'local',limit,revision:'r3-real-v3',sourceCommit:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim()}
 const previous=resumeState<{results:Record<string,unknown>[];started?:Record<string,number>;runIds?:Record<string,string>}>(join(dir,'results.json'),identity)
 const results:Record<string,unknown>[]=previous?.results||[]
 const started:Record<string,number>=previous?.started||{}
@@ -140,7 +140,7 @@ try{
     const violations=auditRuns([run],await loadWriterCorpus(undefined,{allowMini:false}),observations).violations
     // Stop admitting questions after a failed gate; retain and finish in-flight runs.
     if(violations.length)gateFailure=true
-    results.push({id:q.id,stratum:q.stratum,arm,runId:run.runId,phase:run.phase,answered:scored.some(Boolean),correct:scored.every(Boolean),facts:scored,citations:cites.length,validCitations:valid.length,paidGoldScore:answersIt(q.gold,lead,valid.filter(c=>run.intents.some(i=>i.status==='VERIFIED'&&sameSource(i,c)))),spentMinor:run.spentMinor,latencyMs:Date.now()-started[taskKey],recovered:Boolean(existing[0]),violations,fallbacks:run.events.filter(e=>e.type==='MODEL_FALLBACK').length,modelCalls:run.events.filter(e=>e.type==='MODEL_USAGE').length,search:run.labels.search})
+    results.push({id:q.id,stratum:q.stratum,arm,runId:run.runId,phase:run.phase,answered:scored.some(Boolean),correct:scored.every(Boolean),facts:scored,citations:cites.length,validCitations:valid.length,paidGoldScore:answersIt(q.gold,lead,valid.filter(c=>run.intents.some(i=>i.status==='VERIFIED'&&sameSource(i,c)))),spentMinor:run.spentMinor,latencyMs:Date.now()-started[taskKey],recovered:Boolean(existing[0]),violations,...modelFallbacks(run),plannerLabel:run.labels.plan,researchLabel:run.labels.research,reportedModelUsageEvents:run.events.filter(e=>e.type==='MODEL_USAGE').length,search:run.labels.search})
     save();console.log(`${arm} ${q.id} ${run.phase} ${scored.every(Boolean)?'correct':'miss'} ${run.spentMinor}`)
    }
   }))
@@ -149,7 +149,7 @@ try{
  if(new Set(results.map(r=>`${r.arm}:${r.id}`)).size!==results.length)throw new Error('Duplicate evaluation task result')
  if(!gateFailure&&results.length!==limit*2)throw new Error('Incomplete paired evaluation')
  const percentile=(xs:number[],p:number)=>xs.sort((a,b)=>a-b)[Math.floor((xs.length-1)*p)]
- const summary=Object.fromEntries(['free','paid'].map(arm=>{const rs=results.filter(r=>r.arm===arm);return [arm,{n:rs.length,answeredRate:rs.filter(r=>r.answered).length/rs.length,correctRate:rs.filter(r=>r.correct).length/rs.length,citationsValid:rs.reduce((s,r)=>s+Number(r.validCitations),0),citations:rs.reduce((s,r)=>s+Number(r.citations),0),spendMinor:rs.reduce((s,r)=>s+Number(r.spentMinor),0),medianSpendMinor:percentile(rs.map(r=>Number(r.spentMinor)),.5),latencyP50Ms:percentile(rs.map(r=>Number(r.latencyMs)),.5),latencyP90Ms:percentile(rs.map(r=>Number(r.latencyMs)),.9),gateViolations:rs.flatMap(r=>r.violations as unknown[]).length,fallbacks:rs.reduce((s,r)=>s+Number(r.fallbacks),0),liveOnlyCorrectRate:rs.filter(r=>r.correct&&r.fallbacks===0).length/rs.length}]}))
+ const summary=Object.fromEntries(['free','paid'].map(arm=>{const rs=results.filter(r=>r.arm===arm);return [arm,{n:rs.length,answeredRate:rs.filter(r=>r.answered).length/rs.length,correctRate:rs.filter(r=>r.correct).length/rs.length,citationsValid:rs.reduce((s,r)=>s+Number(r.validCitations),0),citations:rs.reduce((s,r)=>s+Number(r.citations),0),spendMinor:rs.reduce((s,r)=>s+Number(r.spentMinor),0),medianSpendMinor:percentile(rs.map(r=>Number(r.spentMinor)),.5),latencyP50Ms:percentile(rs.map(r=>Number(r.latencyMs)),.5),latencyP90Ms:percentile(rs.map(r=>Number(r.latencyMs)),.9),gateViolations:rs.flatMap(r=>r.violations as unknown[]).length,fallbacks:rs.reduce((s,r)=>s+Number(r.fallbacks),0),plannerFallbacks:rs.reduce((s,r)=>s+Number(r.plannerFallbacks),0),writerFallbacks:rs.reduce((s,r)=>s+Number(r.writerFallbacks),0),fixtureAnswers:rs.reduce((s,r)=>s+Number(r.fixtureAnswers),0),liveOnlyCorrectRate:rs.filter(r=>r.correct&&r.liveOnly).length/rs.length}]}))
  writeFileSync(join(dir,'summary.json'),JSON.stringify({summary,costs,rail:'simulated',questions:limit,strata:Object.fromEntries(['free','paid'].map(arm=>[arm,Object.fromEntries([...new Set(bank.map(q=>q.stratum))].map(stratum=>{const rs=results.filter(r=>r.arm===arm&&r.stratum===stratum);return[stratum,{n:rs.length,correctRate:rs.filter(r=>r.correct).length/(rs.length||1)}]}))]))},null,2)+'\n')
  console.log(JSON.stringify({summary,costs}))
  if(results.some(r=>(r.violations as unknown[]).length))throw new Error('Gate violations recorded')

@@ -2,7 +2,7 @@ import { appendFileSync, readFileSync } from 'node:fs'
 import { expect, it } from 'vitest'
 import { resources } from './helpers/resource-scope'
 import { join } from 'node:path'
-import { atomicJson, readObservations, resumeState, lockLedger, assertRealCorpus, reserveModelCall } from '../eval/r3-state.js'
+import { atomicJson, readObservations, resumeState, lockLedger, assertRealCorpus, reserveModelCall, modelFallbacks } from '../eval/r3-state.js'
 it('retains completed runs and refuses a changed bank, provider or corpus on resume', () => {
   const dir = resources().tempDir('r3-resume-'), path = join(dir, 'results.json')
   const identity = { bank: 'bank-v1', decision: 'fixture', corpus: 'real' }
@@ -70,4 +70,12 @@ it('counts prior charges and interrupted-call holds against the shared US$5 ceil
   // A larger input cannot consume a hold that remains after a killed call.
   expect(() => reserveModelCall(costs,1_000_000)).toThrow('US$5 model-spend ceiling')
   expect(costs).toEqual(admitted)
+})
+
+it('excludes labelled planner substitutions and fixture answers from live-only results', () => {
+  const live = {labels:{plan:'DeepSeek · deepseek-flash'},answers:[{provider:'deepseek'}],events:[]}
+  expect(modelFallbacks(live)).toMatchObject({fallbacks:0,liveOnly:true})
+  expect(modelFallbacks({...live,labels:{plan:'fixture · scope-fixture · planner unavailable'}})).toMatchObject({plannerFallbacks:1,writerFallbacks:0,fallbacks:1,liveOnly:false})
+  expect(modelFallbacks({...live,answers:[{provider:'fixture'}]})).toMatchObject({fixtureAnswers:1,liveOnly:false})
+  expect(modelFallbacks({...live,answers:[{provider:'fixture'}],events:[{type:'MODEL_FALLBACK'}]})).toMatchObject({writerFallbacks:1,fixtureAnswers:1,fallbacks:1,liveOnly:false})
 })

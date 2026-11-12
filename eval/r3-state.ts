@@ -54,3 +54,11 @@ export function reserveModelCall(costs: {actual:number;reserved:number;calls:num
   costs.missingUsage++
   return reservation
 }
+
+/** Planner substitutions have labels, but do not emit writer fallback events. */
+export function modelFallbacks(run: {labels:{plan?:string};answers:{provider:string}[];events:{type:string}[]}) {
+  const plannerFallbacks = run.labels.plan?.startsWith('fixture') ? 1 : 0
+  const writerFallbacks = run.events.filter(e => e.type === 'MODEL_FALLBACK').length
+  const fixtureAnswers = run.answers.filter(a => a.provider === 'fixture').length
+  return {plannerFallbacks,writerFallbacks,fixtureAnswers,fallbacks:plannerFallbacks+writerFallbacks,liveOnly:plannerFallbacks===0&&writerFallbacks===0&&fixtureAnswers===0}
+}
