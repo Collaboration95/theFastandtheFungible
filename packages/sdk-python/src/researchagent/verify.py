@@ -376,7 +376,7 @@ def contributions(b):
                                 )
                             )
         holdback = i.get('escrow', {}).get('holdback', {})
-        refund = i.get("refund", {}).get("amountMinor", holdback.get('amountMinor', 0) if holdback.get('state') == 'refunded' else 0)
+        refund = i.get("refund", {}).get("amountMinor", holdback.get('amountMinor', 0) if holdback.get('state') == 'refunded' and receipt['amountMinor'] > 0 else 0)
         status = (
             "recorded verified refund"
             if i.get("refund")

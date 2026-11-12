@@ -92,6 +92,19 @@ it('refuses body release on outer success with rolled back inner creates', async
   s.restart(); await s.buy()
   expect([...s.c.txs.values()].filter(t => t.tx_json.TransactionType === 'Batch')).toHaveLength(1)
 })
+it('cancels both escrows without negative net spend when the writer never reveals', async () => {
+  const s=await setup()
+  vi.spyOn(PublisherClient.prototype,'paidGet').mockRejectedValue(Error('Synthetic writer unavailable'))
+  const result=await s.buy()
+  expect(result.status).toBe('SUBMITTING')
+  s.c.state.now=Math.max(result.escrow!.cancelAfter,result.escrow!.holdback!.cancelAfter)+1
+  await s.manager.reconcile()
+  const run=s.store.getRun(s.run.runId), bundle=receiptBundle(s.store,s.run.runId)
+  expect(run.intents[0].escrow).toMatchObject({state:'CANCELLED',holdback:{state:'refunded'}})
+  expect(run).toMatchObject({spentMinor:0,refundedMinor:0,contents:[]})
+  expect(bundle.contributions!.purchases[0]).toMatchObject({grossMinor:0,refundMinor:0,netMinor:0})
+  expect((await verifyAnswer(bundle,{testnet:true,ledger:s.c.ledger})).checks.filter(c=>c.status==='FAIL')).toEqual([])
+})
 it('reserves full price and signs nothing when the budget is insufficient', async () => {
   const s = await setup({budget:1}); const result = await s.buy()
   expect(result.status).toBe('SKIPPED'); expect(s.c.txs.size).toBe(0)
