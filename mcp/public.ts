@@ -1,3 +1,4 @@
+import { connectionDetails } from './connect.js'
 import { Router } from 'express'
 import { createHmac } from 'node:crypto'
 import { mintGroup } from '../server/hosted/limits.js'
@@ -43,6 +44,7 @@ export function publicAddress(req: import('express').Request, config: Config) {
 export function publicMcpRouter(context: ApiContext, config: Config, limits: HostedLimits) {
   const router = Router(), active = new Map<string, number>(), reads = new Map<string, { at: number; n: number }>()
   const { store, client } = context
+  router.get('/api/connect', (req,res,next) => { try { publicAddress(req,config); res.json(connectionDetails(config)) } catch(error) { next(error) } })
   router.all('/mcp', async (req, res, next) => {
     if (config.MCP_PUBLIC !== 'on') return res.status(404).end()
     let server: McpServer | undefined

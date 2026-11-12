@@ -1510,6 +1510,43 @@
           }
         }
       }
+    },
+    "/api/connect": {
+      "get": {
+        "summary": "Read the configured agent HTTP connection URL",
+        "operationId": "get_agent_connect",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Configured URL, or null while URL access is disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "url"
+                  ],
+                  "properties": {
+                    "url": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uri"
+                    },
+                    "requiresBearer": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        }
+      }
     }
   },
   "components": {

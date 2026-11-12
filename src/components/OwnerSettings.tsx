@@ -1,5 +1,7 @@
 import { ENV, xrpAmount } from '../../shared/presentation'
-import { useEffect, useState, type ReactNode } from 'react'
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react'
+
+const AgentConnect = lazy(() => import('./AgentConnect'))
 
 type Values = Record<string, string | number>
 type WalletRow = {
@@ -605,6 +607,7 @@ export default function OwnerSettings({
         )}
         {section === 'Connect an agent' && (
           <>
+            <Suspense fallback={<p role="status">Loading connection details…</p>}><AgentConnect /></Suspense>
             <p>
               Uses this version and your selected caps. The agent cannot edit
               Settings. This creates a separate local Testnet agent process.

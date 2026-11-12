@@ -62,8 +62,33 @@ Source: [Cloud Run request timeouts](https://docs.cloud.google.com/run/docs/conf
 
 ## Client installation
 
-Pending the connect-panel step. Use the configured public `/mcp` URL, without a
-bearer token. Public hire is disabled in MCP.
+Open “Use it from your own agent” on hosted, or Settings → Connect an agent
+locally. The panel reads `/api/connect`; hosted derives its URL from
+`HOSTED_ORIGIN` when `MCP_PUBLIC=on`. Optional `MCP_CONNECT_URL` overrides it (no
+default). A disabled server displays that URL access is not enabled instead of
+offering a broken install. Local bearer servers still require their agent key.
+
+- Cursor: choose **Add to Cursor**, inspect the URL config, and approve the
+  client's install prompt. Link format:
+  `cursor://anysphere.cursor-deeplink/mcp/install?name=researchagent&config=<URL-encoded base64 JSON {"url":"<configured URL>"}>`.
+- VS Code: choose **Add to VS Code**, inspect and confirm installation. Format:
+  `vscode:mcp/install?<URL-encoded JSON {"name":"researchagent","type":"http","url":"<configured URL>"}>`.
+- Claude: 1. Open **Settings → Connectors**. 2. Choose **Add custom connector**
+  and paste the URL from **Copy URL**. For the public endpoint, choose **No sign in**
+  if asked. Availability depends on the client/account.
+- Claude Code: copy `claude mcp add --transport http researchagent '<configured URL>'`.
+
+Claude custom connectors connect from Anthropic infrastructure and require an
+internet-reachable URL; a loopback server needs a separately configured public
+endpoint. Cursor, VS Code and Claude Code can use a local URL with its bearer
+key. Sources: [Claude custom connectors](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp),
+[Claude Code HTTP setup](https://code.claude.com/docs/en/mcp).
+
+These are generated instructions and decoded-link tests; no claim that each
+native client has been installed or that any hosted deployment is enabled.
+Sources: [Cursor install links](https://prod.cursor.com/docs/mcp/install-links),
+[VS Code MCP installation URLs](https://code.visualstudio.com/api/extension-guides/ai/mcp).
+Public hire remains disabled in MCP.
 
 ## Testnet transaction hashes
 
