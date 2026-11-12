@@ -1,305 +1,181 @@
-# Judge Q&A prep
+# Prepared answers
 
-Each question has a **Say** (about 20 seconds aloud) and a **Behind it** with
-the source. Counts are generated into [facts.json](facts.json) (as of
-<!--f:as_of-->12 Nov 2026<!--/f-->); read this page rendered on GitHub, where the
-markers that keep them in sync are hidden. Check the [tracker](../SFF-PUSH.md)
-on 17 Nov for anything newer.
+Evidence context: XRPL Testnet demo. Use these answers when asked; the pitch ends on the key check.
 
-The questions are grouped by three judge personas from our practice panels:
-**R**, a Ripple DevRel / XRPL engineer; **P**, a payments or
-fintech operator; **Y**, a YC-style partner. Their hardest questions come first.
+## 1. What is the product?
 
-One hosted run where the browser check shows all five gates held: featured preset 2,
-`421bae3d`, 12 Nov. Its numbers below are separate from the earlier preset-3 paid-answer card.
+ResearchAgent is a search engine for agent-readable expertise, with a wallet. It
+reads free sources, then policy rules decide purchases within a question’s budget.
+The Fast and the Fungible is the team and repository name.
 
-## Numbers card (memorise these)
+## 2. Can the model spend?
 
-| Number | What it is | Label | Source |
-|---|---|---|---|
-| **<!--f:identity_writers-->3<!--/f--> Credentials / <!--f:identity_domains-->1<!--/f--> domain** | accepted operator-issued writer Credentials and retained Testnet Permissioned Domain | identity only, not KYC or quality; snapshot ledger <!--f:identity_ledger-->22244375<!--/f-->, 11 Nov; distinct from two paid team writers and zero independent writers | [identity evidence](../evidence/writer-credentials-nov12/README.md) |
-| **RLUSD `tecNO_PERMISSION` / TEST-SGD `tesSUCCESS`** | recorded unsigned create probes: RLUSD on Testnet and Mainnet; matched control on Testnet | no signature, submission or fee charged | [verdicts](../evidence/dry-run-nov12/result.json) |
-| **Featured browser/TS 24 passed / 0 failed / 2 not checked; Python 25 passed / 0 failed / 2 skipped; five gates Held** | same preset-2 export; Testnet 6/6 each; separate from the earlier HOSTED-12 answer card | one hosted run, 12 Nov, 09:07 SGT; 31.1 s, 1 article, S$0.40; identity skips retained | [receipts, counts and all three tx links](../evidence/hosted-export-nov12/README.md) |
-| **<!--f:try_s-->84.2<!--/f--> s** | `try --testnet`: empty npm cache → six Testnet links → `RESULT PASS` | Testnet, fixture models, one Mac, 7 Nov; <!--f:try_misses-->2 of 4<!--/f--> cold attempts overran 90 s | [#387](https://github.com/Collaboration95/theFastandtheFungible/pull/387), [round4-j2](../evidence/round4-j2/README.md) |
-| **<!--f:mcp_mb-->3.4<!--/f--> MB / <!--f:mcp_init_s-->6.3<!--/f--> s** | MCP package size / cold initialize (was 21.4 MB / 56.5 s) | local packed build, fresh npm cache | same |
-| **<!--f:app_ready_s-->27.0<!--/f--> s** | zero-clone app ready (was 134 s) | same | same |
-| **<!--f:fee_drops-->435<!--/f--> drops** | fees per key-reveal purchase as we sign: <!--f:fee_create-->12<!--/f--> paid by the buyer to create, <!--f:fee_finish-->423<!--/f--> paid by the writer to finish (rippled's own minimum: 360) | Testnet, measured | [cost card](../numbers.md#testnet-cost-and-latency), [round3-a](../evidence/round3-a/README.md) |
-| **894 drops** | all six UC3 transactions (two buys, refund, anchor) | Testnet, measured | [judge-path.md](../evidence/round4-l4/judge-path.md) |
-| **S$0.00087** | fees per purchase at an assumed S$2.00/XRP | **projection**, not a quote | [cost card](../numbers.md#testnet-cost-and-latency) |
-| **US$0.0026** | historical model cost per question | LIVE decisions/coverage; fixture research; simulated payments, 48 fresh synthetic questions, 3 Nov | [scorecard](../numbers.md#synthetic-corpus-scorecard-3-nov) |
-| **<!--f:transactions-->61<!--/f-->** | Testnet transactions on `/ledger/`, re-validated live from the browser (61/61 in 1.65 s when measured on 7 Nov) | read-only | [#388](https://github.com/Collaboration95/theFastandtheFungible/pull/388) |
-| **12/12** | Testnet checks in `verify --ledger` on the README UC3 receipts | read-only, s.altnet | [#377](https://github.com/Collaboration95/theFastandtheFungible/pull/377) |
-| **<!--f:vectors-->224<!--/f-->** | shared conformance vectors; TypeScript and Python agree on all | offline | [#381](https://github.com/Collaboration95/theFastandtheFungible/pull/381) |
-| **<!--f:writer_s-->33.9<!--/f--> s** | `init` + `publish`: Markdown folder → writer Credential validated on Testnet | generated starter note, public faucet, one measurement | [#389](https://github.com/Collaboration95/theFastandtheFungible/pull/389) |
-| **0** | gate-audit violations: 10 runs, 568 observations | fresh-set eval, simulated payments, 3 Nov | [scorecard](../numbers.md#synthetic-corpus-scorecard-3-nov) |
-| **93.15%** | gross article spend that bought a fact in the final answer (CI 81.25–100.00) | LIVE decisions, fixture research, simulated payments | [fresh-results.json](../../eval/scorecard/fresh-results.json) |
-| **<!--f:prs-->305<!--/f--> / <!--f:releases-->15<!--/f-->** | PRs merged into `main` since <!--f:since-->21 Sep<!--/f--> / published releases | counted at <!--f:sha-->e37be882<!--/f--> on <!--f:as_of-->12 Nov 2026<!--/f--> | [facts.json](facts.json), [progress page](https://collaboration95.github.io/theFastandtheFungible/progress/) |
-| **Held-out <!--f:heldout-->16/20<!--/f-->; <!--f:offtopic-->0/10<!--/f--> off-topic buys** | <!--f:heldout_line-->v5 blind held-out: 16/20 bought and cited, 0/10 off-topic purchases (run once, 11 Nov, on XRPL Testnet: fixture research and decision models with answers written offline, team-authored writers)<!--/f-->; the key fact leads the answer in <!--f:answers_it-->7/20<!--/f-->; 0 gate violations. Dev (not held-out): v1 <!--f:dev_v1-->16/20<!--/f-->, v3 <!--f:dev_v3-->7/20<!--/f--> | as stated | [evidence](../evidence/v5-heldout/README.md) |
-| **SingHacks baseline** | <!--f:singhacks_then-->At SingHacks a language model proposed each purchase and a person approved every quote before payment; payment was a fixture by default, with optional Testnet settlement.<!--/f--> | tag `hackathon-baseline` (7 Sep commit) | [prototype README](https://github.com/Collaboration95/theFastandtheFungible/blob/hackathon-baseline/prototypes/ResearchAgent/README.md) |
+No. Only deterministic policy code initiates a purchase. Environment caps bound MCP
+clients and cannot be raised by the calling model. The five-second plan sheet confirms
+the plan; there is no per-purchase approval modal. A labelled new-writer probe can buy
+one matching article up to S$0.30 within budget.
 
----
+## 3. What if my question needs no purchase?
 
-## Y · the YC partner
+It answers from free evidence or declines the unsupported part. A completed answer
+can queue an audit-head anchor even when nothing was bought. Claim anchoring only
+after ledger validation. Public sharing is explicit and subject to retention.
 
-### 1. Why is the live sandbox only open 13–19 November?
+## 4. Who buys first? Is demand validated?
 
-**Say:** "We run a shared Testnet sandbox for judging week so you can click
-without installing anything. It pays from one pre-funded Testnet wallet with
-small per-visitor caps, and one indicator at the top says it's XRPL Testnet
-with no real value. We don't run it as a service: there's no real money and no
-accounts, and it closes after the event. The one-line `try --testnet`, the
-recorded replay and the ledger page keep working from the release."
+We target XRPL/x402 integrators using coding agents to implement paid endpoints or
+diagnose settlement failures. The expected benefit is a cited practitioner detail
+without reconstructing the failure alone. This initial-market hypothesis is not yet
+validated. No independent writers, customers, pilots or revenue.
+[Example note](../../data/corpus/v2/articles/team-xrpl-explainers/product-writer-paid.json).
 
-**Behind it:** owner direction 10 Nov (Cloud Run front, one VM, existing
-SQLite journals; [hosted-web.md](../hosted-web.md)). Admissions close
-2026-11-19 16:00 UTC. Owner routes (settings, keys, faucet, fault switches) are
-disabled; each answer labels whether its models ran live or as a fixture
-fallback. Never call it a "live service" or "production". The replay is
-labelled "Recorded on XRPL Testnet · no backend"; the cold `try` path needs
-Node ≥ 22.13.
+## 5. Who wrote the articles?
 
-### 2. Are the writers real?
+Two team-authored writers, Build notes and XRPL explainers, supply paid notes; Open
+Records supplies free records. Historical adversarial replays use fictional writers.
+A copied corpus is not evidence of an external seller market.
 
-**Say:** "Our paid team writers are Build notes and XRPL explainers. Open Records is our free records source. All three team writers hold accepted XRPL Testnet Credentials from our operator issuer; a Testnet Permissioned Domain lists accepted issuers; identity only, not KYC or quality. Fictional demo writers stay fictional and unverified. No independent writers yet."
+## 6. What does key reveal enforce?
 
-**Behind it:** [Writer identity evidence](../evidence/writer-credentials-nov12/README.md); two team-authored writers sell notes, plus the free Open Records source. [Independent writer list](../evidence/real-writers.json) remains empty. Hosted badge rollout requires configuration and observed acceptance.
+The writer collects by publishing the article key in EscrowFinish. The app grants
+access only after validated success and matching proofs. Signed submission can expose
+the key before validation, so later failure remains a risk. The escrow stays claimable
+with that key until CancelAfter. The first key-bearing network request is the persisted
+signed finish, after a key-free ledger pre-check. [Mechanism evidence](../evidence/dry-run-nov12/README.md).
 
-### 3. I asked my own question. What happens?
+## 7. Does a match prove article quality?
 
-**Say:** "It can buy and cite our labelled team notes. With fixture models on
-Testnet, <!--f:heldout_n-->sixteen<!--/f--> of <!--f:heldout_N-->twenty<!--/f-->
-blind held-out questions were bought and cited, and on
-<!--f:offtopic_N-->ten<!--/f--> off-topic questions it bought nothing. The key
-fact leads the answer in <!--f:answers_it-->7/20<!--/f-->. If policy declines the available articles, it buys nothing, and
-the decline now lists each policy reason in 'Why'. Discovery does not guarantee
-a purchase. Development sets, which we tuned on, are separate: v1
-<!--f:dev_v1-->16/20<!--/f--> and v3 <!--f:dev_v3-->7/20<!--/f-->."
+A key match proves reveal, not quality or identity. The browser reads the validated
+create/finish from a public node and recomputes the lock. It trusts that public-node
+response rather than running a full node. Missing data is pending; unreachable is
+unavailable, never a pass. Signed promises and passage proofs are checked separately.
 
-**Behind it:** [v5 evidence](../evidence/v5-heldout/README.md): <!--f:heldout_line-->v5 blind held-out: 16/20 bought and cited, 0/10 off-topic purchases (run once, 11 Nov, on XRPL Testnet: fixture research and decision models with answers written offline, team-authored writers)<!--/f-->; answers-it <!--f:answers_it-->7/20<!--/f-->, <!--f:heldout_violations-->0<!--/f--> gate violations. Run once on `main` `a9584014`, fixture research and decision models (answers written offline) at threshold 0.20, team-authored writers, Testnet. Some v5 questions resemble v4 ones; leaving out the two closest pairs gives 15/18 (the evidence README lists them). v4 and v5 are now used, so a new held-out claim needs a new blind bank. Dev, not held-out: v1 16/20, v3 7/20 (answers-it 4/20 after #410); v2 is observed dev data. Finished Testnet abstentions queue an anchor (#403); claim anchoring only after validation, and read each verifier result separately. Policy misses remain: the other held-out questions did not end in a cited purchase. This is fixture-model mechanism evidence, not live-model answer quality: the hosted sandbox writes answers live and decides purchases with the rule-based model.
+## 8. Can you force a quality refund?
 
-### 4. Who pays for this, and who is writer number one?
+Quality refunds need the writer’s signature and cooperation; a real writer could
+refuse. The historical broken-promise replay uses a cooperative fictional writer.
+A no-show has a different recovery path: validated EscrowCancel after CancelAfter.
+The deadline itself does not return the funds. [Refund contract](../key-reveal-escrow.md).
 
-**Say:** "Our initial-market hypothesis is XRPL/x402 integrators using coding agents to buy practitioner implementation notes and reproducible failure paths. The buyer is implementing a paid endpoint or diagnosing failed settlement. Today our team-authored writers supply the notes; the expected benefit is a specific cited implementation detail without reconstructing the failure alone. We would test repeat demand here before adding other expert shelves. No independent writers, customers, pilots or revenue."
+## 9. What do the live numbers cover?
 
-**Behind it:** [Example team-authored note: how writers get paid](../../data/corpus/v2/articles/team-xrpl-explainers/product-writer-paid.json). This is a hypothesis, not demand validation, TAM, a partner, pilot or customer quote. [Hire evidence](../evidence/hire-274.md): service fee and royalties demonstrated once on Testnet.
+Hosted demo since 11 Nov, team test runs included, as of <!--f:live_asof-->12 Nov 2026, 12:24 SGT<!--/f-->:
+<!--f:live_questions-->62<!--/f--> questions, <!--f:live_purchases-->74<!--/f--> settled purchases;
+median <!--f:live_median_s-->22.316<!--/f--> s, p90 <!--f:live_p90_s-->61.061<!--/f--> s across
+<!--f:live_timing_n-->49<!--/f--> timed runs. Median model cost US$<!--f:live_model_usd-->0.0020035<!--/f-->
+per question. <!--f:live_violations-->0<!--/f--> recorded violations across
+<!--f:live_audits-->50<!--/f--> available audits; <!--f:live_audit_unavailable-->12<!--/f--> unavailable.
+[Unchanged response and fetch metadata](evidence/hosted-stats-nov12/README.md).
+These are observed demo aggregates, not customer usage. Timing samples and audit samples differ.
 
-### 5. How is this different from other agent-payment projects?
+## 10. Is that total cost?
 
-**Say:** "Most show that an agent *can* pay. We focus on whether it *should*,
-and on what happens when the seller lies. The model never holds spending
-authority. The writer is paid only by publishing the key on the ledger. Every
-receipt can be re-checked by two verifiers, written separately in two languages,
-and they agree on every test vector."
+No: model USD cost is separate from article display prices, ledger fees and hosting.
+The app’s S$ price uses a fixed demonstration conversion, not an FX quote. The live
+demo pays in XRP. TEST-SGD is an unbacked stand-in for RLUSD in CLI token-escrow evidence.
+No real value is transferred; mainnet signing remains disabled.
 
----
+## 11. Which party pays fees?
 
-## P · the payments operator
+The measured signed reference has 12 drops paid by the buyer to create and 423 drops
+paid by the writer to finish; the answer anchor is additional. rippled's own minimum is 360
+for the measured finish shape; the client adds headroom. Fees depend on load and key size.
+Unsigned autofill probes measured different fees and charge nothing.
 
-### 6. What are the unit economics?
+## 12. Does RLUSD escrow work?
 
-**Say:** "Use one hosted run on 12 Nov: HOSTED-12 bought one article with four passages for S$0.40, or 40,000 Testnet drops at the fixed demo rate, not FX. No refunds. It took 65.8 seconds from admission/Start to Done, excluding planning and the five-second confirmation modal. Buyer create 12 drops, writer finish 423, buyer anchor another 12. Model cost is unmeasured: usage was not retained. The old US$0.0026 belongs to a different synthetic evaluation, not this question."
+Recorded unsigned probes returned `tecNO_PERMISSION` for RLUSD on both networks;
+the matched TEST-SGD control returned `tesSUCCESS`. Nothing was signed or submitted.
+Testnet and Mainnet both have TokenEscrow enabled; issuer permissions still matter.
+Official development-network RLUSD payments were demonstrated separately on 3 Nov.
+[Recorded ledger verdicts](../evidence/dry-run-nov12/result.json).
 
-**Behind it:** [HOSTED-12 evidence and ledger links](evidence/hosted-answer-nov12/README.md): one hosted DEPLOY-3 run, live DeepSeek plan/final writing, rule-based buying; initial draft fixture, keyword fallback, team-authored writer, real Testnet XRP, no real value. Two initial recorded gaps, none in the final answer; no independent quality score or generalization. Published v1.1.1 wheel: 27 passed / 0 failed / 2 skipped, Testnet 6/6; browser 26/0/2. In this earlier DEPLOY-3 sample, paid-read telemetry is absent: gate 1 Not checked, gates 2–5 Held. The featured preset-2 run has all five Held; its counts are separate. In the recorded unsigned probe rippled autofilled 10 + 350: rippled's own minimum is 360 for those shapes. Signing fees stay 12 + 423 and can vary with load/fulfillment size. [Probe](../evidence/dry-run-nov12/README.md). US$0.0026: 3 Nov live decisions/coverage, fixture research, simulated payments, [numbers](../numbers.md#synthetic-corpus-scorecard-3-nov).
+## 13. What does writer identity mean?
 
-### 7. Why TEST-SGD and not RLUSD?
+Three writers hold accepted operator-issued Testnet Credentials. A Testnet Permissioned
+Domain lists the accepted issuer and type for identity display. This is operator
+attestation, not KYC, quality certification or payment permission; fictional writers
+remain unverified. Hosted display requires configuration. [Identity evidence](../evidence/writer-credentials-nov12/README.md).
 
-**Say:** "Official RLUSD payments worked on Testnet. Escrow is different. In recorded unsigned probes, rippled returned tecNO_PERMISSION for RLUSD EscrowCreate on Testnet and Mainnet. The matched TEST-SGD control returned tesSUCCESS on Testnet. Nothing signed or submitted. Token escrow uses our unbacked no-value TEST-SGD IOU; the live sandbox pays in Testnet XRP. An issuer-permission change removes this observed blocker, but funding, trust-line, escrow and verification checks must be repeated before enabling RLUSD escrow."
+<a id="19-does-it-actually-buy-the-right-things"></a>
 
-**Behind it:** [Unsigned verdicts](../evidence/dry-run-nov12/result.json): Testnet ledger 22244249, Mainnet 108262329. Testnet and Mainnet both have TokenEscrow enabled. [Official RLUSD payments](../evidence/rlusd.md); [TEST-SGD evidence](../evidence/m1-iou/README.md). No peg, backing or Mainnet signing claim.
+## 14. How good are the answers?
 
-### 8. What's simulated, what's substituted, what's real?
+<!--f:heldout_line-->v5 blind held-out: 16/20 bought and cited, 0/10 off-topic purchases (run once, 11 Nov, fixture research and decision models with answers written offline, team-authored writers)<!--/f-->.
+The key fact leads <!--f:answers_it-->7/20<!--/f--> answers. This is one offline research
+measurement, not live answer quality or a recurring benchmark. It ran at `a9584014`;
+use the actual pinned commit in [the evidence](../evidence/v5-heldout/README.md).
 
-**Say:** "Escrow, refund, anchor and credential transactions we link are recorded Testnet evidence. RLUSD dry runs are unsigned RPC verdicts, including a read-only Mainnet probe, not submitted transactions. The sandbox uses live answers, rule-based buying. The offline evaluation and replay retain their fixture, simulated or fictional labels. TEST-SGD is unbacked. Operator credentials do not make writers independent."
+## 15. Does the one-line command always finish quickly?
 
-**Behind it:** Hard gate 5. A domain object ID, receipt/content hash or ledger index is not a transaction hash. The hosted HOSTED-12 example labels its initial fixture draft separately from its live final answer.
+No. One empty-cache cold run took <!--f:try_s-->84.2<!--/f--> s on one Mac;
+<!--f:try_misses-->2 of 4<!--/f--> cold attempts overran the 90 s target. The published
+release’s 59.2 s clock excludes npm download. npm, faucet funding and public-node
+history can delay the path. [Cold-run measurements](../evidence/round4-j2/README.md).
 
-### 9. Is it ready for mainnet?
+## 16. What if the live demo is unavailable?
 
-**Say:** "No, and mainnet is disabled in code. The money-safety core is done
-and tested: persist before submit, a pending state, exact delivered amounts,
-one charge per intent, and crash recovery. The gaps are written down: payer
-keys in a KMS, RLUSD escrow once the issuer allows it, live FX, KYB and
-sanctions screening, and a facilitator SLA. We'd rather show a checklist than
-claim readiness."
+Use the recorded replay and call it a replay. An offline verifier checks the signed
+bundle; public-ledger lookups need a reachable node. The stage check uses the actual
+final PDF/video; it does not ask a question. Never turn unavailable into passed.
 
-**Behind it:** [mainnet checklist](../BUILDER-FEEDBACK.md#mainnet-readiness-checklist),
-[COMPLIANCE](../COMPLIANCE.md).
+## 17. What do five Held gates mean?
 
-### 10. After the key is revealed, who guarantees the refund?
+The featured 12 Nov preset-2 run is 421bae3d: 31.1 s Start→Done, excluding planning/modal;
+one S$0.40 article, no refund. Browser/TS 24/0/2 and Python 25/0/2 preserve skips.
+Grant 1953 precedes paid-read events 1954–1957. Its initial draft used fixture extracts
+and keyword search. [Receipts and verifiers](../evidence/hosted-export-nov12/README.md).
 
-**Say:** "If the key never appears, the principal stays locked until an EscrowCancel validates after CancelAfter; policy submits that recovery transaction. Time alone does not return it. Once a finish reveals the key and pays the writer, a quality refund is a separate payment the writer must sign. Our demo writer cooperates; a real writer could refuse. The buyer retains a checkable fraud proof."
+## 18. What about the earlier paid-answer example?
 
-**Behind it:** [Key-reveal mechanism](../key-reveal-escrow.md); [no-show create/cancel](../evidence/round3-e/runs.json). Refund of principal does not erase network fees.
+The separate writer-payment run took 65.8 s and bought one S$0.40 article. Its initial
+fixture draft had two recorded gaps; its final answer had none. Its own model cost is
+unmeasured because usage was not retained. Do not attach the aggregate model median
+to that run. It lacks paid-read telemetry, so gate 1 is Not checked there.
+[Unchanged run evidence](evidence/hosted-answer-nov12/README.md).
 
-### 11. A payment times out, or the server crashes mid-payment?
+## 19. How do retries avoid duplicate charges?
 
-**Say:** "We store the signed transaction before sending it, so recovery
-reuses the persisted transaction; replacement needs ledger-proven failure or expiry. A missing transaction is
-*pending*, not failed, until a validated ledger proves it expired. In chaos
-tests with real process kills we had zero double charges."
+The intent and signed transaction are persisted. Recovery reuses them; replacement
+requires ledger-proven failure or expiry. Separate synthetic-ledger chaos evidence
+records <!--f:chaos_double-->0<!--/f--> double charges in <!--f:chaos_runs-->500<!--/f-->
+runs with <!--f:chaos_kills-->130<!--/f--> real process kills. This is a measured test,
+not a universal guarantee. [Chaos evidence](../evidence/chaos-279-500.json).
 
-**Behind it:** [payment-ops-287](../evidence/payment-ops-287.md), 200-run chaos
-in #376, #377 and #381, [RUNBOOK](../RUNBOOK.md), feedback B01–B03.
+## 20. What is the hosted operating scope?
 
-### 12. Compliance: are you a payment service?
+One shared pre-funded payer, per-visitor caps and a bounded public demo window.
+Configured fallbacks carry per-run model labels. Hosted purchases use deterministic
+policy rules. Live model decision experiments are separate from the hosted policy.
+Retention and owner controls are described in the hosted runbook.
 
-**Say:** "It's a Testnet prototype, and no lawyer or regulator has reviewed it.
-Research purchases are non-custodial: the buyer pays writers directly into
-escrow. We built the plumbing a compliance team asks for: a hash-chained audit
-log written with every spend decision, receipt export, read-only re-verification
-against the ledger, a fail-closed payee denylist and data pruning."
+## 21. Where do I install it?
 
-**Behind it:** [COMPLIANCE](../COMPLIANCE.md). The denylist is an integration
-point, not a sanctions provider. Hire mode is receive-and-forward custody, and
-we say so.
+GitHub Releases has the published MCP package, TypeScript SDK and Python wheel.
+They are not yet on npm, PyPI or the MCP Registry. The Mac DMG is unsigned pending
+a Developer ID. The browser link avoids installation.
 
-### 13. Did you file the builder feedback upstream?
+## 22. Is it ready for regulated deployment?
 
-**Say (while none are filed):** "Not yet. All
-<!--f:drafts-->8<!--/f--> drafts are paste-ready and public in the repo, each
-with a script that reproduces it offline in under 30 seconds, and filing them is
-this week's first job. We have <!--f:ranked-->7<!--/f--> ranked findings,
-<!--f:findings-->35<!--/f--> numbered findings in a dated log, and a mainnet
-checklist. The top one now includes rippled’s recorded unsigned RLUSD refusal and a successful TEST-SGD control."
+No. Custody needs KMS/HSM and rotation; screening needs a sanctions provider and
+writer KYB; audit retention policy, maker-checker controls, velocity limits,
+licensing and legal review remain. The hire flow holds funds in transit.
+[Compliance map](../COMPLIANCE.md).
 
-**Behind it:** <!--f:feedback_line-->7 ranked findings with runnable repros · 35 numbered findings (B01–B35) · 15 submissions on 4–5 Sep · 8 upstream drafts, 0 filed<!--/f-->.
-[BUILDER-FEEDBACK](../BUILDER-FEEDBACK.md), [upstream drafts](../feedback/upstream/),
-[filing kit](../feedback/upstream/FILING-KIT.md). Filing is owner-only (#265 B1).
-Once filed, the count above changes by itself; then say "Yes, N, on <date>" and
-show the links in BUILDER-FEEDBACK's top-7 table.
+## 23. How do agents hire it?
 
----
+The caller pays a budget plus a fixed service fee. ResearchAgent returns unspent
+budget and allocates a quarter of the service fee to cited-writer royalties. This
+was demonstrated once. [Hire evidence](../evidence/hire-274.md).
 
-## R · the XRPL engineer
+## 24. How much builder feedback is upstream?
 
-### 14. Why XRPL?
+<!--f:feedback_line-->7 ranked findings with runnable repros · 35 numbered findings (B01–B35) · 15 submissions on 4–5 Sep · 8 upstream drafts, 0 filed<!--/f-->.
+Keep submitted historical feedback separate from the currently unfiled drafts.
+[Builder feedback](../BUILDER-FEEDBACK.md).
 
-**Say:** "Native conditional escrow lets a writer collect by revealing the article key. Token-escrow evidence uses TEST-SGD; the live sandbox pays in Testnet XRP. Memos bind the quote and anchor the audit commitment. Three team writers hold accepted XRPL Testnet Credentials from our operator issuer; a Testnet Permissioned Domain lists accepted issuers; identity only, not KYC or quality. These observations do not gate payment. Before signing we use unsigned create simulations and a key-free ledger pre-check for writer finishes."
+## 25. What is the simplest thing to verify?
 
-**Behind it:** [Identity/domain evidence](../evidence/writer-credentials-nov12/README.md), [X1c key-free finish guard](../evidence/dry-run-nov12/README.md). These current source features are later than the published v1.1.1 package.
-
-### 15. Why does EscrowFinish cost 423 drops?
-
-**Say:** "The fulfillment is a 32-byte key in a 36-byte encoded fulfillment. Our signer uses a 12-drop floor and the client formula 33 plus 36 divided by 16, rounded up: 423. In the recorded unsigned dummy probe, rippled autofilled 350 at a 10-drop base. We kept signing fees. The writer pays the finish; the buyer pays the create. The dummy result tecNO_TARGET named no actual escrow, so only fee autofill was measured."
-
-**Behind it:** [Probe and current writer guard](../evidence/dry-run-nov12/README.md), B19. Simulation charged no fee and the dummy finish did not deliver anything.
-
-### 16. How do I know your verifier isn't just agreeing with your agent?
-
-**Say:** "There are two verifiers, written separately: TypeScript, and Python
-using only the standard library. They agree on <!--f:vectors-->224<!--/f--> shared vectors, including
-tampered amounts, issuers and refunds. For EscrowFinish, which has no
-delivered_amount, they check the writer's trust-line balance change. With
-`--ledger`, every check is a read-only lookup against s.altnet. Run it on any
-receipt the app exports."
-
-**Behind it:** [#377](https://github.com/Collaboration95/theFastandtheFungible/pull/377),
-[#381](https://github.com/Collaboration95/theFastandtheFungible/pull/381),
-[receipt-spec](../receipt-spec.md). Q21 explains the narrower browser key check; Q24 covers the recorded-run check without admission.
-
-### 17. Why does `try` take 84 seconds? What if the faucet is down?
-
-**Say:** "Most of it is npm install and faucet funding. The purchase itself is
-seconds, then verification makes 12 read-only ledger lookups. We measured
-<!--f:try_s-->84.2<!--/f--> seconds cold, and <!--f:try_misses-->2 of 4<!--/f--> cold
-attempts overran our 90-second target, so we quote the number with that caveat. If the faucet fails, it prints
-a labelled SIMULATED run and the reason. It never pretends."
-
-**Behind it:** [round4-j2](../evidence/round4-j2/README.md) keeps the failed
-attempts (`try-timeout*.json`) next to the passing ones.
-
-### 18. Can the LLM be prompt-injected into spending?
-
-**Say:** "It can be tricked into *recommending* a purchase, but it can't make
-one. The SDKs and MCP tools have no purchase method. Policy code checks the
-budget, the S$1 per-source cap, the daily cap and the per-agent allowance.
-MCP caps are set by the operator in the environment, default to zero, and the
-calling model can't raise them."
-
-**Behind it:** #286 adversarial injection pack, `tests/purchase.test.ts`,
-`mcp/policy.ts`. An injected abstract could influence which under-cap article is selected. It cannot increase authority or directly sign a payment. The browser key check proves the reveal, not relevance, truth or full coverage.
-
-### 19. Does it actually buy the right things?
-
-**Say:** "On 48 fresh synthetic questions, 93% of what we spent on articles
-bought a fact that made it into the final cited answer. The interval is 81 to
-100, so it's wide. That used live decision models on a fixture corpus with
-simulated payments. And we can't claim it beat our previous policy: the gain
-includes zero."
-
-**Behind it:** exact sentence: "On 48 fresh synthetic questions, 93.15% of gross
-article spend bought a requested fact retained in the final cited answer (95% CI
-81.25–100.00%)." Waste 6.85% [0.00–18.75]; paired gain +3.08 pts [0.00–9.43].
-Same-vendor labels await human review. Don't say "93% of facts" or
-"production". 80.05% and 52.9% → 40.7% are historical.
-
-### 20. Isn't that overfit to your own test set?
-
-**Say:** "We worried about that. Our earlier 80% came from a holdout we'd seen
-too often, so we dropped it. We audited every rule, removed a domain-specific
-veto, then froze 48 new questions and the policy before one run each. It's
-still narrow: the same agent wrote both, and the questions follow templates."
-
-**Behind it:** [FRESH-AUDIT](../../eval/FRESH-AUDIT.md), #327.
-
----
-
-
-### 21. What exactly does the browser key check prove?
-
-**Say:** "It reads public EscrowCreate and EscrowFinish, requires validated success, checks owner and escrow sequence, extracts the lock and fulfillment key, and hashes the decoded key bytes. A match proves this escrow's key reveal. It does not certify quality, identity, fair price or the answer. Missing or unvalidated data is pending; unavailable is not a pass."
-
-**Behind it:** [Key check](../evidence/key-on-ledger/README.md), `src/verify/key-on-ledger.ts`. It trusts public-node ledger data; the browser is not a full node. No wallet signing key is used. Two receipt verifiers were written separately by this project, not separate teams.
-
-### 22. Does simulate guarantee payment success?
-
-**Say:** "No. It is an unsigned ledger-snapshot check before our signature. Definitive tec, tem or tef refusals prevent buyer signing; unavailable or retry results retain the guarded buyer path. Writer finishes use a key-free pre-check, not simulation with the article key. State can change afterward, so we still require validated settlement."
-
-**Behind it:** [Current X1c guard](../evidence/dry-run-nov12/README.md). Timeout, RPC failure and ter are unavailable, not authoritative refusals. Simulation cannot authorize spending or charge a fee. Writer-reported events are labelled. The old unsigned-finish exposure is fixed on main, with retained negative spy-test evidence.
-
-### 23. What do the operator identity observations enforce?
-
-**Say:** "Three team writers hold accepted XRPL Testnet Credentials from our operator issuer; a Testnet Permissioned Domain lists accepted issuers; identity only, not KYC or quality. These advisory observations do not change discovery, trust weights, budgets or who may be paid. A regulated launch needs a suitable verification issuer and separate compliance work."
-
-**Behind it:** [Identity evidence](../evidence/writer-credentials-nov12/README.md), [current cache bounds](../writer-verification.md#x2b-local-latency-evidence-12-november-2026). Issuer, subject, acceptance, expiry and domain are read at the same validated hash. Five-minute cache; bounded stale reads, no instant-revocation claim. Credentials expire 30 Nov 2026 00:00 UTC. Hosted badges require configured and observed deployment.
-
-### 24. Can I verify after using my questions, or while research is paused?
-
-**Say:** "Yes, use the judges' corner to check a public recorded sandbox bundle without a research admission. It needs the static page, receipt file and reachable public node. Read passed and not-checked items separately. Offline tools can check signed bundle contents, but that is not a fresh ledger lookup."
-
-**Behind it:** [Featured receipts](../evidence/hosted-export-nov12/README.md): one hosted run, 12 Nov, preset 2 at 09:07 SGT; 31.1 s, S$0.40, one article and no refund. Browser/TS 24 passed, 0 failed, 2 not checked/skipped; wheel 25/0/2; public Testnet 6/6 each. All five gates Held, with grant 1953 before reads 1954–1957. The 11 Nov export remains historical, with its original gate-1 gap. A missing transaction is pending, and network failure is unavailable. An HTTP 200 alone does not establish JSON or successful verification.
-
-### 25. Why did you keep rule-based buying?
-
-**Say:** "We measured it under the hosted allowance. In the capped follow-up, fixed rules completed six questions; OpenAI completed four and failed two under the decision-token allowance. Both bought five articles for S$2. There was no reliability case to switch before submission. The sandbox keeps live answers, rule-based buying. That is a choice under our limits, not universal model superiority."
-
-**Behind it:** [LIVE-DEC evidence](../evidence/live-decisions-nov11/RESUMED.md), `second-resume/comparison.md`: local hosted-envelope measurement, simulated settlement, not a deployed Testnet A/B.
-
-## Prepared presets
-
-Use the exact questions from `shared/contracts/examples.ts`: RLUSD escrow, x402 payment,
-and **How writers get paid**: “How does the writer get paid, and what stops the agent from
-reading the article and then refusing to pay?” Historical reserves measurements keep their
-original topic and date. [One paid answer](evidence/hosted-answer-nov12/README.md) has its own links.
-
-## Curveballs
-
-- **"Why S$, not XRP?"** People budget in their own currency. The ledger settles
-  in drops, or TEST-SGD at 1:1, at a fixed and labelled demo rate. Real FX is on
-  the mainnet list (#163).
-- **"Who built it?"** A small team directing AI coding agents in parallel
-  lanes. A PR merges only after the full local merge gate passes on its exact
-  head. Every PR, release and decision is public.
-- **"What's the pixel character?"** Our agent's head is the logo. It appears
-  only in loading states, the README and the deck, and it acts out a real state
-  (search, pay, key, verified, refund). It never replaces a receipt or a label.
-- **"Can a writer cheat the escrow?"** The buyer grants only after a validated successful finish and matching key/proofs. That does not enforce article quality. Current source uses a key-free ledger pre-check; it rejects any unsigned simulate containing Fulfillment. The first key-bearing network request is the persisted signed finish submission. Public signed submission exposes the key before final validation, so later failure remains a risk. The escrow remains claimable with that key by anyone (the writer first) until CancelAfter. No-show recovery requires a validated EscrowCancel; quality refunds need the writer’s signature. [X1c evidence](../evidence/dry-run-nov12/README.md).
-
-- **"Is the Mac app signed?"** Not yet: it's an unsigned DMG until we have a
-  Developer ID. The zero-clone app is the path we recommend to judges.
-
-### Key-reveal wording for excerpts
-
-The article's key is the only thing that opens the writer's escrow. The app shows the article only after that escrow finish validates on the ledger, and once the key is public anyone (the writer first) can still claim the payment before the deadline.
-
-A signed submission exposes the key before validation; anyone (the writer first) can still claim the escrow with that key until CancelAfter.
+Open the hosted demo, choose Verify and run the checks without asking a question.
+Then open a payment’s “Check the key yourself”. Read the actual result and follow
+both transaction links. [Try it](https://collaboration95.github.io/theFastandtheFungible/try/).

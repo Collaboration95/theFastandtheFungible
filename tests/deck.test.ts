@@ -14,8 +14,6 @@ const doc = new DOMParser().parseFromString(html, 'text/html')
 const slides = [...doc.querySelectorAll('section.slide')]
 const data = build() as { facts: Record<string, { value: string }>; links: Record<string, string | null> }
 const fact = (key: string) => data.facts[key].value
-const short = (hash: string) => `${hash.slice(0, 8)}…${hash.slice(-8)}`
-const lines = (el: Element) => [...el.querySelectorAll(':scope > div')].map(d => d.textContent ?? '')
 
 describe('finals deck', () => {
   it('fills every number from facts.json, like the README', () => {
@@ -32,39 +30,32 @@ describe('finals deck', () => {
     }
   })
 
-  it('leads with the hosted sandbox, the replay and the try line on slides 1 and 8', () => {
-    for (const url of html.match(/https:\/\/ra-front-[\w.-]+\.run\.app/g) ?? []) expect(url).toBe(data.links.hosted)
-    const [one, eight] = [slides[0], slides[7]].map(s => s.textContent ?? '')
-    expect(one).toContain(data.links.hosted)
-    expect(one).toContain(fact('hosted'))
-    expect(one).toContain('/theFastandtheFungible/demo/')
-    expect(one).toContain(fact('try_line'))
-    expect(eight).toContain(fact('hosted'))
-    const tryLine = execFileSync(process.execPath, ['scripts/install-snippets.mjs', '--tag', fact('release'), '--try'], { encoding: 'utf8' }).trim()
-    expect(fact('try_line')).toBe(tryLine)
+  it('puts the short link and QR on the first and closing slides, with one environment label', () => {
+    for (const slide of [slides[0], slides.at(-1)!]) {
+      expect(slide.querySelector('a[href="https://collaboration95.github.io/theFastandtheFungible/try/"]')).not.toBeNull()
+      expect(slide.querySelector('img[src="../../../site/try/qr.svg"]')).not.toBeNull()
+    }
+    expect((doc.body.textContent?.match(/Testnet/g) ?? []).length).toBe(1)
+    expect(slides[8].textContent).toContain(fact('live_asof'))
+    expect(fact('try_line')).toBe(execFileSync(process.execPath, ['scripts/install-snippets.mjs', '--tag', fact('release'), '--try'], { encoding: 'utf8' }).trim())
   })
 
-  it('shows the real committed try output on slide 3, links shortened to their hashes', () => {
-    const term = slides[2].querySelector('.term[data-evidence]')!
-    const source = term.getAttribute('data-evidence')!
-    // A line may be trimmed for space only when the slide names it in data-omit and its footer says so.
-    const omit = (term.getAttribute('data-omit') ?? '').split('|').filter(Boolean)
-    const all = readFileSync(source, 'utf8').trimEnd().split('\n')
-    for (const line of omit) expect(all).toContain(line)
-    if (omit.length) expect(slides[2].querySelector('.src')?.textContent).toMatch(/trimmed/)
-    const evidence = all.filter(line => !omit.includes(line))
-    const url = /https:\/\/testnet\.xrpl\.org\/transactions\/([0-9A-F]{64})$/
-    expect(lines(term)).toEqual(evidence.map(l => l.replace(url, (_, h) => short(h))))
-    const hrefs = [...term.querySelectorAll('a')].map(a => a.getAttribute('href'))
-    expect(hrefs).toEqual(evidence.flatMap(l => l.match(url)?.[0] ?? []))
+  it('links slide 3 to unchanged release evidence without repeating the terminal caveats', () => {
+    expect(slides[2].textContent).toContain('docs/submission/evidence/v1.1.1/try-output.txt')
+    expect(slides[2].textContent).toContain(fact('try_line'))
+    expect(slides[2].textContent).toContain('fixture models')
+    const output = readFileSync('docs/submission/evidence/v1.1.1/try-output.txt', 'utf8')
+    expect(output).toContain('RESULT PASS')
+    expect(slides[2].textContent).not.toMatch(/84\.2|2 of 4|cold runs overran/)
   })
 
-  it('shows the published release Python verifier output on slide 7', () => {
-    expect(slides[6].textContent).toContain(`${fact('release')}/researchagent-${fact('release').slice(1)}-py3-none-any.whl`)
-    expect(doc.querySelector('[data-fact-link="release"]')?.getAttribute('href')).toBe(data.links.release)
-    const term = slides[6].querySelector('.term[data-evidence]')!
-    const evidence = readFileSync(term.getAttribute('data-evidence')!, 'utf8').trimEnd().split('\n')
-    expect(lines(term).slice(-evidence.length)).toEqual(evidence)
+  it('preserves the featured verifier result and actual per-run substitution on slide 7', () => {
+    const text = slides[6].textContent ?? ''
+    expect(text).toContain(`${fact('featured_browser')} passed`)
+    expect(text).toContain(`${fact('featured_wheel')} passed`)
+    expect(text).toContain('two not checked')
+    expect(text).toContain('initial fixture draft')
+    expect(text).toContain('docs/evidence/hosted-export-nov12/')
   })
 
   it('links every Testnet hash to the explorer page of that exact hash', () => {

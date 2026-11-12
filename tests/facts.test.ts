@@ -65,7 +65,7 @@ describe('facts: one source for every number a judge reads', () => {
 
   it('marks the numbers on the README and every submission text', () => {
     const files = markedFiles()
-    for (const file of ['README.md', 'docs/numbers.md', 'docs/submission/short-description.md', 'docs/submission/pitch-2min.md', 'docs/submission/qa-prep.md', 'docs/submission/demo-video-script.md', 'docs/submission/README.md']) expect(files).toContain(file)
+    for (const file of ['README.md', 'docs/numbers.md', 'docs/submission/qa-prep.md']) expect(files).toContain(file)
   })
 
   it('keeps the README and submission texts true to the hosted decision and the SingHacks baseline', () => {

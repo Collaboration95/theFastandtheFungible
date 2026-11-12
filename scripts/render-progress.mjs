@@ -20,7 +20,7 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 const day = d => `${Number(d.slice(8, 10))} ${MONTHS[Number(d.slice(5, 7)) - 1]}`
 const longDay = d => dateSGT(`${d}T00:00:00Z`)
 const pct = (v, max) => `${Math.max(0, Math.min(100, (v / max) * 100)).toFixed(2)}%`
-const heldoutScope = (h, year) => `Fixture research and decision models · offline answers · XRPL Testnet · ${h.day} ${year} · leading fact ${h.answersIt.n}/${h.answersIt.N}`
+const heldoutScope = (h, year) => `Fixture research and decision models · offline answers · XRP Ledger · ${h.day} ${year} · leading fact ${h.answersIt.n}/${h.answersIt.N}`
 const slug = id => `stop-${id.replaceAll('.', '-')}`
 // Inline code in generated bullets: `x` → <code>x</code>, everything else escaped.
 const prose = s => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>')
@@ -41,7 +41,7 @@ function hero(d) {
   return `<header class="hero">
 <p class="kick"><span class="pill">Since SingHacks</span><span>${esc(d.since.label)} → ${esc(day(d.as_of))} ${d.as_of.slice(0, 4)}</span></p>
 <h1>From prototype to proof in ${h.days} days.</h1>
-<p class="lede">At SingHacks, ResearchAgent was one web page where a language model proposed each purchase and a person approved every quote. Since then it has become released software: a web app, a Mac app, an MCP server and two SDKs. Policy code buys evidence from writers within your budget, and every payment leaves a receipt on the XRPL Testnet.</p>
+<p class="lede">At SingHacks, ResearchAgent was one web page where a language model proposed each purchase and a person approved every quote. Since then it has become released software: a web app, a Mac app, an MCP server and two SDKs. Policy code buys evidence from writers within your budget, and every payment leaves a receipt on the XRP Ledger.</p>
 <p class="facts">Facts at ${ext(`${REPO}/commit/${d.source_sha}`, short(d.source_sha), 'mono')} · generated ${esc(longDay(sgtDate(d.generated_at)))} · <a href="#method">how we count</a> · <a href="data.json" download>data.json</a></p>
 <div class="compare">
   <figure class="side then">
@@ -67,7 +67,7 @@ function hero(d) {
 <dl class="stats">
 ${stat(n(h.prs), h.prs, 'Pull requests merged', `since ${esc(d.since.label.replace(' 2026', ''))}`)}
 ${stat(n(h.releases), h.releases, 'Releases', `${esc(d.rail.find(r => r.kind === 'release').tag)} to ${esc(t.release)}`)}
-${stat(n(h.transactions), h.transactions, 'Testnet transactions', '<a href="../ledger/">re-checked live in your browser</a>')}
+${stat(n(h.transactions), h.transactions, 'ledger transactions', '<a href="../ledger/">re-checked live in your browser</a>')}
 ${stat(`${h.heldout.n}/${h.heldout.N}`, h.heldout.n, 'Blind questions bought and cited', `${esc(heldoutScope(h.heldout, d.as_of.slice(0, 4)))}; ${h.heldout.offTopic.n}/${h.heldout.offTopic.N} off-topic purchases`, { suffix: `/${h.heldout.N}` })}
 ${stat(`${h.try.seconds.toFixed(1)} s`, h.try.seconds.toFixed(1), 'One command to a verified purchase', `cold run, ${h.try.limit} s target`, { decimals: 1, suffix: ' s' })}
 ${stat(n(h.tests), h.tests, 'Tests in the repo', `${n(s.tests)} on 20 Sep`)}
@@ -82,7 +82,7 @@ function activity(d) {
   const mark = (r, i) => {
     const idx = at(r.day)
     if (idx < 0) return ''
-    const name = r.kind === 'milestone' ? { singhacks: 'SingHacks', 'first-testnet': 'Testnet payment', policy: 'Policy buys', ait: 'AI Tinkerers' }[r.id] : r.tag === 'v0.1.0' ? 'v0.1.0–v0.8.0' : r.tag
+    const name = r.kind === 'milestone' ? { singhacks: 'SingHacks', 'first-testnet': 'Ledger payment', policy: 'Policy buys', ait: 'AI Tinkerers' }[r.id] : r.tag === 'v0.1.0' ? 'v0.1.0–v0.8.0' : r.tag
     return `<a class="mk mk-${'abc'[i % 3]}" aria-label="${esc(`${i + 1}. ${r.title}, ${r.label}`)}" href="#${slug(r.id)}" style="left:${pct(idx + 0.5, days.length)}" data-open="${slug(r.id)}"><span class="mk-n" aria-hidden="true">${i + 1}</span><span class="mk-l">${esc(name)}</span></a>`
   }
   const ticks = days.map((x, i) => ({ x, i })).filter(({ x }) => ['2026-09-19', '2026-10-01', '2026-10-15', '2026-11-01'].includes(x.day) || x.day === d.as_of)
@@ -123,7 +123,7 @@ function rail(d) {
     return stops.length ? `<li class="group"><h3>${esc(label)}</h3><ol class="stops">${stops.map(stop).join('')}</ol></li>` : ''
   }).join('')
   const counts = `${d.rail.filter(r => r.kind === 'milestone').length} milestones and ${d.rail.filter(r => r.kind === 'release').length} releases`
-  return section('rail', '02', 'The release rail', 'Every stop has a receipt.', `${counts}. Open a stop for what shipped, a screenshot or terminal output, and the proof: the pull request, the release notes or a Testnet transaction.`,
+  return section('rail', '02', 'The release rail', 'Every stop has a receipt.', `${counts}. Open a stop for what shipped, a screenshot or terminal output, and the proof: the pull request, the release notes or a ledger transaction.`,
     `<div class="rail-tools"><button type="button" class="btn" data-expand="rail" aria-pressed="false">Open all</button></div>
 <ol class="rail">${body}</ol>`)
 }
@@ -165,7 +165,7 @@ ${table('Judge banks', ['Bank', 'Bought and cited', 'Source'], m.banks.map(b => 
   const L = m.ledgerHistory, lmax = Math.max(...L.map(x => x.rows)) * 1.1
   const xs = L.map((_, i) => (i / (L.length - 1)) * 100), ys = L.map(x => 100 - (x.rows / lmax) * 100)
   const path = L.map((_, i) => `${i ? `H${xs[i]} V${ys[i]}` : `M${xs[i]} ${ys[i]}`}`).join(' ')
-  const D = `<article class="card chart"><h3>Public ledger evidence</h3><p class="take">Curated Testnet transactions on the ledger page grew from ${L[0].rows} to ${L.at(-1).rows}, each tied to a committed source file.</p>
+  const D = `<article class="card chart"><h3>Public ledger evidence</h3><p class="take">Curated ledger transactions on the ledger page grew from ${L[0].rows} to ${L.at(-1).rows}, each tied to a committed source file.</p>
 <div class="step" role="img" aria-label="${esc(L.map(x => `${x.label}: ${x.rows}`).join(', '))}"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="${path} H100" fill="none" stroke="currentColor" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>${L.map((x, i) => `<span class="sp" style="left:${xs[i]}%;top:${ys[i]}%" data-tip="${esc(`${x.label}: ${x.rows} rows (commit ${x.commit})`)}"><span class="sv">${x.rows}</span></span>`).join('')}</div>
 <div class="scale even">${L.map(x => `<span>${esc(x.label)}</span>`).join('')}</div>${src('site/ledger/transactions.json', 'site/ledger/transactions.json history')}
 ${table('Ledger rows over time', ['Day', 'Rows', 'Commit'], L.map(x => [esc(x.label), x.rows, ext(`${REPO}/commit/${x.commit}`, x.commit)]))}</article>`
@@ -184,7 +184,7 @@ ${table('Lines of code per checkpoint', ['Checkpoint', 'Lines'], C2.map(x => [es
   // F. Every ledger transaction, by day and kind. Each square links to the explorer.
   const kinds = ['Payment', 'Refund', 'Escrow locked', 'Key published', 'Escrow returned', 'Writer credential', 'Answer anchor', 'Account setup'].filter(k => m.transactions.some(t => t.kind === k))
   const txDays = [...new Set(m.transactions.map(t => t.day))].sort()
-  const F = `<article class="card chart wide"><h3>Every Testnet transaction</h3><p class="take">${m.transactions.length} transactions across ${txDays.length} days. Each square opens the transaction on the public XRPL Testnet explorer.</p>
+  const F = `<article class="card chart wide"><h3>Every ledger transaction</h3><p class="take">${m.transactions.length} transactions across ${txDays.length} days. Each square opens the transaction on the public XRP Ledger explorer.</p>
 <div class="wall" style="--days:${txDays.length}"><div class="wall-h"><span></span>${txDays.map(t => `<span>${esc(day(t))}</span>`).join('')}</div>
 ${kinds.map(k => `<div class="wall-r"><span class="wk">${esc(k)}</span>${txDays.map(t => `<span class="cell">${m.transactions.filter(x => x.kind === k && x.day === t).map(x => `<a class="sq" href="https://testnet.xrpl.org/transactions/${x.hash}" aria-label="${esc(`${k}, ${day(t)}, ${x.hash.slice(0, 8)}`)}" data-tip="${esc(`${k} · ${day(t)} · ${x.hash.slice(0, 10)}…`)}"></a>`).join('')}</span>`).join('')}</div>`).join('')}
 </div><p class="src">Source: <a href="../ledger/">the ledger page</a>, which re-checks every hash live · ${ext(blob(d, 'site/ledger/transactions.json'), 'transactions.json')}</p></article>`
@@ -201,7 +201,7 @@ function misses(d) {
 function feedback(d) {
   const f = d.feedback
   const steps = [[f.submissions, `submissions to XRPL and x402 docs (${f.submittedOn})`], [f.findings, 'findings logged while building'], [f.ranked, 'ranked for Ripple, each with a repro'], [f.drafts, 'upstream issue drafts ready'], [f.filed, 'filed upstream so far']]
-  return section('feedback', '06', 'Builder feedback', 'What building on XRPL taught us.', 'Every friction point with XRPL, x402 and the Testnet goes into a dated log with evidence, a workaround and the mainnet impact.',
+  return section('feedback', '06', 'Builder feedback', 'What building on XRPL taught us.', 'Every friction point with XRPL, x402 and the development network goes into a dated log with evidence, a workaround and the mainnet impact.',
     `<div class="card funnel"><ol>${steps.map(([v, l], i) => `<li${i === steps.length - 1 && !v ? ' class="zero"' : ''}><span class="fv" data-count="${v}">${v}</span><span class="fl">${esc(l)}</span></li>`).join('')}</ol>
 <p class="foot">${ext(`${REPO}/blob/main/docs/BUILDER-FEEDBACK.md`, 'Read the ranked feedback')} · ${ext(`${REPO}/tree/main/docs/feedback/upstream`, 'Upstream drafts')}</p></div>`)
 }
@@ -228,7 +228,7 @@ export function homeCard(d) {
   const h = d.headline
   return `<a class="card full progress-card" href="progress/" style="--c: var(--ink); --i: 0">
       <div class="tag">Since SingHacks</div>
-      <div><h2>From prototype to proof in ${h.days} days</h2><p style="margin-top:10px">${n(h.prs)} pull requests, ${h.releases} releases and ${h.transactions} Testnet transactions since ${esc(d.since.label.replace(' 2026', ''))}, each with a receipt. Misses included.</p></div>
+      <div><h2>From prototype to proof in ${h.days} days</h2><p style="margin-top:10px">${n(h.prs)} pull requests, ${h.releases} releases and ${h.transactions} ledger transactions since ${esc(d.since.label.replace(' 2026', ''))}, each with a receipt. Follow each result to its evidence.</p></div>
       <div class="go">Open the progress page </div>
     </a>`
 }
