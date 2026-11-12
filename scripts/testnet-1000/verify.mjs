@@ -82,7 +82,8 @@ export async function verify(receipts, request, progress = () => {}) {
 
 export async function checkHistory(receipts, request, ledgerMax) {
   const expected = new Map(receipts.map(r => [r.createHash, r.intentId])), found = new Map(), errors = []
-  const min = Math.min(...receipts.map(r => r.createLedger))
+  // Do not let a truncated receipt file choose the beginning of the audit range.
+  const min = -1 // every ledger retained by this public node, for these fresh accounts
   for (const account of new Set(receipts.map(r => r.payer))) {
     let marker
     do {
@@ -131,7 +132,7 @@ async function main() {
     result.accountHistory = await checkHistory(receipts, request, ledgerMax)
     result.errors.push(...result.accountHistory.errors.map(error => ({ errors: [error] })))
     result.mismatches = result.errors.length; result.success = result.mismatches === 0
-    result.scope = 'Every listed transaction re-fetched. All successful EscrowCreates for these fresh payer accounts scanned over the recorded ledger interval to detect omitted or duplicate charges. Grant/read times remain local observations.'
+    result.scope = 'Every listed transaction re-fetched. All retained payer-account history through a pinned validated ledger scanned for successful EscrowCreates, including before the first receipt, to detect omitted or duplicate charges. Grant/read times remain local observations.'
     Object.assign(result, { publicNode: node, rpcRetries, receiptsSha256: createHash('sha256').update(bytes).digest('hex') })
     mkdirSync(dirname(resolve(output)), { recursive: true }); writeFileSync(output, JSON.stringify(result, null, 2) + '\n')
     console.table([{ receipts: result.receipts, verified: result.verified, mismatches: result.mismatches, spentXrp: Number(result.totalSpentDrops) / 1e6, feesXrp: Number(result.transactionFeesDrops) / 1e6, rpcRetries }])

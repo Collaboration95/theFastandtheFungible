@@ -44,7 +44,7 @@ test('independent verification rejects adversarial transaction and receipt edits
 })
 test('history scan detects an omitted second create even when receipts alone look unique', async () => {
   const f = fixture(), row = { ...f.create, validated: true }
-  assert.equal((await checkHistory([f.receipt], async () => ({ transactions: [row] }), 12)).errors.length, 0)
+  assert.equal((await checkHistory([f.receipt], async request => { assert.equal(request.ledger_index_min, -1); return { transactions: [row] } }, 12)).errors.length, 0)
   const extra = structuredClone(row); extra.hash = 'C'.repeat(64); extra.tx_json.Sequence++
   const result = await checkHistory([f.receipt], async () => ({ transactions: [row, extra] }), 12)
   assert.equal(result.errors.length, 3)
