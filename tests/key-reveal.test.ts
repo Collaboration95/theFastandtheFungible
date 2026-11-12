@@ -47,7 +47,16 @@ it('key reveal pays only through writer finish and grants only after validated k
   const finish = [...s.c.txs.values()].find(t => t.tx_json.TransactionType === 'EscrowFinish')!
   expect(finish.tx_json.Account).toBe(s.candidate.wallet)
   expect(finish.tx_json.Account).not.toBe(s.wallet.classicAddress)
+  const released = s.store.getRun(s.run.runId)
+  const audit = s.store.auditEntries()
+  const grant = audit.find(e => e.kind === 'grant' && e.intentId === result.intentId)!
+  const terminal = audit.find(e => e.kind === 'ESCROW_FINISH' && e.intentId === result.intentId)!
+  const reads = audit.filter(e => e.kind === 'read_paid' && e.intentId === result.intentId)
+  expect(grant.seq).toBeGreaterThan(terminal.seq)
+  expect(reads).toHaveLength(released.contents[0].spans.length)
+  expect(reads.every(e => e.seq > grant.seq)).toBe(true)
   s.restart(); await s.manager.reconcile(); await s.buy()
+  expect(s.store.auditEntries().filter(e => e.kind === 'read_paid')).toEqual(reads)
   expect(s.store.getRun(s.run.runId).receipts).toHaveLength(1)
   expect(s.store.getRun(s.run.runId).events.filter(e => e.type === 'GRANT' && e.data?.intentId === result.intentId)).toHaveLength(1)
   expect([...s.c.txs.values()].filter(t => t.tx_json.TransactionType === 'EscrowCreate')).toHaveLength(1)
@@ -70,6 +79,7 @@ it('quarantines ciphertext from snapshot, model contents, UI, logs and exports w
   expect(publicBytes).not.toContain(e.quote.ciphertext)
   expect(s.store.getRun(s.run.runId).contents).toEqual([])
   expect(s.store.getRun(s.run.runId).grants).toEqual([])
+  expect(s.store.auditEntries().filter(e => ['grant', 'read_paid'].includes(e.kind))).toEqual([])
   expect(() => s.store.keyRevealEvidence('escrow-one')).toThrow()
   s.c.state.now = e.quote.terms.cancelAfter + 1
   s.restart(); await s.manager.reconcile(); await s.manager.reconcile()
