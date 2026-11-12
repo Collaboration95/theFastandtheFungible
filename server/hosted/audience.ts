@@ -16,7 +16,9 @@ export function audienceMiddleware(config: Config): RequestHandler {
       const value=parts[0].slice(cookie.length+1), [expiry,signature]=value.split('.')
       if (/^\d{13}$/.test(expiry) && Number(expiry)>at && Number(expiry)<=at+86400000 && signature) operator ||= equal(createHmac('sha256',secret).update(expiry).digest('hex'),signature)
     }
-    res.locals.runAudience=operator || config.HOSTED !== '1' || !req.get('Origin') ? 'internal' : 'external'
+    // Hosted: only an operator credential marks a run internal. Agents calling MCP or the paid endpoint send no
+    // Origin header, and they are outside visitors.
+    res.locals.runAudience=operator || config.HOSTED !== '1' ? 'internal' : 'external'
     runAudience.run(res.locals.runAudience,next)
   }
 }
