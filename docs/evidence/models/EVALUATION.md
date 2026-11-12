@@ -21,4 +21,4 @@ FREE_TIER=public-docs CORPUS_PROFILE=real EMBEDDING_PROVIDER=local node --import
 FREE_TIER=public-docs CORPUS_PROFILE=real EMBEDDING_PROVIDER=local DECISION_PROVIDER=fixture R3_OUT=scratch/r3-real-200 npm run eval:r3
 ```
 
-The isolated simulated batch sets `WALLET_DAILY_CAP_MINOR=100000` (S$1,000 aggregate) so the daily allowance does not truncate 200 paid-arm questions. Per-question S$2 and per-source policy caps remain unchanged. This configuration applies only to the evaluation's simulated stores, never hosted wallets; it does not raise the US$5 model-spend ceiling. Anchoring is off, fault injection and telemetry are off, and no ledger payment is submitted.
+The isolated simulated batch sets `WALLET_DAILY_CAP_MINOR=100000` (S$1,000 aggregate) so the daily allowance does not truncate 200 paid-arm questions. Per-question S$2 and per-source policy caps remain unchanged. This configuration applies only to the evaluation's simulated stores, never hosted wallets; it does not raise the US$5 model-spend ceiling. Anchoring, web publishing, automatic approval, fault injection and telemetry are off, and no ledger payment is submitted.

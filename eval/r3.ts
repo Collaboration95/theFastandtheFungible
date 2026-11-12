@@ -54,7 +54,7 @@ const save=()=>{atomicJson(costLedger,costs);atomicJson(join(dir,'results.json')
 save()
 const key=process.env.DEEPSEEK_API_KEY||process.env.LLM_API_KEY
 if(!key)throw new Error('Live DeepSeek credential unavailable')
-Object.assign(process.env,{HOSTED:'0',LLM_PROVIDER:'deepseek',LLM_MODEL:'deepseek-flash',LLM_BASE_URL:'https://api.deepseek.com',LLM_API_KEY:key,
+Object.assign(process.env,{HOSTED:'0',WEB_PUBLISHING:'off',AUTO_APPROVE:'off',LLM_PROVIDER:'deepseek',LLM_MODEL:'deepseek-flash',LLM_BASE_URL:'https://api.deepseek.com',LLM_API_KEY:key,
  DECISION_PROVIDER:'fixture',EMBEDDING_PROVIDER:'local',SEARCH_EMBEDDINGS:'off',SETTLEMENT_RAIL:'simulated',ANCHOR_RAIL:'off',PUBLISHER_FAULTS:'0',LANGFUSE_ENABLED:'0',WALLET_DAILY_CAP_MINOR:'100000'})
 const realFetch=globalThis.fetch
 const peak=()=>{const d=new Date(),h=d.getUTCHours();return d.getUTCDay()>0&&d.getUTCDay()<6&&((h>=1&&h<4)||(h>=6&&h<10))}
@@ -92,7 +92,7 @@ const publisher=createPublisherApp({writers:corpus,journal:join(dir,'publisher.d
 let ps:ReturnType<typeof publisher.listen>|undefined
 const apis:Awaited<ReturnType<typeof createApiApp>>[]=[],servers:ReturnType<typeof publisher.listen>[]=[]
 try{
- await publisher.locals.writersReady
+ await publisher.locals.ready
  ps=publisher.listen(0,'127.0.0.1');await once(ps,'listening')
  const publisherUrl=`http://127.0.0.1:${(ps.address() as {port:number}).port}`
  await Promise.all(['free','paid'].map(async arm=>{
@@ -157,5 +157,5 @@ try{
  await Promise.all(apis.map(api=>api.close()))
  for(const s of servers){s.closeAllConnections();await new Promise<void>(done=>s.close(()=>done()))}
  if(ps){ps.closeAllConnections();await new Promise<void>(done=>ps!.close(()=>done()))}
- publisher.locals.journal.close();globalThis.fetch=realFetch;save();unlockLedger()
+ await publisher.locals.closePublishing?.();await publisher.locals.ledger?.close?.();publisher.locals.journal.close();globalThis.fetch=realFetch;save();unlockLedger()
 }
