@@ -3,6 +3,9 @@ import { afterEach, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { Wallet, decode } from 'xrpl'
 import DelegatedWallet from './DelegatedWallet'
+import HostedEnv from './hosted/HostedEnv'
+import { environment } from '../hosted'
+import type { HostedDemoStatus } from '../api'
 const state = vi.hoisted(() => ({ calls: [] as { path: string; body: unknown }[], blobs: [] as string[], funded: 0, address: undefined as string | undefined, disconnectFails: false }))
 vi.mock('xrpl', async original => {
   const actual = await original<typeof import('xrpl')>()
@@ -14,7 +17,7 @@ vi.mock('xrpl', async original => {
     async submitAndWait(blob: string) { state.blobs.push(blob); return { result: { meta: { TransactionResult: 'tesSUCCESS' } } } }
   } }
 })
-vi.mock('../api', () => ({ walletRequest: async (path: string, body?: { address?: string }) => {
+vi.mock('../api', () => ({ ApiError: class extends Error {}, walletRequest: async (path: string, body?: { address?: string }) => {
   state.calls.push({ path, body })
   if (path.endsWith('/challenge')) return { message: 'AB'.repeat(32) }
   if (path.endsWith('/connect')) { state.address = body?.address; return { address: state.address } }
@@ -22,6 +25,17 @@ vi.mock('../api', () => ({ walletRequest: async (path: string, body?: { address?
   return { enabled: true, agent: 'rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh', address: state.address }
 } }))
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); localStorage.clear(); state.calls = []; state.blobs = []; state.funded = 0; state.address = undefined; state.disconnectFails = false })
+it.each([false, true])('describes the configured hosted wallet truthfully (visitor wallet: %s)', ownWallet => {
+  const status: HostedDemoStatus = { state: 'ready', questionCapMinor: 200, remaining: { questions: 5, minor: 1000 }, labels: { models: 'fixture models', rail: ownWallet ? 'XRPL Testnet · visitor wallet' : 'Shared XRPL Testnet demo · no real value' }, capabilities: { ask: true, scope: true, history: true, receipts: true, pdf: false, settings: false, faultControls: false }, links: { repo: '', deck: '', video: '', progress: '', replay: '' } }
+  render(<HostedEnv hosted={{ status }} />)
+  fireEvent.click(screen.getByRole('button', { name: 'XRPL Testnet' }))
+  expect(screen.getAllByRole('button', { name: 'XRPL Testnet' })).toHaveLength(1)
+  if (ownWallet) {
+    expect(screen.getByText('Purchases use your wallet.')).toBeTruthy()
+    expect(screen.queryByText(/uses one sponsor wallet/)).toBeNull()
+    expect(environment(status).full).toBe('XRPL Testnet · visitor wallet · rule-based buying')
+  } else expect(screen.getByText(/uses one sponsor wallet/)).toBeTruthy()
+})
 it('keeps a generated Testnet seed in this browser, sends public proof only, and signs an empty revocation', async () => {
   // Node crypto returns Node-realm byte arrays; align jsdom's constructor for noble's instanceof guard.
   vi.stubGlobal('Uint8Array', Object.getPrototypeOf(Buffer.prototype).constructor)

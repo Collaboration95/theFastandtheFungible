@@ -22,7 +22,7 @@ export default function HostedEnv({ hosted }: { hosted: Hosted }) {
     </button>
     {open && <section id="hosted-environment" className="ra-env-pop ra-henv-pop" style={{ position: 'fixed', top, bottom: 'auto', right: 16, left: 'auto', width: 'min(380px, calc(100vw - 32px))', maxHeight: `calc(100dvh - ${top + 12}px)`, overflow: 'auto' }} aria-label="About this demo">
       <h2>{env.testnet ? 'XRPL Testnet' : 'Simulated payments'}</h2>
-      <p>This shared demo uses one sponsor wallet{env.testnet ? ' on the XRPL Testnet' : ''}. No real value. Nothing here costs you money.</p>
+      <p>{env.ownWallet ? 'Purchases use your wallet.' : <>This shared demo uses one sponsor wallet{env.testnet ? ' on the XRPL Testnet' : ''}. No real value. Nothing here costs you money.</>}</p>
       <dl>
         <div><dt>Payments</dt><dd>{env.testnet ? 'Paid over x402 on XRPL Testnet. Escrowed articles unlock when the writer publishes the key. Every transaction has a public link.' : 'Simulated: no ledger transactions. Receipts say so.'}</dd></div>
         <div><dt>Models</dt><dd>{env.fixture ? 'Offline extracts write the answers. Policy rules decide purchases deterministically; each decision is auditable.'

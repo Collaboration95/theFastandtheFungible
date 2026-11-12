@@ -62,7 +62,7 @@ it('reserves no hosted budget or run if the wallet disconnects during readiness'
   cleanup.push(() => clock.mockRestore())
   const control = join(resources().tempDir('ra-wallet-readiness-'), 'control.json')
   writeFileSync(control, JSON.stringify({ admissionsPaused: false, spendingPaused: false, reasonCode: 'test', expiresAt: '2026-11-19T16:00:00Z' }))
-  const config = loadConfig({ HOSTED_CONTROL_PATH: control, HOSTED_IP_HMAC_KEY: 'k'.repeat(40) })
+  const config = loadConfig({ HOSTED_CONTROL_PATH: control, HOSTED_IP_HMAC_KEY: 'k'.repeat(40), WALLET_MODE: 'delegated' })
   const limits = new HostedLimits(s.store, config), queue = new HostedQueue(config)
   cleanup.push(() => queue.close())
   const context = { store: s.store, payer: s.payer, labels: s.run.labels, loop: {}, work: new ActiveWork(1) } as unknown as import('../server/api/context.js').ApiContext
@@ -76,6 +76,7 @@ it('reserves no hosted budget or run if the wallet disconnects during readiness'
   const server = app.listen(0, '127.0.0.1'); await new Promise(r => server.once('listening', r))
   cleanup.push(async () => { server.closeAllConnections(); await new Promise<void>(r => server.close(() => r())) })
   base = `http://127.0.0.1:${(server.address() as { port: number }).port}`
+  expect((await (await fetch(base + '/api/demo/status')).json()).labels.rail).toBe('XRPL Testnet · visitor wallet')
   const { message } = await (await post('/api/wallet/delegation/challenge', {})).json()
   expect((await post('/api/wallet/delegation/connect', { address: s.visitor.address, publicKey: s.visitor.publicKey, signature: sign(message, s.visitor.privateKey) })).status).toBe(200)
   const response = await post('/runs', { question: 'SYNTHETIC readiness disconnect', budgetMinor: 100 })
