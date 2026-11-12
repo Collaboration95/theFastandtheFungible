@@ -6,6 +6,7 @@ import {join,resolve} from 'node:path'
 import {createHash} from 'node:crypto'
 import {execFileSync} from 'node:child_process'
 import {loadWriterCorpus} from '../publisher/corpus.js'
+import {validateWriterCorpus} from '../shared/contracts/writers.js'
 import {readRuns,auditRuns} from '../scripts/gate-audit.js'
 import {readObservations,atomicJson} from './r3-state.js'
 import type {Observation} from '../tests/scenarios/harness.js'
@@ -18,7 +19,7 @@ const oldArticle=JSON.parse(readFileSync(oldFile,'utf8')),changed='c5-xrpl-desti
 if(oldArticle.articleId!==changed)throw Error('Only diagnosed DestinationTag fixture is supported')
 const hash=(value:unknown)=>createHash('sha256').update(JSON.stringify(value)).digest('hex')
 const statics={...corpus,articles:corpus.articles.filter(a=>a.publisherSlug!=='ledger-analytics')}
-const oldCorpus={...statics,articles:statics.articles.map(a=>a.articleId===changed?oldArticle:a)}
+const oldCorpus=validateWriterCorpus({...statics,articles:statics.articles.map(a=>a.articleId===changed?oldArticle:a)})
 if(hash(oldCorpus)!==saved.identity.corpusSha256)throw Error('Other corpus bytes changed')
 const runs=['free','paid'].flatMap(arm=>readRuns(join(from,`${arm}.db`)))
 if(runs.some(r=>r.intents.some(i=>i.resourceId===changed)||r.grants.some(g=>g.resourceId===changed)||r.contents.some(c=>c.resourceId===changed)))throw Error('Changed fixture was used; cannot reuse the paired sample')
