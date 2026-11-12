@@ -97,3 +97,43 @@ During real-profile integration, clean head `47536f0cf6101a669c86840b0d48f2fc29b
 `CORPUS_PROFILE=real` (default unset / `default`) implies the public-docs free tier and ledger-analytics writer. It admits project team notes and author-supplied local/published writers whose corpus marks them non-synthetic. All eight bundled fictional publishers are excluded: alphaleak, basis-points, kopi-contrarian, load-factor, marketpulse-digest, notfinancialtimes, open-records and the-fab-floor. Their current roster files all mark `synthetic: true`; Open Records' operator authorship flag does not make its fictional records real.
 
 Newly discovered publisher registries are also filtered by explicit non-synthetic provenance under the real profile. Missing provenance is not treated as real. Public documentation has its upstream name, MIT/Apache licence and a “Public documentation” writer badge. The ledger writer and team notes retain “Team-authored”; no independent-writer identity is claimed. Default fixtures, evaluations and all eight fictional roster files remain unchanged. Cheap profile tests cover admission, article/writer references, real locally published authors, free-source substitution and rendered badge labels.
+
+## Separate real-content replay
+
+Select `?scenario=UC-real-content` in the replay, or “Public docs · live models” in its picker. The existing default remains `UC3-key-reveal`. The new fixture is `demo/traces/UC-real-content.json`: HTTP/SSE research API capture, DeepSeek Flash synthesis and compatible JSON decisions, six claims, five public XRPL documentation chunks, zero purchases and a zero article budget. All cited spans resolve to the original xrpl.org URL. Compatible decisions remain explicitly uncalibrated; this does not claim model calibration or ledger settlement.
+
+The successful capture reserved a conservative model-cost upper bound of US$0.066118 for three calls. The initial identifier-only question was classified off-topic by the scope guard; the recorder then invoked `/runs` directly with its plan. This proves the research API, not normal chat routing. A second capture with an XRPL-prefixed question failed and did not replace the fixture. Across both attempts, the recorder refused any request that would exceed the cumulative US$0.90 bound, using input bytes and output ceilings at rates above the provider's documented peak Flash prices. Actual billed spend was not measured. No further model calls were made.
+
+With the main checkout’s `.env` symlink configured locally and never printed, re-record in one command:
+
+```sh
+npm run corpus:public-docs && npm run demo:capture:real
+```
+
+The recorder explicitly opts into the real profile, requires the bounded live model, uses ephemeral local ports and simulated settlement, disables embeddings and external telemetry, permits only local HTTP and the model endpoint, and refuses to save failed or fixture-synthesized answers. Each future invocation has a US$0.90 reservation ceiling. `CONTENT_RECORDING_QUESTION` optionally selects a different question; unset reproduces the committed question. The capture source SHA and exact provider labels are retained in the fixture. The off-topic classification and the failed second capture remain routing/reliability follow-ups.
+
+## Configuration and offline checks
+
+| Setting | Default | Opt-in effect |
+| --- | --- | --- |
+| `FREE_TIER` | unset / `default` | `public-docs` replaces existing free articles with the built documentation |
+| `LEDGER_ANALYTICS` | unset / off | `1` adds the ledger writer and background prewarming/refresh |
+| `CORPUS_PROFILE` | unset / `default` | `real` implies docs and analytics and excludes synthetic publishers |
+| `PUBLIC_DOCS_ARCHIVES_DIR` | unset | Reuse extracted pinned archives instead of fetching fresh scoped tarballs |
+| `LEDGER_REPORT_DIR` | `data/ledger-reports` | Location for retained immutable report versions |
+| `LEDGER_PROJECT_ACCOUNTS` | The real writer's public wallet plus addresses derived from available configured project seed variables | Explicit comma-separated project Testnet account allowlist |
+| `XRPL_PUBLISHER_LEDGER_ANALYTICS_SEED` | Normal local writer state fallback | Required normal signing identity on the Testnet rail; never print or commit it |
+| `CONTENT_RECORDING_QUESTION` | `What information does the account_info command return?` | Local replay capture question |
+| Replay `scenario` query | Existing `UC3-key-reveal` | `UC-real-content` selects the separate real-source run |
+
+Offline targeted checks validate all retained report signatures/leaves, the actual paid receipt's signer/price/version, canonical SDK links, default/real payment boundaries and byte-identical index reconstruction. A bundled-module check loads the index using the hosted dist/data layout. These checks make no network writes. Full Node22 gate receipts and merge status are reported separately; targeted checks are not release admission.
+
+## Integration verification
+
+The first three steps passed Node 22 `check:fast`, published 20/20 local gates, and exact merged-SHA admission: documentation PR #527 / `4a985d79c8b4ecc0cd80547ea4fd82107e7a1426`; ledger writer #536 / `9653e2df4a6b86a085f97ce67dfb1a2c3b43ace3`; real profile #537 / `8e7fb86b4959b6910c339bfb33db98a846823cdb`. The final profile run passed 3,238 unit tests with four existing skips and 20 chaos iterations with zero invariant violations. Cheap admission, badge and money-path cases cover both profiles; the full suite keeps its default fixtures.
+
+The retained paid-site leak timeout was an observed host-load flake: its two-test file took 12.716 seconds in the fast suite, exceeded the existing 30-second per-test timeout in the full gate (30.032 seconds for the file), then passed unchanged in 23.879 seconds on retry. Later current-main integration gates passed as well. No timeout, leak threshold or assertion was loosened. The replay and its final release-admission receipt are a separate fourth PR.
+
+The initial replay fast check rejected environment wording defined in the demo helper. Those definitions now live in the shared presentation contract; the existing default ENV labels, generated site helper and presentation guard fixtures are unchanged. The presentation-contract and real-replay targeted checks then passed (four tests), with no resource leaks.
+
+Replay gate receipt `1794490708869-56910-449aae4d-80a4-41ee-91f2-2f0f832db924.json` exposed an old browser assertion assuming every recording was fictional. Only the new UC-real-content case now asserts its exact live-answer/simulated-payment provenance; every prior fixture keeps its original assertion and data. The focused browser check passed. The same gate hit the unchanged judge-corner file’s five-second per-test timeout (5.573 seconds for the file, versus 0.646 seconds in the fast suite); an unchanged targeted retry passed all 17 tests in 0.627 seconds, with clean resources. No timeout or copy-guard fixture changed.

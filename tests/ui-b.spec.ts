@@ -36,7 +36,10 @@ for (const entry of recordingIndex) test(`UI-B replay provenance and dates: ${en
   const { run } = JSON.parse(readFileSync(`demo/traces/${entry.scenario}.json`, 'utf8'))
   const date = dateSGT(run.events[0].at)
   await page.goto(`${replayURL}?scenario=${entry.scenario}`)
-  await expect(page.locator('.ra-replay-provenance')).toHaveText(provenance + (entry.testnet ? 'XRPL Testnet, no real value' : 'simulated payments, no real value'))
+  const expected = entry.scenario === 'UC-real-content'
+    ? 'Recorded run · live answers · simulated payments'
+    : provenance + (entry.testnet ? 'XRPL Testnet, no real value' : 'simulated payments, no real value')
+  await expect(page.locator('.ra-replay-provenance')).toHaveText(expected)
   await expect(page).toHaveTitle(new RegExp(`^Replay · ${date} · `))
   await expect(page.locator('.demo-shell > summary .demo-label')).toContainText(date)
   await expect(page).toHaveTitle(/Answer ready/)

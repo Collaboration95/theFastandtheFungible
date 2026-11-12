@@ -62,6 +62,7 @@
     "build:mcpb": "node scripts/build-mcpb.mjs",
     "build:demo": "vite build --config demo/vite.config.ts --mode browser-demo",
     "demo:capture": "tsx scripts/capture-browser-demo.ts",
+    "demo:capture:real": "tsx demo/record-real.ts",
     "test:demo": "npm run build:demo && playwright test --config tests/playwright/demo.config.ts",
     "test:judge": "npm run build:demo && playwright test --config tests/playwright/judge.config.ts",
     "check:paid-bodies": "node scripts/check-paid-bodies.mjs",

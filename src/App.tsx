@@ -44,6 +44,7 @@ import Connecting from './components/Connecting'
 import { warmVerifier } from './warm-verifier'
 import { modifier } from './shortcuts'
 import { exampleQuestions } from '../shared/contracts/examples'
+import { recordedRunLabel } from '../shared/recorded-run-label'
 
 const browserDemo = import.meta.env.MODE === 'browser-demo'
 const paceKey = 'researchagent.pace', notifyKey = 'researchagent.notify', clarifyKey = 'researchagent.clarify-never', navKey = 'researchagent.nav', navWidthKey = 'researchagent.nav-width'
@@ -528,7 +529,7 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
         {shown.intents.filter(i => i.status === 'REFUNDED').map(i => <Notice key={i.intentId}>{candidateOf(shown, i)?.publisher ?? 'The writer'}’s article didn’t contain what it promised, so it was refunded and not used.</Notice>)}
         {banner}
         {!compare && <Sources run={shown} onOpen={candidate => setPassage({ candidate })} />}
-        {browserDemo && <p className="ra-replay-provenance ra-note">Recorded run · fixture answers · fictional writers and content · {shown.labels.settlement.includes('TESTNET') ? 'XRPL Testnet, no real value' : 'simulated payments, no real value'}</p>}
+        {browserDemo && <p className="ra-replay-provenance ra-note">{recordedRunLabel(shown)}</p>}
         <Answer run={shown} view={view} onView={setView} compare={compare} onCompare={() => { setView('latest'); setCompare(!compare) }}
           onCitation={citation => { const candidate = candidateOf(shown, citation); if (candidate) setPassage({ candidate, citation }) }}
           report={finished ? <ReportButton run={shown} onReport={downloadReport} onCompare={() => { setView('latest'); setCompare(true) }} /> : undefined} />

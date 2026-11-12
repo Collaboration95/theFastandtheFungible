@@ -22,6 +22,11 @@ export const ENV = {
   replay: (date: string, testnet = true) => `Replay · ${testnet ? 'XRPL Testnet' : 'simulated payments'}, recorded ${date} · fictional writers · no real value`,
   replayShort: (testnet = true) => testnet ? 'Replay · Testnet demo' : 'Replay · Simulated demo',
 } as const
+/** Actual live synthesis over public sources, separately selected from fixture replays. */
+export const liveReplayEnvironment = {
+  full: (date: string) => `Replay · simulated payments, recorded ${date} · live models`,
+  short: 'Replay · live models',
+} as const
 export const environmentLabel = (settlement?: string, models = 'fixture models') => settlement?.startsWith('XRPL') ? ENV.localTestnet(models) : ENV.localSimulated(models)
 /** Human labels retain both providers' real mode without their internal model identifiers. */
 export const modelsLabel = (research?: string, decision?: string) => !research || !decision ? 'models connecting' : research.startsWith('fixture') ? decision.startsWith('fixture') ? 'fixture models' : 'fixture answers, live buying' : decision.startsWith('fixture') ? 'live answers, rule-based buying' : 'live models'

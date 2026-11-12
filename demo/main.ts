@@ -4,6 +4,7 @@ import { HOSTED_APP_URL } from '../shared/links'
 import './style.css'
 import { RunSnapshotSchema } from '../shared/contracts/index.js'
 import recordingIndex from './recording-index.json'
+import { replayLabel } from './replay-label'
 const modules = import.meta.glob('./traces/UC*.json', { import: 'default' })
 type Recording = { run: import('../shared/contracts/index.js').RunSnapshot; scope: import('../shared/contracts/index.js').Scope; health: unknown; reputation: unknown; cards: Record<string, unknown> }
 const loaded = new Map<string, Promise<Recording>>()
@@ -38,7 +39,7 @@ const showTitle = () => {
 }
 let updateTransactions: (() => Promise<void>) | undefined = undefined
 const showLabel = () => {
-  for (const label of document.querySelectorAll('.demo-label')) label.textContent = ENV.replay(recordedOn(active), testnetRun(active))
+  for (const label of document.querySelectorAll('.demo-label')) label.textContent = replayLabel(scenarioOf(active), recordedOn(active), testnetRun(active))
   document.querySelector('.demo-short')!.textContent = `${replayName} · ${recordedOn(active)}`
   showTitle()
   const picker = document.querySelector<HTMLSelectElement>('.demo-banner select')
@@ -56,7 +57,7 @@ window.fetch = async (input, init) => {
   else if (path === '/api/scope' || path === '/runs') {
     const entry = recordingIndex.find(item => item.question === body.question && !item.testnet)
     const recording = entry ? await loadRecording(entry.scenario) : undefined
-    if (!recording) return Response.json({ error: 'Choose one of the three recorded questions.' }, { status: 400 })
+    if (!recording) return Response.json({ error: 'Choose a recorded question.' }, { status: 400 })
     active = recording; showLabel()
     if (path === '/api/scope') value = { ...recording.scope, questions: [] }
     else { visited.set(active.run.runId, active); value = active.run }
@@ -104,7 +105,7 @@ const askOwn = document.createElement('a'); askOwn.href = HOSTED_APP_URL; askOwn
 // One row: what this is, its ledger check, the scenario picker, Pause, then the ways out.
 const controls = document.createElement('div'); controls.className = 'demo-controls'
 const picker = document.createElement('select'); picker.setAttribute('aria-label', 'Recorded scenario')
-for (const [label, scenario] of [['Key reveal + refund (start here)', ''], ['Plain payment', 'UC3-testnet'], ['Writer never reveals: money back', 'UC-key-reveal'], ['Simulated: decline', 'UC1'], ['Simulated: buy', 'UC2'], ['Simulated: refund', 'UC3']]) {
+for (const [label, scenario] of [['Key reveal + refund (start here)', ''], ['Public docs · live models', 'UC-real-content'], ['Plain payment', 'UC3-testnet'], ['Writer never reveals: money back', 'UC-key-reveal'], ['Simulated: decline', 'UC1'], ['Simulated: buy', 'UC2'], ['Simulated: refund', 'UC3']]) {
   const option = document.createElement('option'); option.value = scenario; option.textContent = label; picker.append(option)
 }
 picker.onchange = () => { location.href = picker.value ? `${location.pathname}?scenario=${picker.value}` : location.pathname }
