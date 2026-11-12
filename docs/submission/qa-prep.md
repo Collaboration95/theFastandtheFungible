@@ -54,10 +54,10 @@ unavailable, never a pass. Signed promises and passage proofs are checked separa
 
 ## 8. Can you force a quality refund?
 
-Quality refunds need the writer’s signature and cooperation; a real writer could
-refuse. The historical broken-promise replay uses a cooperative fictional writer.
+Partly. With the opt-in holdback on, <!--f:holdback_percent-->20<!--/f-->% of the price goes into a second escrow, created with the first in one atomic Batch. Buyer policy releases it when the promise checks pass and takes it back after a deadline when they fail, with no writer cooperation: <!--f:holdback_total-->17<!--/f--> real purchases, <!--f:holdback_released-->11<!--/f--> released and <!--f:holdback_refunded-->6<!--/f--> refunded, all verified (fixture articles, forced promise failures). <!-- HOSTED-PENDING -->
+Only the holdback share is refundable: the key-release payment stays paid, and fees stay paid. Without the holdback, a refund needs the writer’s signature; the historical broken-promise replay uses a cooperative fictional writer.
 A no-show has a different recovery path: validated EscrowCancel after CancelAfter.
-The deadline itself does not return the funds. [Refund contract](../key-reveal-escrow.md).
+The deadline itself does not return the funds. [Holdback evidence](../evidence/money/HOLDBACK.md) · [Refund contract](../key-reveal-escrow.md).
 
 ## 9. What do the live numbers cover?
 
@@ -164,8 +164,7 @@ browser link avoids installation. Agents can also connect by URL. <!-- HOSTED-PE
 ## 22. Is it ready for regulated deployment?
 
 No. The opt-in regulated mode refuses payees without an accepted credential and
-screens them against one dated OFAC XRP address list, with every refusal audited; that
-is a control, not clearance. Custody needs KMS/HSM and rotation; screening needs a
+screens them against one dated OFAC XRP address list, with every refusal audited. It is optional and off on the hosted demo, and it is a control, not clearance. Custody needs KMS/HSM and rotation; screening needs a
 sanctions provider and writer KYB; audit retention policy, maker-checker controls,
 velocity limits, licensing and legal review remain. The hire flow holds funds in transit.
 [Compliance map](../COMPLIANCE.md).

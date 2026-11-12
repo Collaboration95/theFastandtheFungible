@@ -92,7 +92,7 @@ export const capabilities = [
   { name: 'Who decides to buy', then: 'A language model proposed; a person approved every quote', now: 'Policy code buys within the budget you set, after one plan confirmation; a decision model only scores', prs: [], tag: 'known-good-2026-10-08', evidence: 'docs/FINAL-PUSH.md' },
   { name: 'Payment', then: 'A simulated by default; development-network optional', now: 'Each writer paid at its own development-network wallet, one charge per intent', prs: [101, 103] },
   { name: 'Agents', then: 'One web page', now: 'An MCP server any agent can reach by URL, an x402 paid endpoint and TypeScript and Python SDKs', prs: [266, 333, 523, 538] },
-  { name: 'Refunds', then: 'None', now: 'Quality refunds need the writer’s signature (cooperative); no-show refunds use automatic EscrowCancel after the deadline', prs: [308] },
+  { name: 'Refunds', then: 'None', now: 'An opt-in holdback returns a share of the price without the writer; the rest pays on key reveal; no-show refunds use EscrowCancel after the deadline', prs: [308, 540] },
   { name: 'Mac app', then: 'None', now: 'An installable Mac app with keys in the Keychain (unsigned)', prs: [303] },
   { name: 'Proof', then: 'Citations checked inside the app', now: 'An offline verifier anyone can run, a protocol model, simulated crash schedules, and a large batch of real purchases each re-read from a public node', prs: [322, 530, 533] },
   { name: 'Sources', then: 'Synthetic sources only', now: 'The real XRPL and x402 documentation, plus ledger reports signed to a validated ledger', prs: [527, 536, 537] },

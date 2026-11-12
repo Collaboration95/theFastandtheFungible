@@ -75,7 +75,7 @@ describe('finals deck', () => {
     const proof = slideTitled('Proof at scale').textContent ?? ''
     for (const key of ['proof_purchases', 'proof_states', 'proof_schedules', 'proof_attacks', 'proof_p50_s']) expect(proof, key).toContain(fact(key))
     expect(slideTitled('Real sources, and reports signed to a ledger').textContent).toContain(fact('content_passages'))
-    expect(slideTitled('Anyone can publish a paid note').textContent).toContain(fact('publish_live_s'))
+    expect(slideTitled('Open to anyone, with a regulated mode').textContent).toContain(fact('publish_live_s'))
     expect(slideTitled('RLUSD cannot be escrowed today').textContent).toContain('tecNO_PERMISSION')
   })
 

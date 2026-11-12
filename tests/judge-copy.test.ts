@@ -46,7 +46,7 @@ describe('judge-facing presentation contract', () => {
     const readme = read('README.md')
     const deck = read('docs/submission/deck/index.html')
     const qa = read('docs/submission/qa-prep.md')
-    const phrases = [/No outside customers, pilots or revenue/gi, /Signed submission can expose the key before validation/gi, /a real writer could refuse/gi]
+    const phrases = [/No outside customers, pilots or revenue/gi, /Signed submission can expose the key before validation/gi, /the key-release payment stays paid/gi]
     for (const text of [readme, deck, qa].map(t => t.replace(/\s+/g, ' '))) for (const phrase of phrases) expect(text.match(phrase)).toHaveLength(1)
     for (const phrase of phrases) {
       expect(readme.split('## Status and limits')[0]).not.toMatch(phrase)

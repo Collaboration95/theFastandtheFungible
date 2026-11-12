@@ -203,6 +203,10 @@ export function build() {
   if (!attacks || attacks[1] !== attacks[2]) need(null, `a passing attack line in ${PROOF}/PROOF-REPORT.md`)
   const docsManifest = json('data/corpus/public-docs/manifest.json')
   const phone = json('docs/evidence/publish/phone-live.json')
+  const holdback = json('docs/evidence/money/holdback-transactions.json')
+  const holdbackChecks = json('docs/evidence/money/holdback-verification.json')
+  if (holdbackChecks.length !== holdback.rows.length || !holdbackChecks.every(r => r.offline.ok && r.online?.ok !== false)) need(null, 'every holdback receipt verified')
+  if (holdback.rows.some(r => !['released', 'refunded'].includes(r.holdback.state))) need(null, 'every holdback row terminal')
   const grouped = n => Number(n).toLocaleString('en-US')
   Object.assign(facts, {
     proof_purchases: fact(grouped(verified.verified), `${PROOF}/testnet-1000-verify.json`, 'real key-reveal purchases the independent script re-read from a public node and verified'),
@@ -213,6 +217,10 @@ export function build() {
     proof_attacks: fact(attacks[1], `${PROOF}/PROOF-REPORT.md`, 'attacks against the local stack that passed; zero breaches'),
     proof_violations: fact(Object.values(sim.violations).reduce((a, b) => a + b, 0) + modelRuns.models.reduce((n, m) => n + (m.violations?.length ?? 0), 0), `${PROOF}/sim-summary.json`, 'violations across the simulated schedules and the model checker'),
     content_passages: fact(grouped(docsManifest.sources.reduce((n, x) => n + x.passageCount, 0)), 'data/corpus/public-docs/manifest.json', 'XRPL and x402 documentation passages in the free tier'),
+    holdback_total: fact(holdback.rows.length, 'docs/evidence/money/holdback-transactions.json', 'real Testnet purchases with a buyer-controlled holdback; every receipt verified offline and against a public node'),
+    holdback_released: fact(holdback.rows.filter(r => r.holdback.state === 'released').length, 'docs/evidence/money/holdback-transactions.json', 'holdbacks released by buyer policy after the promise checks passed'),
+    holdback_refunded: fact(holdback.rows.filter(r => r.holdback.state === 'refunded').length, 'docs/evidence/money/holdback-transactions.json', 'holdbacks refunded to the buyer after the deadline when a promise failed'),
+    holdback_percent: fact(need(holdback.rows[0].holdback.percent, 'holdback percent'), 'docs/evidence/money/holdback-transactions.json', 'share of the price held back by default, percent'),
     publish_live_s: fact(phone.submitToVisibleLiveSeconds.toFixed(1), 'docs/evidence/publish/phone-live.json', 'seconds from phone-width form submission to a live note, measured locally'),
     publish_sale_s: fact(phone.totalToVisibleSaleSeconds.toFixed(1), 'docs/evidence/publish/phone-live.json', 'seconds from submission to a visible verified sale, measured locally'),
   })

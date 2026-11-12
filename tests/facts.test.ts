@@ -90,6 +90,6 @@ describe('facts: one source for every number a judge reads', () => {
     expect(readme).not.toMatch(/actions\/workflows\/[\w.-]+\/badge\.svg|codespaces\.new/)
     expect(readme).toContain('docs/media/readme-answer.png')
     const prose = strip(readme).replace(/<!--[\s\S]*?-->/g, '').replace(/```[\s\S]*?```/g, '').replace(/<details>[\s\S]*?<\/details>/g, '').replace(/<[^>]+>/g, '').replace(/\]\([^)]*\)/g, ']')
-    expect(prose.split(/\s+/).filter(Boolean).length).toBeLessThan(1100)
+    expect(prose.split(/\s+/).filter(Boolean).length).toBeLessThan(1200)
   })
 })

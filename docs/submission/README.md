@@ -12,8 +12,8 @@ Live pitch Wed 18 Nov, 11:30–12:00 SGT, Swiss Pavilion, SFF.
 | Demo | https://collaboration95.github.io/theFastandtheFungible/try/ |
 | Video | Final owner upload is tracked in the pinned owner issue |
 
-The 14-slide deck leads with the question, purchase and key check, shows the dated
-hosted feasibility snapshot and closes with one Status and limits slide.
+The 14-slide deck leads with real sources, open publishing and the key check, then
+proof at scale, reach by URL and the dated hosted snapshot, and closes with one Status and limits slide.
 [Pitch cuts](pitch-2min.md) · [Prepared Q&A](qa-prep.md) ·
 [Owner voice and shot plan](demo-video-script.md) · [Video kit](video/README.md).
 
