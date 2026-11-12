@@ -70,7 +70,7 @@ export function classify(paths, { knownBase = true, full = false } = {}) {
     mode: code ? (all ? 'full' : 'code') : 'docs', all, unknown,
     reason: full ? 'Explicit --full' : !knownBase ? 'Unknown base' : !paths.length ? 'Empty diff requires full verification (including a merged SHA)' : unknown.length ? 'Unknown paths' : all ? 'Build, dependency or gate configuration changed' : code ? 'Known code paths' : 'Documentation only',
     // Every code plan retains the complete unit suite and seeded chaos invariants.
-    app: all || paths.some(file => file === 'index.html' || /^(?:src|server|shared|publisher|data|sdk|mcp|eval)\//.test(file) || browserScripts.test(file) || /^tests\/(?!browser-demo|judge-path|ledger-viewer).*\.spec\.ts$/.test(file)),
+    app: all || paths.some(file => file === 'index.html' || /^(?:src|server|shared|publisher|data|sdk|mcp|eval|site)\//.test(file) || browserScripts.test(file) || /^tests\/(?!browser-demo|judge-path|ledger-viewer).*\.spec\.ts$/.test(file)),
     replay: all || paths.some(file => /^(?:src|shared|demo|site|design)\//.test(file) || /^tests\/(?:browser-demo|judge-path|ledger-viewer|ledger-sockets)/.test(file)),
     python: all || paths.some(file => /^(?:packages\/sdk(?:-python)?|server|shared|publisher|sdk|mcp|data|eval\/decisions|tests\/fixtures)\//.test(file)),
     desktop: all || paths.some(file => file === 'index.html' || /^(?:desktop|src|server|shared|publisher|sdk|mcp|data|eval\/decisions)\//.test(file) || /^scripts\/(?:record|mcp-demo)\.mjs$/.test(file)),
@@ -160,7 +160,8 @@ export function inputsFor(id, files, read, unknown = false) {
   else if (id === 'sdk-package') match = file => /^(?:sdk|shared|packages\/sdk)\/|^scripts\/(?:build-sdk|check-sdk-package)\.mjs$|^docs\/sdk\.md$|^LICENSE$/.test(file)
   else if (id === 'desktop-loader') match = file => /^desktop\/(?:smoke|recovery-smoke|accept)\.mjs$|^scripts\/(?:record|mcp-demo|local-gate-smoke)\.mjs$|^shared\/resource-scope\.ts$/.test(file)
   else if (id === 'desktop-build') match = file => /^(?:src|server|shared|publisher|sdk|mcp|data|eval\/decisions|desktop)\/|^index\.html$|^vite\.config|^scripts\/local-gate-smoke/.test(file)
-  else if (id === 'browser-app' || id === 'browser-perf') match = file => /^(?:src|server|shared|publisher|sdk|mcp|data|eval\/decisions|tests\/fixtures|design\/cast)\/|^index\.html$|^vite\.config|^playwright\.config|^tests\/.*\.spec\.ts$|^scripts\/(?:demo(?:-ports)?|prepare-e2e-store)\.mjs$/.test(file)
+  // The app browser suite also renders site pages for the one-product guard.
+  else if (id === 'browser-app' || id === 'browser-perf') match = file => id === 'browser-app' && file.startsWith('site/') || /^(?:src|server|shared|publisher|sdk|mcp|data|eval\/decisions|tests\/fixtures|design\/cast)\/|^index\.html$|^vite\.config|^playwright\.config|^tests\/.*\.spec\.ts$|^scripts\/(?:demo(?:-ports)?|prepare-e2e-store)\.mjs$/.test(file)
   else if (id === 'browser-hosted') match = file => /^(?:src|server|shared|publisher|sdk|data|public|tests\/fixtures|tests\/helpers)\/|^index\.html$|^vite\.config|^tests\/playwright\/(?:paths|hosted)\.|^tests\/(?:hosted-ui\.spec|proof-of-refusal\.spec|evidence-path)\.ts$|^scripts\/demo-ports\.mjs$/.test(file)
   else match = file => /^(?:src|shared|demo|site|design|docs\/evidence)\/|^demo\/vite\.config|^tests\/playwright\/(?:paths|demo|judge|ledger)\.|^tests\/(?:browser-demo|judge-path|ledger-viewer|ledger-sockets)/.test(file)
   const selected = files.filter(file => common(file) || match(file))

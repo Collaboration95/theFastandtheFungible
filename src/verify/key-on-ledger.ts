@@ -29,7 +29,7 @@ const FULFILLMENT = /^A0228020([0-9A-F]{64})$/i
 const upper = (value: string) => value.toUpperCase()
 
 /** First and last 8 hex characters; the full value sits behind the explorer link. */
-export const shortHex = (hex: string) => hex.length > 18 ? `${upper(hex.slice(0, 8))}…${upper(hex.slice(-8))}` : upper(hex)
+export { shortTx as shortHex } from '../../shared/presentation'
 
 async function sha256Hex(hex: string): Promise<string> {
   const subtle = globalThis.crypto?.subtle

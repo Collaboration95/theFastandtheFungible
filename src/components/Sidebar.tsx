@@ -1,4 +1,5 @@
 import Icon from './Icon'
+import { dateSGT } from '../../shared/presentation'
 import AgentSprite from './AgentSprite'
 /* eslint-disable react-refresh/only-export-components -- NAV_WIDTH bounds are shared with App's saved width. */
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
@@ -16,7 +17,7 @@ export interface SidebarProps {
 }
 const over = (run: PastRun) => run.stopped || ['DONE', 'FAILED', 'STOPPED'].includes(run.phase)
 const dotOf = (run: PastRun) => !over(run) ? 'work' : run.phase === 'DONE' ? 'done' : run.phase === 'FAILED' ? 'alert' : 'idle'
-const today = (run: PastRun) => !run.at || new Date(run.at).toDateString() === new Date().toDateString()
+const today = (run: PastRun) => !run.at || dateSGT(run.at) === dateSGT(new Date().toISOString())
 
 /** The header button that shows or hides the sidebar: a panel icon, as in Claude's desktop app. */
 export function NavToggle({ open, onToggle }: { open: boolean; onToggle: () => void }) {

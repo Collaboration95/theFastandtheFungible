@@ -1,4 +1,5 @@
 import { stubLedger } from './ledger-sockets'
+import { ENV, shortTx } from '../shared/presentation'
 // Headless first-touch walk: landing → every demo tab → ledger → release link.
 // Run with `npm run test:judge` (builds the demo first). Hermetic: XRPL sockets and GitHub are stubbed.
 import { test, expect, type Page } from '@playwright/test'
@@ -128,9 +129,9 @@ test('ledger: live-check progress replaces the stale snapshot text within 3 s', 
   await page.waitForTimeout(3000)
   await expect(page.locator('body')).not.toContainText('not freshly verified')
   await expect(page.getByRole('status')).toContainText(/Read-only check finished: \d+\/61/)
-  await expect(page.getByText('Memo = audit head 2861e38da5e3…; answer anchor')).toBeVisible()
+  await expect(page.getByText(`Memo = audit head ${shortTx('2861e38da5e32b6ec982e5b6246d581b158338222db4c87a9718b9de9c7335a0')}; answer anchor`)).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Real writers' })).toBeVisible()
-  await expect(page.getByText('real person · Testnet · no real value', { exact: true })).toBeVisible()
+  await expect(page.getByText(`real person · ${ENV.testnet}`, { exact: true })).toBeVisible()
   await expect(page.getByText('No consenting writers listed yet.')).toBeVisible()
 })
 

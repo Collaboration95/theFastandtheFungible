@@ -1,0 +1,47 @@
+
+ RUN  v3.2.4 /Users/speedpowermac/.t3/worktrees/tftf/t3-07d0b360-5f76728627b68d14
+
+ ❯ tests/one-product.test.ts (2 tests | 1 failed) 700ms
+   × keeps one presentation contract across app, replay, proof and site 698ms
+     → expected [ { …(3) }, { …(3) } ] to deeply equal []
+   ✓ rejects planted drift for every rule 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/one-product.test.ts > keeps one presentation contract across app, replay, proof and site
+AssertionError: expected [ { …(3) }, { …(3) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "file": "src/l12r-planted.css",
++     "rule": "font",
++     "text": "font-family:Arial",
++   },
++   {
++     "file": "src/l12r-planted.css",
++     "rule": "heading",
++     "text": "h1 { font-weight:700 }",
++   },
++ ]
+
+ ❯ tests/one-product.test.ts:17:81
+     15|   // Exact file/rule/text matches only: new drift and stale exceptions…
+     16|   const identity = (v: { file: string; rule: string; text: string }) =…
+     17|   expect(found.filter(v => !exceptions.some(e => identity(e) === ident…
+       |                                                                                 ^
+     18|   expect(exceptions.filter(e => !e.reason.trim() || !found.some(v => i…
+     19|   expect(readFileSync('site/brand/presentation.js', 'utf8')).toBe(site…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  06:42:21
+   Duration  1.32s (transform 93ms, setup 17ms, collect 424ms, tests 700ms, environment 0ms, prepare 30ms)
+
+Resource check: 0 unexpected temp entries; 0 live owned groups

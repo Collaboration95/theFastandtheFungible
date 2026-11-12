@@ -1,3 +1,4 @@
+import { ENV, shortTx, dateSGT } from '../brand/presentation.js'
 // One plain name per operation, shared by this page, scripts/ledger-artifact.mjs and /progress/.
 export function operationLabel(row) {
   const op = `${row.type ?? ''} ${row.operation ?? ''} ${row.kind ?? ''} ${row.label ?? ''}`.toLowerCase()
@@ -10,12 +11,12 @@ export function operationLabel(row) {
   if (/purchase/.test(op)) return 'Payment'
   return 'Other'
 }
-export const rowContext = row => `${row.label ?? `${row.group}: ${row.operation ?? row.kind}`} · ${row.date}`
+export const rowContext = row => `${row.label ?? `${row.group}: ${row.operation ?? row.kind}`} · ${dateSGT(row.date + 'T00:00:00Z')}`
 export const rowAmount = row => {
   const a = row.deliveredAmount ?? row.amountDrops
-  return typeof a === 'object' ? `${a.value} ${currencyLabel(a.currency)} · issuer ${a.issuer}` : a ? `${(Number(a) / 1_000_000).toLocaleString('en-SG', { maximumFractionDigits: 6 })} XRP` : row.group === 'anchor' ? `Memo = audit head ${row.head.slice(0, 12)}…; answer anchor` : 'Principal amount not recorded in this evidence'
+  return typeof a === 'object' ? `${a.value} ${currencyLabel(a.currency)} · issuer ${a.issuer}` : a ? `${(Number(a) / 1_000_000).toLocaleString('en-SG', { maximumFractionDigits: 6 })} XRP` : row.group === 'anchor' ? `Memo = audit head ${shortTx(row.head)}; answer anchor` : 'Principal amount not recorded in this evidence'
 }
-export const shortHash = hash => `${hash.slice(0, 8)}…${hash.slice(-8)}`.toUpperCase()
+export const shortHash = shortTx
 export const credentialTypeHex = text => Array.from(new TextEncoder().encode(text), byte => byte.toString(16).padStart(2, '0')).join('').toUpperCase()
 export function classify(row, body) {
   const r = body?.result
@@ -176,7 +177,7 @@ if (typeof document !== 'undefined' && document.querySelector('#rows')) {
     const td = el('td'); const link = el('a', 'hash', shortHash(row.hash)); link.href = `https://testnet.xrpl.org/transactions/${row.hash}`; link.title = row.hash; link.setAttribute('aria-label', `Transaction ${row.hash}`); const state = el('span', 'state', 'Checking live…'); td.append(link, state); cells.set(row.hash, state)
     tr.append(op, money, source, td); document.querySelector('#rows').append(tr)
   }
-  document.querySelector('caption').textContent = `${data.rows.length} curated transactions · snapshot ${data.snapshotDate}`
+  document.querySelector('caption').textContent = `${data.rows.length} curated transactions · snapshot ${dateSGT(data.snapshotDate + 'T00:00:00Z')}`
   const run = async () => {
     const button = document.querySelector('#refresh'); button.disabled = true
     let verified = 0, checked = 0
@@ -206,7 +207,7 @@ export function renderRealWriters(list, writers) {
   for (const writer of writers) {
     const p = document.createElement('p'), a = document.createElement('a')
     a.href = `https://testnet.xrpl.org/accounts/${encodeURIComponent(writer.address)}`; a.textContent = writer.address
-    p.append(`${writer.name} · `, a, ' · real person · Testnet · no real value'); list.append(p)
+    p.append(`${writer.name} · `, a, ' · real person · ', ENV.testnet); list.append(p)
   }
 }
 if (typeof document !== 'undefined' && document.querySelector('#real-writers')) {

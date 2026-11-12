@@ -4,26 +4,29 @@ import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import KeyRevealLifecycle, { KeyCheckResult } from './KeyRevealLifecycle'
+import Icon from './Icon'
+import { ENV } from '../../shared/presentation'
 import type { EscrowStatus } from '../../shared/contracts/escrow'
 import type { KeyCheck } from '../verify/key-on-ledger'
 // This suite isolates the key checker; the independent purchase read is fixture-tested in ledger-ui.
 vi.mock('./LedgerReceipt', () => ({ default: () => null }))
 afterEach(cleanup)
+const checkIcon = renderToStaticMarkup(createElement(Icon, { name: 'check', size: 16 }))
 const base: EscrowStatus = { scheme:'escrow-v1',policy:'escrow-policy-v1',mode:'key-reveal',state:'LOCKED',owner:'fixture',cancelAfter:2000000000,createHash:'A'.repeat(64) }
 const render1 = (patch: Partial<EscrowStatus>) => renderToStaticMarkup(createElement(KeyRevealLifecycle,{escrow:{...base,...patch}}))
 it('shows pending cancellation authority without inventing a proof or refund',()=>{
   const html=render1({})
   expect(html).toContain('Payment locked in escrow')
   expect(html).toContain('Auto-refund available in')
-  expect(html).not.toContain('Condition ✓')
+  expect(html).not.toContain(checkIcon)
   expect(html).not.toContain('principal returned')
 })
 it('shows individual policy checks, ledger publication and transaction links',()=>{
   const html=render1({state:'RELEASED',finishHash:'B'.repeat(64),revealLedger:123,keyVerified:true,decryptVerified:true})
   expect(html).toContain('Writer released the key')
   expect(html).toContain('in ledger 123')
-  expect(html).toContain('sha256(K) = Condition ✓')
-  expect(html).toContain('ciphertext decrypts ✓')
+  expect(html).toContain('sha256(K) = Condition ' + checkIcon)
+  expect(html).toContain('ciphertext decrypts ' + checkIcon)
   expect(html).toContain(`https://testnet.xrpl.org/transactions/${'B'.repeat(64)}`)
   expect(render1({state:'CANCELLED',cancelHash:'C'.repeat(64)})).toContain('funds returned')
 })
@@ -46,16 +49,16 @@ it('offers the check only for a Testnet escrow that has both transactions, and n
 
 it('a match says sha256(key) = lock ✓ with the ledger, short hex and the labels, and never prints the full values', () => {
   const out = html(match)
-  expect(out).toContain('sha256(key) = lock ✓')
+  expect(out).toContain('sha256(key) = lock ' + checkIcon)
   expect(out).toContain('Computed in this browser from XRPL Testnet ledger 22228567')
   expect(out).toContain('E4FD995A…98D341B2')
   expect(out).toContain('69228F16…9391F2AC')
   expect(out).not.toContain(LOCK); expect(out).not.toContain(KEY)
-  expect(out).toContain('XRPL Testnet · no real value')
+  expect(out).toContain(ENV.testnet)
   expect(out).not.toContain('fictional writer')
   expect(out).toContain(`https://testnet.xrpl.org/transactions/${'B'.repeat(64)}`)
   expect(out).toContain(`https://testnet.xrpl.org/transactions/${'A'.repeat(64)}`)
-  expect(html(match, true)).toContain('XRPL Testnet · no real value · fictional writer')
+  expect(html(match, true)).toContain(`${ENV.testnet}. Fictional writer.`)
 })
 
 it('every other state says what happened without a ✓, and a missing transaction is pending, not failed', () => {
@@ -73,6 +76,7 @@ it('every other state says what happened without a ✓, and a missing transactio
     const out = html(check)
     expect(out, JSON.stringify(check)).toContain(words)
     expect(out, JSON.stringify(check)).not.toContain('✓')
+    expect(out, JSON.stringify(check)).not.toContain(checkIcon)
     expect(out, JSON.stringify(check)).not.toContain('is-match')
   }
   for (const pending of [{ status: 'pending', why: 'not-found' }, { status: 'pending', why: 'not-validated' }, { status: 'unreachable' }] as KeyCheck[]) expect(html(pending).toLowerCase()).not.toMatch(/fail|error|wrong|tamper/)
@@ -91,7 +95,8 @@ it('pressing the button checks once, shows the result in a polite status region 
   expect(screen.getByRole('status').textContent).toContain('Not found on this node yet')
   fireEvent.click(screen.getByRole('button', { name: /Check again/ }))
   await act(async () => release(match))
-  expect(screen.getByRole('status').textContent).toContain('sha256(key) = lock ✓')
+  expect(screen.getByRole('status').textContent).toContain('sha256(key) = lock')
+  expect(screen.getByRole('status').innerHTML).toContain(checkIcon)
   expect(screen.queryByRole('button', { name: /Check/ })).toBeNull() // decided: nothing left to retry
   expect(verify).toHaveBeenCalledTimes(2)
 })
@@ -102,6 +107,7 @@ it('a check that throws reads as unreachable, never as a result', async () => {
   await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Check the key yourself/ })) })
   expect(screen.getByRole('status').textContent).toContain('Couldn’t reach a public XRPL node')
   expect(screen.getByRole('status').textContent).not.toContain('✓')
+  expect(screen.getByRole('status').innerHTML).not.toContain(checkIcon)
 })
 
 it('a previous payment’s result cannot appear under changed transaction hashes', async () => {
@@ -111,6 +117,6 @@ it('a previous payment’s result cannot appear under changed transaction hashes
   fireEvent.click(screen.getByRole('button', { name: /Check the key yourself/ }))
   view.rerender(createElement(KeyRevealLifecycle, { escrow: { ...released, finishHash: 'C'.repeat(64) }, testnet: true, verify }))
   await act(async () => release(match))
-  expect(screen.queryByText('sha256(key) = lock ✓')).toBeNull()
+  expect(screen.queryByText('sha256(key) = lock')).toBeNull()
   expect(screen.getByRole('button', { name: /Check the key yourself/ })).toBeTruthy()
 })

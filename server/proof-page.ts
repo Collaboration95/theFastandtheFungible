@@ -8,13 +8,7 @@ import { proofEnvironmentLabel } from '../shared/execution-labels.js'
 export { proofEnvironmentLabel } from '../shared/execution-labels.js'
 
 const esc = (text: string) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-/** Singapore time ("11 Nov 2026, 14:35 SGT"): this is a Singapore event's page, and the machine-readable <time datetime> stays in UTC. */
-const sgt = (iso: string) => {
-  const d = new Date(new Date(iso).getTime() + 8 * 3_600_000), pad = (n: number) => String(n).padStart(2, '0')
-  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}, ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} SGT`
-}
-const short = (hash: string) => `${hash.slice(0, 8)}…${hash.slice(-8)}`
+import { ENV, shortTx as short, whenSGT as sgt } from '../shared/presentation.js'
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`
 const MARK = '<svg class="mark" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M9 4H4v16h5M15 4h5v16h-5M9 15l6-6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg>'
 /** Held coin: a ring with a bar through it, on the 24-unit grid with the 1.5 stroke. */
@@ -23,7 +17,7 @@ const HELD = '<svg class="held" viewBox="0 0 24 24" width="28" height="28" aria-
 export const LEDGER_HOSTS = ['wss://s.altnet.rippletest.net:51233', 'wss://clio.altnet.rippletest.net:51233']
 export const VERIFY_MODULE = '/verify/proof-verify.js'
 /** The environment chip on a phone: every proof is an XRPL Testnet record with test funds, whichever surface shared it. */
-const ENV_SHORT = 'Testnet demo · no real value'
+const ENV_SHORT = ENV.testnetShort
 const CSS = `
 ${PROOF_TOKENS}
 *{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
@@ -68,7 +62,7 @@ p{margin:0 0 10px}
 .vgroups summary{display:flex;gap:10px;align-items:baseline;padding:8px 0;cursor:pointer}.vgroups summary i{flex:none;width:14px;font-style:normal;font-weight:700}.vgroups summary small{margin-left:auto;color:var(--muted)}
 .vgroups li.pass i{color:var(--ok)}.vgroups li.fail i{color:var(--bad)}.vgroups ul{margin:0 0 8px 24px;padding:0;list-style:none;color:var(--muted);font-size:13px}.vgroups ul li{display:flex;gap:8px;padding:2px 0}
 .note{color:var(--muted);font-size:13px}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}.two section{padding:16px 20px;border:1px solid var(--rule);border-radius:10px;background:var(--surface)}.two h3{margin:0 0 6px;font-size:14px}.two ul{margin:0;padding-left:18px;color:var(--muted);font-size:14px}.two li{margin:4px 0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}.two section{padding:16px 20px;border:1px solid var(--rule);border-radius:10px;background:var(--surface)}.two h3{margin:0 0 6px;font-size:14px;font-weight:600}.two ul{margin:0;padding-left:18px;color:var(--muted);font-size:14px}.two li{margin:4px 0}
 footer{max-width:760px;margin:0 auto;padding:0 16px 40px;color:var(--muted);font-size:13px}
 @media (max-width:620px){h1{font-size:30px;line-height:36px}.stats{grid-template-columns:1fr 1fr}.stats div:nth-child(3){border-left:0}.stats div:nth-child(n+3){border-top:1px solid var(--rule)}.facts div{grid-template-columns:1fr;gap:2px}.two{grid-template-columns:1fr}.items li{flex-direction:column;gap:2px}.items .why{max-width:none;text-align:left}.chip .full{display:none}.chip .short{display:inline}main{padding-top:28px}}
 @media print{.verify .btn,.row{display:none}}

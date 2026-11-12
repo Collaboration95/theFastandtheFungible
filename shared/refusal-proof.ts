@@ -108,7 +108,7 @@ export type ProofSnapshot = z.infer<typeof ProofSnapshotSchema>
 export type ProofItem = z.infer<typeof ProofItemSchema>
 
 export const explorerTx = (hash: string) => `https://testnet.xrpl.org/transactions/${hash}`
-export const sgd = (minor: number) => `S$${(minor / 100).toFixed(2)}`
+export { money as sgd } from './presentation.js'
 /** One line for page titles, descriptions and cards. */
 export const clip = (text: string, max: number) => { const flat = text.replace(/\s+/g, ' ').trim(); return flat.length <= max ? flat : `${flat.slice(0, max - 1).trimEnd()}…` }
 

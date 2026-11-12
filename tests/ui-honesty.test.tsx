@@ -30,7 +30,7 @@ describe('buying rule copy', () => {
     expect(text).not.toMatch(/at most one article if/i)
   })
   it('the home subtitle explains the budget in plain English', () => {
-    expect(decoded(renderToStaticMarkup(<Ask onAsk={() => {}} settlement={SIMULATED_LABEL} />))).toContain('Searches free sources first. Pays a writer only when it closes a gap, never beyond your budget.')
+    expect(decoded(renderToStaticMarkup(<Ask onAsk={() => {}} settlement={SIMULATED_LABEL} />))).toContain('Free sources first. Pay writers for missing evidence, within your budget.')
   })
   it('no copy still promises a single purchase', () => {
     for (const file of ['src/components/PlanSheet.tsx', 'src/components/Ask.tsx', 'docs/submission/pitch-2min.md', 'docs/submission/demo-video-script.md', 'site/index.html', 'site/talk/index.html'])

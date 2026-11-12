@@ -1,4 +1,5 @@
 import Icon from './Icon'
+import { whenSGT } from '../../shared/presentation'
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { XRPL_LABEL, type ModeLabels, type RunSnapshot } from '../../shared/contracts/index.js'
 import Activity from './Activity'
@@ -35,13 +36,13 @@ export default function ShowWork({ run, configured, onClose, confirmed }: { run:
     </div>
     <div className="ra-sheet-b" role="tabpanel" aria-label={tab} tabIndex={0}>
       <p className="ra-note">{{ Trace: 'What the agent did, in order.', Wire: 'The requests and responses behind this run.', Policy: 'Why each article was bought or skipped.', Receipts: 'The payment records saved with this run.', Models: 'The providers and substitutions used in this run.', Ledger: 'The transactions on XRPL Testnet.' }[tab]}</p>
-      {tab === 'Trace' && plan && <p className={`ra-plan-check ${plan.ok ? 'is-ok' : 'is-changed'}`}>{!plan.ok && <Icon name="info" size={16} />}{plan.text}</p>}
+      {tab === 'Trace' && plan && <p className={`ra-plan-check ${plan.ok ? 'is-ok' : 'is-changed'}`}>{!plan.ok && <Icon name="info" size={16} />}{plan.ok ? <>{plan.text.replace(/ ✓$/, '')} <Icon name="check" size={16} /></> : plan.text}</p>}
       {tab === 'Trace' && <Activity run={run} />}
       {tab === 'Wire' && <Suspense fallback={<p role="status">Loading requests…</p>}><Wire run={run} /></Suspense>}
       {tab === 'Policy' && <Suspense fallback={<p role="status">Loading policy…</p>}><DecisionTable run={run} /></Suspense>}
       {tab === 'Receipts' && (receipts.length === 0 ? <p>No receipts in this run.</p> : <ol className="ra-receipt-list">{receipts.map(receipt => <li key={receipt.receiptId}>
         <b>{candidateOf(run, receipt)?.publisher ?? receipt.resourceId}</b> · {money(receipt.amountMinor)} · {receipt.label}{run.intents.find(i => i.intentId === receipt.intentId)?.purchaseKind && ` · ${run.intents.find(i => i.intentId === receipt.intentId)!.purchaseKind}`}<br />
-        <span className="mono">receipt {receipt.receiptId} · intent {shortHash(receipt.intentId)} · settled {receipt.settledAt}</span>
+        <span className="mono">receipt {receipt.receiptId} · intent {shortHash(receipt.intentId)} · settled <time dateTime={receipt.settledAt}>{whenSGT(receipt.settledAt)}</time></span>
       </li>)}</ol>)}
       {tab === 'Models' && <div className="ra-models"><ModelLabels labels={run.labels} configured={configured} events={run.events} /></div>}
       {tab === 'Ledger' && <Suspense fallback={<p role="status">Loading ledger…</p>}><Ledger run={run} /></Suspense>}

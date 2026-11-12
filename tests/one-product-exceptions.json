@@ -1,0 +1,320 @@
+[
+  {
+    "file": "src/App.tsx",
+    "rule": "environment",
+    "text": "SIMULATED SGD · no real funds",
+    "reason": "Wire contract discriminator used to select the simulated rail, not a displayed environment heading. Changing it would break old snapshots."
+  },
+  {
+    "file": "src/components/Activity.tsx",
+    "rule": "date",
+    "text": "{((Date.parse(event.at) - t0) / 1000).toFixed(2)}",
+    "reason": "Elapsed seconds since the start of a trace, not a calendar date; duration remains relative."
+  },
+  {
+    "file": "src/components/LedgerCheck.tsx",
+    "rule": "date",
+    "text": "{ledgerReadTime(value.readAt)}",
+    "reason": "ledgerReadTime is a direct re-export of whenSGT; alias identity is tested."
+  },
+  {
+    "file": "server/proof-page.ts",
+    "rule": "font",
+    "text": "--f-ui:system-ui,sans-serif",
+    "reason": "Downloaded offline proof cards have no network or bundled fonts; intentionally use system fallbacks. Hosted and missing-proof pages embed self-hosted Geist."
+  },
+  {
+    "file": "server/proof-page.ts",
+    "rule": "font",
+    "text": ";--f-mono:ui-monospace,monospace",
+    "reason": "Downloaded offline proof cards have no network or bundled fonts; intentionally use system fallbacks. Hosted and missing-proof pages embed self-hosted Geist."
+  },
+  {
+    "file": "site/evolution/index.html",
+    "rule": "heading",
+    "text": "h1 { font-weight: 800 }",
+    "reason": "Historical timeline preserves original example amounts, typography and evidence ID prefixes; it does not format a current payment receipt."
+  },
+  {
+    "file": "site/evolution/index.html",
+    "rule": "heading",
+    "text": "h2 { font-weight: 750 }",
+    "reason": "Historical timeline preserves original example amounts, typography and evidence ID prefixes; it does not format a current payment receipt."
+  },
+  {
+    "file": "site/evolution/index.html",
+    "rule": "heading",
+    "text": ".close h2 { font-weight: 800 }",
+    "reason": "Historical timeline preserves original example amounts, typography and evidence ID prefixes; it does not format a current payment receipt."
+  },
+  {
+    "file": "site/evolution/index.html",
+    "rule": "date",
+    "text": "d.getUTCDate()",
+    "reason": "Historical timeline preserves original example amounts, typography and evidence ID prefixes; it does not format a current payment receipt."
+  },
+  {
+    "file": "site/evolution/index.html",
+    "rule": "date",
+    "text": "d.getUTCMonth()",
+    "reason": "Historical timeline preserves original example amounts, typography and evidence ID prefixes; it does not format a current payment receipt."
+  },
+  {
+    "file": "site/evolution/index.html",
+    "rule": "money",
+    "text": "S$2",
+    "reason": "Historical timeline preserves original example amounts, typography and evidence ID prefixes; it does not format a current payment receipt."
+  },
+  {
+    "file": "site/evolution/index.html",
+    "rule": "money",
+    "text": "S$100",
+    "reason": "Historical timeline preserves original example amounts, typography and evidence ID prefixes; it does not format a current payment receipt."
+  },
+  {
+    "file": "site/evolution/sff.js",
+    "rule": "hash",
+    "text": "String(row.inputHash).slice(0, 8)",
+    "reason": "Historical timeline preserves original example amounts, typography and evidence ID prefixes; it does not format a current payment receipt."
+  },
+  {
+    "file": "site/notes/index.html",
+    "rule": "money",
+    "text": "S$10",
+    "reason": "Historical development note quotes the original dollar amount; changing quoted evidence would misstate the record."
+  },
+  {
+    "file": "site/progress/index.html",
+    "rule": "money",
+    "text": "S$2",
+    "reason": "Historical CLI command example quoted verbatim; current amounts use the shared helper."
+  },
+  {
+    "file": "site/progress/index.html",
+    "rule": "environment",
+    "text": "Testnet · no real value · Fixture models and fictional writers\n1",
+    "reason": "Verbatim published v1.1.1 CLI output retains its wire labels and abbreviated transaction prefixes; it is explicitly historical evidence."
+  },
+  {
+    "file": "site/progress/index.html",
+    "rule": "hash",
+    "text": "9126E19D…",
+    "reason": "Verbatim published v1.1.1 CLI output retains its wire labels and abbreviated transaction prefixes; it is explicitly historical evidence."
+  },
+  {
+    "file": "site/progress/index.html",
+    "rule": "hash",
+    "text": "805AA52F…",
+    "reason": "Verbatim published v1.1.1 CLI output retains its wire labels and abbreviated transaction prefixes; it is explicitly historical evidence."
+  },
+  {
+    "file": "site/progress/index.html",
+    "rule": "hash",
+    "text": "BFAC5EF0…",
+    "reason": "Verbatim published v1.1.1 CLI output retains its wire labels and abbreviated transaction prefixes; it is explicitly historical evidence."
+  },
+  {
+    "file": "site/progress/index.html",
+    "rule": "hash",
+    "text": "278087AB…",
+    "reason": "Verbatim published v1.1.1 CLI output retains its wire labels and abbreviated transaction prefixes; it is explicitly historical evidence."
+  },
+  {
+    "file": "site/progress/index.html",
+    "rule": "hash",
+    "text": "484A818A…",
+    "reason": "Verbatim published v1.1.1 CLI output retains its wire labels and abbreviated transaction prefixes; it is explicitly historical evidence."
+  },
+  {
+    "file": "site/progress/index.html",
+    "rule": "hash",
+    "text": "22081E19…",
+    "reason": "Verbatim published v1.1.1 CLI output retains its wire labels and abbreviated transaction prefixes; it is explicitly historical evidence."
+  },
+  {
+    "file": "site/project-map/index.html",
+    "rule": "font",
+    "text": "; font: 15px/1.5 -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif",
+    "reason": "Archived October architecture map preserves the original product snapshot, including its fonts and quoted budget examples."
+  },
+  {
+    "file": "site/project-map/index.html",
+    "rule": "font",
+    "text": "; font-family: ui-monospace, SFMono-Regular, Menlo, monospace",
+    "reason": "Archived October architecture map preserves the original product snapshot, including its fonts and quoted budget examples."
+  },
+  {
+    "file": "site/project-map/index.html",
+    "rule": "font",
+    "text": "font-family: ui-monospace, SFMono-Regular, Menlo, monospace",
+    "reason": "Archived October architecture map preserves the original product snapshot, including its fonts and quoted budget examples."
+  },
+  {
+    "file": "site/project-map/index.html",
+    "rule": "money",
+    "text": "S$1",
+    "reason": "Archived October architecture map preserves the original product snapshot, including its fonts and quoted budget examples."
+  },
+  {
+    "file": "site/project-map/index.html",
+    "rule": "money",
+    "text": "S$2",
+    "reason": "Archived October architecture map preserves the original product snapshot, including its fonts and quoted budget examples."
+  },
+  {
+    "file": "site/project-map/index.html",
+    "rule": "money",
+    "text": "S$3",
+    "reason": "Archived October architecture map preserves the original product snapshot, including its fonts and quoted budget examples."
+  },
+  {
+    "file": "site/project-map/index.html",
+    "rule": "money",
+    "text": "S$5",
+    "reason": "Archived October architecture map preserves the original product snapshot, including its fonts and quoted budget examples."
+  },
+  {
+    "file": "site/project-map/index.html",
+    "rule": "money",
+    "text": "S$0",
+    "reason": "Archived October architecture map preserves the original product snapshot, including its fonts and quoted budget examples."
+  },
+  {
+    "file": "site/reports/airwallex-before-after/index.html",
+    "rule": "font",
+    "text": ";font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif",
+    "reason": "Frozen dated integration report retains original typography and quoted amounts; it is an archived evidence artifact, not the current product shell."
+  },
+  {
+    "file": "site/reports/airwallex-before-after/index.html",
+    "rule": "heading",
+    "text": "h1 { font-weight:700 }",
+    "reason": "Frozen dated integration report retains original typography and quoted amounts; it is an archived evidence artifact, not the current product shell."
+  },
+  {
+    "file": "site/reports/kit-11-evaluation/index.html",
+    "rule": "font",
+    "text": ";font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif",
+    "reason": "Frozen dated integration report retains original typography and quoted amounts; it is an archived evidence artifact, not the current product shell."
+  },
+  {
+    "file": "site/reports/kit-11-evaluation/index.html",
+    "rule": "heading",
+    "text": "h1,h2 { font-weight:650 }",
+    "reason": "Frozen dated integration report retains original typography and quoted amounts; it is an archived evidence artifact, not the current product shell."
+  },
+  {
+    "file": "site/reports/kit-11-evaluation/index.html",
+    "rule": "font",
+    "text": "font-family:ui-monospace,SFMono-Regular,Consolas,monospace",
+    "reason": "Frozen dated integration report retains original typography and quoted amounts; it is an archived evidence artifact, not the current product shell."
+  },
+  {
+    "file": "site/reports/kit-11-evaluation/index.html",
+    "rule": "font",
+    "text": "font-family:ui-serif,Georgia,serif",
+    "reason": "Frozen dated integration report retains original typography and quoted amounts; it is an archived evidence artifact, not the current product shell."
+  },
+  {
+    "file": "site/reports/kit-11-evaluation/index.html",
+    "rule": "money",
+    "text": "S$1",
+    "reason": "Frozen dated integration report retains original typography and quoted amounts; it is an archived evidence artifact, not the current product shell."
+  },
+  {
+    "file": "site/slides/index.html",
+    "rule": "heading",
+    "text": "h1 { font: 780 }",
+    "reason": "Archived October presentation retains its original design and reported dollar amounts; the current SFF deck is docs/submission."
+  },
+  {
+    "file": "site/slides/index.html",
+    "rule": "heading",
+    "text": ".qa .q { font: 500 }",
+    "reason": "Archived October presentation retains its original design and reported dollar amounts; the current SFF deck is docs/submission."
+  },
+  {
+    "file": "site/slides/index.html",
+    "rule": "heading",
+    "text": ".qrbox h3 { font: 750 }",
+    "reason": "Archived October presentation retains its original design and reported dollar amounts; the current SFF deck is docs/submission."
+  },
+  {
+    "file": "site/slides/index.html",
+    "rule": "money",
+    "text": "S$2",
+    "reason": "Archived October presentation retains its original design and reported dollar amounts; the current SFF deck is docs/submission."
+  },
+  {
+    "file": "site/slides/index.html",
+    "rule": "money",
+    "text": "S$1.1",
+    "reason": "Archived October presentation retains its original design and reported dollar amounts; the current SFF deck is docs/submission."
+  },
+  {
+    "file": "site/slides/index.html",
+    "rule": "money",
+    "text": "S$19",
+    "reason": "Archived October presentation retains its original design and reported dollar amounts; the current SFF deck is docs/submission."
+  },
+  {
+    "file": "site/slides/index.html",
+    "rule": "money",
+    "text": "S$22",
+    "reason": "Archived October presentation retains its original design and reported dollar amounts; the current SFF deck is docs/submission."
+  },
+  {
+    "file": "site/slides/index.html",
+    "rule": "money",
+    "text": "S$1",
+    "reason": "Archived October presentation retains its original design and reported dollar amounts; the current SFF deck is docs/submission."
+  },
+  {
+    "file": "site/slides/index.html",
+    "rule": "money",
+    "text": "S$10",
+    "reason": "Archived October presentation retains its original design and reported dollar amounts; the current SFF deck is docs/submission."
+  },
+  {
+    "file": "site/talk/index.html",
+    "rule": "money",
+    "text": "S$2",
+    "reason": "Historical 9 October walkthrough quotes the original cap and transaction-prefix examples; current interactive amounts use the shared money helper."
+  },
+  {
+    "file": "site/talk/index.html",
+    "rule": "money",
+    "text": "S$1",
+    "reason": "Historical 9 October walkthrough quotes the original cap and transaction-prefix examples; current interactive amounts use the shared money helper."
+  },
+  {
+    "file": "site/talk/index.html",
+    "rule": "hash",
+    "text": "FCC78F2D571A…E1C28323",
+    "reason": "Historical 9 October walkthrough quotes the original cap and transaction-prefix examples; current interactive amounts use the shared money helper."
+  },
+  {
+    "file": "site/talk/index.html",
+    "rule": "hash",
+    "text": "FCC78F2D…",
+    "reason": "Historical 9 October walkthrough quotes the original cap and transaction-prefix examples; current interactive amounts use the shared money helper."
+  },
+  {
+    "file": "site/talk/index.html",
+    "rule": "hash",
+    "text": "A23F2033…",
+    "reason": "Historical 9 October walkthrough quotes the original cap and transaction-prefix examples; current interactive amounts use the shared money helper."
+  },
+  {
+    "file": "site/index.html",
+    "rule": "environment",
+    "text": "Replay · 11 Nov 2026",
+    "reason": "Dated navigation link to the replay, not an environment indicator; the adjacent disclosure carries the complete canonical ENV.replay label."
+  },
+  {
+    "file": "site/evolution/sff.js",
+    "rule": "date",
+    "text": "p.date",
+    "reason": "Archived scorecard history preserves its original evidence timestamps; current progress and ledger calendar displays use shared SGT helpers."
+  }
+]

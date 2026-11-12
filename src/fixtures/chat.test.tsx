@@ -45,7 +45,7 @@ describe('chat page (owner, 9 Oct)', () => {
     expect(reply.textContent).toContain('I search writers for you.')
     expect(reply.textContent).toContain('Demo reply · no sources searched · nothing bought')
     // Home is gone: no hero, no suggested questions, no budget, no plan card.
-    expect(screen.queryByRole('heading', { name: /Give it a budget/ })).toBeNull()
+    expect(screen.queryByRole('heading', { name: 'Research with a wallet.' })).toBeNull()
     expect(screen.queryByRole('group', { name: 'Demo questions' })).toBeNull()
     expect(screen.queryByLabelText('Your question')).toBeNull()
     expect(screen.queryByRole('dialog', { name: 'Search plan' })).toBeNull()

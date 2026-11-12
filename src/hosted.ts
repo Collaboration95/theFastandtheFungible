@@ -3,6 +3,8 @@ import { createContext, useContext } from 'react'
 import { ApiError, type HostedDemoStatus } from './api'
 import { EXAMPLE_PROOF_URL, RELEASE_TAG, releaseBase } from '../shared/links'
 import { buyingLabels } from '../shared/execution-labels'
+import { ENV, money as minorText } from '../shared/presentation'
+export { money as minorText } from '../shared/presentation'
 
 export type Hosted = { status: HostedDemoStatus; connection?: 'offline' | 'unreachable' }
 export const HostedContext = createContext<Hosted | undefined>(undefined)
@@ -34,16 +36,15 @@ export function environment(status: HostedDemoStatus, connection?: Hosted['conne
   const fixture = /^fixture models|unavailable/i.test(status.labels.models)
   const ruleBuying = !fixture && /fixture purchase decisions/i.test(status.labels.models)
   // Status describes configured buying, not the provenance of any particular answer.
-  const models = buyingLabels[fixture || ruleBuying ? 'fixture' : 'live']
-  const place = testnet ? 'Shared XRPL Testnet demo' : 'Shared demo · simulated payments'
+  const configured = ENV.hostedConfigured(testnet, fixture || ruleBuying ? 'fixture' : 'live')
   // The phone chip is the same chip, shortened: the same two facts (which rail, no real value), never a second name.
-  const kind = testnet ? 'Testnet demo' : 'Simulated'
+  const compact = testnet ? ENV.testnetShort : ENV.simulatedShort
   const state = status.state === 'ended' ? 'ended' : connection === 'offline' ? 'offline' : status.state === 'paused' ? 'paused' : undefined
   return {
     testnet, fixture, ruleBuying, state,
-    full: `${place} · ${state ?? models} · no real value`,
-    short: `${kind} · ${state ?? 'no real value'}`,
-    tone: state ? 'off' : status.state === 'degraded' ? 'warn' : 'live',
+    full: state ? configured.replace(/ · [^·]+ · no real value$/, ` · ${state} · no real value`) : configured,
+    short: state ? compact.replace(' · no real value', ` · ${state} · no real value`) : compact,
+    tone: state ? 'off' : status.state === 'degraded' || !testnet ? 'warn' : 'live',
   } as const
 }
 
@@ -58,7 +59,6 @@ export function waitCopy(status: HostedDemoStatus): string {
 /** The waiting card on a queued run: how many questions are ahead of it. */
 export const aheadText = (ahead: number) => ahead === 1 ? '1 question ahead of yours' : `${ahead} questions ahead of yours`
 
-export const minorText = (minor: number) => `S$${(minor / 100).toFixed(2)}`
 export function allowanceText(status: HostedDemoStatus) {
   const { questions } = status.remaining
   return questions === 0 ? 'No questions left today' : `${questions} of ${HOSTED_DAILY_QUESTIONS} questions left today`
@@ -114,7 +114,7 @@ export function hostedLinks(hosted: Hosted) {
 export const JUDGE_RUN = {
   bundleUrl: '/judge/hosted-run-nov11.receipts.json',
   // Final answer and decision providers are pinned by the committed bundle in the caption regression test.
-  caption: `Recorded on this sandbox, 11 Nov · XRPL Testnet · live answers, ${buyingLabels.fixture} · team-authored writers · no real value`,
+  caption: `Recorded on this demo, 11 Nov 2026 · XRPL Testnet · live answers, ${buyingLabels.fixture} · team-authored writers · no real value`,
   /** Its EscrowFinish: the writer publishes the article key in the Fulfillment field, and the escrow's lock is that key's hash. */
   keyTx: '4CCB4E56137D738847E853535B068329562AD490DA4D9F5551CEC2EB1AC70638',
 } as const

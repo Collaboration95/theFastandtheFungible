@@ -5,6 +5,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import PaymentRow from '../src/components/PaymentRow'
 import PlanSheet from '../src/components/PlanSheet'
 import ShowWork from '../src/components/ShowWork'
+import Icon from '../src/components/Icon'
 import { ucRuns } from '../src/fixtures/run'
 import { confirmedPlanFor, forgetConfirmedPlans, planCheck, ranSearches, rememberConfirmedPlan } from '../src/planCheck'
 import { WHY_MAX, coveredThing, decisionFor, whyBought } from '../src/whyBought'
@@ -164,13 +165,14 @@ describe('the why line on each payment', () => {
 })
 
 describe('the plan check in Show work', () => {
+  const checkIcon = renderToStaticMarkup(<Icon name="check" size={16} />)
   const searches = ['analyst outlook Kestrel Semiconductor deal TSMC', 'Kestrel TSMC deal margins']
   const work = (run: RunSnapshot, confirmed?: { subqueries: string[] }) => renderToStaticMarkup(<ShowWork run={run} onClose={() => {}} confirmed={confirmed} />)
 
   it('a run that searched what was confirmed says so with a ✓', () => {
     const run = planEvent(ucRuns.UC2, searches)
     expect(planCheck(run, { subqueries: searches })).toEqual({ ok: true, text: 'Ran the plan you confirmed ✓' })
-    expect(work(run, { subqueries: searches })).toContain('Ran the plan you confirmed ✓')
+    expect(work(run, { subqueries: searches })).toContain('Ran the plan you confirmed ' + checkIcon)
     // Order and capitalisation are not a change.
     expect(planCheck(run, { subqueries: [searches[1].toUpperCase(), ` ${searches[0]} `] })?.ok).toBe(true)
   })
@@ -189,6 +191,7 @@ describe('the plan check in Show work', () => {
       const html = work(run, { subqueries: searches })
       expect(html).toContain(sentence.replace(/“/g, '“'))
       expect(html).not.toContain('✓')
+      expect(html).not.toContain(checkIcon)
       expect(html).not.toContain('Ran the plan you confirmed')
       expect(html).toContain('is-changed')
     }
@@ -226,7 +229,7 @@ describe('the plan check in Show work', () => {
     const run = { ...planEvent(ucRuns.UC2, searches), events: planEvent(ucRuns.UC2, searches).events.map(event => ({ ...event, at: created })) }
     expect(confirmedPlanFor(run)?.subqueries).toEqual(searches)
     expect(planCheck(run)?.ok).toBe(true)
-    expect(work(run)).toContain('Ran the plan you confirmed ✓')
+    expect(work(run)).toContain('Ran the plan you confirmed ' + checkIcon)
     // The same run opened with a different plan on record is a mismatch, not a ✓.
     const other = { ...planEvent(ucRuns.UC2, ['something else']), events: planEvent(ucRuns.UC2, ['something else']).events.map(event => ({ ...event, at: created })) }
     expect(planCheck(other)?.ok).toBe(false)

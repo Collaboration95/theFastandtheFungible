@@ -1,4 +1,5 @@
 import { operationLabel, rowContext, rowAmount, shortHash } from '../site/ledger/ledger.js'
+import { dateSGT } from '../site/brand/presentation.js'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
@@ -97,7 +98,7 @@ function htmlArtifact(out) {
   const escape = s => String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;')
   const dropsTitle = r => typeof (r.deliveredAmount ?? r.amountDrops) === 'string' ? `${Number(r.deliveredAmount ?? r.amountDrops).toLocaleString('en-SG')} drops` : ''
   const rows = JSON.parse(out).rows.map(r => `<tr><td><span class="op">${operationLabel(r)}</span><span class="ctx">${escape(rowContext(r))}</span></td><td><span class="amt" title="${escape(dropsTitle(r))}">${escape(rowAmount(r))}</span><span class="fee">fee ${r.feeDrops} drops</span></td><td><a href="https://github.com/Collaboration95/theFastandtheFungible/blob/${r.sourceCommit ?? 'f3902008b4be14d60f154fa6db3ba5c1dbe65943'}/${r.source}">Ledger ${r.ledgerIndex} · committed source</a></td><td><a class="hash" href="https://testnet.xrpl.org/transactions/${r.hash}" title="${r.hash}" aria-label="Transaction ${r.hash}">${shortHash(r.hash)}</a><span class="state">Historical; not freshly verified</span></td></tr>`).join('')
-  return read('site/ledger/index.html').replace(/Checking \d+ hashes live… 0\/\d+/, `Checking ${JSON.parse(out).rows.length} hashes live… 0/${JSON.parse(out).rows.length}`).replace(/<caption>.*?<\/caption>/, `<caption>${JSON.parse(out).rows.length} curated transactions · snapshot ${JSON.parse(out).snapshotDate}</caption>`).replace(/<tbody id="rows">[\s\S]*?<\/tbody>/, `<tbody id="rows">${rows}</tbody>`)
+  return read('site/ledger/index.html').replace(/Checking \d+ hashes live… 0\/\d+/, `Checking ${JSON.parse(out).rows.length} hashes live… 0/${JSON.parse(out).rows.length}`).replace(/<caption>.*?<\/caption>/, `<caption>${JSON.parse(out).rows.length} curated transactions · snapshot ${dateSGT(JSON.parse(out).snapshotDate + 'T00:00:00Z')}</caption>`).replace(/<tbody id="rows">[\s\S]*?<\/tbody>/, `<tbody id="rows">${rows}</tbody>`)
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const out = artifact()
