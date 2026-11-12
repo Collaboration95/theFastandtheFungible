@@ -6,7 +6,7 @@ import { spawn } from 'node:child_process'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { Wallet } from 'xrpl'
+import { Wallet, AccountSetAsfFlags } from 'xrpl'
 import { connect, funded, submit, save, account } from './lib.mjs'
 const c = await connect(), records = [], children = [], dir = mkdtempSync(join(tmpdir(), 'r3-iou-'))
 let run, receipt
@@ -15,7 +15,8 @@ try {
   const buyer = await funded(c), issuer = Wallet.generate(), writer = Wallet.generate()
   const send = async (wallet, tx, label) => { const r = await submit(c, wallet, { ...tx, Account: wallet.address }, { label }); records.push(r.record); assert.equal(r.record.result, 'tesSUCCESS'); save('c', { records }); return r }
   for (const w of [issuer, writer]) await send(buyer, { TransactionType: 'Payment', Destination: w.address, Amount: '6000000' }, 'fund fresh account')
-  await send(issuer, { TransactionType: 'AccountSet', SetFlag: 16 }, 'enable AllowTrustLineLocking')
+  await send(issuer, { TransactionType: 'AccountSet', SetFlag: AccountSetAsfFlags.asfAllowTrustLineLocking }, 'enable AllowTrustLineLocking')
+  assert.ok((await account(c, issuer)).Flags & 0x40000000)
   for (const w of [buyer, writer]) await send(w, { TransactionType: 'TrustSet', LimitAmount: { currency: 'SGT', issuer: issuer.address, value: '1000000' } }, 'SGT trust line')
   await send(issuer, { TransactionType: 'Payment', Destination: buyer.address, Amount: { currency: 'SGT', issuer: issuer.address, value: '10000' } }, 'issue SGT')
   const env = { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: process.env.TMPDIR, DOTENV_CONFIG_PATH: '.spike-no-env',
@@ -28,16 +29,23 @@ try {
   const slugs = ['team-builder-notes','team-xrpl-explainers','alphaleak','the-fab-floor','notfinancialtimes','basis-points','load-factor','kopi-contrarian','marketpulse-digest','grid-operators-report','open-records']
   env.ESCROW_WRITERS = slugs.join(',')
   for (const slug of slugs) env[`XRPL_PUBLISHER_${slug.toUpperCase().replaceAll('-', '_')}_SEED`] = writer.seed
-  for (const path of ['publisher/server.ts', 'server/index.ts']) children.push(spawn(process.execPath, ['--import', 'tsx', path], { env, stdio: 'ignore' }))
+  children.push(spawn(process.execPath, ['--import', 'tsx', 'publisher/server.ts'], { env, stdio: 'ignore' }))
+  for (let i = 0; ; i++) { try { if ((await fetch(env.PUBLISHER_URL + '/health')).ok) break } catch { /* starting */ } if (i > 100) throw Error('Publisher startup timeout'); await new Promise(r => setTimeout(r, 200)) }
+  children.push(spawn(process.execPath, ['--import', 'tsx', 'server/index.ts'], { env, stdio: 'ignore' }))
   const get = async path => { const r = await fetch(api + path, { headers: { Authorization: `Bearer ${token}` } }); assert.ok(r.ok, `HTTP ${r.status}`); return r.json() }
   for (let i = 0; ; i++) { try { await get('/api/runs'); break } catch { if (i > 100 || children.some(p => p.exitCode !== null)) throw Error('Local stack failed to start'); await new Promise(r => setTimeout(r, 200)) } }
   const started = performance.now()
-  const response = await fetch(api + '/runs', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ question: 'How do XRPL escrow writers get paid when they reveal the article key?', budgetMinor: 100, escrow: true }) })
+  const response = await fetch(api + '/runs', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ question: 'Can an XRPL escrow hold RLUSD today, and what must the issuer enable before a buyer can lock it?', budgetMinor: 100, escrow: true }) })
   assert.equal(response.status, 201); const initial = await response.json()
   for (let i = 0; ; i++) { run = await get(`/runs/${initial.runId}`); if (['DONE','FAILED','STOPPED'].includes(run.phase)) break; if (i > 600) throw Error('Purchase timed out'); await new Promise(r => setTimeout(r, 500)) }
   receipt = await get(`/runs/${initial.runId}/receipts.json`)
   save('c-receipt', receipt)
   const released = run.intents.filter(i => i.escrow?.state === 'RELEASED')
+  for (const intent of released) for (const [label, hash] of [['product create', intent.escrow.createHash], ['product writer finish', intent.escrow.finishHash]]) {
+    const { result } = await c.request({ command: 'tx', transaction: hash, api_version: 2 })
+    assert.equal(result.meta.TransactionResult, 'tesSUCCESS')
+    records.push({ label, hash, explorer: `https://testnet.xrpl.org/transactions/${hash}`, validated: result.validated, result: result.meta.TransactionResult, ledger: result.ledger_index, tx: result.tx_json, meta: result.meta })
+  }
   const result = { verdict: released.length > 0 ? 'works' : 'fails', at: new Date().toISOString(), ms: Math.round(performance.now() - started),
     issuer: issuer.address, flags: (await account(c, issuer)).Flags, buyer: buyer.address, writer: writer.address,
     labels: run.labels, phase: run.phase, spentMinor: run.spentMinor, intents: run.intents, records,

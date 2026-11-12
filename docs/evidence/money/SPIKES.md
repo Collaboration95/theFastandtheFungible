@@ -2,7 +2,7 @@
 
 A: **works** — delegated creation, writer finish, permission isolation and revocation observed on Testnet.
 B: **works with SDK workaround** — two creates are atomic; buyer create + writer finish validate together.
-C: **pending** — fresh issuer and full product purchase next.
+C: **works** — one real product key-reveal IOU purchase, credit verified.
 D: **fails** — official RLUSD issuers have locking disabled on both networks; TokenEscrow is enabled.
 
 ## Reproduce
@@ -53,7 +53,23 @@ B3 single observation: normal create/finish **14,202 ms / 4 validated-ledger adv
 
 ## C — product TEST-SGD purchase
 
-Pending. Fixture model output will be labelled; settlement will use actual Testnet SGT IOU escrow, not official RLUSD.
+Fresh faucet-funded buyer, fresh issuer and writer funded from it; issuer sets `asfAllowTrustLineLocking` (17), observed Flags=1073741824. OFFSET=800: API 9588 / publisher 9590, fixture planner/research/decision, real XRPL Testnet settlement, `ESCROW_MODE=key-reveal ESCROW_ASSET=test-iou`. One writer wallet is intentionally shared by the isolated fixture writer roles for this single purchase, not evidence of independent writers. The question is the established RLUSD escrow preset. **40 minor units / one verified purchase / 16626 ms** for the run (provisioning excluded). Article `c5-xrpl-token-escrow-xls85` is team-authored; SGT is a labelled stand-in, not RLUSD. `c-receipt.json` preserves the product export.
+
+`verifyEscrowCredit` passes on the real code path: `server/escrow.ts:82` checks recipient RippleState delta before persisting the reveal and releasing the encrypted article. The resulting intent is VERIFIED/RELEASED. This is a local HTTP stack, not hosted acceptance. All processes stopped and private temporary databases deleted by the script. Seed values only exist in process environment/memory, never public evidence.
+
+| Step | Engine / validated result | Hash |
+|---|---|---|
+| fund fresh account | tesSUCCESS | [8B7F05C6C171ABF088855C557E01CC08E67D82B56F2C88A9ACC880A0871808EF](https://testnet.xrpl.org/transactions/8B7F05C6C171ABF088855C557E01CC08E67D82B56F2C88A9ACC880A0871808EF) |
+| fund fresh account | tesSUCCESS | [A708ACA11CF75F51C0697442E4520B7CC5442314BE70DFA167708AD201FA89D9](https://testnet.xrpl.org/transactions/A708ACA11CF75F51C0697442E4520B7CC5442314BE70DFA167708AD201FA89D9) |
+| enable AllowTrustLineLocking | tesSUCCESS | [52E26F9692DF6AC85D7336FD6047B1A769BAEE12695FF53173FB002D5E53E776](https://testnet.xrpl.org/transactions/52E26F9692DF6AC85D7336FD6047B1A769BAEE12695FF53173FB002D5E53E776) |
+| SGT trust line | tesSUCCESS | [0B34A1C944548EF3FB36B63AEFC7F6DA4760317196674AC8DEC88B5AC3DC759B](https://testnet.xrpl.org/transactions/0B34A1C944548EF3FB36B63AEFC7F6DA4760317196674AC8DEC88B5AC3DC759B) |
+| SGT trust line | tesSUCCESS | [E7AB516D8113060A2DC695682B4C72A2BD67DA5CB218CE0E73D3C23B0E97163D](https://testnet.xrpl.org/transactions/E7AB516D8113060A2DC695682B4C72A2BD67DA5CB218CE0E73D3C23B0E97163D) |
+| issue SGT | tesSUCCESS | [D4A91C7A8DE5D733EC4A0D2A6F5F07E4BF437D6D6C83DF1ADB97F21D1D94A961](https://testnet.xrpl.org/transactions/D4A91C7A8DE5D733EC4A0D2A6F5F07E4BF437D6D6C83DF1ADB97F21D1D94A961) |
+| product create | tesSUCCESS | [8600167DCF721AA3FB80318D0268DE6754E82116EACA4F51592A5CC1D054B1E6](https://testnet.xrpl.org/transactions/8600167DCF721AA3FB80318D0268DE6754E82116EACA4F51592A5CC1D054B1E6) |
+| product writer finish | tesSUCCESS | [950451C760C37F21158C423D6D62E1E7C932711A01D8B7B76791D59FC13803EE](https://testnet.xrpl.org/transactions/950451C760C37F21158C423D6D62E1E7C932711A01D8B7B76791D59FC13803EE) |
+
+Friction: use the named SDK flag (locking=17, clawback=16); the script asserts the resulting bit. Wait for publisher readiness before API startup. A fictional-corpus question has no candidates on the Testnet team corpus, and a covered question buys nothing; use the documented RLUSD preset for this repro. Product needs no settlement change for TEST-SGD, but provisioning remains separate from a visitor wallet faucet. No official RLUSD purchase is claimed.
+
 
 ## D — official RLUSD flags (read-only)
 
