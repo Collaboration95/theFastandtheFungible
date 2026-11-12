@@ -1,0 +1,151 @@
+{
+  "verdict": "works",
+  "at": "2026-11-12T08:58:12.531Z",
+  "visitor": "rKsQu4CjAUrGJiVCHcurKgCt2qsWjiDKKq",
+  "agent": "rh4hWwMZBwwNxKGAmDtXYPbHpjM4rnARt1",
+  "writer": "rfyTnis8b9KrT4hwVsfqo4PZhkvZdGxPNY",
+  "deltas": {
+    "visitor": "-100000",
+    "agent": "-12",
+    "fee": "12"
+  },
+  "records": [
+    {
+      "label": "grant EscrowCreate only",
+      "hash": "A6A660C924A0ACB3666F65F2E0809BA74FDFBA4C089A5E851EA9B6DDBDE75732",
+      "explorer": "https://testnet.xrpl.org/transactions/A6A660C924A0ACB3666F65F2E0809BA74FDFBA4C089A5E851EA9B6DDBDE75732",
+      "engine": "tesSUCCESS",
+      "validated": true,
+      "result": "tesSUCCESS",
+      "ledger": 22263719,
+      "ledgers": 2,
+      "ms": 6636,
+      "tx": {
+        "TransactionType": "DelegateSet",
+        "Account": "rKsQu4CjAUrGJiVCHcurKgCt2qsWjiDKKq",
+        "Authorize": "rh4hWwMZBwwNxKGAmDtXYPbHpjM4rnARt1",
+        "Permissions": [
+          {
+            "Permission": {
+              "PermissionValue": "EscrowCreate"
+            }
+          }
+        ],
+        "Flags": 0,
+        "Sequence": 22263713,
+        "Fee": "12",
+        "LastLedgerSequence": 22263737
+      }
+    },
+    {
+      "label": "delegated create",
+      "hash": "3CA31F98B5137ED91ADAE2E4AD01DDE0841FC4911430B74042359492E0504015",
+      "explorer": "https://testnet.xrpl.org/transactions/3CA31F98B5137ED91ADAE2E4AD01DDE0841FC4911430B74042359492E0504015",
+      "engine": "tesSUCCESS",
+      "validated": true,
+      "result": "tesSUCCESS",
+      "ledger": 22263721,
+      "ledgers": 2,
+      "ms": 4788,
+      "tx": {
+        "TransactionType": "EscrowCreate",
+        "Account": "rKsQu4CjAUrGJiVCHcurKgCt2qsWjiDKKq",
+        "Delegate": "rh4hWwMZBwwNxKGAmDtXYPbHpjM4rnARt1",
+        "Destination": "rfyTnis8b9KrT4hwVsfqo4PZhkvZdGxPNY",
+        "Amount": "100000",
+        "Condition": "A025802097ED15428CD57E92D68DF3D9115C590ECBBEE56D2626A5471ADE519E184DE84F810120",
+        "CancelAfter": 847789370,
+        "Flags": 0,
+        "Sequence": 22263714,
+        "Fee": "12",
+        "LastLedgerSequence": 22263739
+      }
+    },
+    {
+      "label": "writer finish",
+      "hash": "13C5A0CEA37C1D1C9BA9380F0E732BE64D829B6997E99D0CCAF662DFE56F551B",
+      "explorer": "https://testnet.xrpl.org/transactions/13C5A0CEA37C1D1C9BA9380F0E732BE64D829B6997E99D0CCAF662DFE56F551B",
+      "engine": "tesSUCCESS",
+      "validated": true,
+      "result": "tesSUCCESS",
+      "ledger": 22263723,
+      "ledgers": 2,
+      "ms": 6467,
+      "tx": {
+        "TransactionType": "EscrowFinish",
+        "Account": "rfyTnis8b9KrT4hwVsfqo4PZhkvZdGxPNY",
+        "Owner": "rKsQu4CjAUrGJiVCHcurKgCt2qsWjiDKKq",
+        "OfferSequence": 22263714,
+        "Condition": "A025802097ED15428CD57E92D68DF3D9115C590ECBBEE56D2626A5471ADE519E184DE84F810120",
+        "Fulfillment": "A0228020796793D73D9D0DAF5873432127DBBABC6909763129EAA8D17B6B71B145A0D6E0",
+        "Flags": 0,
+        "Sequence": 22263717,
+        "Fee": "423",
+        "LastLedgerSequence": 22263741
+      }
+    },
+    {
+      "label": "unauthorized Payment",
+      "hash": "EDAE5B93538F92E08C7E9739EF787C013F0C728553F5515FA7356A563991159C",
+      "explorer": "https://testnet.xrpl.org/transactions/EDAE5B93538F92E08C7E9739EF787C013F0C728553F5515FA7356A563991159C",
+      "engine": "terNO_DELEGATE_PERMISSION",
+      "validated": false,
+      "ledgers": 0,
+      "ms": 222,
+      "tx": {
+        "TransactionType": "Payment",
+        "Account": "rKsQu4CjAUrGJiVCHcurKgCt2qsWjiDKKq",
+        "Delegate": "rh4hWwMZBwwNxKGAmDtXYPbHpjM4rnARt1",
+        "Destination": "rfyTnis8b9KrT4hwVsfqo4PZhkvZdGxPNY",
+        "Amount": "1",
+        "Flags": 0,
+        "Sequence": 22263715,
+        "Fee": "12",
+        "LastLedgerSequence": 22263743
+      }
+    },
+    {
+      "label": "revoke",
+      "hash": "B376A2CBBD7BEED9004195B954A7D56D2300D7C07961381A2F18B96F96FB9E60",
+      "explorer": "https://testnet.xrpl.org/transactions/B376A2CBBD7BEED9004195B954A7D56D2300D7C07961381A2F18B96F96FB9E60",
+      "engine": "tesSUCCESS",
+      "validated": true,
+      "result": "tesSUCCESS",
+      "ledger": 22263725,
+      "ledgers": 2,
+      "ms": 4799,
+      "tx": {
+        "TransactionType": "DelegateSet",
+        "Account": "rKsQu4CjAUrGJiVCHcurKgCt2qsWjiDKKq",
+        "Authorize": "rh4hWwMZBwwNxKGAmDtXYPbHpjM4rnARt1",
+        "Permissions": [],
+        "Flags": 0,
+        "Sequence": 22263715,
+        "Fee": "12",
+        "LastLedgerSequence": 22263743
+      }
+    },
+    {
+      "label": "create after revocation",
+      "hash": "AF1963BC9BC895CD009F2DCCB667DEDFCF77F5127ECD4969CFB6CBC0291D0686",
+      "explorer": "https://testnet.xrpl.org/transactions/AF1963BC9BC895CD009F2DCCB667DEDFCF77F5127ECD4969CFB6CBC0291D0686",
+      "engine": "terNO_DELEGATE_PERMISSION",
+      "validated": false,
+      "ledgers": 0,
+      "ms": 224,
+      "tx": {
+        "TransactionType": "EscrowCreate",
+        "Account": "rKsQu4CjAUrGJiVCHcurKgCt2qsWjiDKKq",
+        "Delegate": "rh4hWwMZBwwNxKGAmDtXYPbHpjM4rnARt1",
+        "Destination": "rfyTnis8b9KrT4hwVsfqo4PZhkvZdGxPNY",
+        "Amount": "100000",
+        "Condition": "A025802097ED15428CD57E92D68DF3D9115C590ECBBEE56D2626A5471ADE519E184DE84F810120",
+        "CancelAfter": 847789370,
+        "Flags": 0,
+        "Sequence": 22263716,
+        "Fee": "12",
+        "LastLedgerSequence": 22263745
+      }
+    }
+  ]
+}

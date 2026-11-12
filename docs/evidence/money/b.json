@@ -1,0 +1,105 @@
+{
+  "observations": {
+    "b1Created": 2
+  },
+  "records": [
+    {
+      "label": "B1 two escrow creates",
+      "hash": "AD28CC333F7B353E2D7932B3CCE19DD127BDF56226E3D893631A27586FF4FAB0",
+      "explorer": "https://testnet.xrpl.org/transactions/AD28CC333F7B353E2D7932B3CCE19DD127BDF56226E3D893631A27586FF4FAB0",
+      "engine": "tesSUCCESS",
+      "validated": true,
+      "result": "tesSUCCESS",
+      "ledger": 22263736,
+      "ledgers": 2,
+      "ms": 6240,
+      "tx": {
+        "TransactionType": "Batch",
+        "Account": "rBjojgnG6cFXRovSPhpmxPh5zNPL7H63ov",
+        "Flags": 65536,
+        "RawTransactions": [
+          {
+            "RawTransaction": {
+              "TransactionType": "EscrowCreate",
+              "Account": "rBjojgnG6cFXRovSPhpmxPh5zNPL7H63ov",
+              "Destination": "rsMhhSwKwaqj8NQJEgdFZLLjmrdeRCBR92",
+              "Amount": "10000",
+              "Condition": "A0258020754AFBB6001C499D92F82996811540214F63CE4B146F1F70C833292CD63DEC49810120",
+              "CancelAfter": 847789421,
+              "Flags": 1073741824,
+              "Fee": "0",
+              "SigningPubKey": "",
+              "Sequence": 22263733
+            }
+          },
+          {
+            "RawTransaction": {
+              "TransactionType": "EscrowCreate",
+              "Account": "rBjojgnG6cFXRovSPhpmxPh5zNPL7H63ov",
+              "Destination": "rsMhhSwKwaqj8NQJEgdFZLLjmrdeRCBR92",
+              "Amount": "20000",
+              "Condition": "A0258020754AFBB6001C499D92F82996811540214F63CE4B146F1F70C833292CD63DEC49810120",
+              "CancelAfter": 847789421,
+              "Flags": 1073741824,
+              "Fee": "0",
+              "SigningPubKey": "",
+              "Sequence": 22263734
+            }
+          }
+        ],
+        "Sequence": 22263732,
+        "LastLedgerSequence": 22263754,
+        "Fee": "48"
+      }
+    },
+    {
+      "label": "B1 failing second create",
+      "hash": "7C162D61DE09381ED8B36E6DD25898D0E19AD728D75A894564D7F323B2955857",
+      "explorer": "https://testnet.xrpl.org/transactions/7C162D61DE09381ED8B36E6DD25898D0E19AD728D75A894564D7F323B2955857",
+      "engine": "tesSUCCESS",
+      "validated": true,
+      "result": "tesSUCCESS",
+      "ledger": 22263738,
+      "ledgers": 2,
+      "ms": 4888,
+      "tx": {
+        "TransactionType": "Batch",
+        "Account": "rBjojgnG6cFXRovSPhpmxPh5zNPL7H63ov",
+        "Flags": 65536,
+        "RawTransactions": [
+          {
+            "RawTransaction": {
+              "TransactionType": "EscrowCreate",
+              "Account": "rBjojgnG6cFXRovSPhpmxPh5zNPL7H63ov",
+              "Destination": "rsMhhSwKwaqj8NQJEgdFZLLjmrdeRCBR92",
+              "Amount": "10000",
+              "Condition": "A0258020754AFBB6001C499D92F82996811540214F63CE4B146F1F70C833292CD63DEC49810120",
+              "CancelAfter": 847789421,
+              "Flags": 1073741824,
+              "Fee": "0",
+              "SigningPubKey": "",
+              "Sequence": 22263736
+            }
+          },
+          {
+            "RawTransaction": {
+              "TransactionType": "EscrowCreate",
+              "Account": "rBjojgnG6cFXRovSPhpmxPh5zNPL7H63ov",
+              "Destination": "rsMhhSwKwaqj8NQJEgdFZLLjmrdeRCBR92",
+              "Amount": "99999999999999999",
+              "Condition": "A0258020754AFBB6001C499D92F82996811540214F63CE4B146F1F70C833292CD63DEC49810120",
+              "CancelAfter": 847789421,
+              "Flags": 1073741824,
+              "Fee": "0",
+              "SigningPubKey": "",
+              "Sequence": 22263737
+            }
+          }
+        ],
+        "Sequence": 22263735,
+        "LastLedgerSequence": 22263756,
+        "Fee": "48"
+      }
+    }
+  ]
+}
