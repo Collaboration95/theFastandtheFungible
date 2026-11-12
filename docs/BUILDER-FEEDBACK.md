@@ -1552,3 +1552,10 @@ Chromium creates the visitor key, obtains faucet XRP, binds public proof through
 - **Workaround:** fetch the needed main ref explicitly (`git fetch origin refs/heads/main:refs/remotes/origin/main`) rather than retrying unrelated branch updates. Preserve the other lane's ref and commits.
 - **Suggested fix:** serialize broad fetches by common Git directory in concurrent worktree shipping helpers, or limit each helper to the refs it needs. This was local shared-ref contention, not an observed GitHub outage.
 - **Severity / mainnet impact:** low coordination friction; no signing, spending, credential disclosure or Mainnet impact.
+
+### 2026-11-12 — Delegated Batch recovery signing boundary (local fixture)
+
+- **Evidence:** `tests/delegated-wallet.test.ts`, scoped Batch regression, first failed after integrating holdback recovery because `signReservedBatch` reached the agent signer. The added assertion now requires both normal and reserved Batch signing to refuse before the signing spy is called. This is a local authority-boundary fixture, not a Testnet validation claim for its empty Batch.
+- **Workaround:** refuse reserved Batch signing on a visitor-scoped payer, matching the existing early Batch refusal. Own-wallet plus Batch holdback remains unsupported until visitor co-signing transport is implemented.
+- **Suggested fix:** document every signing entry point when adding durable Batch recovery, including scoped-account authorization.
+- **Severity / mainnet impact:** medium integration boundary; no affected transaction or Mainnet write was observed.

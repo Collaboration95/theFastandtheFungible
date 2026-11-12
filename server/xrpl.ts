@@ -153,6 +153,7 @@ export class XrplPayer {
   }
   /** Reconstruct only an already reserved transaction during crash recovery. */
   signReservedBatch(tx: Transaction): Submission {
+    if (this.delegatedOwner) throw new BeforeSignError('Delegated Batch requires visitor co-signing')
     if (!this.wallet || tx.TransactionType !== 'Batch' || tx.Account !== this.address) throw new BeforeSignError('Reserved Batch identity mismatch')
     const s = this.wallet.sign(tx)
     return { txHash: s.hash.toUpperCase(), txBlob: s.tx_blob, lastLedgerSequence: tx.LastLedgerSequence! }
