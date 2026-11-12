@@ -1545,3 +1545,10 @@ Chromium creates the visitor key, obtains faucet XRP, binds public proof through
 - **Workaround:** use individual delegated EscrowCreate. Do not combine the own-wallet mode with Batch holdback until visitor co-signing is implemented; an EscrowCreate-only permission does not authorize Batch.
 - **Suggested fix:** application delegation examples should explicitly separate delegated creates, agent-signed terminal transactions and multi-account Batch signing. Preserve this boundary when composing opt-in features.
 - **Severity / mainnet impact:** medium integration boundary, prevented before shipping this mode. No live incident or Mainnet signing; the same signer-selection distinction applies to any integration.
+
+## 2026-11-12 — Concurrent worktree fetch raced a shared remote-tracking ref (observed local tooling)
+
+- **Evidence:** a read-only `git fetch -q origin` in the wallet worktree failed while updating `refs/remotes/origin/guru/r3-holdback`: the ref had advanced from the value expected by that fetch. A subsequent explicit main-only fetch succeeded and read main `de23461d`. No checkout, source file or ledger transaction changed in the failed fetch.
+- **Workaround:** fetch the needed main ref explicitly (`git fetch origin refs/heads/main:refs/remotes/origin/main`) rather than retrying unrelated branch updates. Preserve the other lane's ref and commits.
+- **Suggested fix:** serialize broad fetches by common Git directory in concurrent worktree shipping helpers, or limit each helper to the refs it needs. This was local shared-ref contention, not an observed GitHub outage.
+- **Severity / mainnet impact:** low coordination friction; no signing, spending, credential disclosure or Mainnet impact.
