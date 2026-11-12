@@ -40,7 +40,7 @@ const fresh = await embedAll(missing.map(embeddingText))
 missing.forEach((article, i) => { vectors[embeddingKey(article)] = { hash: sha256(embeddingText(article)), vector: fresh[i] } })
 const sorted = Object.fromEntries(Object.entries(vectors).sort(([a], [b]) => a.localeCompare(b)))
 writeFileSync(cacheFile, `${JSON.stringify({ model, dims, vectors: sorted })}\n`)
-console.log(`Wrote ${Object.keys(sorted).length} vectors to data/corpus/v2/embeddings.json`)
+console.log(`Wrote ${Object.keys(sorted).length} vectors to ${cacheFile}`)
 
 const flag = process.argv.indexOf('--queries')
 if (flag > 0) {

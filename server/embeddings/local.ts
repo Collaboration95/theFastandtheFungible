@@ -10,7 +10,8 @@ export const modelRoot = () => resolve(process.env.EMBEDDING_MODEL_DIR || 'data/
 export const localCacheFile = () => resolve(modelRoot(), 'corpus-vectors.json')
 export function createLocalEmbedder(model: keyof typeof LOCAL_MODELS = LOCAL_MODEL) {
   const load = async () => {
-    const { env, pipeline } = await import('@huggingface/transformers')
+    const packageName = '@huggingface/transformers'
+    const { env, pipeline } = await import(packageName) as typeof import('@huggingface/transformers')
     env.localModelPath = `${modelRoot()}/`
     env.allowRemoteModels = false
     env.useBrowserCache = false

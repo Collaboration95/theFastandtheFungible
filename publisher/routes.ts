@@ -24,7 +24,7 @@ import { loadWriterCorpus } from './corpus.js'
 import { PublisherError, PublisherJournal } from './journal.js'
 import { buildRegistry, SIMULATED_KEY_LABEL, type PublisherEntry } from './registry.js'
 import { embedLocal } from '../server/embeddings/local.js'
-import { createQueryEmbedder, embeddingsLive, loadEmbeddingCache, searchIndex, type EmbeddingCache, type Embedder } from './search.js'
+import { createQueryEmbedder, embedTexts, embeddingsLive, loadEmbeddingCache, searchIndex, type EmbeddingCache, type Embedder } from './search.js'
 
 export type PublisherConfig = {
   journal?: PublisherJournal | string
@@ -80,13 +80,13 @@ export function createPublisherApp(config: PublisherConfig = {}) {
   const label = rail === 'xrpl-testnet' ? XRPL_LABEL : SIMULATED_LABEL
   let failNextDelivery = false
   let registry = new Map<string, PublisherEntry>()
-  const embedder = config.embedder ?? (embeddingsLive(env) ? createQueryEmbedder() : undefined)
+  const embedder = config.embedder ?? (embeddingsLive(env) ? createQueryEmbedder((texts, signal) => env.EMBEDDING_PROVIDER === 'local' ? embedLocal(texts, signal) : embedTexts(texts, { signal })) : undefined)
   // Live only: one warm-up call at startup, so the first question doesn't lose hybrid search to a cold-start timeout.
   if (!config.embedder && embedder) void embedder('warm-up').catch(() => undefined)
   const writersReady = Promise.resolve(config.writers ?? loadWriterCorpus())
     .then(async corpus => {
       if (env.EMBEDDING_PROVIDER === 'local' && !config.embedder) await embedLocal(['warm-up'])
-      const cache = loadEmbeddingCache()
+      const cache = loadEmbeddingCache(undefined, env)
       if (env.EMBEDDING_PROVIDER === 'local' && !cache) throw new Error('Build local corpus embeddings before starting the publisher')
       return buildRegistry(corpus, { rail, env, embeddings: config.embeddings ?? (env.EMBEDDING_PROVIDER === 'local' ? cache : localEmbeddingCache(cache)) })
     })

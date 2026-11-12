@@ -19,3 +19,10 @@ it('does not use a query vector from a different embedding space', async () => {
   const index = await buildIndex(miniCorpus.articles)
   expect((await searchIndex(index, 'Kestrel', 5, [1,2])).mode).toBe('keyword')
 })
+
+it('hosted accepts local CPU inference while still refusing remote embeddings', async () => {
+  const { validateHosted } = await import('../server/hosted/bootstrap.js')
+  const base = { HOSTED_ORIGIN: 'https://example.test', HOSTED_IP_HMAC_KEY: 'x'.repeat(32), HOSTED_TRUSTED_PROXY: '127.0.0.1', SEARCH_EMBEDDINGS: 'live' }
+  expect(() => validateHosted(loadConfig(base))).toThrow('remote embedding')
+  expect(() => validateHosted(loadConfig({ ...base, EMBEDDING_PROVIDER: 'local' }))).not.toThrow()
+})

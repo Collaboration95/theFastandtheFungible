@@ -21,7 +21,7 @@ and its query-dependent hash tie-break are unchanged.
 | RSS increase after warm-up, bytes | 155,287,552 | 117,669,888 |
 | Query embed p50 / p95, ms | 2.58 / 4.16 | 1.22 / 1.84 |
 
-Measured in separate Node 22 processes on this Mac under the shared heavy lock.
+Measured in separate Node 22.23.4 processes on this Mac (Apple M5, 10 cores, 32 GiB RAM, macOS 26.6.2, arm64) under the shared heavy lock.
 Cold means a new process, not cleared OS disk caches; BGE ran first. Query latency
 excludes search and includes actual inference on every query, without query-cache hits.
 JSON summaries alongside this file retain unrounded results. No API calls or model
@@ -52,8 +52,20 @@ No client module imports Transformers; the Docker server bundle externalises it.
 
 The additive `api-models` / `publisher-models` Docker targets use Debian/glibc for
 ONNX, bake weights and corpus vectors, and preserve the existing Alpine targets.
-Hosted compose/default promotion belongs to the orchestrator. Image size and
-offline-container validation are pending measurement.
+Hosted compose/default promotion belongs to the orchestrator.
+
+Docker measurement: **BLOCKED**. The original arm64 baseline image measured 194,647,564 bytes. The model image failed with `no space left on device`; the smaller linux/amd64 retry then stalled, as did `buildx ls` and `docker system df` (10-second diagnostic timeouts). Own build clients were terminated. Image-size delta and offline-container success are unverified.
+
+Local diagnostic output:
+
+```text
+
+```
+
+The first full dependency copy failed with `no space left on device`; the retry
+packages only the model dependency closure and CPU binaries. No other lane's
+Docker images, cache or volumes were deleted. Container results above are local
+Docker evidence, not a hosted deployment.
 
 ## Calibrated decisions and live two-arm evaluation
 

@@ -46,9 +46,10 @@ export const cachedVector = (cache: EmbeddingCache | undefined, article: Article
   const entry = cache?.vectors[embeddingKey(article)]
   return entry && entry.vector.length === cache?.dims && entry.vector.every(Number.isFinite) && entry.hash === sha256(embeddingText(article)) ? entry.vector : undefined
 }
-export function loadEmbeddingCache(file: URL | string = process.env.EMBEDDING_PROVIDER === 'local' ? localCacheFile() : EMBEDDINGS_FILE): EmbeddingCache | undefined {
+export function loadEmbeddingCache(file: URL | string | undefined = undefined, env: NodeJS.ProcessEnv = process.env): EmbeddingCache | undefined {
+  file ??= env.EMBEDDING_PROVIDER === 'local' ? localCacheFile() : EMBEDDINGS_FILE
   const cache = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) as EmbeddingCache : undefined
-  if (process.env.EMBEDDING_PROVIDER === 'local' && (cache?.model !== LOCAL_MODEL || cache.dims !== LOCAL_DIMS)) return undefined
+  if (env.EMBEDDING_PROVIDER === 'local' && (cache?.model !== LOCAL_MODEL || cache.dims !== LOCAL_DIMS)) return undefined
   return cache
 }
 

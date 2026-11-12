@@ -1221,3 +1221,11 @@ persistence or a mainnet deployment. No cloud resource or live ledger call ran.
 - **Workaround / fix:** lazy-load optional UI to reach 159,261 bytes on Node 22; share the manifest/gzip calculation between production builds and deploy performance checks, require Node 22, and preserve the existing threshold.
 - **Suggested tooling improvement:** use the deploy toolchain for local admission and report runtime/compression versions alongside byte budgets.
 - **Severity / mainnet impact:** medium shipping blocker in our tooling, not an XRPL or x402 defect. No ledger or mainnet impact was measured; no payment or cloud change occurred in this lane.
+
+
+## 12 November 2026: optional local ONNX packaging needs glibc and bounded dependencies (observed local tooling)
+
+- **Evidence:** `docs/evidence/models/MODELS.md`; model build at `83d0e7cc` baked 277 corpus vectors, then the full dependency copy failed with `no space left on device` in Docker Desktop. Native ONNX uses glibc, while the existing hosted targets use Alpine/musl. No XRPL transaction was made.
+- **Workaround:** additive opt-in Debian model targets; copy the model dependency closure and only this platform's CPU binaries. Existing hosted defaults remain unchanged. No shared images, caches or volumes were deleted.
+- **Suggested fix:** publish a minimal CPU-only ONNX runtime distribution and document the supported libc and model-baking steps for offline servers.
+- **Severity / mainnet impact:** medium local packaging friction; no ledger defect or mainnet behaviour measured.
