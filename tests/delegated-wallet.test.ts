@@ -90,6 +90,14 @@ it('refuses an already-revoked grant before signing, even with policy budget', a
   expect(intent.status).toBe('FAILED_NOT_SETTLED'); expect(s.c.txs.size).toBe(0)
   expect(s.store.getRun(s.run.runId).contents).toHaveLength(0)
 })
+it('refuses Batch on an escrow-only visitor grant before falling back to the agent signer', async () => {
+  const s = await setup()
+  const sign = vi.spyOn(s.agent, 'sign')
+  const scoped = s.payer.forAccount(s.visitor.address)
+  await expect(scoped.escrow({ TransactionType: 'Batch', Flags: 65536, RawTransactions: [] }, 0, submission => submission, async () => undefined)).rejects.toThrow('Delegated Batch requires visitor co-signing')
+  expect(sign).not.toHaveBeenCalled()
+  expect(s.c.txs.size).toBe(0)
+})
 it('does not restore an unresolved visitor create into the agent sequence queue', async () => {
   const s = await setup(); s.c.state.validate = false
   const pending = await s.buy()

@@ -1538,3 +1538,10 @@ Chromium creates the visitor key, obtains faucet XRP, binds public proof through
 ### 2026-11-12 — hosted wallet provenance notice (observed local fixture)
 
 - Evidence: `src/components/DelegatedWallet.test.tsx` and `tests/delegated-wallet.test.ts`. Before the fix, the configured visitor-wallet mode still returned the shared-payer rail label and displayed “uses one sponsor wallet” in the environment panel. Workaround / fix: derive the notice from the configured wallet mode, keep one XRPL Testnet chip, and retain shared-mode wording. The server and rendered panel assertions first failed on the old labels, then passed. Suggested fix: test payer provenance alongside environment labels when adding a wallet mode. Severity: low UX accuracy issue. Mainnet impact: no ledger defect or Mainnet operation; this is our Testnet UI integration.
+
+## 2026-11-12 — Escrow-only delegation must refuse Batch before agent fallback (code-derived and local fixture)
+
+- **Evidence:** `tests/delegated-wallet.test.ts` first reproduced a scoped Batch reaching the agent signer through the generic non-create fallback. The fixture uses an empty inner list to isolate that signing decision; no public-ledger validity or settlement is claimed. `server/xrpl.ts` now refuses Batch before fallback and the regression requires zero submitted fixture transactions.
+- **Workaround:** use individual delegated EscrowCreate. Do not combine the own-wallet mode with Batch holdback until visitor co-signing is implemented; an EscrowCreate-only permission does not authorize Batch.
+- **Suggested fix:** application delegation examples should explicitly separate delegated creates, agent-signed terminal transactions and multi-account Batch signing. Preserve this boundary when composing opt-in features.
+- **Severity / mainnet impact:** medium integration boundary, prevented before shipping this mode. No live incident or Mainnet signing; the same signer-selection distinction applies to any integration.
