@@ -1451,3 +1451,20 @@ persistence or a mainnet deployment. No cloud resource or live ledger call ran.
 - **Workaround:** await the initial history response before clearing arrival traffic and exercising the strip. The zero-new-app-request assertion, quota assertion and all thresholds remain unchanged; the failed receipt is retained and the full gate is rerun.
 - **Suggested fix:** synchronize request-audit windows with their explicit initialization requests rather than an unrelated visible label.
 - **Severity / mainnet impact:** low browser-test reliability friction; no XRPL submission, Mainnet write, observed charge or changed product behavior.
+
+### 12 Nov 2026 — Fresh credential enforcement and operator key rotation
+
+- **Classification:** observed Testnet credential lifecycle and key rotation; code-derived advisory-cache enforcement boundary.
+- **Evidence:** `docs/evidence/publish/regulated-testnet.json`; CredentialAccept `2A947326D8C1D7FDED6BF6B5D22456119B43FE85190C7173EC4AFE7F64ACCF46`, CredentialDelete `A95E68514312E8EB279C9B5595543DFA852765BB773D80321A176361E0EB2844`, rotations `AE3B3258DEFFBB1BE8FA211603AE105F335F29CC1FF578A82D187A288E2B3C55` and `8296784FA04D8DFECED1962DB97614E801F9AB331EA795958A1FF6F229F23918`; superseded regular-key attempt returned `tefBAD_AUTH`.
+- **Workaround:** payment enforcement bypasses advisory/stale credential observations and pins domain and credential reads to one fresh validated ledger. Rotation persists the replacement key before signing and retains the master recovery key.
+- **Suggested fix:** Starter Kit examples should distinguish display caching from payment authorization and show regular-key signing with an explicit original master address, including stale-key refusal and uncertain-outcome recovery.
+- **Severity:** medium integration/documentation friction. **Mainnet impact:** not qualified; only fresh Testnet accounts were used. Existing payer/publisher seed-derived identities need separate regular-key runtime integration before promoting this runbook to live custody.
+
+
+### 12 Nov 2026 — Compiled sanctions artifact omitted by desktop staging
+
+- **Classification:** observed local build failure; no ledger transaction.
+- **Evidence:** full-gate receipt `1794491068550-22819-db19e043-fb2d-4673-ac47-140855381fa7.json`, desktop-build stage; a focused production-transform probe reproduced `ERR_MODULE_NOT_FOUND` for `ofac-xrp.json`.
+- **Workaround:** the authenticated build emits JSON plus an identical TypeScript projection; runtime imports the projection and retains schema/hash validation. Tests require artifact parity. No desktop packager change or gate threshold change.
+- **Suggested fix:** compilation/staging tooling should enumerate imported non-code assets or report the worker import cause rather than only “Engine boot failed”.
+- **Severity:** medium packaging friction. **Mainnet impact:** none observed; this failed before engine startup, with no transaction or real funds.

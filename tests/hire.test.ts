@@ -377,3 +377,55 @@ it.each(['pending', 'expired'] as const)('does not submit an unpaid %s inbound d
     if (state === 'expired') expect(s.api.store.walletStatus().reservedMinor).toBe(0)
   } finally { hires.close() }
 }, 30_000)
+
+it('regulated mode returns unsigned royalties for uncredentialed writers and records each refusal',async()=>{
+  const s=await setup(),credentials=await import('../server/writer-credentials.js')
+  vi.stubEnv('REGULATED_MODE','on');vi.stubEnv('WRITER_CREDENTIAL_DOMAIN','A'.repeat(64))
+  const observed=vi.spyOn(credentials,'acceptedCredential').mockResolvedValue({status:'unverified'})
+  try{
+    const paid=await payAndFetch(s.url,s.opts),result=await paid.response.json()
+    expect(result.phase).toBe('DONE')
+    const run=s.api.store.getRun(result.run_id),audit=s.api.store.auditEntries()
+    expect(run.spentMinor).toBe(0)
+    expect(audit.some(e=>e.kind==='refusal'&&e.data.screen==='credential-domain')).toBe(true)
+    expect(audit.some(e=>e.kind==='payout-sign'&&e.data.paymentKind==='royalty')).toBe(false)
+    expect(s.api.store.auditVerify().ok).toBe(true)
+  }finally{observed.mockRestore()}
+})
+
+it('returns royalties revoked between payout planning and signing, without losing the new refund',async()=>{
+ const s=await setup(),credentials=await import('../server/writer-credentials.js')
+ vi.stubEnv('REGULATED_MODE','on');vi.stubEnv('WRITER_CREDENTIAL_DOMAIN','A'.repeat(64))
+ let revoked=false,planned=0
+ const payments=s.api.store.policyPayments.bind(s.api.store)
+ const observed=vi.spyOn(credentials,'acceptedCredential').mockImplementation(async()=>revoked?{status:'unverified'}:{status:'verified',issuerLabel:'Operator',issuer:s.wallet.classicAddress,credentialType:'AA',domainId:'A'.repeat(64),credentialId:'C'.repeat(64),ledgerIndex:1,checkedAt:new Date().toISOString()})
+ const paymentSpy=vi.spyOn(s.api.store,'policyPayments').mockImplementation(runId=>{const values=payments(runId);if(values.some(p=>p.kind==='royalty')&&++planned===2)revoked=true;return values})
+ try{
+  const paid=await payAndFetch(s.url,s.opts),result=await paid.response.json()
+  expect(paid.response.status).toBe(200);expect(result.phase).toBe('DONE')
+  expect(revoked).toBe(true);expect(result.moneyChain.cancelledRoyalties.length).toBeGreaterThan(0)
+  expect(result.moneyChain.cancelledRoyalties.every((p:{reason:string})=>p.reason.includes('accepted credential'))).toBe(true)
+  expect(result.moneyChain.payments.every((p:{kind:string})=>p.kind!=='royalty')).toBe(true)
+  expect(s.api.store.auditVerify().ok).toBe(true)
+  await verifyHireChain(result,s.chain.ledger)
+  const submits=s.chain.submits;expect(await (await payAndFetch(s.url,s.opts)).response.json()).toEqual(result);expect(s.chain.submits).toBe(submits)
+ }finally{paymentSpy.mockRestore();observed.mockRestore()}
+})
+
+it('returns an OFAC-blocked royalty with the exact refusal and sanctions audit attribution',async()=>{
+ const s=await setup(),credentials=await import('../server/writer-credentials.js'),screen=await import('../server/payee-screening.js')
+ const registry=await(await fetch(`${s.options.publisherUrl}/registry`)).json(),payee=registry.publishers.find((p:{slug:string})=>p.slug==='open-records').wallet
+ vi.stubEnv('REGULATED_MODE','on');vi.stubEnv('WRITER_CREDENTIAL_DOMAIN','A'.repeat(64))
+ const observed=vi.spyOn(credentials,'acceptedCredential').mockResolvedValue({status:'verified',issuerLabel:'Operator',issuer:s.wallet.classicAddress,credentialType:'AA',domainId:'A'.repeat(64),credentialId:'C'.repeat(64),ledgerIndex:1,checkedAt:new Date().toISOString()})
+ const refusal='Payee is on the OFAC XRP address list; nothing was charged'
+ const screened=vi.spyOn(screen,'screenPayee').mockImplementation(address=>address===payee?{refusal,address,list:'ofac-sdn-xrp'}:undefined)
+ try{
+  const paid=await payAndFetch(s.url,s.opts),result=await paid.response.json()
+  expect(paid.response.status).toBe(200);expect(result.phase).toBe('DONE')
+  expect(result.moneyChain.cancelledRoyalties).toContainEqual(expect.objectContaining({payTo:payee,reason:refusal}))
+  expect(result.moneyChain.payments.every((p:{payTo:string})=>p.payTo!==payee)).toBe(true)
+  expect(observed.mock.calls.every(([address])=>address!==payee)).toBe(true)
+  expect(s.api.store.auditEntries()).toContainEqual(expect.objectContaining({kind:'refusal',data:expect.objectContaining({payTo:payee,screen:'ofac-sdn-xrp',reason:refusal})}))
+  expect(s.api.store.auditVerify().ok).toBe(true);await verifyHireChain(result,s.chain.ledger)
+ }finally{screened.mockRestore();observed.mockRestore()}
+})

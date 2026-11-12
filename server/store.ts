@@ -1,3 +1,4 @@
+import { screenPayee } from './payee-screening.js'
 import { runAudience } from './hosted/audience.js'
 import { type SettlementPhase, type PhaseObservation, PhaseObservationSchema } from '../shared/contracts/settlement-timing.js'
 import { probeMetadata } from './agents/precision.js'
@@ -41,7 +42,7 @@ function publicMetadata(value: unknown): void {
 }
 
 
-export type PolicyPayment = ChainPayment & { submission?: Submission; confirmedAt?: string; ledgerIndex?: number; cancelledAt?: string; retiredSubmissions?: Submission[] }
+export type PolicyPayment = ChainPayment & { submission?: Submission; confirmedAt?: string; ledgerIndex?: number; cancelledAt?: string; cancellationReason?: string; retiredSubmissions?: Submission[] }
 
 /** All mutations are synchronous SQLite transactions; no transaction crosses an await. */
 export class Store {
@@ -567,13 +568,13 @@ export class Store {
   listIntents(status?: PurchaseIntent['status']): PurchaseIntent[] {
     return status ? this.rows<PurchaseIntent>("SELECT json FROM intents WHERE json_extract(json,'$.status')=? ORDER BY rowid", status) : this.rows<PurchaseIntent>('SELECT json FROM intents ORDER BY rowid')
   }
-  skipEscrow(input: PurchaseIntent, reason: string): PurchaseIntent {
+  skipEscrow(input: PurchaseIntent, reason: string, scheme = 'escrow-v1'): PurchaseIntent {
     return this.atomic(() => {
       const old = this.getIntent(input.intentId)
       if (old) return old
       const next = PurchaseIntentSchema.parse({ ...input, status: 'SKIPPED', error: reason, createdAt: new Date().toISOString() })
       this.prepare('INSERT INTO intents VALUES (?,?,?)').run(next.intentId, next.runId, JSON.stringify(next))
-      this.audit.append({ runId: next.runId, intentId: next.intentId, kind: 'refusal', data: { scheme: 'escrow-v1', reason, amountMinor: next.amountMinor, ...(next.source ? { source: next.source, resourceId: next.resourceId, version: next.version, profileId: next.profileId } : {}) } })
+      this.audit.append({ runId: next.runId, intentId: next.intentId, kind: 'refusal', data: { scheme, reason, amountMinor: next.amountMinor, ...(next.source ? { source: next.source, resourceId: next.resourceId, version: next.version, profileId: next.profileId } : {}) } })
       return next
     })
   }
@@ -633,10 +634,30 @@ export class Store {
       && (!agentUsage || agentUsage.spentMinor + agentUsage.reservedMinor + own + policyReserved + amount <= key!.dailyMinor)
   }
   /** CAS prevents independent managers/processes from submitting the same intent. */
+  private readonly credentialAdmissions = new Map<string,{wallet:string;domain:string;until:number}>()
+  acceptCredentialForIntent(intentId:string,wallet:string) {
+    if(this.credentialAdmissions.size>=256)this.credentialAdmissions.delete(this.credentialAdmissions.keys().next().value!)
+    this.credentialAdmissions.set(intentId,{wallet,domain:process.env.WRITER_CREDENTIAL_DOMAIN ?? '',until:Date.now()+10000})
+  }
+  private consumeCredentialAdmission(intent:PurchaseIntent) {
+    const admission=this.credentialAdmissions.get(intent.intentId);this.credentialAdmissions.delete(intent.intentId)
+    if(process.env.REGULATED_MODE!=='on')return
+    const reason=screenPayee(intent.quote?.payment?.payTo ?? '')?.refusal ?? (!admission||admission.wallet!==intent.quote?.payment?.payTo||admission.domain!==process.env.WRITER_CREDENTIAL_DOMAIN||admission.until<=Date.now()?'Writer needs a fresh accepted credential; nothing was charged':undefined)
+    if(reason){this.audit.append({runId:intent.runId,intentId:intent.intentId,kind:'refusal',data:{stage:'pre-broadcast',reason}});throw Error(reason)}
+  }
   claimSubmitting(intentId: string): boolean {
     return this.atomic(() => {
       const intent = this.getIntent(intentId)
       if (!intent || intent.status !== 'RESERVED') return false
+      const admission=this.credentialAdmissions.get(intentId)
+      const screen=process.env.REGULATED_MODE==='on' ? screenPayee(intent.quote?.payment?.payTo ?? '') : undefined
+      const credentialRefusal=process.env.REGULATED_MODE==='on' && (!admission || admission.wallet!==intent.quote?.payment?.payTo || admission.domain!==process.env.WRITER_CREDENTIAL_DOMAIN || admission.until<=Date.now()) ? 'Writer needs a fresh accepted credential; nothing was charged' : undefined
+      if(screen || credentialRefusal) {
+        const reason=screen?.refusal ?? credentialRefusal!
+        this.saveIntent({...intent,status:'SKIPPED',error:reason})
+        this.audit.append({runId:intent.runId,intentId,kind:'refusal',data:{stage:'submit',reason,amountMinor:intent.amountMinor}})
+        return false
+      }
       if (this.isPaused() || this.principalPaused(intent.runId) || !this.walletAllows(this.rawRun(intent.runId), 0) || this.rawRun(intent.runId).stopped || Date.parse(intent.quote!.expiresAt) <= Date.now()) {
         const reason = this.isPaused() ? PAUSED : 'Run stopped, wallet capped or quote expired'
         this.saveIntent({ ...intent, status: 'SKIPPED', error: reason })
@@ -721,6 +742,8 @@ export class Store {
     })
   }
   recordEscrowSubmission(intentId: string, operation: EscrowOperation, signed: Submission): Submission {
+    const pending=this.getIntent(intentId)
+    if(operation==='create'&&pending?.status==='SUBMITTING'&&!this.escrowOutbox(intentId).some(t=>t.operation==='create'))this.consumeCredentialAdmission(pending)
     return this.atomic(() => {
       const old = this.escrowOutbox(intentId).find(r => r.operation === operation)
       if (old) return old
@@ -776,6 +799,8 @@ export class Store {
   }
   /** Write-once: the first signed payment for an intent is the only one that may ever be submitted. */
   recordSubmission(intentId: string, signed: Submission): Submission {
+    const pending=this.getIntent(intentId)
+    if(!this.getSubmission(intentId)&&pending?.status==='SUBMITTING')this.consumeCredentialAdmission(pending)
     return this.atomic(() => {
       const existing = this.getSubmission(intentId)
       if (existing) return existing
@@ -827,12 +852,12 @@ export class Store {
       if (payment.cancelledAt) return
       if (payment.submission || payment.kind !== 'royalty') throw new Error('Signed payout requires reconciliation')
       const cancelledAt = new Date().toISOString()
-      this.prepare('UPDATE policy_payments SET json=? WHERE id=?').run(JSON.stringify({ ...payment, cancelledAt }), id)
+      this.prepare('UPDATE policy_payments SET json=? WHERE id=?').run(JSON.stringify({ ...payment, cancelledAt, ...((reason.screen === 'credential-domain' || reason.screen === 'ofac-sdn-xrp') ? {cancellationReason:String(reason.reason)} : {}) }), id)
       const refund: PolicyPayment = { id: `${id}:refund`, kind: 'change', payTo: caller, amountDrops: payment.amountDrops }
       this.prepare('INSERT INTO policy_payments VALUES (?,?,?)').run(refund.id, runId, JSON.stringify(refund))
       this.audit.append({ runId, intentId: id, kind: 'refusal', data: { stage: 'payout', paymentKind: payment.kind, payTo: payment.payTo, amountDrops: payment.amountDrops, ...reason } })
       this.audit.append({ runId, intentId: id, kind: 'payout-cancel', data: { cancelledAt, paymentKind: payment.kind, amountDrops: payment.amountDrops, refundId: refund.id, refundPayTo: caller } })
-      this.audit.append({ runId, kind: 'payout-reserve', data: { policyVersion: 'hire-v1', totalDrops: refund.amountDrops, payments: [refund], reason: 'denylist refund' } })
+      this.audit.append({ runId, kind: 'payout-reserve', data: { policyVersion: 'hire-v1', totalDrops: refund.amountDrops, payments: [refund], reason: reason.screen==='operator-denylist' ? 'denylist refund' : 'refused royalty refund' } })
     })
   }
   assertPolicyPaymentAllowed(runId: string) {

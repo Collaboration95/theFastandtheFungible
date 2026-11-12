@@ -1,3 +1,4 @@
+import { AuditLog } from '../server/audit.js'
 import { decode } from 'xrpl'
 import type { Asset } from '../shared/contracts/asset.js'
 import type { EscrowQuote } from '../shared/contracts/escrow.js'
@@ -28,6 +29,7 @@ export class PublisherJournal {
       for (const file of [`${path}-wal`, `${path}-shm`]) if (existsSync(file)) chmodSync(file,0o600)
     }
     this.db = new DatabaseSync(path)
+    AuditLog.ensureSchema(this.db)
     this.db.exec(`PRAGMA busy_timeout = 5000; PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;
       CREATE TABLE IF NOT EXISTS x402_bindings (invoice TEXT PRIMARY KEY, hash TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS key_reveals (invoice TEXT PRIMARY KEY, json TEXT NOT NULL);
@@ -43,6 +45,9 @@ export class PublisherJournal {
     // One refund per paid tx and per buyer intent (D5, gate 3): the signed blob is stored before it is ever submitted.
     this.db.exec('CREATE TABLE IF NOT EXISTS refunds (original_tx_hash TEXT PRIMARY KEY REFERENCES x402_settlements(tx_hash), intent_id TEXT UNIQUE NOT NULL, tx_hash TEXT UNIQUE NOT NULL, tx_blob TEXT NOT NULL)')
     this.db.exec('CREATE TABLE IF NOT EXISTS salts (article_key TEXT NOT NULL, idx INTEGER NOT NULL, salt TEXT NOT NULL, PRIMARY KEY (article_key, idx))')
+  }
+  refusal(reason:string,subject?:string) {
+    new AuditLog(this.db).append({kind:'refusal',surface:'publisher',data:{reason,...(subject?{subject}:{})}})
   }
   /** The salts for passages 0..count-1 of `articleKey` (articleId@version), created on first use and stable after. */
   salts(articleKey: string, count: number): string[] {

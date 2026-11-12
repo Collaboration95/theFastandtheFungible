@@ -1,4 +1,6 @@
 import { checkFreshness } from '../publisher/writers/ledger-analytics/freshness.js'
+
+import { regulatedWriterRefusal } from './spend-policy.js'
 import { sourceKey, sameSource, sourceBinding } from '../shared/source-identity.js'
 import { AssetSchema, ledgerAmount, matchesAmount } from '../shared/contracts/asset.js'
 import { EscrowPurchases, escrowSelected } from './escrow.js'
@@ -71,8 +73,20 @@ export class PurchaseManager {
       }, { asType: 'tool' })
     } finally { this.identities.delete(input.intentId) }
   }
-  private policyPurchase(input: Purchase): Promise<PurchaseIntent> {
+  private async policyPurchase(input: Purchase): Promise<PurchaseIntent> {
     const existing = this.store.getIntent(input.intentId)
+    const unsignedEscrow=existing?.status==='SUBMITTING' && !!existing.escrow && !this.store.escrowOutbox(input.intentId).some(t=>t.operation==='create')
+    if (!existing || existing.status === 'RESERVED' || unsignedEscrow) {
+      const manifest=unsignedEscrow ? this.store.getManifest(input.intentId) : input.manifest ?? input.candidate.manifest
+      const screened=process.env.REGULATED_MODE==='on' ? screenPayee(input.candidate.wallet ?? '') : undefined
+      const refusal=screened?.refusal ?? await regulatedWriterRefusal(manifest)
+      if (refusal) {
+        const refused=unsignedEscrow ? this.store.failSubmission(input.intentId,refusal) : existing ? this.store.updateIntent(input.intentId,{status:'SKIPPED',error:refusal}) : this.store.skipEscrow({source:input.candidate.source,runId:input.runId,intentId:input.intentId,profileId:input.candidate.profileId,resourceId:input.candidate.resourceId,version:input.candidate.version,amountMinor:input.candidate.price.amountMinor,status:'SKIPPED'},refusal,'policy')
+        this.store.appendEvent(input.runId,{type:'PURCHASE',label:refusal,data:{intentId:input.intentId,status:refused.status}})
+        return refused
+      }
+      if(process.env.REGULATED_MODE==='on' && manifest) this.store.acceptCredentialForIntent(input.intentId,manifest.wallet)
+    }
     const escrow = existing?.escrow || !existing && escrowSelected(this.store, input.runId, input.candidate, input.escrow)
     if (!escrow) return this.buy(input)
     if (!(this.payer instanceof XrplPayer)) return Promise.resolve(this.store.skipEscrow({ source: input.candidate.source, intentId: input.intentId, runId: input.runId, profileId: input.candidate.profileId, resourceId: input.candidate.resourceId, version: input.candidate.version, amountMinor: input.candidate.price.amountMinor, status: 'SKIPPED' }, 'Escrow requires the XRPL Testnet rail; no fallback'))
@@ -279,6 +293,11 @@ export class PurchaseManager {
       this.once(intent.intentId, async () => {
         if (this.store.getIntent(intent.intentId)?.status !== 'SUBMITTING') return this.store.getIntent(intent.intentId)!
         this.store.appendEvent(intent.runId, { type: 'PURCHASE', label: 'Reconcile · SUBMITTING · same signed payment', data: { intentId: intent.intentId } })
+        if(process.env.REGULATED_MODE==='on' && this.store.getEscrow(intent.intentId) && !this.store.escrowOutbox(intent.intentId).some(t=>t.operation==='create')) {
+          const manifest=this.store.getManifest(intent.intentId),reason=await regulatedWriterRefusal(manifest)
+          if(reason){const refused=this.store.failSubmission(intent.intentId,reason);this.store.appendEvent(intent.runId,{type:'PURCHASE',label:reason,data:{intentId:intent.intentId,status:refused.status}});return refused}
+          this.store.acceptCredentialForIntent(intent.intentId,manifest!.wallet)
+        }
         if (this.store.getEscrow(intent.intentId) && this.payer instanceof XrplPayer) return new EscrowPurchases(this.store, this.client, this.payer).advance(intent.intentId)
         const submission = this.store.getSubmission(intent.intentId)
         try {
