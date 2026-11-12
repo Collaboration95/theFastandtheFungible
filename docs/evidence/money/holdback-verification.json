@@ -3103,5 +3103,409 @@
     },
     "terminalLedger": 22267156,
     "terminalCloseTime": 847800611
+  },
+  {
+    "intentId": "holdback-evidence-16",
+    "offline": {
+      "ok": true,
+      "runId": "cc31e4bc-3e20-40f4-b73f-3a555526a2f6",
+      "checks": [
+        {
+          "check": "writer credentials",
+          "status": "SKIP",
+          "detail": "the writer’s identity is self-declared; checking it needs an online lookup"
+        },
+        {
+          "check": "contribution dispatch",
+          "status": "PASS",
+          "detail": "v3 requires explicit identity semantics and structural contribution evidence"
+        },
+        {
+          "check": "contributions",
+          "status": "PASS",
+          "detail": "Recomputed claim/version/citation/passage/grant/retention and gross/refund/net links; semantics not independently verified"
+        },
+        {
+          "check": "historical origin",
+          "status": "SKIP",
+          "detail": "not needed for this receipt format (one origin per article)"
+        },
+        {
+          "check": "identities",
+          "status": "PASS",
+          "detail": "Unambiguous source, proof and intent identities"
+        },
+        {
+          "check": "audit chain",
+          "status": "PASS",
+          "detail": "15 links; head ebe0bfe734b448b03062339d184974dac4b389d1256d0457ac0fd02023bd1250"
+        },
+        {
+          "check": "audit anchor",
+          "status": "SKIP",
+          "detail": "offline; add --ledger to look it up on XRPL Testnet (read-only)"
+        },
+        {
+          "check": "holdback coverage holdback-evidence-16",
+          "status": "PASS",
+          "detail": "Holdback status must accompany signed split terms"
+        },
+        {
+          "check": "holdback holdback-evidence-16",
+          "status": "PASS",
+          "detail": "Two escrow identities; holdback released; ledger confirmation requires --testnet"
+        },
+        {
+          "check": "key reveal lf-kestrel-tsmc-deal@v1",
+          "status": "PASS",
+          "detail": "Writer signature, key/Condition, authenticated decryption, ciphertext/plaintext commitments and passage binding"
+        },
+        {
+          "check": "manifest lf-kestrel-tsmc-deal@v1",
+          "status": "PASS",
+          "detail": "Writer key derives to rMfwgZGpbN6JJ4uyLUzyxqqXPGg2Kv41eD; identity unverified"
+        },
+        {
+          "check": "passages lf-kestrel-tsmc-deal@v1",
+          "status": "PASS",
+          "detail": "Delivered passages match signed leaves and root"
+        },
+        {
+          "check": "grant lf-kestrel-tsmc-deal@v1",
+          "status": "PASS",
+          "detail": "Paid source requires verified grant, matching manifest and writer receipt"
+        },
+        {
+          "check": "receipt holdback-evidence-16",
+          "status": "PASS",
+          "detail": "Quote, amount, asset, writer, invoice and audit settlement agree"
+        },
+        {
+          "check": "refund holdback-evidence-16",
+          "status": "PASS",
+          "detail": "No refund recorded"
+        },
+        {
+          "check": "receipt coverage",
+          "status": "PASS",
+          "detail": "Every charge/refund has its payment row; no omitted audit settlements"
+        },
+        {
+          "check": "testnet",
+          "status": "SKIP",
+          "detail": "payments and refunds are checked on the ledger only with --ledger (read-only, no keys)"
+        }
+      ]
+    },
+    "online": {
+      "ok": true,
+      "runId": "cc31e4bc-3e20-40f4-b73f-3a555526a2f6",
+      "checks": [
+        {
+          "check": "writer credentials",
+          "status": "SKIP",
+          "detail": "the writer’s identity is self-declared; checking it needs an online lookup"
+        },
+        {
+          "check": "contribution dispatch",
+          "status": "PASS",
+          "detail": "v3 requires explicit identity semantics and structural contribution evidence"
+        },
+        {
+          "check": "contributions",
+          "status": "PASS",
+          "detail": "Recomputed claim/version/citation/passage/grant/retention and gross/refund/net links; semantics not independently verified"
+        },
+        {
+          "check": "historical origin",
+          "status": "SKIP",
+          "detail": "not needed for this receipt format (one origin per article)"
+        },
+        {
+          "check": "identities",
+          "status": "PASS",
+          "detail": "Unambiguous source, proof and intent identities"
+        },
+        {
+          "check": "audit chain",
+          "status": "PASS",
+          "detail": "15 links; head ebe0bfe734b448b03062339d184974dac4b389d1256d0457ac0fd02023bd1250"
+        },
+        {
+          "check": "audit anchor",
+          "status": "SKIP",
+          "detail": "offline; add --ledger to look it up on XRPL Testnet (read-only)"
+        },
+        {
+          "check": "holdback coverage holdback-evidence-16",
+          "status": "PASS",
+          "detail": "Holdback status must accompany signed split terms"
+        },
+        {
+          "check": "holdback holdback-evidence-16",
+          "status": "PASS",
+          "detail": "Two escrow identities; holdback released; ledger confirmation requires --testnet"
+        },
+        {
+          "check": "key reveal lf-kestrel-tsmc-deal@v1",
+          "status": "PASS",
+          "detail": "Writer signature, key/Condition, authenticated decryption, ciphertext/plaintext commitments and passage binding"
+        },
+        {
+          "check": "manifest lf-kestrel-tsmc-deal@v1",
+          "status": "PASS",
+          "detail": "Writer key derives to rMfwgZGpbN6JJ4uyLUzyxqqXPGg2Kv41eD; identity unverified"
+        },
+        {
+          "check": "passages lf-kestrel-tsmc-deal@v1",
+          "status": "PASS",
+          "detail": "Delivered passages match signed leaves and root"
+        },
+        {
+          "check": "grant lf-kestrel-tsmc-deal@v1",
+          "status": "PASS",
+          "detail": "Paid source requires verified grant, matching manifest and writer receipt"
+        },
+        {
+          "check": "receipt holdback-evidence-16",
+          "status": "PASS",
+          "detail": "Quote, amount, asset, writer, invoice and audit settlement agree"
+        },
+        {
+          "check": "refund holdback-evidence-16",
+          "status": "PASS",
+          "detail": "No refund recorded"
+        },
+        {
+          "check": "receipt coverage",
+          "status": "PASS",
+          "detail": "Every charge/refund has its payment row; no omitted audit settlements"
+        },
+        {
+          "check": "testnet escrow-create holdback-evidence-16",
+          "status": "PASS",
+          "detail": "validated bound escrow principal"
+        },
+        {
+          "check": "testnet escrow-holdback holdback-evidence-16",
+          "status": "PASS",
+          "detail": "Both escrows and holdback outcome verified"
+        },
+        {
+          "check": "testnet escrow-finish holdback-evidence-16",
+          "status": "PASS",
+          "detail": "validated terminal for the same escrow object"
+        },
+        {
+          "check": "testnet escrow-create holdback-evidence-16",
+          "status": "PASS",
+          "detail": "validated escrow event matches its audit entry"
+        },
+        {
+          "check": "testnet escrow-finish holdback-evidence-16",
+          "status": "PASS",
+          "detail": "validated escrow event matches its audit entry"
+        },
+        {
+          "check": "testnet key-reveal-proof holdback-evidence-16",
+          "status": "PASS",
+          "detail": "Proof accepted"
+        },
+        {
+          "check": "testnet coverage",
+          "status": "PASS",
+          "detail": "All payments must be real Testnet for full on-ledger verification; SIMULATED is not ledger proof"
+        }
+      ]
+    },
+    "terminalLedger": 22267174,
+    "terminalCloseTime": 847800680
+  },
+  {
+    "intentId": "holdback-evidence-17",
+    "offline": {
+      "ok": true,
+      "runId": "5b2041bc-2fe0-472d-87f8-588756cf0b44",
+      "checks": [
+        {
+          "check": "writer credentials",
+          "status": "SKIP",
+          "detail": "the writer’s identity is self-declared; checking it needs an online lookup"
+        },
+        {
+          "check": "contribution dispatch",
+          "status": "PASS",
+          "detail": "v3 requires explicit identity semantics and structural contribution evidence"
+        },
+        {
+          "check": "contributions",
+          "status": "PASS",
+          "detail": "Recomputed claim/version/citation/passage/grant/retention and gross/refund/net links; semantics not independently verified"
+        },
+        {
+          "check": "historical origin",
+          "status": "SKIP",
+          "detail": "not needed for this receipt format (one origin per article)"
+        },
+        {
+          "check": "identities",
+          "status": "PASS",
+          "detail": "Unambiguous source, proof and intent identities"
+        },
+        {
+          "check": "audit chain",
+          "status": "PASS",
+          "detail": "9 links; head 9a2dc114eeb77183f5f0984643b36e4c10d365d5e5615141446d5af6d9355f63"
+        },
+        {
+          "check": "audit anchor",
+          "status": "SKIP",
+          "detail": "offline; add --ledger to look it up on XRPL Testnet (read-only)"
+        },
+        {
+          "check": "key-reveal-proof holdback-evidence-17",
+          "status": "PASS",
+          "detail": "Failed proof requires a bound refund; validation requires --ledger"
+        },
+        {
+          "check": "holdback coverage holdback-evidence-17",
+          "status": "PASS",
+          "detail": "Holdback status must accompany signed split terms"
+        },
+        {
+          "check": "holdback holdback-evidence-17",
+          "status": "PASS",
+          "detail": "Two escrow identities; holdback refunded; ledger confirmation requires --testnet"
+        },
+        {
+          "check": "receipt holdback-evidence-17",
+          "status": "PASS",
+          "detail": "Quote, amount, asset, writer, invoice and audit settlement agree"
+        },
+        {
+          "check": "refund holdback-evidence-17",
+          "status": "PASS",
+          "detail": "No refund recorded"
+        },
+        {
+          "check": "receipt coverage",
+          "status": "PASS",
+          "detail": "Every charge/refund has its payment row; no omitted audit settlements"
+        },
+        {
+          "check": "testnet",
+          "status": "SKIP",
+          "detail": "payments and refunds are checked on the ledger only with --ledger (read-only, no keys)"
+        }
+      ]
+    },
+    "online": {
+      "ok": true,
+      "runId": "5b2041bc-2fe0-472d-87f8-588756cf0b44",
+      "checks": [
+        {
+          "check": "writer credentials",
+          "status": "SKIP",
+          "detail": "the writer’s identity is self-declared; checking it needs an online lookup"
+        },
+        {
+          "check": "contribution dispatch",
+          "status": "PASS",
+          "detail": "v3 requires explicit identity semantics and structural contribution evidence"
+        },
+        {
+          "check": "contributions",
+          "status": "PASS",
+          "detail": "Recomputed claim/version/citation/passage/grant/retention and gross/refund/net links; semantics not independently verified"
+        },
+        {
+          "check": "historical origin",
+          "status": "SKIP",
+          "detail": "not needed for this receipt format (one origin per article)"
+        },
+        {
+          "check": "identities",
+          "status": "PASS",
+          "detail": "Unambiguous source, proof and intent identities"
+        },
+        {
+          "check": "audit chain",
+          "status": "PASS",
+          "detail": "9 links; head 9a2dc114eeb77183f5f0984643b36e4c10d365d5e5615141446d5af6d9355f63"
+        },
+        {
+          "check": "audit anchor",
+          "status": "SKIP",
+          "detail": "offline; add --ledger to look it up on XRPL Testnet (read-only)"
+        },
+        {
+          "check": "key-reveal-proof holdback-evidence-17",
+          "status": "PASS",
+          "detail": "Failed proof requires a bound refund; validation requires --ledger"
+        },
+        {
+          "check": "holdback coverage holdback-evidence-17",
+          "status": "PASS",
+          "detail": "Holdback status must accompany signed split terms"
+        },
+        {
+          "check": "holdback holdback-evidence-17",
+          "status": "PASS",
+          "detail": "Two escrow identities; holdback refunded; ledger confirmation requires --testnet"
+        },
+        {
+          "check": "receipt holdback-evidence-17",
+          "status": "PASS",
+          "detail": "Quote, amount, asset, writer, invoice and audit settlement agree"
+        },
+        {
+          "check": "refund holdback-evidence-17",
+          "status": "PASS",
+          "detail": "No refund recorded"
+        },
+        {
+          "check": "receipt coverage",
+          "status": "PASS",
+          "detail": "Every charge/refund has its payment row; no omitted audit settlements"
+        },
+        {
+          "check": "testnet escrow-create holdback-evidence-17",
+          "status": "PASS",
+          "detail": "validated bound escrow principal"
+        },
+        {
+          "check": "testnet escrow-holdback holdback-evidence-17",
+          "status": "PASS",
+          "detail": "Both escrows and holdback outcome verified"
+        },
+        {
+          "check": "testnet escrow-finish holdback-evidence-17",
+          "status": "PASS",
+          "detail": "validated terminal for the same escrow object"
+        },
+        {
+          "check": "testnet escrow-create holdback-evidence-17",
+          "status": "PASS",
+          "detail": "validated escrow event matches its audit entry"
+        },
+        {
+          "check": "testnet escrow-finish holdback-evidence-17",
+          "status": "PASS",
+          "detail": "validated escrow event matches its audit entry"
+        },
+        {
+          "check": "testnet key-reveal-proof holdback-evidence-17",
+          "status": "PASS",
+          "detail": "Failed promise; holdback refunded, key-release payment retained"
+        },
+        {
+          "check": "testnet coverage",
+          "status": "PASS",
+          "detail": "All payments must be real Testnet for full on-ledger verification; SIMULATED is not ledger proof"
+        }
+      ]
+    },
+    "terminalLedger": 22267194,
+    "terminalCloseTime": 847800750
   }
 ]
