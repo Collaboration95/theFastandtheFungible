@@ -72,7 +72,7 @@ test('UC2 keyboard only: palette, ask, clarify, plan, receipt, top layer, views,
   await expect(page.getByRole('dialog', { name: 'Search plan' })).toBeVisible()
   await page.keyboard.press('Control+Enter')
   await expect(page).toHaveTitle(/Answer ready/, { timeout: 60_000 })
-  await expect(page.getByRole('button', { name: /Simulated demo · fixture models · no real value/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /^Simulated payments$/ })).toBeVisible()
   await expect(page.getByRole('region', { name: /Payment: NotFinancialTimes/ })).toContainText('Verified')
   await tabTo(page, 'Receipt')
   await page.keyboard.press('Enter')
