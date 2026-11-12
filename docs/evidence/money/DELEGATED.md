@@ -37,6 +37,6 @@ This is a development browser build with a stubbed public identity HTTP boundary
 
 ## Local checks
 
-- `npx vitest run tests/delegated-wallet.test.ts tests/escrow.test.ts tests/wallets.test.ts`: 24 tests after the session test addition; targeted runs passed (the original three-file run had 23 before that addition).
+- Node 22.23.4 after integrating the merged settlement timing/stream changes: `npx vitest run tests/delegated-wallet.test.ts tests/escrow.test.ts tests/wallets.test.ts` — 25 passed. The focused wallet/component pair also passes five tests, including status refresh clearing a revoked session binding after a lost disconnect response.
 - `npx vitest run src/components/DelegatedWallet.test.tsx src/fixtures/chat.test.tsx src/fixtures/wpui.test.tsx tests/delegated-wallet.test.ts`: 38 passed. Browser-side test proves the saved seed is absent from HTTP proof payloads and checks the empty revoke permissions. A subsequent targeted pass also covers confirmed revocation followed by API disconnect failure: the UI retains the confirmed ledger result. The Node crypto/jsdom byte-array constructors are aligned only inside that test; production code is unchanged.
 - Typecheck and focused lint pass. Full local admission remains required before merge. Nothing loosened.
