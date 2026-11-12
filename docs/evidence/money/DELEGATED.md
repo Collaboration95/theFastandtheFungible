@@ -26,5 +26,5 @@ Visitor `rGPU4UK4KzrMyfPtXBwdun9ibgNEGTEKhD`; agent `r4qQ5cqgPsjUL5pE5paSKYv33Ke
 ## Local checks
 
 - `npx vitest run tests/delegated-wallet.test.ts tests/escrow.test.ts tests/wallets.test.ts`: 24 tests after the session test addition; targeted runs passed (the original three-file run had 23 before that addition).
-- `npx vitest run src/components/DelegatedWallet.test.tsx src/fixtures/chat.test.tsx src/fixtures/wpui.test.tsx tests/delegated-wallet.test.ts`: 38 passed. Browser-side test proves the saved seed is absent from HTTP proof payloads and checks the empty revoke permissions. The Node crypto/jsdom byte-array constructors are aligned only inside that test; production code is unchanged.
+- `npx vitest run src/components/DelegatedWallet.test.tsx src/fixtures/chat.test.tsx src/fixtures/wpui.test.tsx tests/delegated-wallet.test.ts`: 38 passed. Browser-side test proves the saved seed is absent from HTTP proof payloads and checks the empty revoke permissions. A subsequent targeted pass also covers confirmed revocation followed by API disconnect failure: the UI retains the confirmed ledger result. The Node crypto/jsdom byte-array constructors are aligned only inside that test; production code is unchanged.
 - Typecheck and focused lint pass. Full local admission remains required before merge. Nothing loosened.

@@ -17,7 +17,7 @@ export default function DelegatedWallet({ onReady }: { onReady: (ready: boolean)
   }).catch(() => setError('Wallet status is unavailable.')) }, [])
   useEffect(() => { onReady(Boolean(status?.address)) }, [status?.address, onReady])
   const act = async (revoke = false) => {
-    setBusy(true); setError(''); const client = new Client(endpoint)
+    setBusy(true); setError(''); const client = new Client(endpoint); let revoked = false
     try {
       if (!status?.agent) throw Error()
       let wallet: Wallet
@@ -30,13 +30,13 @@ export default function DelegatedWallet({ onReady }: { onReady: (ready: boolean)
       if (Number(tx.Fee) > 2000) throw Error()
       const result = (await client.submitAndWait(wallet.sign(tx).tx_blob)).result
       if (typeof result.meta !== 'object' || result.meta.TransactionResult !== 'tesSUCCESS') throw Error()
-      if (revoke) { await walletRequest('/api/wallet/delegation/disconnect', {}); setStatus({ ...status, address: undefined }) }
+      if (revoke) { revoked = true; setStatus({ ...status, address: undefined }); await walletRequest('/api/wallet/delegation/disconnect', {}) }
       else {
         const { message } = await walletRequest<{ message: string }>('/api/wallet/delegation/challenge', {})
         await walletRequest('/api/wallet/delegation/connect', { address: wallet.address, publicKey: wallet.publicKey, signature: sign(message, wallet.privateKey) })
         setStatus({ ...status, address: wallet.address })
       }
-    } catch { setError(revoke ? 'Revocation was not confirmed. Check the ledger before retrying.' : 'Wallet connection was not confirmed. Your saved key remains in this browser.') }
+    } catch { setError(revoked ? 'Access was revoked on the ledger. Refresh to clear the connection.' : revoke ? 'Revocation was not confirmed. Check the ledger before retrying.' : 'Wallet connection was not confirmed. Your saved key remains in this browser.') }
     finally { await client.disconnect().catch(() => {}); setBusy(false) }
   }
   return <section aria-label="Your wallet" className="ra-banner">
