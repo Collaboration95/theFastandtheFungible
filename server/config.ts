@@ -21,6 +21,7 @@ const ConfigSchema = z.object({
   XRPL_STREAM_WAITS: z.enum(['0', '1']).optional(),
   SETTLEMENT_TIMING: z.enum(['0', '1']).optional(),
   WEB_PUBLISHING: mode(['off','on']), AUTO_APPROVE: mode(['off','on']), AUTO_APPROVE_SECONDS: numeric(n => Number.isInteger(n) && n >= 1 && n <= 3600),
+  MCP_CONNECT_URL: url,
   MCP_PUBLIC: mode(['off','on']), PAID_ENDPOINT_PUBLIC: mode(['off','on']),
   CORPUS_PROFILE: mode(['default','real']), FREE_TIER: mode(['default','public-docs']), LEDGER_ANALYTICS: z.enum(['0','1']).optional(),
 

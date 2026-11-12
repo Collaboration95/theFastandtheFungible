@@ -1,3 +1,4 @@
+import { connectionDetails } from '../mcp/connect.js'
 import { publicPaidRouter, bindPublicHire, finishPublicHire, publicHirePrincipal } from '../mcp/paid.js'
 import { answerRatingsRouter } from './api/answer-ratings.js'
 import { audienceMiddleware, operatorSessionRouter } from './hosted/audience.js'
@@ -257,6 +258,7 @@ async function createConfiguredApi(options: ApiOptions = {}) {
   app.post('/api/reputation/reset', (_req, res) => { reputation.reset(); res.json({ publishers: [] }) })
   // The web app asks this once at boot to learn whether it is the hosted judge demo. A local or desktop server answers
   // 200 {hosted:false} instead of a 404, so the browser console stays clean (the hosted gateway serves its own status above).
+  if (!hosted) app.get('/api/connect', (_req,res) => res.json(connectionDetails(config)))
   if (!hosted) app.get('/api/demo/status', (_req, res) => res.json({ hosted: false }))
   app.get(['/health', '/api/health'], (_req, res) => res.json({ status: 'ok', ...(config.CORPUS_PROFILE === 'real' ? {corpusProfile:'real'} : {}), answerRatings: config.ANSWER_RATINGS === '1', labels: { ...labels, ...(['faucet_unavailable', 'validation_timeout', 'wallet_cache_unavailable', 'network_unavailable'].includes(process.env.RA_TESTNET_FALLBACK ?? '') ? { testnetFallback: process.env.RA_TESTNET_FALLBACK } : {}) }, faults: faultsAvailable }))
 

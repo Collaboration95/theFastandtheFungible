@@ -1,6 +1,7 @@
 import { lazy, Suspense, useState, type RefObject, type ReactNode } from 'react'
 import { allowanceText, builderLines, canAsk, explorerTx, hostedLinks, HOSTED_DAILY_QUESTIONS, HOSTED_ENDS, JUDGE_RUN, questionCap, minorText, proofLink, waitCopy, type HomeState, type Hosted } from '../../hosted'
 import SandboxNumbers from './SandboxNumbers'
+const AgentConnect = lazy(() => import('../AgentConnect'))
 const VerifyInBrowser = lazy(() => import('./VerifyInBrowser'))
 import { SharedPayer } from '../LedgerCheckEntry'
 import './judges-corner.css'
@@ -58,6 +59,7 @@ export function HostedJudgesCorner({ hosted, detailsRef }: { hosted: Hosted; det
 
 /** A collapsed row under the examples for the developer who wants this in their own agent: three lines to copy, pinned to a published release. */
 export function BuildersCorner({ hosted }: { hosted: Hosted }) {
+  const [opened, setOpened] = useState(false)
   const lines = builderLines()
   const proof = proofLink(hosted)
   const rows = [
@@ -65,8 +67,9 @@ export function BuildersCorner({ hosted }: { hosted: Hosted }) {
     { title: 'Run the whole money path once', note: 'No clone and no account. Measured cold run: 84.2 seconds; 2 of 4 cold runs exceeded 90 seconds (one Mac, 7 Nov). A successful run ends in RESULT PASS.', text: lines.try },
     { title: 'Verify a receipts.json', note: 'Export one from any answer here, then check it against the public ledger.', text: lines.verify },
   ]
-  return <details className="ra-hbuild">
+  return <details className="ra-hbuild" onToggle={event => setOpened(event.currentTarget.open)}>
     <summary>{icons.agent}<span><b>Use it from your own agent</b><small>Claude Code, a terminal or your own code · {lines.tag}</small></span></summary>
+    {opened && <Suspense fallback={<p role="status">Loading connection details…</p>}><AgentConnect /></Suspense>}
     <ul>{rows.map(row => <li key={row.title}><b>{row.title}</b><small>{row.note}</small><CopyLine label={row.title} text={row.text} /></li>)}</ul>
     <p className="ra-hbuild-foot">Needs Node 22.13 or later.{proof && <> · <Out href={proof}>See a real proof of refusal</Out></>}</p>
   </details>
