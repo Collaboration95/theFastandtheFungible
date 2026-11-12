@@ -10,13 +10,14 @@ export async function startPublisher(options: { host?: string } = {}) {
   const port = Number(process.env.PUBLISHER_PORT ?? process.env.PORT ?? 8790)
   if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error('Invalid publisher port')
   const app = createPublisherApp()
-  try { await app.locals.ready } catch (error) { await app.locals.closePublishing().catch(() => {}); app.locals.journal.close(); throw error }
+  try { await app.locals.ready } catch (error) { await app.locals.closePublishing().catch(() => {}); await app.locals.ledgerAnalytics?.stop(); app.locals.journal.close(); throw error }
   const server = app.listen(port, options.host ?? '0.0.0.0')
-  try { await once(server, 'listening') } catch (error) { await app.locals.closePublishing().catch(() => {}); app.locals.journal.close(); throw error }
+  try { await once(server, 'listening') } catch (error) { await app.locals.closePublishing().catch(() => {}); await app.locals.ledgerAnalytics?.stop(); app.locals.journal.close(); throw error }
   const address = server.address()
   const label = process.env.SETTLEMENT_RAIL === 'xrpl-testnet' ? XRPL_LABEL : SIMULATED_LABEL
   console.log(`Publisher listening on port ${typeof address === 'object' ? address?.port : port} · ${label}`)
-  server.once('close', () => { void app.locals.closePublishing(); app.locals.journal.close(); void (app.locals.ledger as { close?: () => Promise<void> } | undefined)?.close?.() })
+  server.once('close', () => { void app.locals.closePublishing(); void app.locals.ledgerAnalytics?.stop(); app.locals.journal.close(); void (app.locals.ledger as { close?: () => Promise<void> } | undefined)?.close?.() })
+
   const shutdown = () => { server.close(); server.closeAllConnections() }
   process.once('SIGTERM', shutdown)
   process.once('SIGINT', shutdown)

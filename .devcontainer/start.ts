@@ -1,5 +1,6 @@
 import { startEngine } from '../server/engine.js'
 import { fileURLToPath } from 'node:url'
+import { once } from 'node:events'
 
 /** Fixture-only equivalent of make run, with the exact forwarded origin retained. */
 export async function startFixture({ webPort = Number(process.env.DEMO_WEB_PORT || 5100), apiPort = Number(process.env.DEMO_API_PORT || 8788), publisherPort = Number(process.env.DEMO_PUBLISHER_PORT || 8790), dataDir = process.env.RA_DATA_DIR || 'scratch/codespaces', codespace = process.env.CODESPACE_NAME, domain = process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN } = {}) {
@@ -13,7 +14,15 @@ export async function startFixture({ webPort = Number(process.env.DEMO_WEB_PORT 
   try {
     const { createServer } = await import('vite')
     const web = await createServer({ envFile: false, server: { host: '127.0.0.1', port: webPort, strictPort: true } })
-    await web.listen()
+    try {
+      // Vite treats port 0 as its default 5173. Bind the public HTTP server
+      // directly so concurrent fixtures receive genuine OS-assigned ports.
+      if (webPort === 0) {
+        const listening = once(web.httpServer!, 'listening')
+        web.httpServer!.listen(0, '127.0.0.1')
+        await listening
+      } else await web.listen()
+    } catch (error) { await web.close(); throw error }
     return { web, engine, forwardedHost, close: async () => { await web.close(); await engine.close() } }
   } catch (error) { await engine.close(); throw error }
 }

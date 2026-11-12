@@ -1,6 +1,7 @@
 import { WriterVerificationSchema } from '../writer-verification.js'
 import { SourceIdentitySchema } from '../source-identity.js'
 import { z } from 'zod'
+import { LedgerFreshnessSchema } from '../ledger-report.js'
 
 /** Noun phrases only: bounded, no digits, prices, markup, control characters or prose fields. */
 const menuPhrase = z.string().min(1).max(48).regex(/^[\p{L}]+(?:[ -][\p{L}]+){0,5}$/u)
@@ -27,6 +28,7 @@ export const ManifestSchema = z.object({
   priceMinor: z.number().int().nonnegative(), leaves: z.array(hex64).min(1), root: hex64,
   claims: z.array(z.object({ id: z.string().min(1), kind: ClaimKindSchema, leaf: hex64, covers: FactCoverSchema.optional() })),
   wordCount: z.number().int().positive(), publishedAt: z.string().min(1), relevance: z.number().min(0).max(1),
+  ledgerFreshness: LedgerFreshnessSchema.optional(),
   sig: z.string().regex(/^[0-9A-F]+$/i),
 }).refine(m => m.schemaVersion === 2 || m.claims.every(c => !c.covers), { message: 'fact menus require manifest schemaVersion 2' })
 

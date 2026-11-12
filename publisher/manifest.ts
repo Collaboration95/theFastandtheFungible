@@ -5,6 +5,7 @@ import { sha256, manifestMessage, CLAIM_KINDS, leafHash, manifestRoot, signManif
 import { plantedClaims } from './bad-actors.js'
 import type { PublisherJournal } from './journal.js'
 import type { PublisherKeys } from './registry.js'
+import { ledgerFreshness } from '../shared/ledger-report.js'
 
 type ManifestPublisher = { publisher: { slug: string; wallet?: string; pubKey?: string }; keys?: PublisherKeys }
 
@@ -35,6 +36,7 @@ export function createManifests(journal: PublisherJournal) {
       schemaVersion: 2, publisherSlug: entry.publisher.slug, articleId: article.articleId, version: article.version,
       wallet: entry.publisher.wallet!, pubKey: entry.publisher.pubKey!, priceMinor: article.priceMinor,
       leaves, root: manifestRoot(leaves), claims, wordCount: countWords(article.body), publishedAt: article.publishedAt,
+      ...(entry.publisher.slug === 'ledger-analytics' ? { ledgerFreshness: ledgerFreshness(article) } : {}),
     }
     cache.set(key, unsigned)
     return unsigned

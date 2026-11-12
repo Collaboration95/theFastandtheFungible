@@ -6,7 +6,7 @@ import { verifyDelivery } from '../shared/manifest.js'
 import type { Store } from './store.js'
 
 /** Re-checks the stored delivery against the manifest the policy evaluated (a root mismatch fails too). */
-export function checkProof(store: Store, intentId: string): PurchaseIntent {
+export function checkProof(store: Store, intentId: string, freshnessFailures?: string[]): PurchaseIntent {
   const intent = store.getIntent(intentId)
   if (!intent) throw new Error('Intent not found')
   if (intent.escrow) return intent // Escrow proof never grants access before validated finish.
@@ -15,6 +15,9 @@ export function checkProof(store: Store, intentId: string): PurchaseIntent {
   const check = delivery && manifest
     ? verifyDelivery(delivery.content.body, delivery.content.spans, delivery.salts, manifest)
     : { ok: false, rootOk: false, wordCountOk: false, failedClaims: [] }
+  const failures = freshnessFailures ?? (manifest?.publisherSlug === 'ledger-analytics' ? ['p1:dated-figure'] : [])
+  check.failedClaims.push(...failures)
+  if (failures.length) check.ok = false
   const next = store.recordProof(intentId, check.ok && manifest!.root === intent.quote?.contentDigest, check.failedClaims)
   const claims = manifest?.claims.length ?? 0
   store.appendEvent(intent.runId, next.status === 'VERIFIED'

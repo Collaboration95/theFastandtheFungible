@@ -1,3 +1,4 @@
+import { checkFreshness } from '../publisher/writers/ledger-analytics/freshness.js'
 import { sourceKey, sameSource, sourceBinding } from '../shared/source-identity.js'
 import { AssetSchema, ledgerAmount, matchesAmount } from '../shared/contracts/asset.js'
 import { EscrowPurchases, escrowSelected } from './escrow.js'
@@ -250,7 +251,10 @@ export class PurchaseManager {
       const content: ContentEnvelope = { source: intent.source, profileId: intent.profileId, resourceId: intent.resourceId, version: intent.version, title: paid.title, publisher: paid.publisher, body: paid.body, spans: paid.passages }
       this.store.addGrant({ source: intent.source, runId: intent.runId, resourceId: intent.resourceId, version: intent.version, intentId: intent.intentId, contentDigest: intent.quote!.contentDigest, grantedAt: new Date().toISOString() }, content, { bytes: JSON.stringify(content), salts: paid.salts })
       // Only the proof check makes the grant accessible; a failure quarantines it (never cited).
-      const proof = checkProof(this.store, intent.intentId)
+      const current = this.store.getIntent(intent.intentId)!
+      const freshness = await checkFreshness(paid.body, this.store.getManifest(intent.intentId)!, current.settledAt ?? new Date().toISOString(), undefined, this.store.getRun(intent.runId).receipts.find(r=>r.intentId===intent.intentId)?.xrpl?.ledgerIndex)
+      if (intent.profileId === 'ledger-analytics') this.store.appendEvent(intent.runId, {type:'PROOF',label:freshness.reason,data:{intentId:intent.intentId,freshnessOk:freshness.ok}})
+      const proof = checkProof(this.store, intent.intentId, freshness.ok ? [] : [freshness.failedClaimId!])
       recordStep('proof-check', { intentId: intent.intentId, resourceId: intent.resourceId }, { status: proof.status, failedClaimIds: proof.failedClaimIds ?? [] })
       if (proof.status === 'VERIFIED') this.store.recordTiming(intent.intentId, 'unlocked')
       if (proof.status === 'VERIFIED') this.store.appendEvent(intent.runId, { type: 'GRANT', label: 'manifest root verified', data: { intentId: intent.intentId, resourceId: intent.resourceId, version: intent.version } })

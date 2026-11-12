@@ -43,7 +43,7 @@ export async function buildRegistry(corpus: WriterCorpus, options: { rail: Rail;
     // Open Records already uses the Grid Operators public wallet; use that same
     // configured Testnet signer for its free delivery proofs, without a payment.
     if (publisher.slug === 'open-records' && !env[seedEnvName(publisher.slug)]) env[seedEnvName(publisher.slug)] = env.XRPL_PUBLISHER_GRID_OPERATORS_REPORT_SEED
-    const keys = options.rail === 'simulated' || articles.some(a => a.tier === 'PAID') || env[seedEnvName(publisher.slug)]
+    const keys = options.rail === 'simulated' || publisher.slug === 'ledger-analytics' || articles.some(a => a.tier === 'PAID') || env[seedEnvName(publisher.slug)]
       ? publisherKeys(publisher.slug, options.rail, env) : PUBLIC_DOCS_PUBLISHERS.has(publisher.slug) ? keysFromSeed(generateSeed({algorithm:'ed25519'}), false) : undefined
     return {
       publisher: keys ? { ...publisher, wallet: keys.wallet, pubKey: keys.publicKey }

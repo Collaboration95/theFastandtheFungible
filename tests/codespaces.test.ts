@@ -8,6 +8,7 @@ it('accepts the exact forwarded Codespaces origin and rejects other hosts/origin
   const fixture = await startFixture({webPort:0,apiPort:0,publisherPort:0,dataDir:dir,codespace:'fixture-space',domain:'app.github.dev'})
   try {
     const address = fixture.web.httpServer!.address() as {port:number}
+    expect(address.port).not.toBe(5173) // port 0 must request an OS-assigned port, not Vite's default
     const url = `http://127.0.0.1:${address.port}`
     const call = (path: string, headers: Record<string,string>, body?: string) => new Promise<number>((resolve,reject) => {
       const req = request(url+path,{method:body?'POST':'GET',headers},res => {res.resume();res.once('end',()=>resolve(res.statusCode!))});req.once('error',reject);req.end(body)
