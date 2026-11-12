@@ -23,6 +23,7 @@ import { ChallengeSchema } from '../shared/contracts/publisher.js'
 import { loadWriterCorpus } from './corpus.js'
 import { PublisherError, PublisherJournal } from './journal.js'
 import { buildRegistry, SIMULATED_KEY_LABEL, type PublisherEntry } from './registry.js'
+import { embedLocal } from '../server/embeddings/local.js'
 import { createQueryEmbedder, embeddingsLive, loadEmbeddingCache, searchIndex, type EmbeddingCache, type Embedder } from './search.js'
 
 export type PublisherConfig = {
@@ -83,7 +84,12 @@ export function createPublisherApp(config: PublisherConfig = {}) {
   // Live only: one warm-up call at startup, so the first question doesn't lose hybrid search to a cold-start timeout.
   if (!config.embedder && embedder) void embedder('warm-up').catch(() => undefined)
   const writersReady = Promise.resolve(config.writers ?? loadWriterCorpus())
-    .then(corpus => buildRegistry(corpus, { rail, env, embeddings: config.embeddings ?? localEmbeddingCache(loadEmbeddingCache()) }))
+    .then(async corpus => {
+      if (env.EMBEDDING_PROVIDER === 'local' && !config.embedder) await embedLocal(['warm-up'])
+      const cache = loadEmbeddingCache()
+      if (env.EMBEDDING_PROVIDER === 'local' && !cache) throw new Error('Build local corpus embeddings before starting the publisher')
+      return buildRegistry(corpus, { rail, env, embeddings: config.embeddings ?? (env.EMBEDDING_PROVIDER === 'local' ? cache : localEmbeddingCache(cache)) })
+    })
     .then(built => { registry = built })
   void writersReady.catch(() => {})
   app.locals.writersReady = writersReady

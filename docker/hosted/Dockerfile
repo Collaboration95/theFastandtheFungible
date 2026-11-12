@@ -37,3 +37,29 @@ USER 101:101
 ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["nginx", "-g", "daemon off;"]
 HEALTHCHECK --interval=10s --timeout=3s CMD wget -qO /dev/null http://127.0.0.1:8080/livez || exit 1
+
+# Opt-in CPU model images. glibc is required by onnxruntime-node; existing Alpine
+# targets remain unchanged. Build --target api-models / publisher-models.
+FROM node:22.23.4-bookworm-slim AS build-models
+WORKDIR /src
+COPY package.json package-lock.json ./
+RUN npm ci --ignore-scripts --no-audit --no-fund
+COPY . .
+RUN node --import tsx scripts/bake-embedding-model.mjs \
+ && EMBEDDING_PROVIDER=local node --import tsx scripts/build-embeddings.mjs \
+ && node docker/bundle.mjs out \
+ && npm prune --omit=dev --ignore-scripts --no-audit --no-fund
+FROM node:22.23.4-bookworm-slim AS runtime-models
+WORKDIR /app
+COPY --from=build-models /src/out/ dist/
+COPY --from=build-models /src/node_modules node_modules/
+COPY --from=build-models /src/data data/
+COPY docker/hosted/ docker/hosted/
+ENV NODE_ENV=production HOSTED=1 PUBLISHER_FAULTS=0 EMBEDDING_MODEL_DIR=/app/data/models
+USER 1000:1000
+ENTRYPOINT ["node", "/app/docker/hosted/start.mjs"]
+FROM runtime-models AS api-models
+ENV ROLE=api PORT=8788 RAW_API_PORT=18788 HOST=127.0.0.1 APP_DB=/state/api/app.db REPORT_DIR=/state/api/reports HOSTED_CONTROL_PATH=/state/control.json
+FROM runtime-models AS publisher-models
+ENV ROLE=publisher PUBLISHER_PORT=8790
+WORKDIR /state/publisher

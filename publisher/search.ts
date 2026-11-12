@@ -2,6 +2,7 @@ import { isProtocolQuery, searchQuery, topicDocument, topicMatches, topicOverlap
 import { searchText, searchWords, keywordCoverage } from './search-text.js'
 // Per-publisher full-text + vector search (D2, #123). Node only; never import from src/.
 import { existsSync, readFileSync } from 'node:fs'
+import { embedLocal, LOCAL_MODEL, LOCAL_DIMS, localCacheFile } from '../server/embeddings/local.js'
 import { create, insertMultiple, search, type AnyOrama } from '@orama/orama'
 import type { Article } from '../shared/contracts/writers.js'
 import { sha256 } from '../shared/manifest.js'
@@ -43,10 +44,12 @@ export const embeddingText = (article: Article) => `${article.title}\n${article.
 /** Cached vector for an article, only while the hash of its embedded text (title, abstract, tags, body head) still matches. */
 export const cachedVector = (cache: EmbeddingCache | undefined, article: Article) => {
   const entry = cache?.vectors[embeddingKey(article)]
-  return entry && entry.hash === sha256(embeddingText(article)) ? entry.vector : undefined
+  return entry && entry.vector.length === cache?.dims && entry.vector.every(Number.isFinite) && entry.hash === sha256(embeddingText(article)) ? entry.vector : undefined
 }
-export function loadEmbeddingCache(file: URL | string = EMBEDDINGS_FILE): EmbeddingCache | undefined {
-  return existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) as EmbeddingCache : undefined
+export function loadEmbeddingCache(file: URL | string = process.env.EMBEDDING_PROVIDER === 'local' ? localCacheFile() : EMBEDDINGS_FILE): EmbeddingCache | undefined {
+  const cache = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) as EmbeddingCache : undefined
+  if (process.env.EMBEDDING_PROVIDER === 'local' && (cache?.model !== LOCAL_MODEL || cache.dims !== LOCAL_DIMS)) return undefined
+  return cache
 }
 
 export type PublisherIndex = { db: AnyOrama; terms?: Map<string, Set<string>>; topicText?: Map<string, string>; topicDocuments?: Map<string, TopicDocument>; vectors: boolean; vectorOf?: Map<string, number[]> }
@@ -88,7 +91,7 @@ export const keywordRelevance = (score: number) => Math.min(1, Math.max(0.01, sc
  * claim (AlphaLeak's 0.96) looked modest and calibration had nothing to check (#142).
  */
 export async function searchIndex(index: PublisherIndex, term: string, k: number, queryVector?: number[]): Promise<{ mode: SearchMode; ranked: Ranked[] }> {
-  const mode: SearchMode = index.vectors && queryVector ? 'hybrid' : 'keyword'
+  const mode: SearchMode = index.vectors && queryVector && queryVector.length === index.vectorOf?.values().next().value?.length ? 'hybrid' : 'keyword'
   const common = { term: searchText(searchQuery(term)), limit: mode === 'keyword' ? (index.terms?.size ?? k) : k, properties: ['title', 'abstract', 'tags', 'body'], boost: SEARCH_TUNING.boost, threshold: SEARCH_TUNING.threshold }
   const result = mode === 'hybrid'
     ? await search(index.db, { ...common, mode: 'hybrid', vector: { value: queryVector!, property: 'embedding' }, similarity: SEARCH_TUNING.similarity, hybridWeights: SEARCH_TUNING.hybridWeights })
@@ -111,12 +114,13 @@ export async function searchIndex(index: PublisherIndex, term: string, k: number
 }
 
 /** `SEARCH_EMBEDDINGS=live|off`, default off: tests and the fixture demo never call Workers AI. */
-export const embeddingsLive = (env: NodeJS.ProcessEnv = process.env) => env.SEARCH_EMBEDDINGS === 'live'
+export const embeddingsLive = (env: NodeJS.ProcessEnv = process.env) => env.EMBEDDING_PROVIDER === 'local' || env.SEARCH_EMBEDDINGS === 'live'
 
 type Fetch = typeof fetch
 /** Calls Workers AI with a batch of texts and returns one vector per text. */
 let resolvedAccountId: string | undefined
 export async function embedTexts(texts: string[], options: { token?: string; accountId?: string; fetch?: Fetch; signal?: AbortSignal } = {}): Promise<number[][]> {
+  if (process.env.EMBEDDING_PROVIDER === 'local') return embedLocal(texts, options.signal)
   const token = options.token ?? process.env.CLOUDFLARE_API_TOKEN
   if (!token) throw new Error('CLOUDFLARE_API_TOKEN is not set')
   const call = options.fetch ?? fetch
