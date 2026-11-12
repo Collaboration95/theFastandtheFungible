@@ -1547,6 +1547,186 @@
           }
         }
       }
+    },
+    "/api/wallet/delegation": {
+      "get": {
+        "summary": "Read opt-in delegated Testnet wallet status for this session",
+        "x-internal": true,
+        "responses": {
+          "200": {
+            "description": "Only public wallet identity; enabled when WALLET_MODE=delegated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "enabled"
+                  ],
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "agent": {
+                      "type": "string",
+                      "maxLength": 40
+                    },
+                    "address": {
+                      "type": "string",
+                      "maxLength": 40
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "operationId": "get_api_wallet_delegation"
+      }
+    },
+    "/api/wallet/delegation/challenge": {
+      "post": {
+        "summary": "Create a one-use, two-minute wallet proof challenge for this session",
+        "x-internal": true,
+        "responses": {
+          "200": {
+            "description": "Hex message to sign locally. Never send a seed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "message"
+                  ],
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "pattern": "^[0-9A-F]+$"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "description": "Delegated wallet mode is disabled."
+          },
+          "429": {
+            "description": "Challenge capacity reached."
+          }
+        },
+        "operationId": "post_api_wallet_delegation_challenge"
+      }
+    },
+    "/api/wallet/delegation/connect": {
+      "post": {
+        "summary": "Bind public wallet identity after verifying its signature and EscrowCreate-only ledger grant",
+        "x-internal": true,
+        "responses": {
+          "200": {
+            "description": "Session wallet connected.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "address"
+                  ],
+                  "properties": {
+                    "address": {
+                      "type": "string",
+                      "maxLength": 40
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "description": "Delegated wallet mode is disabled."
+          },
+          "409": {
+            "description": "EscrowCreate-only delegation is not active."
+          },
+          "429": {
+            "description": "Wallet binding capacity reached."
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "address",
+                  "publicKey",
+                  "signature"
+                ],
+                "properties": {
+                  "address": {
+                    "type": "string",
+                    "maxLength": 40
+                  },
+                  "publicKey": {
+                    "type": "string",
+                    "maxLength": 70
+                  },
+                  "signature": {
+                    "type": "string",
+                    "maxLength": 160
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "post_api_wallet_delegation_connect"
+      }
+    },
+    "/api/wallet/delegation/disconnect": {
+      "post": {
+        "summary": "Clear this session binding; revoke the ledger permission separately in the browser",
+        "x-internal": true,
+        "responses": {
+          "200": {
+            "description": "Session binding cleared.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "disconnected"
+                  ],
+                  "properties": {
+                    "disconnected": {
+                      "type": "boolean",
+                      "const": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          }
+        },
+        "operationId": "post_api_wallet_delegation_disconnect"
+      }
     }
   },
   "components": {
