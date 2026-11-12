@@ -3,6 +3,7 @@ import { createContext, useContext } from 'react'
 import { ApiError, type HostedDemoStatus } from './api'
 import { EXAMPLE_PROOF_URL, RELEASE_TAG, releaseBase } from '../shared/links'
 import { buyingLabels } from '../shared/execution-labels'
+import recordedRun from '../shared/judge-run.json'
 import { ENV, money as minorText } from '../shared/presentation'
 export { money as minorText } from '../shared/presentation'
 
@@ -112,11 +113,11 @@ export function hostedLinks(hosted: Hosted) {
 
 /** The recorded hosted run the Judges' corner re-checks. Served as a static file, so it works with the sandbox paused, busy or out of questions. */
 export const JUDGE_RUN = {
-  bundleUrl: '/judge/hosted-run-nov11.receipts.json',
+  bundleUrl: recordedRun.bundleUrl,
   // Final answer and decision providers are pinned by the committed bundle in the caption regression test.
-  caption: `Recorded on this demo, 11 Nov 2026 · XRPL Testnet · live answers, ${buyingLabels.fixture} · team-authored writers · no real value`,
+  caption: `Recorded on this demo, ${recordedRun.recordedOn} · XRPL Testnet · live answers, ${buyingLabels.fixture} · team-authored writers · no real value. ${recordedRun.summary}`,
   /** Its EscrowFinish: the writer publishes the article key in the Fulfillment field, and the escrow's lock is that key's hash. */
-  keyTx: '4CCB4E56137D738847E853535B068329562AD490DA4D9F5551CEC2EB1AC70638',
+  keyTx: recordedRun.keyTx,
 } as const
 export const explorerTx = (hash: string) => `https://testnet.xrpl.org/transactions/${hash}`
 

@@ -297,7 +297,7 @@ describe('what it asks the hosted sandbox', () => {
     await run()
     expect(sockets.filter(url => url === NODES[0])).toHaveLength(1)
     expect(closed).toEqual([NODES[0]])
-    expect(KEY_TX).toMatch(/^4CCB4E56[0-9A-F]{56}$/)
+    expect(KEY_TX).toMatch(/^01A6A7E0[0-9A-F]{56}$/)
   })
   it('closes an unfinished connection when the checks time out, without opening a fallback after returning', async () => {
     const opened: string[] = [], stopped: string[] = []

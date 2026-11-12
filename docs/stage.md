@@ -25,12 +25,12 @@ published proof of refusal; D, A's EscrowFinish at the Fulfillment field; E,
 the replay; F, the local deck PDF. Preparing A and B uses two questions: the
 check itself uses zero. Prepare these only within the available hosted quota;
 this Mac's quota resets at 08:00 SGT on 12 November. Keep the final MP4 and
-`docs/evidence/hosted-export-nov11/receipts.json` on disk, and a hotspot ready.
+`docs/evidence/hosted-export-nov12/receipts.json` on disk, and a hotspot ready.
 
 | Tier | Show | Say |
 |---|---|---|
 | 1 · Live | Prepared A–D. Click the explorer and Run the checks; both read the public ledger. A busy sandbox means use prepared runs, without asking again. | “A run from ten minutes ago on our live Testnet sandbox.” |
-| 2 · Sandbox unavailable | Already-open tabs, or the judges' corner's committed run and the explorer. If the entire site is unreachable, the corner cannot load either: use tier 3. | “A recorded run from the live sandbox, 11 Nov.” |
+| 2 · Sandbox unavailable | Already-open tabs, or the judges' corner's committed run and the explorer. If the entire site is unreachable, the corner cannot load either: use tier 3. | “A recorded run from the live sandbox, 12 Nov.” |
 | 3 · Explorer, node or prepared key transaction unavailable | Local replay and offline receipt verification. | “Replay of a recorded Testnet run, no backend.” |
 | 4 · No network | Local MP4 (0:09–1:27), PDF slides 3, 5 and 10; offline verifier. | “This is our recorded demo.” |
 
@@ -54,7 +54,7 @@ build. No fixed demo port is used. Keep this terminal running while showing it.
 Offline verification (no public-node lookup):
 
 ```sh
-node --import tsx scripts/verify-answer.ts public/judge/hosted-run-nov11.receipts.json
+node --import tsx scripts/verify-answer.ts public/judge/hosted-run-nov12.receipts.json
 ```
 
 Two-minute beats: 0:00–0:15, research with a wallet; 0:15–0:50, one prepared

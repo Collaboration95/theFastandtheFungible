@@ -18,8 +18,9 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 export const CHECK_MS = 5000
-export const KEY_TX = '4CCB4E56137D738847E853535B068329562AD490DA4D9F5551CEC2EB1AC70638'
-export const RECEIPTS_SHA256 = '1f2fe4de4de58fedb68c8e04c9f2106fa0b66004c1839ae93f29bb0662ee13ee'
+const recordedRun = JSON.parse(readFileSync(join(ROOT, 'shared/judge-run.json'), 'utf8'))
+export const KEY_TX = recordedRun.keyTx
+export const RECEIPTS_SHA256 = recordedRun.sha256
 export const NODES = ['wss://s.altnet.rippletest.net:51233', 'wss://clio.altnet.rippletest.net:51233']
 export const PAGES = 'https://collaboration95.github.io/theFastandtheFungible'
 export const EXPLORER = 'https://testnet.xrpl.org'
@@ -27,12 +28,12 @@ export const FORBIDDEN_PORTS = [5100, 8788, 8790]
 export const REPLAY_BASE = '/theFastandtheFungible/demo/'
 const links = JSON.parse(readFileSync(join(ROOT, 'shared/links.json'), 'utf8'))
 const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'))
-export const DEFAULTS = { hosted: links.hostedApp, deck: join(ROOT, 'docs/submission/ResearchAgent-SFF-deck.pdf'), receipts: join(ROOT, 'public/judge/hosted-run-nov11.receipts.json'), evidence: join(ROOT, 'docs/evidence/hosted-export-nov11/receipts.json') }
+export const DEFAULTS = { hosted: links.hostedApp, deck: join(ROOT, 'docs/submission/ResearchAgent-SFF-deck.pdf'), receipts: join(ROOT, `public${recordedRun.bundleUrl}`), evidence: join(ROOT, recordedRun.evidence) }
 
 /** The fallback ladder (story §2.3). `say` is the label to speak; `show` is what is on screen. */
 export const TIERS = {
   1: { name: 'Live', say: 'a run from ten minutes ago on our live Testnet sandbox', show: 'Tabs A to D as prepared: the x402 run, the validators refusal, its proof page, the EscrowFinish on the explorer. The live clicks are the explorer link and "Run the checks"; both read the public ledger.' },
-  2: { name: 'Sandbox down', say: 'a recorded run from the live sandbox, 11 Nov', show: 'The prepared tabs if they are still open. Otherwise the Judges’ corner on the sandbox home (a committed run, verified in the browser) plus the explorer links from docs/evidence/hosted-export-nov11.' },
+  2: { name: 'Sandbox down', say: `a recorded run from the live sandbox, ${recordedRun.recordedOn}`, show: `The prepared tabs if they are still open. Otherwise the Judges’ corner on the sandbox home (a committed run, verified in the browser) plus the explorer links alongside ${recordedRun.evidence}.` },
   3: { name: 'Explorer or public node down', say: 'replay of a recorded Testnet run, no backend', show: 'Tab E, the /demo/ replay (or serve it from this Mac: node scripts/stage-check.mjs --serve-replay), and offline "researchagent verify receipts.json" without --ledger.' },
   4: { name: 'No network', say: 'this is our recorded demo', show: 'The local video MP4 (0:09 to 1:27) and slides 3, 5 and 10 from the PDF. Offline verify in the terminal still works.' },
 }

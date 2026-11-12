@@ -40,6 +40,22 @@ then **Run the checks**. No admission is consumed. Read pass/not-checked/pending
 separately. For a payment, **Check the key yourself** recomputes sha256(key) against the lock
 from public Testnet data. A key match proves the reveal, not quality or identity.
 
+The featured export is **one hosted run, 12 Nov**, preset 2, run
+`421bae3d-564c-48f8-b5e8-5034b195860a`: **09:07:38.656–09:08:09.738 SGT,
+31.1 s Start→Done**, one article / four passages for **S$0.40**, no refund.
+Planning and the five-second modal are excluded; model cost is unmeasured.
+Browser and published v1.1.1 TS: **24 passed, 0 failed, 2 not checked/skipped**;
+published v1.1.1 wheel: **25 passed, 0 failed, 2 skipped**; Testnet **6/6** each.
+All five browser gates are **Held**; explicit grant **1953** precedes paid reads
+**1954–1957**. Identity skips remain explicit. Live DeepSeek plan/final answer,
+rule-based buying, initial fixture draft and keyword fallback; team-authored writer;
+XRPL Testnet, no real value.
+
+[Featured receipts and checks](../evidence/hosted-export-nov12/README.md) ·
+[payment locked](https://testnet.xrpl.org/transactions/F4A608E20BE054B77F4FF2D4B1ED3EBC3EF54FC7D0A144CE56975163C6E7D795) ·
+[key released / writer paid](https://testnet.xrpl.org/transactions/01A6A7E07652216B102DFD1FED13462539D43475DFFBBA5A3C6E0FB12F643F1D) ·
+[answer anchor](https://testnet.xrpl.org/transactions/E71B20085CBF1DE65153462931D5BAD7F40D23AA54A372D70DF547AFD2722ECA).
+
 Current presets: RLUSD escrow, x402 payment and **How writers get paid** — “How does the
 writer get paid, and what stops the agent from reading the article and then refusing to pay?”
 The [one useful paid answer card](evidence/hosted-answer-nov12/README.md) uses one hosted

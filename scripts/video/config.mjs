@@ -1,6 +1,6 @@
 // Shared constants for the demo-video kit (scripts/video/*). Nothing here reads a key or a seed.
 import { randomUUID } from 'node:crypto'
-import { mkdirSync } from 'node:fs'
+import { mkdirSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -19,7 +19,7 @@ export const RELEASE_TAG = 'v1.1.1'
 export const RELEASE = `${REPO}/releases/download/${RELEASE_TAG}`
 export const TGZ = `${RELEASE}/researchagent-mcp-1.1.1.tgz`
 export const WHEEL = `${RELEASE}/researchagent-1.1.1-py3-none-any.whl`
-export const RECEIPTS = join(ROOT, 'public/judge/hosted-run-nov11.receipts.json')
+export const RECEIPTS = join(ROOT, `public${JSON.parse(readFileSync(join(ROOT, 'shared/judge-run.json'), 'utf8')).bundleUrl}`)
 
 export const VIEWPORT = { width: 1920, height: 1080 }
 export const FPS = 30
