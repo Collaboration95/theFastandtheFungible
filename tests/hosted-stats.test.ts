@@ -212,3 +212,12 @@ it('does not count a cancelled escrow receipt as a settled purchase on a stopped
   })
   expect(aggregateSandbox(store)).toMatchObject({ stoppedBeforeAnswer: 1, purchasesSettled: 1, audit: { unanchored: 0 } })
 })
+it('keeps a charged intent with a missing receipt in the missing-anchor violations', () => {
+  const store = seeded()
+  store.hostedState(db => {
+    db.prepare(`UPDATE runs SET json=json_remove(json_set(json,'$.phase','STOPPED'),'$.ledgerAnchor') WHERE id='synthetic-0'`).run()
+    db.prepare(`DELETE FROM events WHERE run_id='synthetic-0' AND json_extract(json,'$.type')='DONE'`).run()
+    db.prepare(`DELETE FROM receipts WHERE intent_id='intent-0'`).run()
+  })
+  expect(aggregateSandbox(store)).toMatchObject({ stoppedBeforeAnswer: 0, audit: { unanchored: 1 } })
+})

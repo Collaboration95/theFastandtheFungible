@@ -62,7 +62,8 @@ export function aggregateSandbox(store: Store, now = Date.now()): SandboxStats {
       const done = [...events].reverse().find(e => e.type === 'DONE')
       // A receipt with a missing intent is still evidence of money: never exempt it.
       const orphanReceipt = receipts.some(r => !intents.some(i => i.intentId === r.intentId))
-      const stoppedBeforeAnswer = ['STOPPED','FAILED'].includes(String(row.phase)) && !settled.length && !orphanReceipt && !done
+      const chargedIntent = intents.some(i => charged.has(i.status) && i.escrow?.state !== 'CANCELLED')
+      const stoppedBeforeAnswer = ['STOPPED','FAILED'].includes(String(row.phase)) && !settled.length && !chargedIntent && !orphanReceipt && !done
       if (anchored) result.anchored++
       else if (stoppedBeforeAnswer) result.stoppedBeforeAnswer++
       else if (terminal && !['active','queued'].includes(String(row.state))) result.audit.unanchored++

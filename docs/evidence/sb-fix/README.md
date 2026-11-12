@@ -20,12 +20,13 @@ The first row has no saved answer; the other three retain an intermediate
 answer, but no DONE answer/event. These drafts do not establish completion.
 The classification follows the orchestrator's DONE-answer rule. A STOPPED or
 FAILED run with a settled purchase or a prior DONE event remains unanchored
-without a valid anchor. Orphan receipts also retain the missing-anchor violation.
+without a valid anchor. Orphan receipts and charged intents with missing receipts
+also retain the missing-anchor violation.
 Runs whose answer anchor is still being written retain existing pending handling.
 
 `tests/hosted-stats.test.ts` covers stopped/failed without purchases, stopped/failed
 with purchases, free DONE without an anchor, a prior DONE followed by a stop,
-and orphan receipts. `tests/sandbox-numbers.test.tsx` pins the neutral line outside
+orphan receipts, and charged intents with missing receipts. `tests/sandbox-numbers.test.tsx` pins the neutral line outside
 the violation group. The P4/server parity test also pins the separate counter.
 
 `tests/hosted-stats-cache.test.ts` checks both production configs, then runs native
