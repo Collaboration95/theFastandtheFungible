@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
-import { afterEach, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { readFileSync } from 'node:fs'
 import RunActivity from '../src/components/RunActivity'
 import MobileSpend from '../src/components/MobileSpend'
+import Sources from '../src/components/Sources'
 import WriterProvenance from '../src/components/WriterProvenance'
 import { purchaseCounts } from '../src/format'
 import { offlineNotice } from '../src/notices'
@@ -12,14 +13,16 @@ import { HostedContext } from '../src/hosted'
 import Ask from '../src/components/Ask'
 
 const noShow = JSON.parse(readFileSync('demo/traces/UC-key-reveal.json', 'utf8')).run as RunSnapshot
+beforeEach(() => { HTMLDialogElement.prototype.showModal = function () { this.open = true }; HTMLDialogElement.prototype.close = function () { this.open = false } })
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
 it('the no-show replay counts one purchase, keeping the returned attempt separate in Activity and on mobile', () => {
   expect(purchaseCounts(noShow)).toEqual({ paid: 1, refunded: 0, cancelled: 1 })
-  const { container } = render(<><RunActivity run={noShow} onStop={() => {}} stopping={false} onShowWork={() => {}} /><MobileSpend run={noShow} onRetry={() => {}} onReceipt={() => {}} /></>)
+  const { container } = render(<><RunActivity run={noShow} onStop={() => {}} stopping={false} onShowWork={() => {}} /><MobileSpend run={noShow} onRetry={() => {}} onReceipt={() => {}} /><Sources run={noShow} /></>)
   expect(container.querySelector('.ra-run-status')!.textContent).toContain('Paid for 1 article.')
   expect(container.querySelector('.ra-run-status')!.textContent).toContain('1 attempt cancelled, funds returned')
   expect(container.querySelector('.ra-mobile-spend > button')!.textContent).toContain('1 payment')
+  expect(container.querySelector('.ra-source-summary')!.textContent).toContain('1 bought · 0 refunded')
   expect(container.textContent).not.toMatch(/Paid for 2|2 payments|Paid AlphaLeak/)
   expect(container.querySelector('.ra-activity-list')!.textContent).toContain('Attempt cancelled, funds returned')
 })
