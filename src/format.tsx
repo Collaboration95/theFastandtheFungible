@@ -20,7 +20,8 @@ export function purchaseCounts(run: Pick<RunSnapshot, 'intents' | 'receipts'>) {
   const returned = (intent: RunSnapshot['intents'][number]) => intent.status === 'FAILED_NOT_SETTLED' || intent.escrow?.state === 'CANCELLED'
   const paid = run.intents.filter(intent => intent.status === 'REFUNDED' || (!returned(intent) && run.receipts.some(receipt => receipt.intentId === intent.intentId))).length
   const refunded = run.intents.filter(intent => intent.status === 'REFUNDED').length
-  return { paid, refunded }
+  const cancelled = run.intents.filter(intent => returned(intent) && (intent.escrow?.state === 'CANCELLED' || run.receipts.some(receipt => receipt.intentId === intent.intentId))).length
+  return { paid, refunded, cancelled }
 }
 export const articleCount = (count: number) => `${count} article${count === 1 ? '' : 's'}`
 /** First sentence of a conclusion: the short answer. */

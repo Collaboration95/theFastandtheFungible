@@ -57,13 +57,13 @@ export default function WriterEarnings() {
       {team ? <p className="ra-note ra-writer-by">{team}</p> : w.publisher && w.publisher !== w.name && <p className="ra-note ra-writer-by">{`by ${w.name}`}</p>}
       {isFictional(w) || !w.verification || w.verification.status === 'unverified' ? <small className="ra-badge">{kind(w.authorship).replace(/ writer$/, '')} · unverified</small> : <><small className="ra-badge">{kind(w.authorship)}</small> <WriterVerification value={w.verification} /></>}
       {isTeam(w) && w.synthetic && <p className="ra-note">Synthetic demo content</p>}
-      {isTeam(w) && !w.sales.length && <p className="ra-note" title="Your retained history">No sales yet</p>}
+      {isTeam(w) && !w.sales.length && <p className="ra-note">You haven’t bought from this writer yet</p>}
       <dl><div><dt>Articles</dt><dd>{w.articleCount}</dd></div><div><dt>Price range</dt><dd>{priceRange(prices)}</dd></div>
-      {w.demoSales !== undefined && <div><dt>Sales on this demo</dt><dd>{salesCount(w.demoSales)}</dd></div>}
-      <div><dt>Your purchases</dt><dd>{salesCount(w.sales.length)}</dd></div>
+      {w.demoSales !== undefined && <div><dt>Sales on this demo since 11 Nov</dt><dd>{salesCount(w.demoSales)}</dd></div>}
+      <div><dt>Your purchases</dt><dd>{w.sales.length ? `${w.sales.length} purchase${w.sales.length === 1 ? '' : 's'}` : 'None yet'}</dd></div>
       {w.sales.length > 0 && <div><dt>Refunds</dt><dd>{refunds} · {(100 * refunds / w.sales.length).toFixed(0)}%</dd></div>}</dl>
       <details><summary>Articles and prices</summary>{w.articleCount > w.articles.length && <p>Showing {w.articles.length} of {w.articleCount} articles. Visit the writer’s site for all articles.</p>}<ul>{w.articles.map(a => <li key={a.id}><a href={`/w/${w.publisherSlug}/blog/${a.id}`} target="_blank" rel="noreferrer">{a.title}</a> · {a.tier === 'FREE' ? 'Free' : price(a.priceMinor)}</li>)}</ul></details>
-      {w.sales.length > 0 && <details><summary>Sales on XRPL Testnet</summary><ol>{w.sales.map((s,i) => <li key={s.finishHash}><a href={explorer(s.finishHash)} target="_blank" rel="noreferrer">Sale {i + 1} · EscrowFinish <Icon name="external" size={16} /></a>{s.refunded && <span> · Refunded {s.refundHash && <a href={explorer(s.refundHash)} target="_blank" rel="noreferrer">receipt <Icon name="external" size={16} /></a>}</span>}</li>)}</ol></details>}
+      {w.sales.length > 0 && <details><summary>Your purchases on XRPL Testnet</summary><ol>{w.sales.map((s,i) => <li key={s.finishHash}><a href={explorer(s.finishHash)} target="_blank" rel="noreferrer">Sale {i + 1} · EscrowFinish <Icon name="external" size={16} /></a>{s.refunded && <span> · Refunded {s.refundHash && <a href={explorer(s.refundHash)} target="_blank" rel="noreferrer">receipt <Icon name="external" size={16} /></a>}</span>}</li>)}</ol></details>}
       {w.trust.length > 0 && <p className="ra-note">Trust over time · latest {w.trust.at(-1)!.value.toFixed(2)}</p>}
       {w.trust.length > 1 && <svg viewBox="0 0 160 40" width="160" height="40" role="img" aria-label={`Trust from ${w.trust[0].value.toFixed(2)} to ${w.trust.at(-1)!.value.toFixed(2)} across ${w.trust.length} observations`}><polyline points={points} fill="none" stroke="currentColor" strokeWidth="2" /></svg>}
     </article>

@@ -6,6 +6,8 @@ import type { BrowserVerification } from '../../verify/browser'
 import type { GateRow } from '../../verify/gates'
 
 const mark = { PASS: 'check', FAIL: 'close', SKIP: 'circle' } as const
+const gateWord = { Held: 'Passed', Broken: 'Failed', 'Not checked': 'Not checked' } as const
+const gateTitle = ['Paid passages were read only after access was granted', 'Purchases followed policy and stayed within budget', 'Each purchase was charged only once', 'Citations match delivered passages', 'Demo and substituted work has recorded labels']
 const word = { PASS: 'passed', FAIL: 'failed', SKIP: 'not checked' } as const
 /** Simulated payments have no ledger to name: say what the check is without claiming XRPL Testnet. */
 const simulatedTitle: Record<string, string> = { ledger: 'Payments on a public ledger', anchor: 'Answer anchored on a public ledger' }
@@ -63,14 +65,17 @@ export default function VerifyInBrowser({ run, bundleUrl, caption, title }: { ru
         </details>
       </li>)}</ul>
       <p className="ra-note">Ran in this browser{result.endpoint ? `, reading ${result.endpoint} (read-only)` : ''}. Same checks as the <code>researchagent verify</code> command.</p>
-      <ul className="ra-hv-groups"><li><details className="ra-gates">
+      <ul className="ra-hv-groups"><li><details className="ra-gates" open>
         <summary><span>Five gates, checked for this run</span></summary>
         <p className="ra-note">browser summary of the anchored audit log</p>
         <ul>{state.gates?.map(gate => <li key={gate.id}><span>
-          <b>{gate.id}. {gate.title}</b><br />
-          <strong>{gate.status}</strong> · {gate.seqs.length ? `Audit ${gate.seqs.map(seq => `#${seq}`).join(', ')}` : 'No audit sequence available'}<br />
-          {gate.detail}
-          {gate.labels?.map((label, index) => <span key={index} style={{ display: 'block' }}>{label.name}: {label.value}</span>)}
+          <b>{gate.id}. {gateTitle[gate.id - 1]}</b><br />
+          <strong>{gateWord[gate.status]}</strong>
+          <details style={{ overflowWrap: 'anywhere' }}><summary>Technical details</summary>
+            <p>{gate.detail}</p>
+            <p>{gate.seqs.length ? `Audit ${gate.seqs.map(seq => `#${seq}`).join(', ')}` : 'No audit sequence available'}</p>
+            {gate.labels?.map((label, index) => <span key={index} style={{ display: 'block' }}>{label.name}: {label.value}</span>)}
+          </details>
         </span></li>)}</ul>
       </details></li></ul>
       <button type="button" className="ra-link" onClick={() => void start()}>Run again</button>

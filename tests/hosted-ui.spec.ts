@@ -253,7 +253,7 @@ test('hosted writers have public pages, honest earnings and narrow reads in two 
     // One badge per card (S9): the kind and the identity check in one phrase, not two lines.
     await expect(catalogue.getByText('Team-authored · unverified', { exact: true }).first()).toBeVisible()
     await expect(catalogue.getByText('unverified writer')).toHaveCount(0)
-    await expect(catalogue).toContainText('Your retained history only')
+    await expect(catalogue).toContainText('Your purchases and trust come from your retained history')
     await expect(catalogue.getByRole('link', { name: 'Publish your notes', exact: true })).toHaveAttribute('href', /docs\/publishing.md$/)
     await expect(catalogue).not.toContainText('real independent writers')
     expect(await v.page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)

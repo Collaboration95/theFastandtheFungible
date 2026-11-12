@@ -30,7 +30,9 @@ export function offlineNotice(run: Pick<RunSnapshot, 'labels' | 'answers' | 'rec
   if (!run.labels.research.startsWith('fixture')) return undefined
   const written = run.answers.some(answer => answer.claims.length > 0)
   if (!written && !run.receipts.length) return undefined
-  const reason = [...run.events].reverse().find(event => event.type === 'MODEL_FALLBACK')?.data?.reason
+  const fallback = [...run.events].reverse().find(event => event.type === 'MODEL_FALLBACK')
+  if (!fallback) return written ? 'Written from offline extracts.' : 'Empty extractive draft: no citable evidence was found.'
+  const reason = fallback.data?.reason
   if (reason === 'guard' && !written) return 'The model wasn’t asked: no bought passage matched the question closely enough to quote.'
   const why = (typeof reason === 'string' && WHY[reason]) || 'the model was unavailable'
   return written ? `Written from offline extracts: ${why}.` : `Offline extracts used: ${why}. They held no citable passage.`

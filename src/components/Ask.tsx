@@ -1,4 +1,4 @@
-import { useId, useState, type ReactNode } from 'react'
+import { useId, useRef, useState, type ReactNode } from 'react'
 import { AskSchema, BUDGET, type Ask as AskInput } from '../../shared/contracts/index.js'
 import { exampleQuestions } from '../../shared/contracts/examples.js'
 import { money } from '../format'
@@ -6,6 +6,7 @@ import BudgetPopover from './BudgetPopover'
 import AgentSprite from './AgentSprite'
 import { BUDGET_LABEL } from '../copy'
 import { useHosted } from '../hosted'
+import './writer-provenance.css'
 import { HostedJudgesCorner } from './hosted/HostedHome'
 
 export interface AskProps {
@@ -53,6 +54,13 @@ export default function Ask({ onAsk, busy = false, settlement, above, universalM
   // Hosted proof and builder tools follow the examples. A closed demo has no
   // composer, so there the hosted intro carries it instead.
   const hosted = useHosted()
+  const corner = useRef<HTMLDetailsElement>(null)
+  const verifyRecorded = () => {
+    if (!corner.current) return
+    corner.current.open = true
+    corner.current.scrollIntoView({ block: 'start', behavior: 'instant' })
+    corner.current.querySelector<HTMLElement>('summary')?.focus()
+  }
   return <section className="ra-home" aria-label="Ask a research question">
     {intro ?? <><AgentSprite animation="idle" still /><h1 className="ra-hero">Research with a wallet.</h1>
     <p className="ra-home-description">Free sources first. Pay writers for missing evidence, within your budget.</p></>}
@@ -76,6 +84,7 @@ export default function Ask({ onAsk, busy = false, settlement, above, universalM
           : <button type="button" className="ra-budget-chip" onClick={onSettings} title={`${BUDGET_LABEL.default} · change it in Settings`}>{universalMinor === 0 ? 'Free' : money(universalMinor)}</button>}
         <button className="ra-ask" type="submit" disabled={disabled || !question.trim()}>{askLabel ?? (budgetMinor === 0 ? 'Ask free' : 'Ask')}</button>
       </div>
+      {hosted && <button type="button" className="ra-btn ra-home-verify" onClick={verifyRecorded}>Verify a recorded run, no question used</button>}
       {composerNote}
       {error && <div className="ra-comp-foot"><span className="ra-err" role="alert">{error}</span></div>}
     </form>}
@@ -86,6 +95,6 @@ export default function Ask({ onAsk, busy = false, settlement, above, universalM
       {exampleQuestions(import.meta.env.MODE === 'browser-demo' ? undefined : settlement).map((preset) => <button key={preset.id} type="button" className={`ra-preset${question === preset.text ? ' is-on' : ''}`} aria-pressed={question === preset.text} title={preset.text} disabled={disabled} onClick={() => setQuestion(preset.text)}>
         <i aria-hidden="true">?</i><b>{preset.label}</b><span>{preset.text}</span></button>)}
     </div>}
-    {!above && !closed && hosted && <HostedJudgesCorner hosted={hosted} />}
+    {!above && !closed && hosted && <HostedJudgesCorner hosted={hosted} detailsRef={corner} />}
   </section>
 }
