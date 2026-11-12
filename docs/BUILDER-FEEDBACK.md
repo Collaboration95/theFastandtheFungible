@@ -1225,7 +1225,7 @@ persistence or a mainnet deployment. No cloud resource or live ledger call ran.
 
 ## 12 November 2026: optional local ONNX packaging needs glibc and bounded dependencies (observed local tooling)
 
-- **Evidence:** `docs/evidence/models/MODELS.md`; model build at `83d0e7cc` baked 277 corpus vectors, then the full dependency copy failed with `no space left on device` in Docker Desktop. Native ONNX uses glibc, while the existing hosted targets use Alpine/musl. No XRPL transaction was made.
+- **Evidence:** `docs/evidence/models/MODELS.md`; the initial model build baked 277 corpus vectors, then the full dependency copy failed with `no space left on device` in Docker Desktop. The smaller dependency closure is committed in `83d0e7cc`; its container retry remains unqualified. Native ONNX uses glibc, while the existing hosted targets use Alpine/musl. No XRPL transaction was made.
 - **Workaround:** additive opt-in Debian model targets; copy the model dependency closure and only this platform's CPU binaries. Existing hosted defaults remain unchanged. No shared images, caches or volumes were deleted.
 - **Suggested fix:** publish a minimal CPU-only ONNX runtime distribution and document the supported libc and model-baking steps for offline servers.
 - **Severity / mainnet impact:** medium local packaging friction; no ledger defect or mainnet behaviour measured.
