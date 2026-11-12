@@ -78,3 +78,62 @@ it('keeps a released payment open until the passage is actually unlocked', () =>
   expect(screen.queryByText('Passage delivered')).toBeNull()
   expect(document.querySelectorAll('ol > li.is-complete')).toHaveLength(2)
 })
+
+it('shows recorded durations and ledger indexes, with the full breakdown on finished runs', () => {
+  const mark = (elapsedMs: number, ledgerIndex?: number, txHash?: string) => ({ at: '2026-11-12T00:00:00.000Z', elapsedMs, source: 'buyer' as const, ledgerIndex, txHash })
+  view({ ...settled, timing: { startedAt: '2026-11-12T00:00:00.000Z', phases: { quote: mark(400), createSubmitted: mark(2000), createValidated: mark(6000, 100, settled.escrow!.createHash), lockProven: { ...mark(7000), source: 'writer' }, finishSubmitted: { ...mark(8000), source: 'writer' }, finishValidated: mark(13000, 102, settled.escrow!.finishHash), unlocked: mark(13005, 102) } } })
+  fireEvent.click(document.querySelector('summary')!)
+  expect(screen.getByText('6.0 s · Ledger 100')).toBeTruthy()
+  expect(screen.getByText('7.0 s · Ledger 102')).toBeTruthy()
+  expect(screen.getByText('<0.1 s · Ledger 102')).toBeTruthy()
+  expect(screen.getByText('Timing breakdown')).toBeTruthy()
+  expect(screen.getByText('8.00 s since start · writer-reported')).toBeTruthy()
+})
+it('does not show a submitted finish as validated or unlocked', () => {
+  view({ ...settled, status: 'SUBMITTING', escrow: { ...settled.escrow!, state: 'LOCKED', finishHash: undefined, decryptVerified: undefined }, timing: { startedAt: new Date().toISOString(), phases: { createValidated: { at: new Date().toISOString(), elapsedMs: 0, source: 'buyer', ledgerIndex: 100, txHash: settled.escrow!.createHash }, finishSubmitted: { at: new Date().toISOString(), elapsedMs: 0, source: 'writer', txHash: settled.escrow!.finishHash } } } })
+  expect(screen.getByRole('link', { name: 'EscrowCreate' })).toBeTruthy()
+  expect(screen.queryByRole('link', { name: 'EscrowFinish' })).toBeNull()
+  expect(screen.queryByText('The writer published the key')).toBeNull()
+  expect(screen.queryByText('Passage delivered')).toBeNull()
+  expect(screen.getByText(/s elapsed/)).toBeTruthy()
+})
+it('reveals the finish link live after validation while delivery is still locked', () => {
+  const now = new Date().toISOString()
+  view({ ...settled, status: 'SUBMITTING', escrow: { ...settled.escrow!, state: 'LOCKED', finishHash: undefined, decryptVerified: undefined }, timing: { startedAt: now, phases: { finishValidated: { at: now, elapsedMs: 1000, source: 'buyer', ledgerIndex: 102, txHash: settled.escrow!.finishHash } } } })
+  expect(screen.getByRole('link', { name: 'EscrowFinish' }).getAttribute('href')).toContain(settled.escrow!.finishHash)
+  expect(screen.getByText('The writer published the key')).toBeTruthy()
+  expect(screen.queryByText('Passage delivered')).toBeNull()
+})
+it('filters future recorded phase observations at the replay cursor', () => {
+  const create = trace.events.find(e => e.type === 'ESCROW_CREATE')!
+  const now = new Date().toISOString()
+  const run = { ...trace, intents: [{ ...settled, timing: { startedAt: now, phases: { finishValidated: { at: now, elapsedMs: 1000, source: 'buyer' as const, ledgerIndex: 102, txHash: settled.escrow!.finishHash } } } }] }
+  expect(staged(run, create.id).intents[0].timing?.phases.finishValidated).toBeUndefined()
+})
+
+it('keeps a decrypted but rejected passage from being described as delivered', () => {
+  view({ ...settled, status: 'CLAIM_FAILED', escrow: { ...settled.escrow!, proofOk: false, decryptVerified: true } })
+  fireEvent.click(document.querySelector('summary')!)
+  expect(screen.getByText('Passage did not pass verification')).toBeTruthy()
+  expect(screen.getByText('Passage rejected · not used in the answer')).toBeTruthy()
+  expect(screen.queryByText('Passage delivered')).toBeNull()
+})
+
+it('uses the recorded replay cursor for a historical pending step without starting a wall clock', () => {
+  const start = '2020-01-01T00:00:00.000Z'
+  const timer = vi.spyOn(window, 'setInterval')
+  render(<PaymentStepper clockAt={Date.parse(start) + 8000} run={{ ...trace, intents: [{ ...settled, status: 'SUBMITTING', escrow: { ...settled.escrow!, state: 'LOCKED', finishHash: undefined, decryptVerified: undefined }, timing: { startedAt: start, phases: { createValidated: { at: start, elapsedMs: 6000, source: 'buyer', ledgerIndex: 100, txHash: settled.escrow!.createHash } } } }] }} />)
+  try {
+    expect(screen.getByText('2 s elapsed')).toBeTruthy()
+    expect(timer).not.toHaveBeenCalled()
+  } finally { timer.mockRestore() }
+})
+
+it('shows the validated create immediately at its timing event before the following escrow-state event', () => {
+  const now = new Date().toISOString()
+  view({ ...settled, status: 'SUBMITTING', escrow: { ...settled.escrow!, state: 'PREPARED', createHash: undefined, finishHash: undefined, decryptVerified: undefined }, timing: { startedAt: now, phases: { createValidated: { at: now, elapsedMs: 6000, source: 'buyer', ledgerIndex: 100, txHash: settled.escrow!.createHash } } } })
+  expect(screen.getByText(/Escrow created/)).toBeTruthy()
+  expect(screen.getByRole('link', { name: 'EscrowCreate' }).getAttribute('href')).toContain(settled.escrow!.createHash)
+  expect(document.querySelectorAll('ol > li.is-complete')).toHaveLength(1)
+  expect(screen.queryByText('Creating escrow')).toBeNull()
+})
