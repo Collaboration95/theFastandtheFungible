@@ -1,8 +1,25 @@
 # Real-profile paired evaluation
 
-Status: **pending real profile**. Runner-only delivery after the three-hour cutoff, 2026-11-12T13:08:31.610228+00:00. Main `f8dd17815e6c002ff7b614390f0246c1fe8bb4fd` still lacked the real-profile switch when checked at 2026-11-12T13:08:33.372159+00:00.
+Status: **complete (13 Nov 2026).** 400 of 400 paired runs (200 questions × free-only and paid arms). Seven provider-failed attempts were excluded and re-run, using the strict-provider continuation on branch `guru/r3-eval-run` (head `b7e1ad85`). Bank `eval/questions/r3-real.v1.json` on that branch, SHA-256 `b5e722d9a004a56f5c5f0ed1078bfb911063100c244e11252459608cb770cb6b`. Settlement in both arms is **simulated**: no XRPL transactions.
 
-No new model calls were made in this continuation. No paired bank was frozen and no 200 × two-arm result was produced. Cumulative retained exposure remains US$0.671020182 (US$0.594377682 reported plus US$0.076642500 unsettled holds). The protocol below is prepared for a follow-up after the real profile is merged.
+## Results
+
+On the **100 protocol questions** (XRPL and x402), counting only answers written by the live model (planner substitutions and fixture answers excluded):
+
+| Arm | Correct | Runs that bought | Spend | p50 latency |
+|---|---:|---:|---:|---:|
+| Free docs only (S$0 budget) | **31 / 100** | 0 | S$0 | 7.4 s |
+| Free docs + paid notes (S$2 budget per question) | **48 / 100** | 43 | S$20.40 in total | 8.6 s |
+
+By stratum (live-only correct): used judge-bank questions 13/60 → 26/60; source-checked public XRPL fact questions 18/40 → 22/40.
+
+Across all 400 runs there were 0 gate violations, and every citation was valid: 463/463 free and 503/503 paid. The 100 historical out-of-profile control questions score 0 in both arms, as designed: the real profile excludes their sources. Their writer fallbacks (97 free, 98 paid) are why the whole-bank fallback counts are high.
+
+Model cost of the final pass: US$1.02 actual (2,173 calls, 6.48 M input / 0.50 M output tokens). Cumulative accounted exposure across all attempts is about US$1.31.
+
+Limits: this is a development diagnostic, not an independent held-out bank. The 60 judge-bank questions were used in earlier rounds, the correctness scorer is fact-needle matching with accessible citations, and settlement is simulated. Slim per-run results are in `r3-real-paired/results.json` and the full summary in `r3-real-paired/summary.json`.
+
+## Protocol (as frozen before the run)
 
 Both arms use `CORPUS_PROFILE=real FREE_TIER=public-docs EMBEDDING_PROVIDER=local DECISION_PROVIDER=fixture`, live DeepSeek Flash planning/writing and explicitly simulated settlement. Free-only budget is S$0; paid budget is S$2. No ledger writes or XRPL transactions are made. The content writer may read public Mainnet/Testnet ledgers through a strict command allowlist; those reads are not Testnet settlement evidence.
 
