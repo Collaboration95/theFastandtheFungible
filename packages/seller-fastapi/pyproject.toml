@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+[project]
+name = "researchagent-seller-fastapi"
+version = "0.1.0"
+description = "XRPL Testnet x402 key-reveal escrow seller for FastAPI"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+dependencies = ["fastapi>=0.115,<1", "xrpl-py>=4.4,<5", "cryptography>=44"]
+[tool.setuptools.package-data]
+researchagent_seller_fastapi = ["py.typed"]
+[tool.pytest.ini_options]
+testpaths = ["tests"]

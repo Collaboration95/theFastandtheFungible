@@ -10,6 +10,7 @@ something significant: a feature, a metric move, a finished deliverable. Don't
 add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
+- 12 Nov: Unpublished Express, Hono and typed FastAPI seller packages share the existing key-reveal scheme; packed Node consumers/type checks pass, and FastAPI completes a real Testnet purchase. Owner publication remains separate. [Evidence](evidence/reach/REACH.md).
 - 12 Nov: The agent connect panel adds configured Cursor/VS Code install links, Claude connector steps and a Claude Code HTTP command; it loads on demand and advertises URL access only when configured. [Evidence](evidence/reach/REACH.md).
 - 12 Nov: Hosted paid answers can opt into `/v1/ask` with `PAID_ENDPOINT_PUBLIC=on` (default off), retaining exact Testnet payment verification, hosted quotas and pause controls; curl/SDK examples live in `docs/reach/paid-answer.md`. No deployment.
 - 12 Nov: Added a resumable Testnet purchase runner and independent ledger verifier with 1,000 real key-reveal purchases, hash-only receipts, observed phase percentiles and a documented feed schema; hosted deployment and judge-facing copy remain with the orchestrator. [Evidence](evidence/proof/TESTNET-1000.md).
