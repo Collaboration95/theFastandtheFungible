@@ -4,21 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Inside ResearchAgent</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Geist:wght@400..700&family=Geist+Mono:wght@400..600&display=swap">
 <style>
 /* Layout: one reading column of prose with full-width "instrument" panels that replay a real run; a quiet table of contents on wide screens.
    Light only, by the owner's choice. Palette and faces follow the ResearchAgent app (src/styles.css). */
 :root {
   color-scheme: light;
-  --paper: #FBF8F2; --sheet: #FFFFFF; --mist: #EEF0F5; --rule: #E8E2D8; --rule-2: #CDD2DE;
+  --paper: #FBF8F2; --sheet: #FFFFFF; --mist: #F3EEE4; --rule: #E8E2D8; --rule-2: #E8E2D8; --rule-strong: #8F8579;
   --ink: #24211E; --ink-2: #24211E; --muted: #655D55; --faint: #655D55;
-  --pen: #24211E; --pen-deep: #1E2FD0; --pen-wash: #ECEEFF; --pen-wash-2: #D7DCFF;
+  --pen: #24211E; --pen-deep: #24211E; --pen-wash: #F3EEE4; --pen-wash-2: #F3EEE4;
   --hi: #F3EEE4; --hi-wash: #FFF4B8;
-  --ok: #0B7A50; --ok-bright: #2F6B4F; --ok-wash: #E3F5EC;
+  --ok: #2F6B4F; --ok-bright: #2F6B4F; --ok-wash: #E3F5EC;
   --pay: #24211E; --pay-ink: #B83B0A; --pay-wash: #FFEDE4;
-  --bad: #C8312B; --bad-wash: #FDECEA;
+  --bad: #9B3E35; --bad-wash: #FDECEA;
   --f-display: 'Geist', 'Geist', system-ui, -apple-system, sans-serif;
   --f-ui: 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --f-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
@@ -32,17 +29,17 @@ a { color: var(--pen); text-underline-offset: 3px; }
 a:focus-visible, button:focus-visible, summary:focus-visible { outline: 3px solid var(--pen); outline-offset: 2px; border-radius: 6px; }
 code, .mono { font-family: var(--f-ui); }
 
-.keys kbd { font: 600 11px var(--f-ui); border: 1px solid var(--rule-2); border-bottom-width: 2px; border-radius: 4px; padding: 1px 5px; background: var(--sheet); color: var(--ink-2); }
+.keys kbd { font: 600 11px var(--f-ui); border: 1px solid var(--rule-strong); border-bottom-width: 2px; border-radius: 4px; padding: 1px 5px; background: var(--sheet); color: var(--ink-2); }
 
 .wrap { padding-inline: 16px; padding-block: 0 96px; }
 main { max-width: var(--col); margin: 0 auto; }
 section { padding-top: 72px; scroll-margin-top: 48px; }
 .prose { max-width: var(--prose); }
 .kick { font: 600 12.5px/1.2 var(--f-ui); letter-spacing: 0; text-transform: none; color: var(--pen); }
-h1, h2, h3 { font-family: var(--f-ui); text-wrap: balance; margin: 0; letter-spacing: -.02em; }
-h1 { font-size: clamp(44px, 7vw, 84px); line-height: .98; font-weight: 800; margin-top: 14px; }
-h2 { font-size: clamp(32px, 4.4vw, 50px); line-height: 1.04; font-weight: 750; margin-top: 10px; }
-h3 { font-size: 22px; font-weight: 700; }
+h1, h2, h3 { font-family: var(--f-ui); text-wrap: balance; margin: 0; letter-spacing:-.02em; font-weight:600;}
+h1 { font-size: clamp(44px, 7vw, 84px); line-height: .98; font-weight:600; margin-top: 14px; }
+h2 { font-size: clamp(32px, 4.4vw, 50px); line-height: 1.04; font-weight:600; margin-top: 10px; }
+h3 { font-size: 22px; font-weight:600; }
 .lede { font-size: 21px; color: var(--ink-2); margin: 16px 0 0; }
 .lede strong { color: var(--ink); }
 p { margin: 14px 0 0; }
@@ -57,7 +54,7 @@ p { margin: 14px 0 0; }
 .tag { font: 600 11.5px/1 var(--f-ui); letter-spacing: 0; text-transform: none; color: var(--muted); }
 .tag .chip { color: var(--pay-ink); border: 1px solid color-mix(in srgb, var(--pay) 60%, transparent); background: var(--pay-wash); border-radius: 6px; padding: 4px 9px; margin-right: 10px; letter-spacing: 0; }
 .clock { font: 500 14px var(--f-ui); color: var(--ink-2); font-variant-numeric: tabular-nums; }
-.replay { font: 600 14px var(--f-ui); color: var(--ink); background: var(--mist); border: 1px solid var(--rule-2); border-radius: 8px; padding: 9px 16px; cursor: pointer; min-width: 132px; }
+.replay { font: 600 14px var(--f-ui); color: var(--ink); background: var(--mist); border: 1px solid var(--rule-strong); border-radius: 6px; padding: 9px 16px; cursor: pointer; min-width: 132px; }
 .replay:hover { background: var(--pen-wash); border-color: var(--pen-wash-2); }
 .foot { border-top: 1px solid var(--rule); padding: 14px 24px 16px; margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--muted); }
 .foot b { color: var(--ink-2); font-weight: 600; }
@@ -87,7 +84,7 @@ svg { display: block; width: 100%; height: auto; }
 .map .say { font: 650 22px/1.3 var(--f-ui); letter-spacing: -.01em; min-height: 58px; max-width: 760px; }
 .map .say small { display: block; font: 500 13px/1.4 var(--f-ui); color: var(--muted); letter-spacing: 0; margin-bottom: 4px; }
 .steps { display: flex; flex-wrap: wrap; gap: 6px; }
-.steps button { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--rule-2); background: var(--sheet); font: 600 12px var(--f-ui); color: var(--muted); cursor: pointer; }
+.steps button { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--rule-strong); background: var(--sheet); font: 600 12px var(--f-ui); color: var(--muted); cursor: pointer; }
 .steps button.on { background: var(--pen); border-color: var(--pen); color: #fff; }
 .steps button.done { background: var(--pen-wash); color: var(--pen-deep); border-color: var(--pen-wash-2); }
 
@@ -259,7 +256,7 @@ details p, details li { font-size: 16.5px; color: var(--ink-2); }
 details ul { padding-left: 20px; margin: 10px 0 0; }
 
 .close { text-align: left; }
-.close h2 { font-size: clamp(38px, 6vw, 72px); font-weight: 800; }
+.close h2 { font-size: clamp(38px, 6vw, 72px); font-weight:600; }
 .close .links { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 10px 22px; font: 500 15px var(--f-ui); }
 .close .links a { overflow-wrap: anywhere; min-width: 0; }
 .labels { margin-top: 26px; display: flex; flex-wrap: wrap; gap: 8px; }
@@ -327,8 +324,8 @@ details ul { padding-left: 20px; margin: 10px 0 0; }
 </head>
 <body>
 <!-- site-header:start -->
-<style>@font-face{font-family:Geist;src:url("../brand/geist-latin-wght-normal.woff2")}
-.ra-hdr{box-sizing:border-box;height:52px;position:sticky;top:0;z-index:50;background:rgba(251,248,242,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid #E8E2D8;font:500 14px/1 Geist,system-ui,-apple-system,"Segoe UI",sans-serif;color:#24211E}
+<link rel="stylesheet" href="../brand/fonts.css">
+<style>.ra-hdr{box-sizing:border-box;height:52px;position:sticky;top:0;z-index:50;background:rgba(251,248,242,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid #E8E2D8;font:500 14px/1 Geist,system-ui,-apple-system,"Segoe UI",sans-serif;color:#24211E}
 .ra-hdr *{box-sizing:border-box}
 .ra-hdr-in{max-width:1180px;margin:0 auto;padding:0 16px;height:51px;display:flex;align-items:center;gap:20px}
 .ra-hdr a{color:inherit;text-decoration:none}
@@ -341,11 +338,11 @@ details ul { padding-left: 20px; margin: 10px 0 0; }
 .ra-hdr-end{display:flex;align-items:center;gap:14px;flex:none;color:#655D55;font-size:13px}
 .ra-hdr-end a:hover{color:#24211E}
 .ra-hdr-note{font-family:Geist,system-ui,sans-serif;font-size:12px;color:#655D55;white-space:nowrap}
-.ra-hdr-note kbd{font:600 12px Geist,system-ui,sans-serif;border:1px solid #C9BFB2;border-bottom-width:2px;border-radius:6px;padding:1px 5px;background:#fff;color:#24211E}
+.ra-hdr-note kbd{font:600 12px Geist,system-ui,sans-serif;border:1px solid #8F8579;border-bottom-width:2px;border-radius:6px;padding:1px 5px;background:#fff;color:#24211E}
 .ra-hdr nav:focus-visible,.ra-hdr a:focus-visible{outline:2px solid #24211E;outline-offset:2px}
 .ra-hdr .ra-live{background:#24211E;color:#fff;padding:9px;border-radius:6px} body{font-family:Geist,system-ui,sans-serif} [tabindex="0"]:focus-visible{outline:2px solid #24211E;outline-offset:2px}
 .ra-hdr-menu{display:none;position:relative}
-.ra-hdr-menu summary{list-style:none;cursor:pointer;padding:8px 10px;border:1px solid #C9BFB2;border-radius:6px;color:#24211E;background:#fff}
+.ra-hdr-menu summary{list-style:none;cursor:pointer;padding:8px 10px;border:1px solid #8F8579;border-radius:6px;color:#24211E;background:#fff}
 .ra-hdr-menu summary::-webkit-details-marker{display:none}
 .ra-hdr-menu div{position:absolute;right:0;top:calc(100% + 8px);min-width:220px;display:grid;padding:8px;background:#FBF8F2;border:1px solid #E8E2D8;border-radius:8px;box-shadow:0 12px 32px -16px rgba(36,33,30,.35)}
 .ra-hdr-menu div a{padding:10px 12px;border-radius:6px;color:#24211E}
@@ -382,14 +379,14 @@ details ul { padding-left: 20px; margin: 10px 0 0; }
   <div class="prose">
     <div class="kick">ResearchAgent</div>
     <h1>Research with a wallet.</h1>
-    <p class="lede">It answers from free sources first. When the missing piece sits behind a paywall, it can buy the article it needs straight from the writer, for cents, inside a budget you set. If an article fails the writer’s promise, it requests a refund and records the outcome. <strong>A refund after delivery requires the writer’s signature.</strong></p>
+    <p class="lede">It answers from free sources first. When the missing piece sits behind a paywall, it can buy directly from the writer for cents, inside your budget: no more than one article in a round, for up to three rounds. If an article fails the writer’s promise, it requests a refund and records the outcome. <strong>A refund after delivery requires the writer’s signature.</strong></p>
   </div>
 
 </section>
 
 <section id="key-reveal"><div class="prose"><div class="kick">How it works today</div><h2>The writer reveals the key to get paid.</h2><p>Policy code locks the payment in an XRPL escrow that only the article’s key can open. The writer publishes the key on the ledger to finish the escrow and get paid, so delivery and payment are one event. The buyer checks the key against the lock, decrypts the article and checks every promise before citing it.</p><p>If the writer never reveals the key, the buyer reclaims the payment after the escrow’s <code>CancelAfter</code> deadline. If the article breaks a promise after delivery, the refund needs the writer’s signature. Neither return restores the question’s spending budget.</p></div>
 <figure class="kr-fig"><img src="key-reveal.svg" width="840" height="392" alt="Key-reveal escrow in five steps: policy code locks payment to the hash of the article key; the writer publishes the key on the ledger and is paid; the buyer decrypts and checks every promise; a broken promise is refunded by the writer; the answer is anchored on the ledger"></figure>
-<div class="prose"><p><a href="../demo/?scenario=UC3-key-reveal">Watch the recorded key-reveal run →</a> · <a href="../proof/">Check the receipts</a></p></div></section>
+<div class="prose"><p><a href="../demo/">Watch the recorded key-reveal run →</a> · <a href="../proof/">Check the receipts</a></p></div></section>
 
 <section id="october"><div class="prose"><div class="kick">October talk · 9 Oct</div><h2>The first version: a plain payment, then a refund.</h2><p>The rest of this page is the explainer from our October talk at AI Tinkerers Singapore. It replays the 9 October rehearsal run, which paid writers with a plain XRPL payment, before key-reveal escrow. The seven steps below follow that run.</p></div>
   <div class="panel" id="w-run">
@@ -759,12 +756,13 @@ PAYMENT-RESPONSE: base64({
   <div class="kick">ResearchAgent</div>
   <h2>An LLM writes.<br>A decision model chooses.<br>Code pays.</h2>
   <div class="links"><a href="https://github.com/Collaboration95/theFastandtheFungible" target="_blank" rel="noopener">github.com/Collaboration95/theFastandtheFungible</a></div>
-  <div class="labels"><span>Writers and articles: SYNTHETIC</span><span>Models: live</span></div>
+  <div class="labels"><span>October replay: writers and articles SYNTHETIC</span><span>October replay: models live</span></div>
 </section>
 
 </main></div>
 
-<script>
+<script type="module">
+import { money as minorMoney, dateSGT, whenSGT } from '../brand/presentation.js';
 (() => {
 const EVENTS = [[0.0,"PLAN","Plan: 2 searches, 2 requested facts"],[0.01,"SEARCH","Searching publisher public metadata."],[0.75,"SEARCH","16 hits from 8 writers · hybrid"],[0.77,"ANSWER","Writing the free answer."],[4.84,"COVERAGE","0 of 2 requested facts answered."],[4.86,"FOLLOW_UP","Searching again for: Kestrel Semiconductor's advanced-packaging lead times in Malaysia, with dates and figures"],[5.95,"FOLLOW_UP","8 new free sources · nothing new on: Kestrel Semiconductor's advanced-packaging lead times in Malaysia, with dates and figures"],[5.96,"DECIDE","Scoring public previews and applying spending policy."],[6.86,"BUY","Policy selected one purchase within budget."],[6.87,"WIRE","GET /w/alphaleak/articles/alphaleak-kestrel-penang-lead-times → 402"],[6.88,"PURCHASE","RESERVED"],[15.58,"WIRE","GET /w/alphaleak/articles/alphaleak-kestrel-penang-lead-times → 200"],[15.59,"XRPL","Signed 0.03 XRP → rGeN8NcEVRVvWeFoyY9Df1TyiLq9AhoX5T · InvoiceID = sha256(invoiceId) · sent to the publisher's facilitator"],[16.04,"XRPL","Validated in ledger 21384313 · tesSUCCESS"],[16.05,"XRPL","Publisher verified the payment on the ledger and issued a receipt"],[16.05,"PROOF","Proof failed · lead-times-dated · source quarantined, never cited"],[16.06,"CHALLENGE","POST /w/alphaleak/challenge · claim lead-times-dated"],[22.05,"WIRE","POST /w/alphaleak/challenge → 200"],[22.27,"CHALLENGE","REFUNDED"],[22.28,"REFUND","Refunded S$0.30 · InvoiceID = original tx"],[22.29,"REPUTATION","alphaleak: proof refunded · H 0.80→0.40 · C 1.00→1.00 · quarantined"],[22.29,"REPUTATION","alphaleak: relevance claimed 0.96, observed 0.00 (proof failed) · H 0.40→0.40 · C 1.00→0.08 · quarantined"],[22.31,"DECIDE","Scoring public previews and applying spending policy."],[22.82,"BUY","Policy selected one purchase within budget."],[22.84,"WIRE","GET /w/the-fab-floor/articles/fab-floor-kestrel-penang-lead-times → 402"],[22.85,"PURCHASE","RESERVED"],[29.08,"WIRE","GET /w/the-fab-floor/articles/fab-floor-kestrel-penang-lead-times → 200"],[29.09,"XRPL","Signed 0.04 XRP → rnkdwreaQygabFAALPboYfDGtMXCHYoMAF · InvoiceID = sha256(invoiceId) · sent to the publisher's facilitator"],[29.59,"XRPL","Validated in ledger 21384317 · tesSUCCESS"],[29.6,"XRPL","Publisher verified the payment on the ledger and issued a receipt"],[29.61,"PROOF","Proof verified · 6 claims recomputed"],[29.62,"GRANT","manifest root verified"],[29.63,"REPUTATION","the-fab-floor: proof pass · H 0.80→0.83 · C 1.00→1.00 · active"],[29.65,"READ_PAID","Verified grant permits paid evidence."],[29.66,"ANSWER","Re-answering with verified evidence."],[30.26,"REPUTATION","the-fab-floor: relevance claimed 1.00, observed 0.88 · H 0.83→0.83 · C 1.00→0.98 · active"],[33.61,"COVERAGE","2 of 2 requested facts answered."],[33.63,"DONE","Stopped: All requested facts answered."]];
 const PRS = [[1,"2026-09-07T14:45:13Z",381,310,"chore: organize ResearchAgent documentation"],[28,"2026-09-16T05:34:48Z",249,107,"feat(research-agent): establish truthful local evidence workspace"],[29,"2026-09-17T14:03:52Z",293,301,"refactor(repo): flatten ResearchAgent into repository root"],[57,"2026-09-19T06:16:21Z",11253,12065,"feat(research-plan): define finance research plan artifacts"],[79,"2026-10-04T13:40:28Z",1612,1278,"refactor(foundation): establish demo contracts [W0]"],[80,"2026-10-04T13:52:35Z",318,7,"feat(report): add cited PDF report with print fallback [W1-REPORT]"],[83,"2026-10-04T13:56:03Z",691,154,"feat(corpus): add fictional evidence and scenario variants [W1-CORPUS]"],[82,"2026-10-04T13:57:02Z",485,3,"feat(publisher): add durable simulated purchase protocol [W1-PUB]"],[81,"2026-10-04T13:58:04Z",320,8,"feat(research): implement cited streaming answers [W1-RESEARCH]"],[84,"2026-10-04T13:59:41Z",626,12,"feat(decision): add bounded decisions and run loop [W1-DECIDE]"],[85,"2026-10-04T14:01:06Z",587,30,"feat(ledger): persist budgeted purchases and verified grants [W1-LEDGER]"],[86,"2026-10-04T14:08:01Z",292,12,"feat(ui): add budgeted cited answer experience [W1-UI-ASK]"],[87,"2026-10-04T14:10:30Z",414,14,"feat(ui): expose policy and agent internals [W1-UI-AGENT]"],[88,"2026-10-04T14:22:43Z",311,3483,"feat(integration): wire autonomous research demo [W2-INTEGRATE]"],[89,"2026-10-04T14:30:57Z",468,0,"test(scenarios): guard budgeted demo flows and premium leaks [W2-SCENARIOS]"],[90,"2026-10-04T14:40:22Z",72,14,"fix(research): keep redundant paid evidence unchanged [W3-IMPACT-FIX]"],[91,"2026-10-04T14:45:11Z",42,3,"feat(fault): expose one-charge delivery retry demo [W3-FAULT]"],[92,"2026-10-04T14:46:06Z",261,0,"build(publisher): prepare guarded Cloud Run image [W3-CLOUDRUN]"],[93,"2026-10-04T14:46:43Z",179,38,"feat(ui): polish the projector evidence stage [W3-POLISH]"],[94,"2026-10-04T14:55:14Z",24,1,"test(e2e): follow polished stage navigation [W3-STAGE-CHECK-FIX]"],[95,"2026-10-04T15:21:29Z",15108,11,"fix(providers): qualify Clef schema and calibrate live policy [W3-LIVE]"],[97,"2026-10-05T10:23:26Z",248,34,"chore(tooling): make targets, provider doctor and port offset"],[100,"2026-10-05T10:24:15Z",122,80,"feat(llm): switch the writing gateway to DeepSeek deepseek-flash"],[101,"2026-10-05T10:25:15Z",827,52,"feat(settlement): pay publishers on the XRPL Testnet"],[103,"2026-10-05T10:44:55Z",281,28,"feat(xrpl): per-publisher Testnet wallets and a live ledger panel (#98 phase 2)"],[104,"2026-10-05T10:54:37Z",1025,48,"feat(observability): trace live runs to Langfuse Cloud"],[105,"2026-10-05T12:49:15Z",227,42,"feat(observability): score live runs and build a Langfuse health dashboard"],[107,"2026-10-06T10:35:36Z",227,1,"build(docker): run the demo from lean Alpine containers built per commit"],[106,"2026-10-06T12:43:14Z",2738,0,"docs(ux): UX walkthrough with v1.1 tweaks and A/B flows"],[109,"2026-10-06T13:13:59Z",1507,1213,"feat(ui): ship the v1 UX: one paced workspace, plain verdicts, notifications"],[110,"2026-10-06T15:44:27Z",1757,26754,"docs: pivot to the 6 Oct final-push direction"],[167,"2026-10-06T16:38:19Z",231,39,"docs: amend final push for 7 Oct and add the overnight run plan"],[168,"2026-10-06T17:02:03Z",1000,47,"feat(contracts): writers, manifest, x402 v2 and run contracts [WP-W0]"],[169,"2026-10-06T17:08:46Z",1314,0,"feat(corpus): writer roster and story bible for UC1–UC3 [WP-C1]"],[170,"2026-10-06T17:16:24Z",723,5,"feat(search): multi-publisher host, Orama search and leak-safe search route [WP-S1]"],[171,"2026-10-06T17:18:46Z",320,5,"feat(corpus): resumable DeepSeek corpus generator [WP-C2]"],[172,"2026-10-06T17:23:21Z",293,24,"feat(search): signed manifests with persisted salts and the AlphaLeak bad actor [WP-S2]"],[174,"2026-10-06T17:43:21Z",725,103,"feat(agent): scope, plan, federated retrieval and free-text gaps [WP-A1]"],[173,"2026-10-06T17:46:54Z",827,491,"feat(pay): x402 v2 402, publisher facilitator and one-blob buyer [WP-P1]"],[175,"2026-10-06T17:50:41Z",358,14,"feat(agent): reputation module and post-purchase calibration [WP-A2]"],[176,"2026-10-06T17:57:39Z",345,3,"feat(sites): publisher blog sites, paid abstract pages, passage anchors, /w index [WP-SITE"],[177,"2026-10-06T17:59:30Z",7268,1,"feat(corpus): commit the v2 corpus and its self-check [WP-C3]"],[179,"2026-10-06T18:04:46Z",32,32,"fix(corpus): reword stock phrases free posts shared with paid bodies [WP-C3]"],[180,"2026-10-06T18:09:11Z",2,0,"feat(search): commit v2 embeddings and UC query vectors [S2]"],[178,"2026-10-06T18:09:25Z",754,72,"feat(pay): proof check, quarantine, challenge/refund and paid-publisher wallets [WP-P2]"],[181,"2026-10-06T18:25:58Z",317,42,"feat(agent): run-loop proof, challenge, reputation and Langfuse step spans [WP-A3]"],[182,"2026-10-06T18:26:43Z",1432,60,"feat(ui): clarify chips, plan card, writer chips, proofs and refunds, Writers tab [WP-UI]"],[183,"2026-10-06T18:33:03Z",584,21,"perf(search): tuned hybrid ranking and absolute relevance [S2]"],[185,"2026-10-06T18:40:17Z",288,5,"feat(ops): doctor, make targets and the live smoke script [WP-T5]"],[184,"2026-10-06T18:42:54Z",437,16368,"test(ship): retire the Vertex corpus and /v1 paths; UC1–UC3 process scenarios [WP-T1]"],[186,"2026-10-06T18:49:51Z",209,125,"feat(ui): presenter controls, UC presets and generated UC1–UC3 fixture runs [WP-UI]"],[187,"2026-10-06T19:05:56Z",46,33,"fix(live): deterministic UC1–UC3 on live DeepSeek + Clef + Testnet [T3]"],[188,"2026-10-06T19:13:11Z",72,48,"test(e2e): UC2/UC3 browser flow and a11y for the new components [T4]"],[189,"2026-10-06T19:18:49Z",139,53,"docs: as-built docs and the build log [T6]"],[190,"2026-10-06T19:19:00Z",148,3,"docs: overnight report, tuning journey and newcomer UI review"],[191,"2026-10-07T02:40:09Z",51,33,"feat(llm): configure the LLM with LLM_BASE_URL, LLM_MODEL and LLM_API_KEY"],[192,"2026-10-07T02:42:38Z",67,3,"chore(agents): ship-pr skill, review script, worktree and loosening rules"],[193,"2026-10-08T01:54:29Z",920,394,"UI v1.1 port, 7 Oct UI critique pass, faster make live"],[216,"2026-10-08T15:43:56Z",580,127,"Decision-path hardening: no decision fallback, Clef resilience, make preflight, neutral ti"],[215,"2026-10-08T15:50:02Z",489,88,"Stage UI and Q&A: v1.2 UI, on-stage strings (#199), Q&A pack (#200)"],[217,"2026-10-08T15:57:34Z",645,65,"Corpus: golden-fact check (#198), UC3 S$0.40 deep-dive (#204), UC4 content (#211)"],[218,"2026-10-08T16:04:33Z",3650,2,"Measurement: in-domain eval set and label flywheel (#203), decisions bench v2 harness (#21"],[219,"2026-10-08T16:16:51Z",979,155,"Decision-model switch: OpenAI Decisions (#214), trust check (#205), round robustness (#206"],[220,"2026-10-08T16:39:17Z",209,41,"Live-comparison fixes: OpenAI Decisions wording switches, provider-aware smoke"],[221,"2026-10-08T16:57:46Z",1298,273,"Requested facts, decision-model coverage, next-fact rounds and one free follow-up search ("],[222,"2026-10-08T17:23:03Z",2430,78,"Calibration layer (off by default), production-path decision harness, decision and coverag"],[223,"2026-10-09T03:39:40Z",1251,190,"docs(ux): v1.2 walkthrough, shipped screenshots, Oct 9 stage review"],[234,"2026-10-09T05:07:27Z",1459,48,"docs: 5-minute stage cut, 8 Oct re-plan notes, demo-prep status"],[235,"2026-10-09T05:13:59Z",1,0,"chore(git): ignore local notes under final-push/analysis"],[236,"2026-10-09T05:36:26Z",200,24,"Answer non-research questions directly; harden make live start-up"],[237,"2026-10-09T06:07:33Z",196,80,"Chat page for direct replies (ChatGPT-style)"],[238,"2026-10-09T07:05:36Z",118,3,"Stop make live when Workers AI refuses the Cloudflare token"]];
@@ -777,7 +775,7 @@ const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 const seg = (t, a, b) => clamp((t - a) / (b - a));
 const ease = x => 1 - Math.pow(1 - x, 3);
 const lerp = (a, b, x) => a + (b - a) * x;
-const money = n => 'S$' + Math.max(0, n).toFixed(2);
+const money = n => minorMoney(Math.max(0, n) * 100);
 const sv = (tag, attrs = {}, parent) => { const el = document.createElementNS(NS, tag); for (const k in attrs) el.setAttribute(k, attrs[k]); if (parent) parent.appendChild(el); return el; };
 const show = (el, on) => el.classList.toggle('off', !on);
 
@@ -850,7 +848,7 @@ function widget(id, duration, render) {
   const cursor = sv('line', { x1: X0, x2: X0, y1: 6, y2: BASE + 2, stroke: 'var(--ink)', 'stroke-width': 2 }, strip);
   const knob = sv('circle', { cx: X0, cy: 6, r: 6, fill: 'var(--ink)' }, strip);
   const elLeft = $('[data-left]', root), elNet = $('[data-net]', root), elClock = $('[data-clock]', root), elEl = $('[data-elapsed]', root);
-  const fmtClock = ms => { const p = n => String(n).padStart(2, '0'); const sg = new Date(START + ms + 8 * 3600e3); return `Fri 9 Oct · ${p(sg.getUTCHours())}:${p(sg.getUTCMinutes())}:${p(sg.getUTCSeconds())} SGT`; };
+  const fmtClock = ms => whenSGT(new Date(START + ms).toISOString());
   const left = r => r < 6.88 ? 2 : r < 22.85 ? 1.7 : 1.3;
   const net = r => (r < 6.88 ? 0 : r < 22.85 ? .3 : .7) - (r >= 22.28 ? .3 : 0);
   const amt = (type, label) => type === 'PURCHASE' ? ['minus', ''] : type === 'REFUND' ? ['plus', '+S$0.30'] : type === 'PROOF' && /failed/i.test(label) ? ['bad', '✗'] : type === 'PROOF' ? ['plus', '✓'] : ['', ''];
@@ -1112,7 +1110,7 @@ function widget(id, duration, render) {
   const cell = v => `<span class="bar"><i></i></span><span class="num">${v.toFixed(2)}</span>`;
   const rows = R.map(r => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td><span class="w">${r.w}</span><span class="t">${r.t}</span></td><td>S$${r.p.toFixed(2)}</td><td>${cell(r.g)}</td><td>${cell(r.o)}</td><td>${cell(r.c)}</td><td class="tr">× 0.80</td><td class="v">${r.v.toFixed(3)}</td><td class="vpd">${r.d.toFixed(2)}</td><td><span class="verdict ${r.vd === 'BUY' ? 'buy' : 'skip'}">${r.vd}${r.why ? `<small>${r.why}</small>` : ''}</span></td>`;
+    tr.innerHTML = `<td><span class="w">${r.w}</span><span class="t">${r.t}</span></td><td>${money(r.p)}</td><td>${cell(r.g)}</td><td>${cell(r.o)}</td><td>${cell(r.c)}</td><td class="tr">× 0.80</td><td class="v">${r.v.toFixed(3)}</td><td class="vpd">${r.d.toFixed(2)}</td><td><span class="verdict ${r.vd === 'BUY' ? 'buy' : 'skip'}">${r.vd}${r.why ? `<small>${r.why}</small>` : ''}</span></td>`;
     tb.appendChild(tr);
     const bars = $$('.bar i', tr), nums = $$('.num', tr);
     return { r, tr, bars, nums, tr2: $('.tr', tr), v: $('.v', tr), vpd: $('.vpd', tr), vd: $('.verdict', tr) };
@@ -1282,7 +1280,7 @@ function widget(id, duration, render) {
   const bars = PRS.map((p, i) => sv('rect', { x: xs[i] - 2.5, y: BASE - H(p[2] + p[3]), width: 5, height: H(p[2] + p[3]), rx: 1.5, fill: p[3] > p[2] ? 'var(--rule-2)' : 'var(--pen)' }, strip));
   const cur = sv('line', { x1: X0, x2: X0, y1: 4, y2: BASE + 2, stroke: 'var(--ink)', 'stroke-width': 2 }, strip);
   const DUR = 9000; let last = -2;
-  const fmtD = ms => new Date(ms).toLocaleDateString('en-SG', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Asia/Singapore' });
+  const fmtD = ms => dateSGT(new Date(ms).toISOString());
   widget('w-built', DUR + 300, t => {
     const q = clamp(t / DUR); const n = Math.round(q * PRS.length);
     bars.forEach((b, i) => b.setAttribute('opacity', i < n ? 1 : .14));
@@ -1326,13 +1324,13 @@ addEventListener('scroll', syncToc, { passive: true }); syncToc();
 <!-- site-footer:start -->
 <style>.ra-ftr{border-top:1px solid #E8E2D8;margin-top:48px;font:400 14px/1.5 Geist,system-ui,-apple-system,"Segoe UI",sans-serif;color:#655D55}
 .ra-ftr-in{max-width:1180px;margin:0 auto;padding:28px 16px 40px;display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px}
-.ra-ftr-env{display:inline-flex;align-items:center;gap:8px;padding:4px 12px;border:1px solid #C9BFB2;border-radius:999px;color:#24211E;background:#fff;white-space:nowrap}
-.ra-ftr-env::before{content:"";width:8px;height:8px;border-radius:50%;background:#C98500}
+.ra-ftr-env{display:inline-flex;align-items:center;gap:8px;padding:4px 12px;border:1px solid #8F8579;border-radius:999px;color:#24211E;background:#fff;white-space:nowrap}
+.ra-ftr-env::before{content:"";width:8px;height:8px;border-radius:50%;background:#2F6B4F}
 .ra-ftr nav{display:flex;flex-wrap:wrap;gap:4px 18px}
-.ra-ftr a{color:inherit;text-decoration:none}.ra-ftr a:hover,.ra-ftr a[aria-current=page]{color:#24211E;text-decoration:underline;text-underline-offset:4px}
+.ra-ftr a{display:inline-flex;align-items:center;min-width:44px;min-height:44px;padding:10px 4px;color:inherit;text-decoration:none}.ra-ftr a:hover,.ra-ftr a[aria-current=page]{color:#24211E;text-decoration:underline;text-underline-offset:4px}
 .ra-ftr a:focus-visible{outline:2px solid #24211E;outline-offset:2px}
 @media print{.ra-ftr{display:none}}</style>
-<footer class="ra-ftr"><div class="ra-ftr-in"><span class="ra-ftr-env">Testnet · test funds</span><nav aria-label="More pages"><a href="../ledger/">Testnet ledger</a><a href="../project-map/">Project map</a><a href="../evolution/">October build log</a><a href="../slides/">October talk slides</a><a href="https://github.com/Collaboration95/theFastandtheFungible#readme">README</a><a href="https://github.com/Collaboration95/theFastandtheFungible/releases">Releases</a></nav></div></footer>
+<footer class="ra-ftr"><div class="ra-ftr-in"><span class="ra-ftr-env">XRPL Testnet demo · no real value</span><nav aria-label="More pages"><a href="../ledger/">Testnet ledger</a><a href="../evolution/#archive">Archive</a><a href="https://github.com/Collaboration95/theFastandtheFungible#readme">README</a><a href="https://github.com/Collaboration95/theFastandtheFungible/releases">Releases</a></nav></div></footer>
 <!-- site-footer:end -->
 </body>
 </html>
