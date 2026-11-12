@@ -59,7 +59,7 @@ function ownerTake(shot) {
 }
 const voices = {}
 for (const shot of resolved) {
-  if (voiceMode === 'owner') {
+  if (voiceMode === 'owner' && shot.vo.trim()) {
     const file = ownerTake(shot)
     if (!file) { console.error(`no owner recording for ${shot.id}: put it at ${join(VOICE, 'owner', `${shot.id}.wav`)}`); process.exit(2) }
     voices[shot.id] = { file, duration: await durationOf(file), kind: 'owner', start: shot.voStart ?? 0.6 }
@@ -125,7 +125,10 @@ async function buildClean(plan) {
   if (pad > 0.02) { chains.push(`[${last}]tpad=stop_mode=clone:stop_duration=${pad.toFixed(3)}[padded]`); last = 'padded' }
   let input = n
   for (const [k, label] of plan.labels.entries()) {
-    const bar = await overlays.bar(label.text)
+    // The hosted app already has its single environment chip. An empty editorial label adds no second badge.
+    const text = label.text.replace(/^\s*·\s*/, '').trim()
+    if (!text) continue
+    const bar = await overlays.bar(text)
     inputs.push('-loop', '1', '-framerate', String(FPS), '-t', plan.length.toFixed(3), '-i', bar.file)
     chains.push(`[${last}][${input}:v]overlay=x=40:y=${H - 34 - bar.h}:enable='between(t,${label.from.toFixed(3)},${(label.to + 0.001).toFixed(3)})'[l${k}]`)
     last = `l${k}`; input++
