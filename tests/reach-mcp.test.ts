@@ -5,6 +5,7 @@ import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
+import { PublisherClient } from '../server/publisher-client.js'
 import { createApiApp } from '../server/routes.js'
 import { createPublisherApp } from '../publisher/routes.js'
 import { resources } from './helpers/resource-scope.js'
@@ -42,6 +43,8 @@ it('anonymous SDK ask uses web quotas, identity, receipts and pause checks; reje
       const r=await c.callTool({name,arguments:args});expect(r.isError,JSON.stringify(r)).not.toBe(true);return JSON.parse((r.content as {text:string}[])[0].text)
     }
     expect((await call(client,'search_expertise',{query:'x402 pricing'})).hits.length).toBeGreaterThan(0)
+    const offline = vi.spyOn(PublisherClient.prototype,'searchPublisher').mockRejectedValueOnce(new Error('writer unavailable'))
+    try { expect((await call(client,'search_expertise',{query:'x402 pricing'})).unavailable).toBe(true) } finally { offline.mockRestore() }
     const args = {question:USE_CASES.UC2.question,budget_sgd:2,idempotency_key:'reach-once'}
     const run = await call(client,'ask_expert',args)
     expect(run.phase).toBe('DONE'); expect(run.purchases.length).toBeGreaterThan(0)
