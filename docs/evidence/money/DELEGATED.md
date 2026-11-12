@@ -10,7 +10,7 @@ Policy reserves the prompt budget before signing, as before. The scoped payer us
 
 ## Evidence
 
-`node --import tsx scripts/spikes/e-delegated-product.mjs` uses the actual local API and writer on OFFSET=800 (9588/9590), fresh accounts, fixture models, XRP key-reveal settlement. Visitor seed never enters the server environment. This is HTTP product evidence; the separate Chromium component probes below include both a stubbed identity API and a real-API purchase. No hosted acceptance is claimed. `e-delegated.json` and `e-delegated-receipt.json` retain hashes and receipt export. Initial JS size will be checked by the unchanged Node 22 build gate.
+`node --import tsx scripts/spikes/e-delegated-product.mjs` uses the actual local API and writer on OFFSET=800 (9588/9590), fresh accounts, fixture models, XRP key-reveal settlement. Visitor seed never enters the server environment. This is HTTP product evidence; the separate Chromium component probes below include both a stubbed identity API and a real-API purchase. No hosted acceptance is claimed. `e-delegated.json` and `e-delegated-receipt.json` retain hashes and receipt export. The unchanged Node 22 production build gate enforces initial JS below 170,000 bytes gzip; the final admission receipt and PR record its measured size.
 
 Visitor `rGPU4UK4KzrMyfPtXBwdun9ibgNEGTEKhD`; agent `r4qQ5cqgPsjUL5pE5paSKYv33KeifpQWWH`. One purchase: 40 minor units, 16064 ms (provisioning excluded). After revocation: 0 minor units, 0 grants.
 
