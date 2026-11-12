@@ -5,7 +5,7 @@ Evidence context: XRPL Testnet demo. Use these answers when asked; the pitch end
 ## 1. What is the product?
 
 ResearchAgent is a search engine for agent-readable expertise, with a wallet. It
-reads free sources, the XRPL and x402 documentation, then policy rules decide purchases within a question’s budget. <!-- HOSTED-PENDING -->
+reads free sources, the XRPL and x402 documentation, then policy rules decide purchases within a question’s budget.
 The Fast and the Fungible is the team and repository name.
 
 ## 2. Can the model spend?
@@ -31,7 +31,7 @@ validated. No outside customers, pilots or revenue.
 
 ## 5. Who wrote the articles?
 
-The free tier is the XRPL and x402 documentation, with upstream names and licences. <!-- HOSTED-PENDING -->
+The free tier is the XRPL and x402 documentation, with upstream names and licences.
 Paid reports come from a ledger-analytics writer, signed “as of validated ledger N”; Build
 notes and XRPL explainers are two team-authored writers. The real-content profile excludes
 all eight fictional publishers; older recorded replays and the frozen evaluations still
@@ -54,7 +54,7 @@ unavailable, never a pass. Signed promises and passage proofs are checked separa
 
 ## 8. Can you force a quality refund?
 
-Partly. With the opt-in holdback on, <!--f:holdback_percent-->20<!--/f-->% of the price goes into a second escrow, created with the first in one atomic Batch. Buyer policy releases it when the promise checks pass and takes it back after a deadline when they fail, with no writer cooperation: <!--f:holdback_total-->17<!--/f--> real purchases, <!--f:holdback_released-->11<!--/f--> released and <!--f:holdback_refunded-->6<!--/f--> refunded, all verified (fixture articles, forced promise failures). <!-- HOSTED-PENDING -->
+Partly. With the opt-in holdback on, <!--f:holdback_percent-->20<!--/f-->% of the price goes into a second escrow, created with the first in one atomic Batch. Buyer policy releases it when the promise checks pass and takes it back after a deadline when they fail, with no writer cooperation: <!--f:holdback_total-->17<!--/f--> real purchases, <!--f:holdback_released-->11<!--/f--> released and <!--f:holdback_refunded-->6<!--/f--> refunded, all verified (fixture articles, forced promise failures).
 Only the holdback share is refundable: the key-release payment stays paid, and fees stay paid. Without the holdback, a refund needs the writer’s signature; the historical broken-promise replay uses a cooperative fictional writer.
 A no-show has a different recovery path: validated EscrowCancel after CancelAfter.
 The deadline itself does not return the funds. [Holdback evidence](../evidence/money/HOLDBACK.md) · [Refund contract](../key-reveal-escrow.md).
@@ -159,7 +159,7 @@ Retention and owner controls are described in the hosted runbook.
 GitHub Releases has the published MCP package, TypeScript SDK and Python wheel.
 They are not yet on npm, PyPI or the MCP Registry, and neither are the Express, Hono
 and FastAPI seller packages. The Mac DMG is unsigned pending a Developer ID. The
-browser link avoids installation. Agents can also connect by URL. <!-- HOSTED-PENDING -->
+browser link avoids installation. Agents can also connect by URL.
 
 ## 22. Is it ready for regulated deployment?
 
@@ -219,21 +219,21 @@ keeps policy rules. This is a retrospective test on reconstructed data, not a li
 
 Hybrid ranking with local BGE-small embeddings on the server’s CPU: no embedding API.
 A query embeds in about 2.6 ms at the median on a Mac. The tuning bank is not
-independent evidence of generalisation. <!-- HOSTED-PENDING -->
+independent evidence of generalisation.
 
 ## 30. Can anyone publish, and has anyone?
 
 Anyone can submit an original note of 150–3,000 words; moderation prechecks it and an
 operator approves it before it goes live. A scripted note took <!--f:publish_live_s-->12.4<!--/f--> s to go live and <!--f:publish_sale_s-->34.5<!--/f--> s
 to a verified sale, measured locally; typing time and hosted latency are unmeasured. No
-outside writer has published yet. <!-- HOSTED-PENDING -->
+outside writer has published yet.
 [Publishing evidence](../evidence/publish/PUBLISH.md).
 
 ## 31. How do other agents and sellers reach it?
 
 Agents connect over MCP at a URL, with generated one-click links for Cursor and VS Code
-and steps for Claude; we did not install each native client. They can also buy answers
-over x402 at `/v1/ask`, with hosted budgets of 100 or 200 cents. <!-- HOSTED-PENDING -->
+and steps for Claude; we did not install each native client. A paid x402 answer endpoint
+ships in the code and worked in acceptance; it is switched off on the hosted demo.
 A separate Python buyer completed a real purchase and an expiry cancellation against a
 Hono seller installed from the seller package. A key-reveal scheme for x402 is drafted,
 not filed. [Reach evidence](../evidence/reach/REACH.md).
@@ -241,5 +241,5 @@ not filed. [Reach evidence](../evidence/reach/REACH.md).
 ## 32. What does the live page show?
 
 Each validated escrow and key check, as it happens, and a scoreboard that separates
-outside visitors from operator tests. <!-- HOSTED-PENDING -->
+outside visitors from operator tests.
 [Feed evidence](../evidence/feed/FEED.md).

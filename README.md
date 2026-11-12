@@ -3,7 +3,7 @@ ResearchAgent is a search engine for agent-readable expertise, with a wallet. **
 <p align="center"><img src="design/brand/lockup.svg" alt="ResearchAgent" height="48"></p>
 <h3 align="center">Paid on delivery. Proven on the ledger.</h3>
 
-Ask a question and set a budget. ResearchAgent searches free sources, the real XRPL and x402 documentation cited by URL, <!-- HOSTED-PENDING -->
+Ask a question and set a budget. ResearchAgent searches free sources, the real XRPL and x402 documentation cited by URL,
 then policy rules decide which missing evidence to buy. The key that unlocks the article
 is the same key that releases the writer’s payment. Your browser checks the match.
 
@@ -12,11 +12,13 @@ is the same key that releases the writer’s payment. Your browser checks the ma
 [Try the demo](https://collaboration95.github.io/theFastandtheFungible/try/) ·
 [Verify a recorded run](https://ra-front-651013803640.asia-southeast1.run.app) ·
 [Watch the replay](https://collaboration95.github.io/theFastandtheFungible/demo/) ·
-[Watch an answer from the real docs](https://collaboration95.github.io/theFastandtheFungible/demo/?scenario=UC-real-content) <!-- HOSTED-PENDING -->
+[Watch an answer from the real docs](https://collaboration95.github.io/theFastandtheFungible/demo/?scenario=UC-real-content)
 
 | Real purchases | Crash and retry schedules | Protocol states checked | Attacks tried |
 |---|---|---|---|
 | **<!--f:proof_purchases-->1,000<!--/f-->** real, each re-read from a public node | **<!--f:proof_schedules-->1,000,000<!--/f-->** simulated, no violation | **<!--f:proof_states-->210,480<!--/f-->**, no violation | **<!--f:proof_attacks-->34<!--/f-->**, no breach |
+
+Paid notes help: correct answers on <!--f:eval_questions-->100<!--/f--> XRPL and x402 questions rose from <!--f:eval_free_correct-->31<!--/f--> (free docs) to <!--f:eval_paid_correct-->48<!--/f-->. [Evaluation](docs/evidence/models/EVALUATION.md).
 
 <p align="center"><img src="docs/assets/payment-stepper.gif" width="712" alt="A recorded payment locks in escrow; the writer publishes its key and the article unlocks."></p>
 <p align="center"><sub><a href="https://collaboration95.github.io/theFastandtheFungible/demo/">Recorded replay</a>, sample writers: locked → key published → article unlocked (waiting shortened).</sub></p>
@@ -53,7 +55,7 @@ Every gate has regression tests and a [read-only audit rule](scripts/gate-audit.
 
 ## Real sources, signed on the ledger
 
-- **Free tier:** <!--f:content_passages-->12,104<!--/f--> passages from the XRPL and x402 documentation, each cited by its real URL. <!-- HOSTED-PENDING -->
+- **Free tier:** <!--f:content_passages-->12,104<!--/f--> passages from the XRPL and x402 documentation, each cited by its real URL.
 - **Paid tier:** ledger-analytics reports on RLUSD and project accounts, each signed “as of validated ledger N” so you can check it on the public explorer. Two team-authored writers add practitioner notes.
 
 [Content evidence](docs/evidence/content/CONTENT.md) · [Publish your notes](docs/publishing.md).
@@ -62,13 +64,12 @@ Every gate has regression tests and a [read-only audit rule](scripts/gate-audit.
 
 - **<!--f:proof_purchases-->1,000<!--/f--> real purchases** ran through the product’s escrow service. An independent script re-read every transaction from a public node: median <!--f:proof_p50_s-->20.3<!--/f--> s end to end. Rerun it with `npm run proof:testnet-verify`. [Details](docs/evidence/proof/TESTNET-1000.md).
 - A model checker covered <!--f:proof_states-->210,480<!--/f--> protocol states and caught all <!--f:proof_mutations-->seven<!--/f--> seeded bugs. <!--f:proof_schedules-->1,000,000<!--/f--> simulated crash and retry schedules and <!--f:proof_attacks-->34<!--/f--> attacks found no violation or breach. [Report](docs/evidence/proof/PROOF-REPORT.md).
-- **Refunds without the writer.** An opt-in holdback puts <!--f:holdback_percent-->20<!--/f-->% of the price in a second escrow, created with the first in one atomic Batch. Your policy releases it when the promise checks pass, or takes it back after a deadline when they fail. <!--f:holdback_total-->17<!--/f--> real purchases: <!--f:holdback_released-->11<!--/f--> released, <!--f:holdback_refunded-->6<!--/f--> refunded, all verified. <!-- HOSTED-PENDING --> [Holdback](docs/evidence/money/HOLDBACK.md).
+- **Refunds without the writer.** An opt-in holdback puts <!--f:holdback_percent-->20<!--/f-->% of the price in a second escrow, created with the first in one atomic Batch. Your policy releases it when the promise checks pass, or takes it back after a deadline when they fail. <!--f:holdback_total-->17<!--/f--> real purchases: <!--f:holdback_released-->11<!--/f--> released, <!--f:holdback_refunded-->6<!--/f--> refunded, all verified. [Holdback](docs/evidence/money/HOLDBACK.md).
 - Ledger-stream waits cut settlement p90 by 15.7%. [Speed](docs/evidence/speed/SPEED.md).
 
 ## Use it from your agent
 
-Connect by URL: the hosted demo speaks MCP over HTTP at `https://ra-front-651013803640.asia-southeast1.run.app/mcp`, and the app’s connect panel adds it to Cursor, VS Code or Claude in one click. <!-- HOSTED-PENDING -->
-Agents can also buy answers over x402 at `/v1/ask`. <!-- HOSTED-PENDING -->
+Connect by URL: the hosted demo speaks MCP over HTTP at `https://ra-front-651013803640.asia-southeast1.run.app/mcp`, and the app’s connect panel adds it to Cursor, VS Code or Claude in one click.
 Sellers add key-reveal delivery with Express, Hono or FastAPI packages; a separate Python buyer completed a real purchase against one. [Reach evidence](docs/evidence/reach/REACH.md).
 
 Locally, with caps the calling model cannot raise:
@@ -93,9 +94,9 @@ pip install https://github.com/Collaboration95/theFastandtheFungible/releases/do
 
 ## Open to everyone, and visible
 
-Write a note on your phone, pass moderation and it goes live in <!--f:publish_live_s-->12.4<!--/f--> s, with a verified sale after <!--f:publish_sale_s-->34.5<!--/f--> s, measured locally. <!-- HOSTED-PENDING -->
-The `/live` page shows each validated escrow and key check, and the scoreboard separates outside visitors from operator tests. <!-- HOSTED-PENDING -->
-Search runs locally, with no model API. <!-- HOSTED-PENDING -->
+Write a note on your phone, pass moderation and it goes live in <!--f:publish_live_s-->12.4<!--/f--> s, with a verified sale after <!--f:publish_sale_s-->34.5<!--/f--> s, measured locally.
+The `/live` page shows each validated escrow and key check, and the scoreboard separates outside visitors from operator tests.
+Search runs locally, with no model API.
 Regulated mode is available as a mode: credentialed writers only, a pinned OFAC XRP address screen and audited zero-charge refusals.
 [Publishing](docs/evidence/publish/PUBLISH.md) · [Feed](docs/evidence/feed/FEED.md) · [Search](docs/evidence/models/MODELS.md).
 
@@ -141,8 +142,9 @@ Model cost is separate from article prices and ledger fees.
   XRPL/x402 integrators using coding agents is not yet validated.
 - **Delivery and refunds.** Signed submission can expose the key before validation;
   escrow stays claimable until CancelAfter. A key match proves reveal, not quality.
-  With holdback on, only the holdback share is refundable without the writer; the key-release payment stays paid. <!-- HOSTED-PENDING -->
+  With holdback on, only the holdback share is refundable without the writer; the key-release payment stays paid.
   No-show recovery requires a validated EscrowCancel after the deadline.
+- **Answer quality.** That evaluation is a development diagnostic with simulated settlement.
 - **Identity.** Three accepted operator-issued Credentials and an operator-issued
   Permissioned Domain support identity display only, not KYC, quality or payment permission.
 - **Operations.** One shared payer, visitor caps and labelled per-run model fallbacks.

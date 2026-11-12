@@ -208,6 +208,10 @@ export function build() {
   if (holdbackChecks.length !== holdback.rows.length || !holdbackChecks.every(r => r.offline.ok && r.online?.ok !== false)) need(null, 'every holdback receipt verified')
   if (holdback.rows.some(r => !['released', 'refunded'].includes(r.holdback.state))) need(null, 'every holdback row terminal')
   const grouped = n => Number(n).toLocaleString('en-US')
+  const paired = json('docs/evidence/models/r3-real-paired/results.json').results.filter(r => r.stratum !== 'historical-out-of-profile')
+  const liveCorrect = arm => paired.filter(r => r.arm === arm && r.correct && !r.fixtureAnswers).length
+  const pairedTotal = paired.filter(r => r.arm === 'free').length
+  if (pairedTotal !== paired.filter(r => r.arm === 'paid').length) need(null, 'paired evaluation arms of equal size')
   Object.assign(facts, {
     proof_purchases: fact(grouped(verified.verified), `${PROOF}/testnet-1000-verify.json`, 'real key-reveal purchases the independent script re-read from a public node and verified'),
     proof_p50_s: fact((t1000.endToEndMs.p50 / 1000).toFixed(1), 'data/evidence/testnet-1000/summary.json', 'median seconds end to end across the 1,000 purchases'),
@@ -223,6 +227,9 @@ export function build() {
     holdback_percent: fact(need(holdback.rows[0].holdback.percent, 'holdback percent'), 'docs/evidence/money/holdback-transactions.json', 'share of the price held back by default, percent'),
     publish_live_s: fact(phone.submitToVisibleLiveSeconds.toFixed(1), 'docs/evidence/publish/phone-live.json', 'seconds from phone-width form submission to a live note, measured locally'),
     publish_sale_s: fact(phone.totalToVisibleSaleSeconds.toFixed(1), 'docs/evidence/publish/phone-live.json', 'seconds from submission to a visible verified sale, measured locally'),
+    eval_questions: fact(pairedTotal, 'docs/evidence/models/r3-real-paired/results.json', 'XRPL and x402 protocol questions in the paired evaluation'),
+    eval_free_correct: fact(liveCorrect('free'), 'docs/evidence/models/r3-real-paired/results.json', 'protocol questions answered correctly from the free docs alone, live-model answers only'),
+    eval_paid_correct: fact(liveCorrect('paid'), 'docs/evidence/models/r3-real-paired/results.json', 'protocol questions answered correctly with paid notes, live-model answers only; settlement simulated'),
   })
   const v = k => facts[k].value
   // Canonical sentences other surfaces reuse word for word (deck, Q&A, form).
