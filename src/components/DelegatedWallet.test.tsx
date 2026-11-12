@@ -34,6 +34,13 @@ it('keeps a generated Testnet seed in this browser, sends public proof only, and
   expect(JSON.stringify(state.calls)).not.toContain(saved.seed)
   expect(state.funded).toBe(1)
   expect(decode(state.blobs[0]).Permissions).toEqual([{ Permission: { PermissionValue: 'EscrowCreate' } }])
+  const other = Wallet.generate()
+  localStorage.setItem('researchagent.Testnet.wallet.v1', JSON.stringify({ network: 'Testnet', seed: other.seed }))
+  fireEvent.click(screen.getByRole('button', { name: 'Revoke' }))
+  expect((await screen.findByRole('alert')).textContent).toBe('Revocation was not confirmed. Check the ledger before retrying.')
+  expect(state.blobs).toHaveLength(1)
+  localStorage.setItem('researchagent.Testnet.wallet.v1', JSON.stringify(saved))
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Revoke' }).hasAttribute('disabled')).toBe(false))
   state.disconnectFails = true
   fireEvent.click(screen.getByRole('button', { name: 'Revoke' }))
   await screen.findByText(/Access not connected/)

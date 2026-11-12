@@ -23,6 +23,7 @@ export default function DelegatedWallet({ onReady }: { onReady: (ready: boolean)
       let wallet: Wallet
       if (revoke || address) { const saved = JSON.parse(localStorage.getItem(key) ?? '{}'); if (saved.network !== 'Testnet') throw Error(); wallet = Wallet.fromSeed(saved.seed) }
       else { wallet = seed.trim() ? Wallet.fromSeed(seed.trim()) : Wallet.generate(); localStorage.setItem(key, JSON.stringify({ network: 'Testnet', seed: wallet.seed })); setSeed(''); setAddress(wallet.address) }
+      if (address && wallet.address !== address) throw Error() // another tab changed the saved wallet
       await client.connect()
       if ((await client.request({ command: 'server_info' })).result.info.network_id !== 1) throw Error()
       if (!revoke) { try { await client.request({ command: 'account_info', account: wallet.address, ledger_index: 'validated' }) } catch (e) { if ((e as { data?: { error?: string } }).data?.error !== 'actNotFound') throw e; await client.fundWallet(wallet) } }
