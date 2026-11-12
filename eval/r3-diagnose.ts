@@ -1,6 +1,9 @@
 // Offline export from retained stores; never makes provider or ledger calls.
 import {readFileSync,writeFileSync,mkdirSync} from 'node:fs'
 import {join} from 'node:path'
+import {DatabaseSync} from 'node:sqlite'
+import {auditEntries} from '../server/audit.js'
+import {auditAgentAuthority} from '../server/agent-audit.js'
 import {Store} from '../server/store.js'
 import {factHolds,type Fact} from './questions/bank.js'
 import {resolveCitation} from '../server/agents/citations.js'
@@ -13,7 +16,10 @@ const saved=JSON.parse(readFileSync(join(out,'results.json'),'utf8')) as {result
 const bank=JSON.parse(readFileSync('eval/questions/r3-real.v1.json','utf8')) as {questions:Question[]}
 const questions=new Map(bank.questions.map(q=>[q.id,q]))
 const rows=[]
+const authorityAudits=[]
 for(const arm of ['free','paid']){
+ const db=new DatabaseSync(join(out,`${arm}.db`),{readOnly:true})
+ try{authorityAudits.push({arm,violations:auditAgentAuthority(auditEntries(db))})}finally{db.close()}
  const store=new Store(join(out,`${arm}.db`))
  try{for(const result of saved.results.filter(r=>r.arm===arm)){
   const run=store.getRun(result.runId),q=questions.get(result.id)!,answer=run.answers.at(-1)
@@ -24,5 +30,7 @@ for(const arm of ['free','paid']){
  }}finally{store.close()}
 }
 mkdirSync(target,{recursive:true})
-writeFileSync(join(target,'diagnoses.json'),JSON.stringify({method:'Mutually exclusive diagnostic precedence; scores unchanged. Missing gold in accessible spans is a retrieval/coverage observation, not a proven policy or source root cause.',rows},null,2)+'\n')
+writeFileSync(join(target,'diagnoses.json'),JSON.stringify({authorityAudits,method:'Mutually exclusive diagnostic precedence; scores unchanged. Missing gold in accessible spans is a retrieval/coverage observation, not a proven policy or source root cause.',rows},null,2)+'\n')
 console.log(JSON.stringify(Object.fromEntries(['free','paid'].map(arm=>[arm,rows.filter(r=>r.arm===arm).reduce<Record<string,number>>((counts,r)=>{counts[r.taxonomy]=(counts[r.taxonomy]||0)+1;return counts},{})]))))
+
+if(authorityAudits.some(a=>a.violations.length))throw Error('Agent authority violations retained')
