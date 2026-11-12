@@ -9,14 +9,32 @@ try {
   const buyer = await funded(c), writer = await funded(c)
   const secret = randomBytes(32).toString('hex').toUpperCase(), condition = conditionFor(secret)
   const create = { TransactionType: 'EscrowCreate', Account: buyer.address, Destination: writer.address, Amount: '10000', Condition: condition, CancelAfter: await cancelAfter(c) }
-  const send = async (wallet, tx, options) => { const r = await submit(c, wallet, tx, options); records.push(r.record); save('b', { observations, records }); return r }
+  const send = async (wallet, tx, options) => {
+    const r = await submit(c, wallet, tx, options)
+    if (r.record.validated && r.record.tx.TransactionType === 'Batch') {
+      r.record.inner = []
+      for (const item of r.record.tx.RawTransactions) {
+        const hash = hashes.hashSignedTx(item.RawTransaction)
+        try {
+          const { result } = await c.request({ command: 'tx', transaction: hash, api_version: 2 })
+          r.record.inner.push({ hash, tx: result.tx_json, meta: result.meta, ledger: result.ledger_index })
+        } catch (error) {
+          if (error.data?.error !== 'txnNotFound') throw error
+          r.record.inner.push({ hash, error: 'txnNotFound' })
+        }
+      }
+    }
+    records.push(r.record); save('b', { observations, records }); return r
+  }
   const batch = inner => ({ TransactionType: 'Batch', Account: buyer.address, Flags: 65536, RawTransactions: inner.map(tx => ({ RawTransaction: { ...tx, Flags: 1073741824, Fee: '0', SigningPubKey: '' } })) })
   const b1 = await send(buyer, batch([create, { ...create, Amount: '20000' }]), { label: 'B1 two escrow creates' })
   assert.equal(b1.record.result, 'tesSUCCESS')
+  assert.ok(b1.record.inner.every(r => r.meta?.TransactionResult === 'tesSUCCESS'))
   observations.b1Created = (await escrows(c, buyer)).length; assert.equal(observations.b1Created, 2)
   const fail = await send(buyer, batch([create, { ...create, Amount: '99999999999999999' }]), { label: 'B1 failing second create' })
   observations.b1AfterFailed = (await escrows(c, buyer)).length
   assert.equal(observations.b1AfterFailed, 2)
+  assert.ok(fail.record.inner.every(r => r.error === 'txnNotFound'))
   observations.b1FailedMetadata = fail.meta
   const finish = { TransactionType: 'EscrowFinish', Account: writer.address, Owner: buyer.address, OfferSequence: 1, Condition: condition, Fulfillment: fulfillmentFor(secret) }
   const b2 = batch([create, finish])
@@ -33,6 +51,7 @@ try {
     }
   } })
   observations.b2Metadata = both.meta
+  assert.ok(both.record.inner.every(r => r.meta?.TransactionResult === 'tesSUCCESS'))
   observations.b2EscrowsAfter = (await escrows(c, buyer)).length
   const normalStart = performance.now(), normalLedger = await c.getLedgerIndex()
   const normal = await send(buyer, create, { label: 'B3 normal create' })

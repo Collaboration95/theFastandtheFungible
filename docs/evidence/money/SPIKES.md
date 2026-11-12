@@ -1,7 +1,7 @@
 # Money spikes — 12 November 2026
 
 A: **works** — delegated creation, writer finish, permission isolation and revocation observed on Testnet.
-B: **partial (interim)** — B1 atomicity passes; B2 SDK signing workaround and B3 timing in progress.
+B: **works with SDK workaround** — two creates are atomic; buyer create + writer finish validate together.
 C: **pending** — fresh issuer and full product purchase next.
 D: **fails** — official RLUSD issuers have locking disabled on both networks; TokenEscrow is enabled.
 
@@ -22,7 +22,7 @@ Exact permission name is `EscrowCreate` ([XRPL permission values](https://xrpl.o
 | revoke | tesSUCCESS | True | [B376A2CBBD7BEED9004195B954A7D56D2300D7C07961381A2F18B96F96FB9E60](https://testnet.xrpl.org/transactions/B376A2CBBD7BEED9004195B954A7D56D2300D7C07961381A2F18B96F96FB9E60) |
 | create after revocation | terNO_DELEGATE_PERMISSION | False | [AF1963BC9BC895CD009F2DCCB667DEDFCF77F5127ECD4969CFB6CBC0291D0686](https://testnet.xrpl.org/transactions/AF1963BC9BC895CD009F2DCCB667DEDFCF77F5127ECD4969CFB6CBC0291D0686) |
 
-## B — Batch (interim)
+## B — Batch
 
 B1 creates two escrows in one ALLORNOTHING batch. A second batch has a valid first create and an unaffordable second create: escrow count remains two, proving rollback. The **outer Batch returns tesSUCCESS even when inner work rolls back**. Product must check inner results and ledger objects, not treat outer success as purchase success.
 
@@ -31,7 +31,25 @@ B1 creates two escrows in one ALLORNOTHING batch. A second batch has a valid fir
 | B1 two escrow creates | tesSUCCESS | [68818DDC70F455E41C1677494EDE9E4573BF0511F642EA1EF472864C3841155B](https://testnet.xrpl.org/transactions/68818DDC70F455E41C1677494EDE9E4573BF0511F642EA1EF472864C3841155B) |
 | B1 failing second create | tesSUCCESS | [3C7E2C363AE54D3BAE9AA834B3AFAEA032D4F28165023D0C7A8A46B5B0F76DC8](https://testnet.xrpl.org/transactions/3C7E2C363AE54D3BAE9AA834B3AFAEA032D4F28165023D0C7A8A46B5B0F76DC8) |
 
-B2 initially stops before network submission: pinned xrpl.js 4.7.0 `signMultiBatch` supplies old signing fields to the resolved codec, which requires `account` and `sequence` (Batch V1_1). Error: `No field account`. Testing explicit signing payload with the codec exported by xrpl.js. Original B1 run retained in b-initial.json.
+B2 initially stops before network submission: pinned xrpl.js 4.7.0 `signMultiBatch` supplies old signing fields to the resolved codec, which requires `account` and `sequence` (Batch V1_1). Error: `No field account`. The explicit Batch V1_1 signing payload via xrpl exports works: outer Account/Sequence/Flags, inner transaction hashes, and writer batchAccount. Freeze all sequences and OfferSequence before signing. Buyer inner create Sequence is outer Sequence + 1; writer inner uses its own account Sequence. Escrow identity is owner + inner create Sequence, not outer Sequence or outer hash. Both inner transactions validate tesSUCCESS in ledger 22263740, linked to the same parent Batch. Product would need writer co-signing transport, durable sequence reservations and inner-result reconciliation. The fulfillment becomes public at signed submission, so this primitive does not alone prove safe delivery or holdback dispute release. Original B1 run retained in b-initial.json.
+
+Final run (b.json):
+
+| Step | Result | Hash |
+|---|---|---|
+| B1 two escrow creates | tesSUCCESS | [AD28CC333F7B353E2D7932B3CCE19DD127BDF56226E3D893631A27586FF4FAB0](https://testnet.xrpl.org/transactions/AD28CC333F7B353E2D7932B3CCE19DD127BDF56226E3D893631A27586FF4FAB0) |
+| inner EscrowCreate | tesSUCCESS | [82658938EE2BE58DDA6BD1B22362A0004B037958D956DFE5EB1503B4982F6556](https://testnet.xrpl.org/transactions/82658938EE2BE58DDA6BD1B22362A0004B037958D956DFE5EB1503B4982F6556) |
+| inner EscrowCreate | tesSUCCESS | [8037AAAEE6B212630C3B396EF90936002E5D369C71A3FE58E366C3E3AA4B7664](https://testnet.xrpl.org/transactions/8037AAAEE6B212630C3B396EF90936002E5D369C71A3FE58E366C3E3AA4B7664) |
+| B1 failing second create | tesSUCCESS | [7C162D61DE09381ED8B36E6DD25898D0E19AD728D75A894564D7F323B2955857](https://testnet.xrpl.org/transactions/7C162D61DE09381ED8B36E6DD25898D0E19AD728D75A894564D7F323B2955857) |
+| inner rolled back | txnNotFound | [231A278721E7FCC4FFC27A64CCB6CCACBF584CF5B78919D2FE84586DEB540F92](https://testnet.xrpl.org/transactions/231A278721E7FCC4FFC27A64CCB6CCACBF584CF5B78919D2FE84586DEB540F92) |
+| inner rolled back | txnNotFound | [156E2759E3E390019BF5EF18F06E088224A8CB00DED4E90057428264F7AC6798](https://testnet.xrpl.org/transactions/156E2759E3E390019BF5EF18F06E088224A8CB00DED4E90057428264F7AC6798) |
+| B2 create + writer finish | tesSUCCESS | [91650D3BC2F04BFC18C2F9429D29FF81E3781FAA6FA8707CDE335D1F8B6EBAF7](https://testnet.xrpl.org/transactions/91650D3BC2F04BFC18C2F9429D29FF81E3781FAA6FA8707CDE335D1F8B6EBAF7) |
+| inner EscrowCreate | tesSUCCESS | [91F0B5660AAD9E4B4600C4C1FB79A450FF98D11C62C95C036C2F58610B00CBDF](https://testnet.xrpl.org/transactions/91F0B5660AAD9E4B4600C4C1FB79A450FF98D11C62C95C036C2F58610B00CBDF) |
+| inner EscrowFinish | tesSUCCESS | [A2839CF6B29A8E4BF77D52350BE3B45294B00BA621490217C91F2CED9C585277](https://testnet.xrpl.org/transactions/A2839CF6B29A8E4BF77D52350BE3B45294B00BA621490217C91F2CED9C585277) |
+| B3 normal create | tesSUCCESS | [6DF75C612AA9E12632D39A24BADD32C29619EA53638BE54CDD2479390A54B68A](https://testnet.xrpl.org/transactions/6DF75C612AA9E12632D39A24BADD32C29619EA53638BE54CDD2479390A54B68A) |
+| B3 normal finish | tesSUCCESS | [6628BDC02B29DDB492555D37A0B120464BE60AA13310A75ED57AA6FD5C2D2DC1](https://testnet.xrpl.org/transactions/6628BDC02B29DDB492555D37A0B120464BE60AA13310A75ED57AA6FD5C2D2DC1) |
+
+B3 single observation: normal create/finish **14,202 ms / 4 validated-ledger advances**; successful create+finish Batch **6,242 ms / 2 advances**. Polling/client round trips and ledger alignment are included, no throughput or percentile claim. Both Batch inner transactions occupy one ledger; normal transactions occupy two. Rolled-back inner hashes are not present on ledger; no inner failure code is published for this ALLORNOTHING rollback. Outer Fee 459 drops for create+finish, 48 for two creates.
 
 ## C — product TEST-SGD purchase
 

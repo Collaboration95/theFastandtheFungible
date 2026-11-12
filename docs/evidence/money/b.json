@@ -1,6 +1,73 @@
 {
+  "verdict": "works",
+  "at": "2026-11-12T08:59:18.108Z",
+  "buyer": "rBjojgnG6cFXRovSPhpmxPh5zNPL7H63ov",
+  "writer": "rsMhhSwKwaqj8NQJEgdFZLLjmrdeRCBR92",
   "observations": {
-    "b1Created": 2
+    "b1Created": 2,
+    "b1AfterFailed": 2,
+    "b1FailedMetadata": {
+      "AffectedNodes": [
+        {
+          "ModifiedNode": {
+            "FinalFields": {
+              "Account": "rBjojgnG6cFXRovSPhpmxPh5zNPL7H63ov",
+              "Balance": "99969904",
+              "Flags": 0,
+              "OwnerCount": 2,
+              "Sequence": 22263736
+            },
+            "LedgerEntryType": "AccountRoot",
+            "LedgerIndex": "FF735CAFE916C3CF205DDDE9D7ACF19D10FD2FE8BAA2EFD14FF9415D17F0EF10",
+            "PreviousFields": {
+              "Balance": "99969952",
+              "Sequence": 22263735
+            },
+            "PreviousTxnID": "8037AAAEE6B212630C3B396EF90936002E5D369C71A3FE58E366C3E3AA4B7664",
+            "PreviousTxnLgrSeq": 22263736
+          }
+        }
+      ],
+      "TransactionIndex": 8,
+      "TransactionResult": "tesSUCCESS"
+    },
+    "sdkSigningError": "No field `account`",
+    "b2Metadata": {
+      "AffectedNodes": [
+        {
+          "ModifiedNode": {
+            "FinalFields": {
+              "Account": "rBjojgnG6cFXRovSPhpmxPh5zNPL7H63ov",
+              "Balance": "99969445",
+              "Flags": 0,
+              "OwnerCount": 2,
+              "Sequence": 22263737
+            },
+            "LedgerEntryType": "AccountRoot",
+            "LedgerIndex": "FF735CAFE916C3CF205DDDE9D7ACF19D10FD2FE8BAA2EFD14FF9415D17F0EF10",
+            "PreviousFields": {
+              "Balance": "99969904",
+              "Sequence": 22263736
+            },
+            "PreviousTxnID": "7C162D61DE09381ED8B36E6DD25898D0E19AD728D75A894564D7F323B2955857",
+            "PreviousTxnLgrSeq": 22263738
+          }
+        }
+      ],
+      "TransactionIndex": 9,
+      "TransactionResult": "tesSUCCESS"
+    },
+    "b2EscrowsAfter": 2,
+    "normal": {
+      "ms": 14202,
+      "ledgers": 4
+    },
+    "batch": {
+      "ms": 6242,
+      "ledgers": 2,
+      "result": "tesSUCCESS",
+      "createsRemaining": 0
+    }
   },
   "records": [
     {
@@ -50,7 +117,189 @@
         "Sequence": 22263732,
         "LastLedgerSequence": 22263754,
         "Fee": "48"
-      }
+      },
+      "inner": [
+        {
+          "hash": "82658938EE2BE58DDA6BD1B22362A0004B037958D956DFE5EB1503B4982F6556",
+          "tx": {
+            "Account": "rBjojgnG6cFXRovSPhpmxPh5zNPL7H63ov",
+            "Amount": "10000",
+            "CancelAfter": 847789421,
+            "Condition": "A0258020754AFBB6001C499D92F82996811540214F63CE4B146F1F70C833292CD63DEC49810120",
+            "Destination": "rsMhhSwKwaqj8NQJEgdFZLLjmrdeRCBR92",
+            "Fee": "0",
+            "Flags": 1073741824,
+            "Sequence": 22263733,
+            "SigningPubKey": "",
+            "TransactionType": "EscrowCreate",
+            "date": 847789130,
+            "ledger_index": 22263736
+          },
+          "meta": {
+            "AffectedNodes": [
+              {
+                "ModifiedNode": {
+                  "LedgerEntryType": "AccountRoot",
+                  "LedgerIndex": "193EE5EF7E45D014E3F05C82DAB2889859936A6BE909818B1C7523DF3E80A6EF",
+                  "PreviousTxnID": "96F796434B2F1D585A6C71EC01963A6A68A3F331B3B325CEDF96A2A9BCA75CF9",
+                  "PreviousTxnLgrSeq": 22263734
+                }
+              },
+              {
+                "CreatedNode": {
+                  "LedgerEntryType": "DirectoryNode",
+                  "LedgerIndex": "47021AA741F52B960CC74D2998CE9EBB57399382A78B2A53396015ABB6F2FC06",
+                  "NewFields": {
+                    "Owner": "rBjojgnG6cFXRovSPhpmxPh5zNPL7H63ov",
+                    "RootIndex": "47021AA741F52B960CC74D2998CE9EBB57399382A78B2A53396015ABB6F2FC06"
+                  }
+                }
+              },
+              {
+                "CreatedNode": {
+                  "LedgerEntryType": "DirectoryNode",
+                  "LedgerIndex": "B668C94245A0B4706C63CB49A3489584603D1EAE14ED0B4B30D140BE56CE9941",
+                  "NewFields": {
+                    "Owner": "rsMhhSwKwaqj8NQJEgdFZLLjmrdeRCBR92",
+                    "RootIndex": "B668C94245A0B4706C63CB49A3489584603D1EAE14ED0B4B30D140BE56CE9941"
+                  }
+                }
+              },
+              {
+                "CreatedNode": {
+                  "LedgerEntryType": "Escrow",
+                  "LedgerIndex": "D472C0B0C3D88C12CA5D1B8333789C421E8ACB654311E8D9E1EB614A0F2EE38F",
+                  "NewFields": {
+                    "Account": "rBjojgnG6cFXRovSPhpmxPh5zNPL7H63ov",
+                    "Amount": "10000",
+                    "CancelAfter": 847789421,
+                    "Condition": "A0258020754AFBB6001C499D92F82996811540214F63CE4B146F1F70C833292CD63DEC49810120",
+                    "Destination": "rsMhhSwKwaqj8NQJEgdFZLLjmrdeRCBR92",
+                    "Sequence": 22263733
+                  }
+                }
+              },
+              {
+                "ModifiedNode": {
+                  "FinalFields": {
+                    "Account": "rBjojgnG6cFXRovSPhpmxPh5zNPL7H63ov",
+                    "Balance": "99989952",
+                    "Flags": 0,
+                    "OwnerCount": 1,
+                    "Sequence": 22263734
+                  },
+                  "LedgerEntryType": "AccountRoot",
+                  "LedgerIndex": "FF735CAFE916C3CF205DDDE9D7ACF19D10FD2FE8BAA2EFD14FF9415D17F0EF10",
+                  "PreviousFields": {
+                    "Balance": "99999952",
+                    "OwnerCount": 0,
+                    "Sequence": 22263733
+                  },
+                  "PreviousTxnID": "AD28CC333F7B353E2D7932B3CCE19DD127BDF56226E3D893631A27586FF4FAB0",
+                  "PreviousTxnLgrSeq": 22263736
+                }
+              }
+            ],
+            "ParentBatchID": "AD28CC333F7B353E2D7932B3CCE19DD127BDF56226E3D893631A27586FF4FAB0",
+            "TransactionIndex": 2,
+            "TransactionResult": "tesSUCCESS"
+          },
+          "ledger": 22263736
+        },
+        {
+          "hash": "8037AAAEE6B212630C3B396EF90936002E5D369C71A3FE58E366C3E3AA4B7664",
+          "tx": {
+            "Account": "rBjojgnG6cFXRovSPhpmxPh5zNPL7H63ov",
+            "Amount": "20000",
+            "CancelAfter": 847789421,
+            "Condition": "A0258020754AFBB6001C499D92F82996811540214F63CE4B146F1F70C833292CD63DEC49810120",
+            "Destination": "rsMhhSwKwaqj8NQJEgdFZLLjmrdeRCBR92",
+            "Fee": "0",
+            "Flags": 1073741824,
+            "Sequence": 22263734,
+            "SigningPubKey": "",
+            "TransactionType": "EscrowCreate",
+            "date": 847789130,
+            "ledger_index": 22263736
+          },
+          "meta": {
+            "AffectedNodes": [
+              {
+                "ModifiedNode": {
+                  "LedgerEntryType": "AccountRoot",
+                  "LedgerIndex": "193EE5EF7E45D014E3F05C82DAB2889859936A6BE909818B1C7523DF3E80A6EF",
+                  "PreviousTxnID": "82658938EE2BE58DDA6BD1B22362A0004B037958D956DFE5EB1503B4982F6556",
+                  "PreviousTxnLgrSeq": 22263736
+                }
+              },
+              {
+                "CreatedNode": {
+                  "LedgerEntryType": "Escrow",
+                  "LedgerIndex": "28E1980C1E20262AB7C71491AE601D0B8965A5954B81817696B0410CAD55E098",
+                  "NewFields": {
+                    "Account": "rBjojgnG6cFXRovSPhpmxPh5zNPL7H63ov",
+                    "Amount": "20000",
+                    "CancelAfter": 847789421,
+                    "Condition": "A0258020754AFBB6001C499D92F82996811540214F63CE4B146F1F70C833292CD63DEC49810120",
+                    "Destination": "rsMhhSwKwaqj8NQJEgdFZLLjmrdeRCBR92",
+                    "Sequence": 22263734
+                  }
+                }
+              },
+              {
+                "ModifiedNode": {
+                  "FinalFields": {
+                    "Flags": 0,
+                    "Owner": "rBjojgnG6cFXRovSPhpmxPh5zNPL7H63ov",
+                    "RootIndex": "47021AA741F52B960CC74D2998CE9EBB57399382A78B2A53396015ABB6F2FC06"
+                  },
+                  "LedgerEntryType": "DirectoryNode",
+                  "LedgerIndex": "47021AA741F52B960CC74D2998CE9EBB57399382A78B2A53396015ABB6F2FC06",
+                  "PreviousTxnID": "82658938EE2BE58DDA6BD1B22362A0004B037958D956DFE5EB1503B4982F6556",
+                  "PreviousTxnLgrSeq": 22263736
+                }
+              },
+              {
+                "ModifiedNode": {
+                  "FinalFields": {
+                    "Flags": 0,
+                    "Owner": "rsMhhSwKwaqj8NQJEgdFZLLjmrdeRCBR92",
+                    "RootIndex": "B668C94245A0B4706C63CB49A3489584603D1EAE14ED0B4B30D140BE56CE9941"
+                  },
+                  "LedgerEntryType": "DirectoryNode",
+                  "LedgerIndex": "B668C94245A0B4706C63CB49A3489584603D1EAE14ED0B4B30D140BE56CE9941",
+                  "PreviousTxnID": "82658938EE2BE58DDA6BD1B22362A0004B037958D956DFE5EB1503B4982F6556",
+                  "PreviousTxnLgrSeq": 22263736
+                }
+              },
+              {
+                "ModifiedNode": {
+                  "FinalFields": {
+                    "Account": "rBjojgnG6cFXRovSPhpmxPh5zNPL7H63ov",
+                    "Balance": "99969952",
+                    "Flags": 0,
+                    "OwnerCount": 2,
+                    "Sequence": 22263735
+                  },
+                  "LedgerEntryType": "AccountRoot",
+                  "LedgerIndex": "FF735CAFE916C3CF205DDDE9D7ACF19D10FD2FE8BAA2EFD14FF9415D17F0EF10",
+                  "PreviousFields": {
+                    "Balance": "99989952",
+                    "OwnerCount": 1,
+                    "Sequence": 22263734
+                  },
+                  "PreviousTxnID": "82658938EE2BE58DDA6BD1B22362A0004B037958D956DFE5EB1503B4982F6556",
+                  "PreviousTxnLgrSeq": 22263736
+                }
+              }
+            ],
+            "ParentBatchID": "AD28CC333F7B353E2D7932B3CCE19DD127BDF56226E3D893631A27586FF4FAB0",
+            "TransactionIndex": 3,
+            "TransactionResult": "tesSUCCESS"
+          },
+          "ledger": 22263736
+        }
+      ]
     },
     {
       "label": "B1 failing second create",
@@ -99,6 +348,322 @@
         "Sequence": 22263735,
         "LastLedgerSequence": 22263756,
         "Fee": "48"
+      },
+      "inner": [
+        {
+          "hash": "231A278721E7FCC4FFC27A64CCB6CCACBF584CF5B78919D2FE84586DEB540F92",
+          "error": "txnNotFound"
+        },
+        {
+          "hash": "156E2759E3E390019BF5EF18F06E088224A8CB00DED4E90057428264F7AC6798",
+          "error": "txnNotFound"
+        }
+      ]
+    },
+    {
+      "label": "B2 create + writer finish",
+      "hash": "91650D3BC2F04BFC18C2F9429D29FF81E3781FAA6FA8707CDE335D1F8B6EBAF7",
+      "explorer": "https://testnet.xrpl.org/transactions/91650D3BC2F04BFC18C2F9429D29FF81E3781FAA6FA8707CDE335D1F8B6EBAF7",
+      "engine": "tesSUCCESS",
+      "validated": true,
+      "result": "tesSUCCESS",
+      "ledger": 22263740,
+      "ledgers": 2,
+      "ms": 6242,
+      "tx": {
+        "TransactionType": "Batch",
+        "Account": "rBjojgnG6cFXRovSPhpmxPh5zNPL7H63ov",
+        "Flags": 65536,
+        "RawTransactions": [
+          {
+            "RawTransaction": {
+              "TransactionType": "EscrowCreate",
+              "Account": "rBjojgnG6cFXRovSPhpmxPh5zNPL7H63ov",
+              "Destination": "rsMhhSwKwaqj8NQJEgdFZLLjmrdeRCBR92",
+              "Amount": "10000",
+              "Condition": "A0258020754AFBB6001C499D92F82996811540214F63CE4B146F1F70C833292CD63DEC49810120",
+              "CancelAfter": 847789421,
+              "Flags": 1073741824,
+              "Fee": "0",
+              "SigningPubKey": "",
+              "Sequence": 22263737
+            }
+          },
+          {
+            "RawTransaction": {
+              "TransactionType": "EscrowFinish",
+              "Account": "rsMhhSwKwaqj8NQJEgdFZLLjmrdeRCBR92",
+              "Owner": "rBjojgnG6cFXRovSPhpmxPh5zNPL7H63ov",
+              "OfferSequence": 22263737,
+              "Condition": "A0258020754AFBB6001C499D92F82996811540214F63CE4B146F1F70C833292CD63DEC49810120",
+              "Fulfillment": "A0228020D024D7A2B3A7EDB7742170B1AE1F273935B6C5800D9E6458F3F60BEABEA4FE2F",
+              "Flags": 1073741824,
+              "Fee": "0",
+              "SigningPubKey": "",
+              "Sequence": 22263734
+            }
+          }
+        ],
+        "Sequence": 22263736,
+        "LastLedgerSequence": 22263758,
+        "Fee": "459",
+        "BatchSigners": [
+          {
+            "BatchSigner": {
+              "Account": "rsMhhSwKwaqj8NQJEgdFZLLjmrdeRCBR92",
+              "SigningPubKey": "ED8D5C0577F4F14077E09BFE1E4E8FC298B23CE51BD6CCC62E8B06ADFAC39EB6FF",
+              "TxnSignature": "A693E5A46C618DD50B9FF96BD59AFE82CBDB48F58582F90CD47E55D8100D2AC940CE905622D3763D2551CDAEEA41C98CBC0881E7947426E88920D44AF441DD04"
+            }
+          }
+        ]
+      },
+      "inner": [
+        {
+          "hash": "91F0B5660AAD9E4B4600C4C1FB79A450FF98D11C62C95C036C2F58610B00CBDF",
+          "tx": {
+            "Account": "rBjojgnG6cFXRovSPhpmxPh5zNPL7H63ov",
+            "Amount": "10000",
+            "CancelAfter": 847789421,
+            "Condition": "A0258020754AFBB6001C499D92F82996811540214F63CE4B146F1F70C833292CD63DEC49810120",
+            "Destination": "rsMhhSwKwaqj8NQJEgdFZLLjmrdeRCBR92",
+            "Fee": "0",
+            "Flags": 1073741824,
+            "Sequence": 22263737,
+            "SigningPubKey": "",
+            "TransactionType": "EscrowCreate",
+            "date": 847789141,
+            "ledger_index": 22263740
+          },
+          "meta": {
+            "AffectedNodes": [
+              {
+                "ModifiedNode": {
+                  "LedgerEntryType": "AccountRoot",
+                  "LedgerIndex": "193EE5EF7E45D014E3F05C82DAB2889859936A6BE909818B1C7523DF3E80A6EF",
+                  "PreviousTxnID": "8037AAAEE6B212630C3B396EF90936002E5D369C71A3FE58E366C3E3AA4B7664",
+                  "PreviousTxnLgrSeq": 22263736
+                }
+              },
+              {
+                "CreatedNode": {
+                  "LedgerEntryType": "Escrow",
+                  "LedgerIndex": "39C1322CCA3186FD7454A03FD873A371E6448303DF438709C1E8F0F3F18F80A4",
+                  "NewFields": {
+                    "Account": "rBjojgnG6cFXRovSPhpmxPh5zNPL7H63ov",
+                    "Amount": "10000",
+                    "CancelAfter": 847789421,
+                    "Condition": "A0258020754AFBB6001C499D92F82996811540214F63CE4B146F1F70C833292CD63DEC49810120",
+                    "Destination": "rsMhhSwKwaqj8NQJEgdFZLLjmrdeRCBR92",
+                    "Sequence": 22263737
+                  }
+                }
+              },
+              {
+                "ModifiedNode": {
+                  "FinalFields": {
+                    "Flags": 0,
+                    "Owner": "rBjojgnG6cFXRovSPhpmxPh5zNPL7H63ov",
+                    "RootIndex": "47021AA741F52B960CC74D2998CE9EBB57399382A78B2A53396015ABB6F2FC06"
+                  },
+                  "LedgerEntryType": "DirectoryNode",
+                  "LedgerIndex": "47021AA741F52B960CC74D2998CE9EBB57399382A78B2A53396015ABB6F2FC06",
+                  "PreviousTxnID": "8037AAAEE6B212630C3B396EF90936002E5D369C71A3FE58E366C3E3AA4B7664",
+                  "PreviousTxnLgrSeq": 22263736
+                }
+              },
+              {
+                "ModifiedNode": {
+                  "FinalFields": {
+                    "Flags": 0,
+                    "Owner": "rsMhhSwKwaqj8NQJEgdFZLLjmrdeRCBR92",
+                    "RootIndex": "B668C94245A0B4706C63CB49A3489584603D1EAE14ED0B4B30D140BE56CE9941"
+                  },
+                  "LedgerEntryType": "DirectoryNode",
+                  "LedgerIndex": "B668C94245A0B4706C63CB49A3489584603D1EAE14ED0B4B30D140BE56CE9941",
+                  "PreviousTxnID": "8037AAAEE6B212630C3B396EF90936002E5D369C71A3FE58E366C3E3AA4B7664",
+                  "PreviousTxnLgrSeq": 22263736
+                }
+              },
+              {
+                "ModifiedNode": {
+                  "FinalFields": {
+                    "Account": "rBjojgnG6cFXRovSPhpmxPh5zNPL7H63ov",
+                    "Balance": "99959445",
+                    "Flags": 0,
+                    "OwnerCount": 3,
+                    "Sequence": 22263738
+                  },
+                  "LedgerEntryType": "AccountRoot",
+                  "LedgerIndex": "FF735CAFE916C3CF205DDDE9D7ACF19D10FD2FE8BAA2EFD14FF9415D17F0EF10",
+                  "PreviousFields": {
+                    "Balance": "99969445",
+                    "OwnerCount": 2,
+                    "Sequence": 22263737
+                  },
+                  "PreviousTxnID": "91650D3BC2F04BFC18C2F9429D29FF81E3781FAA6FA8707CDE335D1F8B6EBAF7",
+                  "PreviousTxnLgrSeq": 22263740
+                }
+              }
+            ],
+            "ParentBatchID": "91650D3BC2F04BFC18C2F9429D29FF81E3781FAA6FA8707CDE335D1F8B6EBAF7",
+            "TransactionIndex": 10,
+            "TransactionResult": "tesSUCCESS"
+          },
+          "ledger": 22263740
+        },
+        {
+          "hash": "A2839CF6B29A8E4BF77D52350BE3B45294B00BA621490217C91F2CED9C585277",
+          "tx": {
+            "Account": "rsMhhSwKwaqj8NQJEgdFZLLjmrdeRCBR92",
+            "Condition": "A0258020754AFBB6001C499D92F82996811540214F63CE4B146F1F70C833292CD63DEC49810120",
+            "Fee": "0",
+            "Flags": 1073741824,
+            "Fulfillment": "A0228020D024D7A2B3A7EDB7742170B1AE1F273935B6C5800D9E6458F3F60BEABEA4FE2F",
+            "OfferSequence": 22263737,
+            "Owner": "rBjojgnG6cFXRovSPhpmxPh5zNPL7H63ov",
+            "Sequence": 22263734,
+            "SigningPubKey": "",
+            "TransactionType": "EscrowFinish",
+            "date": 847789141,
+            "ledger_index": 22263740
+          },
+          "meta": {
+            "AffectedNodes": [
+              {
+                "ModifiedNode": {
+                  "FinalFields": {
+                    "Account": "rsMhhSwKwaqj8NQJEgdFZLLjmrdeRCBR92",
+                    "Balance": "100010000",
+                    "Flags": 0,
+                    "OwnerCount": 0,
+                    "Sequence": 22263735
+                  },
+                  "LedgerEntryType": "AccountRoot",
+                  "LedgerIndex": "193EE5EF7E45D014E3F05C82DAB2889859936A6BE909818B1C7523DF3E80A6EF",
+                  "PreviousFields": {
+                    "Balance": "100000000",
+                    "Sequence": 22263734
+                  },
+                  "PreviousTxnID": "91F0B5660AAD9E4B4600C4C1FB79A450FF98D11C62C95C036C2F58610B00CBDF",
+                  "PreviousTxnLgrSeq": 22263740
+                }
+              },
+              {
+                "DeletedNode": {
+                  "FinalFields": {
+                    "Account": "rBjojgnG6cFXRovSPhpmxPh5zNPL7H63ov",
+                    "Amount": "10000",
+                    "CancelAfter": 847789421,
+                    "Condition": "A0258020754AFBB6001C499D92F82996811540214F63CE4B146F1F70C833292CD63DEC49810120",
+                    "Destination": "rsMhhSwKwaqj8NQJEgdFZLLjmrdeRCBR92",
+                    "DestinationNode": "0",
+                    "Flags": 0,
+                    "OwnerNode": "0",
+                    "PreviousTxnID": "91F0B5660AAD9E4B4600C4C1FB79A450FF98D11C62C95C036C2F58610B00CBDF",
+                    "PreviousTxnLgrSeq": 22263740,
+                    "Sequence": 22263737
+                  },
+                  "LedgerEntryType": "Escrow",
+                  "LedgerIndex": "39C1322CCA3186FD7454A03FD873A371E6448303DF438709C1E8F0F3F18F80A4"
+                }
+              },
+              {
+                "ModifiedNode": {
+                  "FinalFields": {
+                    "Flags": 0,
+                    "Owner": "rBjojgnG6cFXRovSPhpmxPh5zNPL7H63ov",
+                    "RootIndex": "47021AA741F52B960CC74D2998CE9EBB57399382A78B2A53396015ABB6F2FC06"
+                  },
+                  "LedgerEntryType": "DirectoryNode",
+                  "LedgerIndex": "47021AA741F52B960CC74D2998CE9EBB57399382A78B2A53396015ABB6F2FC06",
+                  "PreviousTxnID": "91F0B5660AAD9E4B4600C4C1FB79A450FF98D11C62C95C036C2F58610B00CBDF",
+                  "PreviousTxnLgrSeq": 22263740
+                }
+              },
+              {
+                "ModifiedNode": {
+                  "FinalFields": {
+                    "Flags": 0,
+                    "Owner": "rsMhhSwKwaqj8NQJEgdFZLLjmrdeRCBR92",
+                    "RootIndex": "B668C94245A0B4706C63CB49A3489584603D1EAE14ED0B4B30D140BE56CE9941"
+                  },
+                  "LedgerEntryType": "DirectoryNode",
+                  "LedgerIndex": "B668C94245A0B4706C63CB49A3489584603D1EAE14ED0B4B30D140BE56CE9941",
+                  "PreviousTxnID": "91F0B5660AAD9E4B4600C4C1FB79A450FF98D11C62C95C036C2F58610B00CBDF",
+                  "PreviousTxnLgrSeq": 22263740
+                }
+              },
+              {
+                "ModifiedNode": {
+                  "FinalFields": {
+                    "Account": "rBjojgnG6cFXRovSPhpmxPh5zNPL7H63ov",
+                    "Balance": "99959445",
+                    "Flags": 0,
+                    "OwnerCount": 2,
+                    "Sequence": 22263738
+                  },
+                  "LedgerEntryType": "AccountRoot",
+                  "LedgerIndex": "FF735CAFE916C3CF205DDDE9D7ACF19D10FD2FE8BAA2EFD14FF9415D17F0EF10",
+                  "PreviousFields": {
+                    "OwnerCount": 3
+                  },
+                  "PreviousTxnID": "91F0B5660AAD9E4B4600C4C1FB79A450FF98D11C62C95C036C2F58610B00CBDF",
+                  "PreviousTxnLgrSeq": 22263740
+                }
+              }
+            ],
+            "ParentBatchID": "91650D3BC2F04BFC18C2F9429D29FF81E3781FAA6FA8707CDE335D1F8B6EBAF7",
+            "TransactionIndex": 11,
+            "TransactionResult": "tesSUCCESS"
+          },
+          "ledger": 22263740
+        }
+      ]
+    },
+    {
+      "label": "B3 normal create",
+      "hash": "6DF75C612AA9E12632D39A24BADD32C29619EA53638BE54CDD2479390A54B68A",
+      "explorer": "https://testnet.xrpl.org/transactions/6DF75C612AA9E12632D39A24BADD32C29619EA53638BE54CDD2479390A54B68A",
+      "engine": "tesSUCCESS",
+      "validated": true,
+      "result": "tesSUCCESS",
+      "ledger": 22263742,
+      "ledgers": 2,
+      "ms": 6265,
+      "tx": {
+        "TransactionType": "EscrowCreate",
+        "Account": "rBjojgnG6cFXRovSPhpmxPh5zNPL7H63ov",
+        "Destination": "rsMhhSwKwaqj8NQJEgdFZLLjmrdeRCBR92",
+        "Amount": "10000",
+        "Condition": "A0258020754AFBB6001C499D92F82996811540214F63CE4B146F1F70C833292CD63DEC49810120",
+        "CancelAfter": 847789421,
+        "Flags": 0,
+        "Sequence": 22263738,
+        "Fee": "12",
+        "LastLedgerSequence": 22263760
+      }
+    },
+    {
+      "label": "B3 normal finish",
+      "hash": "6628BDC02B29DDB492555D37A0B120464BE60AA13310A75ED57AA6FD5C2D2DC1",
+      "explorer": "https://testnet.xrpl.org/transactions/6628BDC02B29DDB492555D37A0B120464BE60AA13310A75ED57AA6FD5C2D2DC1",
+      "engine": "tesSUCCESS",
+      "validated": true,
+      "result": "tesSUCCESS",
+      "ledger": 22263744,
+      "ledgers": 2,
+      "ms": 6361,
+      "tx": {
+        "TransactionType": "EscrowFinish",
+        "Account": "rsMhhSwKwaqj8NQJEgdFZLLjmrdeRCBR92",
+        "Owner": "rBjojgnG6cFXRovSPhpmxPh5zNPL7H63ov",
+        "OfferSequence": 22263738,
+        "Condition": "A0258020754AFBB6001C499D92F82996811540214F63CE4B146F1F70C833292CD63DEC49810120",
+        "Fulfillment": "A0228020D024D7A2B3A7EDB7742170B1AE1F273935B6C5800D9E6458F3F60BEABEA4FE2F",
+        "Flags": 0,
+        "Sequence": 22263735,
+        "Fee": "423",
+        "LastLedgerSequence": 22263762
       }
     }
   ]
