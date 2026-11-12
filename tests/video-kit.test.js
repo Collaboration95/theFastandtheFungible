@@ -178,7 +178,11 @@ describe('the video stays honest', () => {
     expect(words).toBeLessThan(360)
   })
   it('reuses the refusal voice-file ID for zero-question verification and preserves the optional safe decline', () => {
-    expect(spec.shots.find(s => s.id === 's3b-refusal').segments.every(s => s.scene === 'judges-corner')).toBe(true)
+    const corner = spec.shots.find(s => s.id === 's3b-refusal')
+    expect(corner.segments.every(s => s.scene === 'hosted-ask')).toBe(true)
+    expect(corner.label).toContain('featured run 421bae3d · 12 Nov · 5/5 gates Held')
+    expect(corner.vo).toContain('twenty-four checks passed and two not checked')
+    expect(spec.shots.indexOf(corner)).toBeLessThan(spec.shots.findIndex(s => s.id === 's2-sandbox'))
     // "outlook" and "prices" match the open central-bank records, which answer from free sources and leave no refusal to prove.
     expect(QUESTIONS.decline).not.toMatch(/\b(outlook|prices?|rates?|yields?|bonds?|bank|inflation|forecast)\b/i)
     for (const question of [QUESTIONS.buy, QUESTIONS.decline]) expect(norm(script), question).toContain(norm(question.replace(/\s+/g, ' ')))
@@ -193,14 +197,20 @@ describe('the video stays honest', () => {
     const hosted = spec.shots.find(s => s.id === 's2-sandbox')
     expect(hosted.vo).toContain(QUESTIONS.buy)
     expect(hosted.vo).toContain('S$0.40')
+    expect(hosted.vo).toContain('20.7 seconds')
     expect(hosted.deferred).toBeUndefined()
-    const guide = readFileSync(join(root, 'docs/submission/video/README.md'), 'utf8')
-    for (const text of [script, guide]) {
-      expect(text).toContain(QUESTIONS.buy)
-      expect(text).toContain('the writer gets paid by publishing the article\'s key on the XRP Ledger')
-      expect(text).toContain('https://testnet.xrpl.org/transactions/BC2B4BAD2D7E7615E3A3B6A74888899F433615EE99D4E0ACD75F5CC9C2BA9F01')
-      expect(text).toContain('T3-1')
+    expect(script).toContain('0fe8cdb8-541e-4c7b-80c6-854c73cfb4f6')
+    expect(script).toContain('https://testnet.xrpl.org/transactions/60D4CA28A9BCB7E1C792CF71261AAEE520CAE117245F9E32E12259D05E1B814C')
+    expect(script).toContain('421bae3d-564c-48f8-b5e8-5034b195860a')
+  })
+  it('describes the shared key without an absolute secrecy claim and qualifies domain excerpts', () => {
+    const voice = readFileSync(join(root, 'docs/submission/video/voiceover.txt'), 'utf8')
+    for (const text of [script, voice, ...spec.shots.map(s => s.vo)]) {
+      expect(text).not.toContain('an agent cannot read the article unless the writer is paid')
+      expect(text).not.toMatch(/(?<!Testnet )Permissioned Domain/)
     }
+    expect(spec.shots.find(s => s.id === 's2-sandbox').vo).toContain("The key that unlocks the article is the same key that releases the writer's payment.")
+    expect(voice).toContain('Signed submission can expose the key before validation.')
   })
   it('starts terminal sessions from an allowlist: no key, token or seed is inherited', () => {
     const before = { ...process.env }

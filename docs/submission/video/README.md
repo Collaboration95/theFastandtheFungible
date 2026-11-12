@@ -168,10 +168,22 @@ configured buying mode from each answer's provenance. No UI text was substituted
 Artifacts are in `video-out/vid-4`: a full-length **NOVOICE review cut** retains
 observed hosted footage and explicitly marks the missing same-run Trace segment.
 It is not the completed submission video. VID-3 clips retain their original
-local/replay/published-tool labels. Owner text is unchanged because the observed
-one-article **S$0.40** purchase agrees with s2. Owner voice remains tracked in #265.
+local/replay/published-tool labels. The full cut now uses the captured **12 Nov**
+featured run `421bae3d` for the zero-question corner, before the ask. Its speech
+and captions say **5/5 gates Held**, **24 passed, 2 not checked**. The fresh ask
+keeps its own **20.7 s**, **one article, S$0.40**; it does not inherit the featured
+run's 31.1-second timing. Owner voice remains tracked in #265.
+
+The final script, voiceover, shots, captions and VID-4 owner read sheet use:
+“The key that unlocks the article is the same key that releases the writer's
+payment.” The app grants access after validated success; signed public submission
+can expose the key before final validation. The earlier T3-1 quotation above is
+historical answer text, not a network-secrecy guarantee or the final voice line.
+Domain excerpts say **Testnet Permissioned Domain**. The owner sheet now points
+to `video-out/vid-4/voice/owner` and contains the final read text.
 
 For a review cut with external shot edits and captions, the assembler accepts
 `--spec /absolute/path/shots.json --docs-out /absolute/path/captions`. This avoids
-rewriting FIN-owned captions, voice text and timing files. No synthetic voice,
+rewriting unrelated files. The orchestrator assigned the video script, voice text,
+shots and captions to VID-4 for the final cold-read corrections. No synthetic voice,
 video files, product/UI/server changes, or relaxed gates are included in this PR.
