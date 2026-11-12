@@ -1,3 +1,4 @@
+import { publicFeedRouter } from './api/feed.js'
 import { writeSse, endSse, sseBufferedBytes } from './api/sse.js'
 import { writersRouter } from './api/writers.js'
 import { hostedWriterPages } from './hosted/writers.js'
@@ -112,6 +113,8 @@ async function createConfiguredApi(options: ApiOptions = {}) {
   }
   // Every durable event is also mirrored into the active Langfuse trace (a no-op when tracing is off).
   const store = new Store(options.dbPath ?? config.APP_DB ?? 'data/app.db', event => { try { traceEvent(event); logMoneyEvent(event, store) } catch { /* telemetry never blocks the run */ } publish(event) })
+  const feed = config.PUBLIC_FEED === '1' ? publicFeedRouter(store) : undefined
+  if (feed) app.use(feed.router)
   const hosted = config.HOSTED === '1' ? new HostedLimits(store, config) : undefined
   const queue = hosted ? new HostedQueue(config) : undefined
   if (hosted) {
@@ -350,7 +353,7 @@ async function createConfiguredApi(options: ApiOptions = {}) {
     snapshotTimers.clear(); lastSnapshot.clear(); terminalSnapshots.clear()
     for (const set of streams.values()) for (const res of set) endSse(res)
     hire.close()
-    store.close()
+    feed?.close(); store.close()
     await (payer?.ledger as { close?: () => Promise<void> } | undefined)?.close?.()
   })() }
 }

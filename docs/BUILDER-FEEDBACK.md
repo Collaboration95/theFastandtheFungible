@@ -1221,3 +1221,11 @@ persistence or a mainnet deployment. No cloud resource or live ledger call ran.
 - **Workaround / fix:** lazy-load optional UI to reach 159,261 bytes on Node 22; share the manifest/gzip calculation between production builds and deploy performance checks, require Node 22, and preserve the existing threshold.
 - **Suggested tooling improvement:** use the deploy toolchain for local admission and report runtime/compression versions alongside byte budgets.
 - **Severity / mainnet impact:** medium shipping blocker in our tooling, not an XRPL or x402 defect. No ledger or mainnet impact was measured; no payment or cloud change occurred in this lane.
+
+## 2026-11-12 · public feed cache policy through two proxies (code-derived tooling finding)
+
+- Evidence: `docker/hosted/nginx.conf:20,39` and `docker/hosted/front/default.conf.template:13,79` at `43ced6a8`; feed contract and local tests in `docs/evidence/feed/FEED.md`.
+- Finding: the general API locations inherit `Cache-Control: no-store`. An upstream public JSON response also carries that inherited policy; the existing stats route has exact-location overrides at both proxies.
+- Workaround: the API feed is opt-in and correct locally. Before hosted activation, the R3-REACH owner must add exact feed locations that forward the API cache policy once, retain `no-store` for SSE, and keep buffering disabled. This lane does not own `docker/hosted/**`.
+- Suggested fix: make public endpoint cache ownership explicit in the shared proxy configuration and test raw headers through both hops for JSON and SSE.
+- Severity: low (cache efficiency; no spending or privacy gate bypass). Mainnet impact: none established; this is hosting configuration, not an XRPL incident. No transactions or upstream issues were filed.

@@ -15,6 +15,7 @@ const cap = z.string().regex(/^\d+$/).refine(value => Number.isSafeInteger(Numbe
 const mode = (values: [string, ...string[]]) => z.preprocess(v => typeof v === 'string' ? v.trim().toLowerCase() : v, z.enum(['', ...values]).optional())
 const assetMode = z.preprocess(v => typeof v === 'string' ? ({'xrp':'XRP','test-sgd':'test-iou','test-iou':'test-iou'}[v.trim().toLowerCase()] ?? v) : v,z.enum(['','XRP','test-iou']).optional())
 const ConfigSchema = z.object({
+  PUBLIC_FEED: z.enum(['0', '1']).optional(),
   HOSTED: z.enum(['0', '1']).optional(),
   RA_API_TOKEN: text, RA_ALLOWED_HOSTS: text, RA_WEB_ORIGIN: url, WALLET_DAILY_CAP_MINOR: cap, SPENDING_PAUSED: z.enum(['0', '1']).optional(), LEGACY_GAP: z.enum(['0', '1']).optional(),
   ACTIVE_WORK_LIMIT: numeric(n => Number.isInteger(n) && n > 0), RECONCILE_INTERVAL_MS: positive, LOG_FORMAT: z.enum(['json', 'human']).optional(), MODEL_INPUT_USD_PER_MILLION: numeric(n => n >= 0), MODEL_OUTPUT_USD_PER_MILLION: numeric(n => n >= 0),

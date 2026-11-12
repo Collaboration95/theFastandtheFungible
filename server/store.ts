@@ -129,6 +129,7 @@ export class Store {
     this.db.exec(`INSERT OR IGNORE INTO admissions SELECT key, 'mcp', 'operator', run_id, budget, budget, day, 'mcp-v0' FROM mcp_requests`)
     this.agentKeys = new AgentKeys(this.db)
     AuditLog.ensureSchema(this.db)
+    this.db.exec('CREATE INDEX IF NOT EXISTS audit_feed_intent ON audit_log(intent_id,kind,seq)')
     this.db.exec('CREATE INDEX IF NOT EXISTS usage_admission_principal ON admissions(principal,run_id); CREATE INDEX IF NOT EXISTS usage_audit_kind_run ON audit_log(kind,run_id)')
     this.audit = new AuditLog(this.db)
     this.atomic(() => this.audit.boot(this.policySnapshot()))

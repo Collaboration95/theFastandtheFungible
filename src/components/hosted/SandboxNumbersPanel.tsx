@@ -3,7 +3,7 @@ import type { SandboxStats } from '../../../server/hosted/stats'
 import { money, whenSGT } from '../../../shared/presentation.js'
 
 const fmt = (value: number | null, unit = '') => value === null ? '—' : `${value.toLocaleString('en-US', { maximumFractionDigits: 1 })}${unit}`
-export default function Numbers() {
+export default function Numbers({ compact = false }: { compact?: boolean }) {
   const [stats,setStats] = useState<SandboxStats>(), [error,setError] = useState(false)
   useEffect(() => {
     const controller = new AbortController()
@@ -25,6 +25,12 @@ export default function Numbers() {
     ['Paid reads before permission',stats.audit.readBeforeGrant], ['Purchases without a policy decision in the same round',stats.audit.buyWithoutPolicy],
     ['Runs over budget',stats.audit.overBudget], ['Repeated purchase identities',stats.audit.duplicateIntent], ['Receipts without a purchase identity',stats.audit.receiptWithoutIntent], ['Finished runs without an anchor',stats.audit.unanchored],
   ]
+  if (compact) return <section className="ra-sandbox-panel" aria-label="Sandbox scoreboard">
+    <p className="ra-sandbox-label">{stats.label.replace(/^XRPL Testnet · /,'')}</p>
+    <dl className="ra-sandbox-metrics">{metrics.slice(0,4).map(([label,value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
+    <details><summary>Recorded gate audit</summary><dl className="ra-sandbox-audit">{audits.map(([label,value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl><p>{stats.stoppedBeforeAnswer} stopped before an answer.</p></details>
+    {error && <p role="status">Refresh unavailable. Showing the last recorded totals.</p>}
+  </section>
   return <section className="ra-sandbox-panel" aria-label="Sandbox scoreboard">
     <h2>Sandbox scoreboard</h2>
     <p className="ra-sandbox-label">{stats.label}</p>
