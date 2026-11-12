@@ -31,3 +31,10 @@ it('disambiguates the observed fill-or-kill phrase and detects actual paid text'
  expect(a.body).toContain(canary(a.articleId))
  for(const raw of [a.passages[2].text,canary(a.articleId)])expect(()=>assertNoLeaks([{kind:'paid',raw,grants:[]}],corpus(a))).toThrow()
 })
+
+it('disambiguates the observed currency-code phrase without permitting premium bytes',()=>{
+ const a=JSON.parse(readFileSync('data/corpus/v2/articles/team-xrpl-explainers/c5-rlusd-currency-code.json','utf8')) as Article
+ expect(()=>assertNoLeaks([{kind:'public',raw:'code most interfaces that read currency codes convert',grants:[]}],corpus(a))).not.toThrow()
+ expect(a.body).toContain(canary(a.articleId))
+ for(const raw of [a.passages[1].text,canary(a.articleId)])expect(()=>assertNoLeaks([{kind:'paid',raw,grants:[]}],corpus(a))).toThrow()
+})

@@ -1,6 +1,6 @@
 {
   "articleId": "c5-rlusd-currency-code",
-  "version": "v1",
+  "version": "v2",
   "publisherSlug": "team-xrpl-explainers",
   "writerSlug": "team-xrpl-explainers",
   "title": "What is the RLUSD currency code on XRPL, and why is it a 40-character hexadecimal string?",
@@ -29,7 +29,7 @@
       "accessedAt": "2026-11-11"
     }
   ],
-  "body": "According to the XRPL currency formats reference, RLUSD is represented as the 160-bit hexadecimal code 524C555344000000000000000000000000000000, because a standard currency code is exactly 3 ASCII characters and RLUSD has five. [1]\n\nStandard codes are case-sensitive and exactly three ASCII characters long. Any other code is written as a 160-bit value, a 40-character hexadecimal string. The first 8 bits of a nonstandard code should not be 0x00: the protocol allows it, but some APIs may read a code that begins with 0x00 as a standard code. Most interfaces that read currency codes convert nonstandard codes to ASCII when possible, which is why wallets show RLUSD rather than the hexadecimal form. [1]\n\nAccording to the x402 exact-scheme specification for XRPL, an issued currency is identified by the pair of currency code and issuer, and a 160-bit asset is written as 40 hexadecimal characters. Its IOU example uses the same RLUSD value. [2]\n\nAuthor interpretation: 524C555344 is the ASCII bytes of the letters R, L, U, S and D, followed by zero padding to 20 bytes. An agent that builds a trust line, payment or payment requirement for RLUSD should use the hexadecimal currency together with the issuer address, because the same code from another issuer is a different token. Sources accessed 11 November 2026. [1][2]",
+  "body": "According to the XRPL currency formats reference, RLUSD is represented as the 160-bit hexadecimal code 524C555344000000000000000000000000000000, because a standard currency code is exactly 3 ASCII characters and RLUSD has five. [1]\n\nA standard code has three case-sensitive ASCII characters. Longer identifiers use a 160-bit representation displayed as forty hexadecimal digits. For a nonstandard identifier, avoid an initial 0x00 byte: although legal at the protocol level, it can lead an API to mistake the value for a standard code. Wallet interfaces often decode printable ASCII from the hexadecimal bytes, displaying the label RLUSD. This human-readable label does not replace the encoded currency in a transaction. [1]\n\nAccording to the x402 exact-scheme specification for XRPL, an issued currency is identified by the pair of currency code and issuer, and a 160-bit asset is written as 40 hexadecimal characters. Its IOU example uses the same RLUSD value. [2]\n\nAuthor interpretation: 524C555344 is the ASCII bytes of the letters R, L, U, S and D, followed by zero padding to 20 bytes. An agent that builds a trust line, payment or payment requirement for RLUSD should use the hexadecimal currency together with the issuer address, because the same code from another issuer is a different token. Sources accessed 11 November 2026. [1][2]\n\nSCENARIO_PAID_CANARY_c5-rlusd-currency-code_9F13",
   "passages": [
     {
       "id": "p1",
@@ -37,7 +37,7 @@
     },
     {
       "id": "p2",
-      "text": "Standard codes are case-sensitive and exactly three ASCII characters long. Any other code is written as a 160-bit value, a 40-character hexadecimal string. The first 8 bits of a nonstandard code should not be 0x00: the protocol allows it, but some APIs may read a code that begins with 0x00 as a standard code. Most interfaces that read currency codes convert nonstandard codes to ASCII when possible, which is why wallets show RLUSD rather than the hexadecimal form. [1]"
+      "text": "A standard code has three case-sensitive ASCII characters. Longer identifiers use a 160-bit representation displayed as forty hexadecimal digits. For a nonstandard identifier, avoid an initial 0x00 byte: although legal at the protocol level, it can lead an API to mistake the value for a standard code. Wallet interfaces often decode printable ASCII from the hexadecimal bytes, displaying the label RLUSD. This human-readable label does not replace the encoded currency in a transaction. [1]"
     },
     {
       "id": "p3",

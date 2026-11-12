@@ -16,7 +16,7 @@ const saved=JSON.parse(readFileSync(join(from,'results.json'),'utf8'))
 process.env.LEDGER_REPORT_DIR=join(from,'ledger-reports')
 const corpus=await loadWriterCorpus(undefined,{allowMini:false})
 const oldArticle=JSON.parse(readFileSync(oldFile,'utf8')),changed=oldArticle.articleId
-if(!['c5-xrpl-destination-tag','c5-xrpl-crypto-condition-type','c5-offercreate-flags'].includes(changed))throw Error('Only diagnosed fixtures are supported')
+if(!['c5-xrpl-destination-tag','c5-xrpl-crypto-condition-type','c5-offercreate-flags','c5-rlusd-currency-code'].includes(changed))throw Error('Only diagnosed fixtures are supported')
 const hash=(value:unknown)=>createHash('sha256').update(JSON.stringify(value)).digest('hex')
 const statics={...corpus,articles:corpus.articles.filter(a=>a.publisherSlug!=='ledger-analytics')}
 const oldCorpus=validateWriterCorpus({...statics,articles:statics.articles.map(a=>a.articleId===changed?oldArticle:a)})
