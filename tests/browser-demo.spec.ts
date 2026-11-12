@@ -157,7 +157,7 @@ for (const width of [1440, 390]) test(`replay UI accessibility at ${width}`, asy
   await page.getByRole('button',{name:/Receipt/}).first().click()
   const receiptDialog=page.getByRole('dialog',{name:'Receipt',exact:true})
   await expect(receiptDialog.getByRole('heading',{name:'What this payment bought'})).toBeVisible()
-  await capture('receipt');await receiptDialog.press('Escape');await expect(receiptDialog).toBeHidden()
+  await capture('receipt');await receiptDialog.getByRole('button',{name:'Close receipt',exact:true}).press('Escape');await expect(receiptDialog).toBeHidden()
   await page.locator('.ra-cite').first().click();await capture('citation');await page.keyboard.press('Escape')
   await page.keyboard.press('w');await page.getByRole('tab',{name:'Ledger',exact:true}).click();await capture('ledger');await page.keyboard.press('Escape')
   await page.keyboard.press('ControlOrMeta+,');await expect(page.getByRole('heading',{name:'About this replay'})).toBeVisible();await capture('settings')
