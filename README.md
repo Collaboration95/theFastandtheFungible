@@ -52,7 +52,7 @@ npx -y $REL/researchagent-mcp-1.1.1.tgz try --testnet
 |---|---|
 | Free draft | No citable answer; <!--f:paid_before-->2<!--/f--> recorded open gaps. |
 | Missing fact | What binds key publication to payment? |
-| Bought passage | [Team-authored passage p3](data/corpus/v2/articles/team-xrpl-explainers/product-writer-paid.json): validated EscrowFinish publishes the key and releases payment together. |
+| Bought passage | [Team-authored passage p3](data/corpus/v2/articles/team-xrpl-explainers/product-writer-paid.json): historical explanation of validated EscrowFinish. The app shows the article only after validation; signed submission can expose the key earlier, while that key keeps the escrow claimable until CancelAfter. |
 | Final answer | The writer publishes the key to collect escrow payment; <!--f:paid_after-->0<!--/f--> recorded open gaps. This is the run’s answer record, not independent quality scoring. |
 | Same-run cost and time | <!--f:paid_articles-->1<!--/f--> article, <!--f:paid_passages-->4<!--/f--> passages; S$<!--f:paid_spend-->0.40<!--/f--> = <!--f:paid_principal-->40,000<!--/f--> Testnet drops (fixed demo rate, not FX); no refunds. <!--f:paid_seconds-->65.8<!--/f--> s Start→Done, excluding planning and the five-second confirmation modal. Buyer create <!--f:paid_create-->12<!--/f--> drops; writer finish <!--f:paid_finish-->423<!--/f-->; buyer anchor another <!--f:paid_anchor-->12<!--/f-->. Model cost: **<!--f:paid_model_cost-->unmeasured<!--/f-->** (usage not retained). |
 
@@ -76,6 +76,8 @@ No new held-out or general quality claim. [Evidence and receipts](docs/submissio
 ## How it works
 
 ![Key-reveal escrow: policy locks payment; writer publishes the key to collect; buyer checks signed promises and cites delivered passages](docs/media/key-reveal.svg)
+
+The article's key is the only thing that opens the writer's escrow. The app shows the article only after that escrow finish validates on the ledger, and once the key is public anyone (the writer first) can still claim the payment before the deadline.
 
 Key reveal proves delivery, not quality. [Mechanism and refund limits](docs/key-reveal-escrow.md) ·
 [architecture](docs/capabilities.md#how-a-run-works).
@@ -167,7 +169,7 @@ shared conformance cases ([receipt format](docs/receipt-spec.md)).
 | Blind held-out judge questions (<!--f:heldout_bank-->v5<!--/f-->) | <!--f:heldout-->16/20<!--/f--> bought and cited; <!--f:offtopic-->0/10<!--/f--> off-topic purchases; <!--f:heldout_violations-->0<!--/f--> gate violations | run once on <!--f:heldout_on-->11 Nov<!--/f--> on XRPL Testnet; fixture research and decision models, answers written offline (the hosted demo writes live with DeepSeek); team-authored writers |
 | One line to a verified purchase | <!--f:try_s-->84.2<!--/f--> s cold; <!--f:try_misses-->2 of 4<!--/f--> cold runs overran 90 s | one Mac, empty npm cache, 7 Nov |
 | Network fees per key-reveal purchase | <!--f:fee_drops-->435<!--/f--> drops: <!--f:fee_create-->12<!--/f--> paid by the buyer to lock, <!--f:fee_finish-->423<!--/f--> by the writer to reveal | XRPL Testnet, measured as we sign |
-| Progress since SingHacks | <!--f:prs-->304<!--/f--> PRs merged since <!--f:since-->21 Sep<!--/f-->; <!--f:releases-->15<!--/f--> releases | counted at <!--f:sha-->88c3a00b<!--/f--> on <!--f:as_of-->12 Nov 2026<!--/f--> |
+| Progress since SingHacks | <!--f:prs-->305<!--/f--> PRs merged since <!--f:since-->21 Sep<!--/f-->; <!--f:releases-->15<!--/f--> releases | counted at <!--f:sha-->e37be882<!--/f--> on <!--f:as_of-->12 Nov 2026<!--/f--> |
 
 [Numbers and limitations](docs/numbers.md) · [Progress and retained misses](https://collaboration95.github.io/theFastandtheFungible/progress/).
 

@@ -57,3 +57,28 @@ for (const width of [1440,390]) test(`desktop recovery uses the shared light sys
  await page.screenshot({path:evidencePath(`ui-nov11/after/desktop/recovery-${width}.png`),fullPage:true})
  writeFileSync(evidencePath(`ui-nov11/after/desktop/audit-${width}.json`),JSON.stringify({width,violations:audit.violations,errors,evidence:'Rendered packaged recovery assets with the same URL paths. No Electron IPC or installed DMG execution claimed.'},null,2))
 })
+
+// POLISH-1: synthetic writer identity metadata; no external ledger requests or visitor questions.
+test('writer credential and domain have separate 44 px phone hit areas', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.route('**/api/demo/status', r => r.fulfill({ json: status }))
+  await page.route('**/api/health', r => r.fulfill({ json: recording.health }))
+  await page.route('**/api/runs', r => r.fulfill({ json: [] }))
+  await page.route('**/api/reputation', r => r.fulfill({ json: { publishers: [] } }))
+  const verification = { status: 'verified', issuerLabel: 'ResearchAgent operator', issuer: 'rnFqpNSS2rcDoFe72cwneSzwZAhoxqduqr', credentialType: 'AB', credentialId: 'A'.repeat(64), domainId: 'B'.repeat(64), ledgerIndex: 123, checkedAt: '2026-11-12T00:00:00Z' }
+  await page.route('**/api/writers/earnings', r => r.fulfill({ json: { scope: 'Synthetic layout fixture.', writers: [{ slug: 'team-xrpl-explainers', publisherSlug: 'team-xrpl-explainers', name: 'XRPL explainers', authorship: 'Team-authored', verification, articles: [], articleCount: 1, priceRange: [40], sales: [], trust: [], demoSales: 4 }] } }))
+  await page.goto('/')
+  await expect(page.locator('.ra-qbox')).toBeVisible()
+  await page.getByRole('button', { name: 'Open commands' }).click()
+  await page.getByRole('option', { name: /Writers/ }).click()
+  const links = page.locator('.ra-writer-verification > a')
+  await expect(links).toHaveCount(2)
+  const boxes = await links.evaluateAll(elements => elements.map(el => {
+    const r = el.getBoundingClientRect()
+    return { x: r.x, y: r.y, right: r.right, bottom: r.bottom, width: r.width, height: r.height }
+  }))
+  for (const box of boxes) { expect(box.width).toBeGreaterThanOrEqual(44); expect(box.height).toBeGreaterThanOrEqual(44) }
+  expect(boxes[0].right <= boxes[1].x || boxes[1].right <= boxes[0].x || boxes[0].bottom <= boxes[1].y || boxes[1].bottom <= boxes[0].y).toBe(true)
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await page.screenshot({ path: 'scratch/polish-1-writer-phone.png', fullPage: true })
+})

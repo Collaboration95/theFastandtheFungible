@@ -59,7 +59,7 @@ export default function WriterEarnings() {
       {isTeam(w) && w.synthetic && <p className="ra-note">Synthetic demo content</p>}
       {isTeam(w) && !w.sales.length && <p className="ra-note">You haven’t bought from this writer yet</p>}
       <dl><div><dt>Articles</dt><dd>{w.articleCount}</dd></div><div><dt>Price range</dt><dd>{priceRange(prices)}</dd></div>
-      {w.demoSales !== undefined && <div><dt>Sales on this demo since 11 Nov</dt><dd>{salesCount(w.demoSales)}</dd></div>}
+      {w.demoSales !== undefined && <div><dt>Settled sales on this demo since 11 Nov (UTC)</dt><dd>{salesCount(w.demoSales)}</dd></div>}
       <div><dt>Your purchases</dt><dd>{w.sales.length ? `${w.sales.length} purchase${w.sales.length === 1 ? '' : 's'}` : 'None yet'}</dd></div>
       {w.sales.length > 0 && <div><dt>Refunds</dt><dd>{refunds} · {(100 * refunds / w.sales.length).toFixed(0)}%</dd></div>}</dl>
       <details><summary>Articles and prices</summary>{w.articleCount > w.articles.length && <p>Showing {w.articles.length} of {w.articleCount} articles. Visit the writer’s site for all articles.</p>}<ul>{w.articles.map(a => <li key={a.id}><a href={`/w/${w.publisherSlug}/blog/${a.id}`} target="_blank" rel="noreferrer">{a.title}</a> · {a.tier === 'FREE' ? 'Free' : price(a.priceMinor)}</li>)}</ul></details>
@@ -71,7 +71,7 @@ export default function WriterEarnings() {
   return <div className="ra-writer-earnings">
     <p><a href="https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs/publishing.md" target="_blank" rel="noreferrer">Publish your notes <Icon name="external" size={16} /></a></p>
     {!data ? <p role="status">{failed ? 'Writer catalogue unavailable. Try again later.' : 'Loading writers…'}</p> : <>
-      <p className="ra-note">{data.scope} Only confirmed key-reveal sales appear here. Simulated payments are excluded.</p>
+      <p className="ra-note">{data.scope} Your purchase history shows confirmed key-reveal sales. Simulated payments are excluded.</p>
       {/* H9-15: a new visitor has bought nothing yet; say what will appear instead of a row of zeros on every card. */}
       {!data.writers.some(w => w.sales.length) && <p className="ra-writer-empty" role="note">No purchases in your history yet. When a question buys an article, the sale appears on its writer’s card with a link to the XRPL Testnet transaction.</p>}
       <div className="ra-writer-grid">{shown.map(card)}</div>

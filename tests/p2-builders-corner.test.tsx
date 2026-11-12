@@ -64,6 +64,8 @@ describe('the row', () => {
     expect(within(row).getByText('Use it from your own agent')).toBeTruthy()
     expect(within(row).getAllByRole('button', { name: /^Copy: / })).toHaveLength(3)
     expect(row.textContent).toContain('RESULT PASS')
+    expect(row.textContent).toContain('84.2 seconds; 2 of 4 cold runs exceeded 90 seconds (one Mac, 7 Nov)')
+    expect(row.textContent).not.toContain('75 seconds')
     expect(row.textContent).toContain('XRPL Testnet only, no real value')
     expect(screen.getByRole('navigation', { name: 'Project links' })).toBeTruthy()
   })

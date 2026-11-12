@@ -33,7 +33,7 @@ One hosted run where the browser check shows all five gates held: featured prese
 | **<!--f:writer_s-->33.9<!--/f--> s** | `init` + `publish`: Markdown folder → writer Credential validated on Testnet | generated starter note, public faucet, one measurement | [#389](https://github.com/Collaboration95/theFastandtheFungible/pull/389) |
 | **0** | gate-audit violations: 10 runs, 568 observations | fresh-set eval, simulated payments, 3 Nov | [scorecard](../numbers.md#synthetic-corpus-scorecard-3-nov) |
 | **93.15%** | gross article spend that bought a fact in the final answer (CI 81.25–100.00) | LIVE decisions, fixture research, simulated payments | [fresh-results.json](../../eval/scorecard/fresh-results.json) |
-| **<!--f:prs-->304<!--/f--> / <!--f:releases-->15<!--/f-->** | PRs merged into `main` since <!--f:since-->21 Sep<!--/f--> / published releases | counted at <!--f:sha-->88c3a00b<!--/f--> on <!--f:as_of-->12 Nov 2026<!--/f--> | [facts.json](facts.json), [progress page](https://collaboration95.github.io/theFastandtheFungible/progress/) |
+| **<!--f:prs-->305<!--/f--> / <!--f:releases-->15<!--/f-->** | PRs merged into `main` since <!--f:since-->21 Sep<!--/f--> / published releases | counted at <!--f:sha-->e37be882<!--/f--> on <!--f:as_of-->12 Nov 2026<!--/f--> | [facts.json](facts.json), [progress page](https://collaboration95.github.io/theFastandtheFungible/progress/) |
 | **Held-out <!--f:heldout-->16/20<!--/f-->; <!--f:offtopic-->0/10<!--/f--> off-topic buys** | <!--f:heldout_line-->v5 blind held-out: 16/20 bought and cited, 0/10 off-topic purchases (run once, 11 Nov, on XRPL Testnet: fixture research and decision models with answers written offline, team-authored writers)<!--/f-->; the key fact leads the answer in <!--f:answers_it-->7/20<!--/f-->; 0 gate violations. Dev (not held-out): v1 <!--f:dev_v1-->16/20<!--/f-->, v3 <!--f:dev_v3-->7/20<!--/f--> | as stated | [evidence](../evidence/v5-heldout/README.md) |
 | **SingHacks baseline** | <!--f:singhacks_then-->At SingHacks a language model proposed each purchase and a person approved every quote before payment; payment was a fixture by default, with optional Testnet settlement.<!--/f--> | tag `hackathon-baseline` (7 Sep commit) | [prototype README](https://github.com/Collaboration95/theFastandtheFungible/blob/hackathon-baseline/prototypes/ResearchAgent/README.md) |
 
@@ -293,7 +293,13 @@ original topic and date. [One paid answer](evidence/hosted-answer-nov12/README.m
 - **"What's the pixel character?"** Our agent's head is the logo. It appears
   only in loading states, the README and the deck, and it acts out a real state
   (search, pay, key, verified, refund). It never replaces a receipt or a label.
-- **"Can a writer cheat the escrow?"** The buyer grants only after a validated successful finish and matching key/proofs. That does not enforce article quality. Current source uses a key-free ledger pre-check; it rejects any unsigned simulate containing Fulfillment. The first key-bearing network request is the persisted signed finish submission. Public signed submission exposes the key before final validation, so later failure remains a risk. No-show recovery requires a validated EscrowCancel; quality refunds need the writer’s signature. [X1c evidence](../evidence/dry-run-nov12/README.md).
+- **"Can a writer cheat the escrow?"** The buyer grants only after a validated successful finish and matching key/proofs. That does not enforce article quality. Current source uses a key-free ledger pre-check; it rejects any unsigned simulate containing Fulfillment. The first key-bearing network request is the persisted signed finish submission. Public signed submission exposes the key before final validation, so later failure remains a risk. The escrow remains claimable with that key by anyone (the writer first) until CancelAfter. No-show recovery requires a validated EscrowCancel; quality refunds need the writer’s signature. [X1c evidence](../evidence/dry-run-nov12/README.md).
 
 - **"Is the Mac app signed?"** Not yet: it's an unsigned DMG until we have a
   Developer ID. The zero-clone app is the path we recommend to judges.
+
+### Key-reveal wording for excerpts
+
+The article's key is the only thing that opens the writer's escrow. The app shows the article only after that escrow finish validates on the ledger, and once the key is public anyone (the writer first) can still claim the payment before the deadline.
+
+A signed submission exposes the key before validation; anyone (the writer first) can still claim the escrow with that key until CancelAfter.
