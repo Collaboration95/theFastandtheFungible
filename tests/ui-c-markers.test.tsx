@@ -34,7 +34,7 @@ it('both entry controls share one checker, without asking a question', async () 
   HTMLElement.prototype.scrollIntoView = vi.fn()
   const onAsk = vi.fn()
   render(<HostedContext.Provider value={hosted}><Ask onAsk={onAsk} settlement={labels.settlement} /></HostedContext.Provider>)
-  fireEvent.click(screen.getByRole('button', { name: 'Verify a recorded run, no question used' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Verify a recorded run' }))
   expect(await screen.findAllByRole('button', { name: 'Run the checks' })).toHaveLength(1)
   const corner = document.querySelector<HTMLDetailsElement>('.ra-hwork')!
   expect(corner.open).toBe(true)

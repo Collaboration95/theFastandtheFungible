@@ -95,7 +95,7 @@ function footer(page) {
 .ra-ftr a{display:inline-flex;align-items:center;min-width:44px;min-height:44px;padding:10px 4px;color:inherit;text-decoration:none}.ra-ftr a:hover,.ra-ftr a[aria-current=page]{color:#24211E;text-decoration:underline;text-underline-offset:4px}
 .ra-ftr a:focus-visible{outline:2px solid #24211E;outline-offset:2px}
 @media print{.ra-ftr{display:none}}</style>
-<footer class="ra-ftr"><div class="ra-ftr-in"><span class="ra-ftr-env">${ENVIRONMENT}</span><nav aria-label="More pages">${more}</nav></div></footer>
+<footer class="ra-ftr"><div class="ra-ftr-in">${page.key === 'home' ? '' : `<span class="ra-ftr-env">${ENVIRONMENT}</span>`}<nav aria-label="More pages">${more}</nav></div></footer>
 ${FOOT_END}`
 }
 

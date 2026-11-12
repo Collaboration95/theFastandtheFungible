@@ -9,12 +9,12 @@ is the same key that releases the writer’s payment. Your browser checks the ma
 
 **XRPL Testnet demo · 13–19 Nov 2026.**
 
+[Try the demo](https://collaboration95.github.io/theFastandtheFungible/try/) ·
+[Verify a recorded run](https://ra-front-651013803640.asia-southeast1.run.app) ·
+[Watch the replay](https://collaboration95.github.io/theFastandtheFungible/demo/)
+
 <p align="center"><img src="docs/assets/payment-stepper.gif" width="712" alt="A recorded payment locks in escrow; the writer publishes its key and the article unlocks."></p>
 <p align="center"><sub><a href="https://collaboration95.github.io/theFastandtheFungible/demo/">Recorded replay</a>, fictional writers: locked → key published → article unlocked (waiting shortened).</sub></p>
-
-[**Try it in your browser →**](https://collaboration95.github.io/theFastandtheFungible/try/) ·
-[Check a recorded run without asking a question](https://ra-front-651013803640.asia-southeast1.run.app) ·
-[Watch a recorded run](https://collaboration95.github.io/theFastandtheFungible/demo/)
 
 <p align="center">
 <a href="https://github.com/Collaboration95/theFastandtheFungible/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/Collaboration95/theFastandtheFungible?style=flat-square&label=release&color=24211E"></a>

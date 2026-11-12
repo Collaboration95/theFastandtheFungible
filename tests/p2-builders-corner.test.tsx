@@ -94,7 +94,7 @@ describe('the row', () => {
     expect(screen.queryByText(/See a real proof of refusal/)).toBeNull()
     cleanup()
     render(<HostedFooter hosted={hosted('https://ra-front.example/proof/' + 'd'.repeat(32))} />)
-    expect(screen.getByRole('link', { name: /See a real proof of refusal \(no question used\)/ }).getAttribute('href')).toContain('/proof/')
+    expect(screen.getByRole('link', { name: /See a real proof of refusal/ }).getAttribute('href')).toContain('/proof/')
   })
   it('names the replay target as a writer never reveals, money back', () => {
     render(<HostedFooter hosted={hosted()} />)

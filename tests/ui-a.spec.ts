@@ -45,7 +45,7 @@ for (const width of [1280, 390]) test(`UI-A fixes at ${width}`, async ({ page })
   expect(await page.locator('.ra-hsteps, .ra-composer, .ra-hwork').count()).toBe(3)
   await capture('home')
   if (!before) {
-    await page.getByRole('button', { name: 'Verify a recorded run, no question used' }).click()
+    await page.getByRole('button', { name: 'Verify a recorded run' }).click()
     await expect(page.locator('.ra-hwork')).toHaveAttribute('open', '')
     await page.getByRole('button', { name: 'Run the checks' }).click()
     await expect(page.locator('.ra-hv-head')).toContainText('passed', { timeout: 15000 })

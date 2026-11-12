@@ -46,7 +46,7 @@ for (const width of [1280, 390]) {
     }
     await capture('home')
     if (!baseline) {
-      await page.getByRole('button', { name: 'Verify a recorded run, no question used' }).click()
+      await page.getByRole('button', { name: 'Verify a recorded run' }).click()
       await expect(page.getByRole('button', { name: 'Run the checks' })).toHaveCount(1)
       await expect(page.locator('.ra-hv')).toHaveCount(1)
       await page.goto('/')
