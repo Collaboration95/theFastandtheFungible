@@ -159,5 +159,5 @@ try{
  await Promise.all(apis.map(api=>api.close()))
  for(const s of servers){s.closeAllConnections();await new Promise<void>(done=>s.close(()=>done()))}
  if(ps){ps.closeAllConnections();await new Promise<void>(done=>ps!.close(()=>done()))}
- await publisher.locals.closePublishing?.();await publisher.locals.ledger?.close?.();publisher.locals.journal.close();globalThis.fetch=realFetch;save();unlockLedger()
+ await publisher.locals.ledgerAnalytics?.stop?.();await publisher.locals.closePublishing?.();await publisher.locals.ledger?.close?.();publisher.locals.journal.close();globalThis.fetch=realFetch;save();unlockLedger()
 }
