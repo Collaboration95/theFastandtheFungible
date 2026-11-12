@@ -22,7 +22,16 @@ export function delegatedWallets(context: ApiContext) {
   const router = Router(), bindings = new Map<string, string>(), challenges = new Map<string, { message: string; until: number }>()
   const principal = (res: Response): string => res.locals.hostedSession?.principal ?? res.locals.agent?.id ?? 'operator'
   const enabled = () => loadConfig().WALLET_MODE === 'delegated' && !!context.payer?.address
-  router.get('/api/wallet/delegation', (_req, res) => res.json({ enabled: enabled(), agent: enabled() ? context.payer!.address : undefined, address: bindings.get(principal(res)) }))
+  router.get('/api/wallet/delegation', async (_req, res) => {
+    const active = enabled(), key = principal(res)
+    let address = bindings.get(key)
+    if (active && address) {
+      try {
+        if (!(await hasEscrowDelegation(context.payer!.ledger, address, context.payer!.address!))) { bindings.delete(key); address = undefined }
+      } catch { address = undefined } // An unavailable ledger cannot confirm a live connection.
+    }
+    res.json({ enabled: active, agent: active ? context.payer!.address : undefined, address })
+  })
   router.post('/api/wallet/delegation/challenge', (_req, res) => {
     if (!enabled()) return res.sendStatus(404)
     for (const [key, c] of challenges) if (c.until < Date.now()) challenges.delete(key)

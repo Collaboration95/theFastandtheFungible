@@ -58,8 +58,8 @@ it('binds wallet proof to its session and consumes challenges once', async () =>
   const { delegatedWallets } = await import('../server/delegated-wallet.js')
   vi.stubEnv('WALLET_MODE', 'delegated')
   const visitor = Wallet.generate(), agent = Wallet.generate()
-  let disabled = false
-  const ledger: Ledger = { request: async () => ({ result: { account_data: { Flags: disabled ? 0x00100000 : 0 }, account_objects: [{ Authorize: agent.address, Permissions: [{ Permission: { PermissionValue: 'EscrowCreate' } }] }] } }) }
+  let disabled = false, active = true
+  const ledger: Ledger = { request: async () => ({ result: { account_data: { Flags: disabled ? 0x00100000 : 0 }, account_objects: active ? [{ Authorize: agent.address, Permissions: [{ Permission: { PermissionValue: 'EscrowCreate' } }] }] : [] } }) }
   const context = { payer: new XrplPayer(ledger, agent) } as import('../server/api/context.js').ApiContext
   const app = express(); app.use(express.json()); app.use((req, res, next) => { res.locals.hostedSession = { principal: req.get('test-principal') }; next() })
   app.use(delegatedWallets(context).router)
@@ -74,6 +74,14 @@ it('binds wallet proof to its session and consumes challenges once', async () =>
   expect((await post('connect', proof)).status).toBe(403)
   const status = await (await fetch(base + '/api/wallet/delegation', { headers: { 'test-principal': 'two' } })).json()
   expect(status.address).toBeUndefined(); expect(JSON.stringify(status)).not.toContain(visitor.seed)
+  const connected = await (await fetch(base + '/api/wallet/delegation', { headers: { 'test-principal': 'one' } })).json()
+  expect(connected.address).toBe(visitor.address)
+  active = false
+  const revoked = await (await fetch(base + '/api/wallet/delegation', { headers: { 'test-principal': 'one' } })).json()
+  expect(revoked).toMatchObject({ enabled: true, agent: agent.address }); expect(revoked.address).toBeUndefined()
+  active = true
+  const cleared = await (await fetch(base + '/api/wallet/delegation', { headers: { 'test-principal': 'one' } })).json()
+  expect(cleared.address).toBeUndefined() // Refresh clears a stale binding even if disconnect was lost.
   disabled = true
   const fresh = await (await post('challenge', {})).json()
   expect((await post('connect', { ...proof, signature: sign(fresh.message, visitor.privateKey) })).status).toBe(403)
