@@ -38,3 +38,9 @@ it('disambiguates the observed currency-code phrase without permitting premium b
  expect(a.body).toContain(canary(a.articleId))
  for(const raw of [a.passages[1].text,canary(a.articleId)])expect(()=>assertNoLeaks([{kind:'paid',raw,grants:[]}],corpus(a))).toThrow()
 })
+
+it('disambiguates the payment-channel phrase and rejects the new paid passage and canary',()=>{
+ const a=JSON.parse(readFileSync('data/corpus/v2/articles/team-xrpl-explainers/c5-xrpl-payment-channels.json','utf8')) as Article
+ expect(()=>assertNoLeaks([{kind:'public',raw:'paymentchannelcreate creates a payment channel and funds it',grants:[]}],corpus(a))).not.toThrow()
+ for(const raw of [a.passages[1].text,canary(a.articleId)])expect(()=>assertNoLeaks([{kind:'paid',raw,grants:[]}],corpus(a))).toThrow()
+})

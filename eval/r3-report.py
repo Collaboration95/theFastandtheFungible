@@ -5,6 +5,7 @@ root=Path.cwd(); out=Path(sys.argv[1] if len(sys.argv)>1 else 'scratch/r3-real-2
 def family(q):
  t=q['question'].lower()
  if re.search(r'rlusd.*(?:supply|holders|concentration)|amm.*(?:statistics|liquidity|volume)|project.*account.*activity',t): return 'ledger analytics'
+ if q['id'] in {'v3-V07','v3-V17','v3-V18','v4-H08','v4-H17','v4-H18','v5-H03','v5-H15','v5-H16','v5-H17','v5-H18'}: return 'other'
  if q['id']=='v3-V14' or re.search(r'x402|facilitator|http.*402',t): return 'x402'
  if re.search(r'xrpl|xrp ledger|xrp|escrow|trust line|rlusd|credential|stablecoin|amm|signer|master key|ledger|nft',t): return 'XRPL docs'
  return 'other'
