@@ -24,7 +24,7 @@ The first locked gate found UC2 replay CLS **0.052649** against the unchanged **
 
 ## Bundle
 
-Node 22.23.4 manifest traversal, including static imports: **158,315 → 158,900 bytes gzip**, below the task’s **160,000 B** limit. Optional verifier/gates stay lazy. The repository’s existing 170,000-byte gate was not changed; the UI-A browser test separately enforces the stricter 160,000-byte requirement.
+Node 22.23.4 manifest traversal, including static imports: **158,315 → 158,904 bytes gzip**, below the task’s **160,000 B** limit. Optional verifier/gates stay lazy. The repository’s existing 170,000-byte gate was not changed; the UI-A browser test separately enforces the stricter 160,000-byte requirement.
 
 ## Reproduce
 
