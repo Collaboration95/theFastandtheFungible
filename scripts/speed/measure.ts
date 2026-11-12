@@ -46,7 +46,7 @@ try {
     const verified = await verifyAnswer(receiptBundle(store, run.runId))
     const failed = verified.checks.filter(c => c.status === 'FAIL')
     if (failed.length) throw Error(`Offline receipt failed: ${JSON.stringify(failed)}`)
-    samples.push({ sample: i + 1, timing: store.getIntent(intent.intentId)!.timing, createHash: intent.escrow!.createHash, finishHash: intent.escrow!.finishHash, offlineReceipt: { failed: failed.length, checks: verified.checks.length } })
+    samples.push({ sample: i + 1, timing: store.getIntent(intent.intentId)!.timing, createHash: intent.escrow!.createHash, finishHash: intent.escrow!.finishHash, streamActive: ledger.streamActive?.() ?? false, streamDiagnostics: ledger.diagnostics?.(), offlineReceipt: { failed: failed.length, checks: verified.checks.length } })
     writeFileSync(output, JSON.stringify({ label, method: '30 sequential policy purchases; fixture content; local writer; XRP Testnet; offset 900; no LLM; observation clocks on one host', stream: process.env.XRPL_STREAM_WAITS === '1', samples }, null, 2) + '\n')
     console.log(`${label} ${i + 1}/30 ${intent.escrow!.createHash} ${intent.escrow!.finishHash}`)
   }

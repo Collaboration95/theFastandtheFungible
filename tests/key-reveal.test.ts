@@ -2,7 +2,7 @@ import { afterEach, expect, it, vi } from 'vitest'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { Wallet } from 'xrpl'
+import { Wallet, hashes } from 'xrpl'
 import { createPublisherApp } from '../publisher/routes.js'
 import { Store } from '../server/store.js'
 import { PurchaseManager } from '../server/purchases.js'
@@ -131,11 +131,28 @@ it('exports an offline verifiable key reveal and rejects tampering', async () =>
   expect(bundle.intents[0].timing).toEqual(bundle.receipts[0].timing)
   expect(bundle.audit.entries.filter(e => 'kind' in e && e.kind === 'settlement-timing')).toHaveLength(7)
   const result = await verifyAnswer(bundle)
+  const { createApiApp } = await import('../server/routes.js')
+  vi.stubEnv('RA_API_TOKEN', 'timing-api-test')
+  const api = await createApiApp({ dbPath: s.store.path, publisherUrl: 'http://127.0.0.1:1', payer: new XrplPayer(s.c.ledger, s.wallet), reconcileIntervalMs: 600000 })
+  const server = api.app.listen(0, '127.0.0.1'); await new Promise(r => server.once('listening', r))
+  cleanup.push(async () => { server.closeAllConnections(); await new Promise<void>(r => server.close(() => r())); await api.close() })
+  const base = `http://127.0.0.1:${(server.address() as { port: number }).port}`
+  for (const route of [`/runs/${run.runId}`, `/runs/${run.runId}/receipts.json`]) {
+    const response = await fetch(base + route, { headers: { Authorization: 'Bearer timing-api-test' } })
+    expect(response.status).toBe(200)
+    const body = await response.json()
+    expect(body.intents[0].timing).toEqual(bundle.intents[0].timing)
+    expect(body.receipts[0].timing).toEqual(bundle.receipts[0].timing)
+  }
   if (process.env.KEY_REVEAL_FIXTURE === '1') {
     const { writeFileSync } = await import('node:fs')
     writeFileSync('tests/fixtures/receipt-conformance/key-reveal.json', JSON.stringify(bundle, null, 2) + '\n')
   }
   expect(result.checks.filter(c => c.status === 'FAIL')).toEqual([])
+  const changedTiming = structuredClone(bundle)
+  const timingEntry = changedTiming.audit.entries.find(e => 'kind' in e && e.kind === 'settlement-timing')!
+  if ('data' in timingEntry) timingEntry.data.elapsedMs = Number(timingEntry.data.elapsedMs) + 1
+  expect((await verifyAnswer(changedTiming)).ok).toBe(false)
   for (const field of ['key', 'ciphertext', 'condition', 'manifest'] as const) {
     const b = structuredClone(bundle), reveal = b.proofs[0].keyReveal!
     if (field === 'key') reveal.key = '00'.repeat(32)
@@ -309,4 +326,71 @@ it('A04 concurrent retries of one invoice share one durable writer finish',async
  expect([...s.c.txs.values()].filter(t=>t.tx_json.TransactionType==='EscrowFinish')).toHaveLength(1)
  const {escrowInvoice}=await import('../shared/escrow.js')
  expect(s.journal.terminalAttempts(escrowInvoice(e.quote.terms))).toHaveLength(1)
+})
+
+it('stream metadata keeps quarantine, policy limits, receipts and single-charge recovery intact', async () => {
+  vi.stubEnv('XRPL_STREAM_WAITS', '1')
+  const { streamTransaction } = await import('../shared/xrpl.js')
+  const s = await setup()
+  const cache = new Map<string, Extract<import('../shared/xrpl.js').TxLookup, { state: 'validated' }>>()
+  const listeners = new Set<() => void>()
+  s.c.ledger.cachedTx = hash => cache.get(hash)
+  s.c.ledger.streamActive = () => true
+  s.c.ledger.activity = listener => { listeners.add(listener); return () => { listeners.delete(listener) } }
+  const request = s.c.ledger.request.bind(s.c.ledger)
+  const calls: string[] = []
+  vi.spyOn(s.c.ledger, 'request').mockImplementation(async r => {
+    calls.push(String(r.command))
+    const response = await request(r)
+    if (r.command === 'submit') {
+      const hash = hashes.hashSignedTx(String(r.tx_blob)), row = s.c.txs.get(hash)!
+      expect(s.store.getRun(s.run.runId).grants).toHaveLength(0)
+      expect(streamTransaction({ ...row, hash, validated: false })).toBeUndefined()
+      for (const listener of listeners) listener() // ledger event before the transaction
+      const observed = streamTransaction({ ...row, hash })!
+      for (let i = 0; i < 2; i++) { cache.set(hash, observed.found); for (const listener of listeners) listener() }
+    }
+    return response
+  })
+  expect((await s.buy()).status).toBe('VERIFIED')
+  s.restart(); await s.buy()
+  expect(s.c.txs.size).toBe(2)
+  expect(calls.filter(c => c === 'submit')).toHaveLength(2)
+  expect(calls.filter(c => c === 'tx')).toHaveLength(0)
+  expect(s.store.getRun(s.run.runId).receipts).toHaveLength(1)
+  expect(listeners.size).toBe(0)
+})
+
+for (const guard of ['network', 'fee'] as const) it(`stream autofill retains the ${guard} signing guard`, async () => {
+  vi.stubEnv('XRPL_STREAM_WAITS', '1')
+  const s = await setup(), request = s.c.ledger.request.bind(s.c.ledger)
+  vi.spyOn(s.c.ledger, 'request').mockImplementation(async r => {
+    const response = await request(r)
+    if (guard === 'network' && r.command === 'server_info') response.result.info.network_id = 0
+    if (guard === 'fee' && r.command === 'fee') response.result.drops.open_ledger_fee = '2001'
+    return response
+  })
+  expect((await s.buy()).status).toBe('FAILED_NOT_SETTLED')
+  expect(s.c.txs.size).toBe(0)
+  expect(s.store.escrowOutbox()).toHaveLength(0)
+})
+
+it('a missing validation stream holds the original signature and grant across retries', async () => {
+  vi.stubEnv('XRPL_STREAM_WAITS', '1')
+  const s = await setup()
+  s.c.state.validate = false
+  const sign = vi.spyOn(Wallet.prototype, 'sign')
+  expect((await s.buy()).status).toBe('SUBMITTING')
+  const create = s.store.escrowOutbox('escrow-one')[0]
+  s.restart()
+  expect((await s.buy()).status).toBe('SUBMITTING')
+  expect(s.store.escrowOutbox('escrow-one')[0].txHash).toBe(create.txHash)
+  expect(sign).toHaveBeenCalledTimes(1)
+  expect(s.c.txs.size).toBe(1)
+  expect(s.store.getRun(s.run.runId).grants).toHaveLength(0)
+  s.c.txs.get(create.txHash)!.validated = true
+  s.c.state.validate = true
+  expect((await s.buy()).status).toBe('VERIFIED')
+  expect(s.c.txs.size).toBe(2)
+  expect(s.store.getRun(s.run.runId).receipts).toHaveLength(1)
 })

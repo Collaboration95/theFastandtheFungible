@@ -11,7 +11,7 @@ import { z } from 'zod'
 import type { PaymentSignature } from '../shared/contracts/x402.js'
 import { EscrowQuoteSchema, type EscrowQuote } from '../shared/contracts/escrow.js'
 import { escrowInvoice, ledgerTime, matchesCreate, safeSignature, signEscrowQuote } from '../shared/escrow.js'
-import { lookupTx, type Ledger } from '../shared/xrpl.js'
+import { waitForTx, lookupTx, type Ledger } from '../shared/xrpl.js'
 import type { PublisherJournal } from './journal.js'
 import type { PublisherKeys } from './registry.js'
 export const EscrowRequestSchema = z.object({ mode: z.literal('key-reveal').optional(), payer: z.string().regex(/^r[1-9A-HJ-NP-Za-km-z]{24,34}$/), intentId: z.string().min(1).max(200), condition: z.string().regex(/^A0258020[0-9A-F]{64}810120$/), cancelAfter: z.number().int().positive() })
@@ -54,10 +54,13 @@ export async function lockEscrow(blob: string, invoice: string, articleId: strin
     const index = Number((await ledger.request({ command: 'ledger', ledger_index: 'validated' })).result.ledger_index)
     if (now >= terms.cancelAfter || Number(tx.LastLedgerSequence) < index || Number(tx.LastLedgerSequence) > index + 25) throw new Error('Escrow create expired or unbounded')
     try { await ledger.request({ command: 'submit', tx_blob: blob }) } catch { /* hash lookup decides */ }
-    const deadline = Date.now() + timing.timeoutMs
-    while (found.state !== 'validated' && Date.now() < deadline) {
-      await new Promise(resolve => setTimeout(resolve, timing.pollMs))
-      found = await lookupTx(ledger, hash)
+    if (process.env.XRPL_STREAM_WAITS === '1') found = await waitForTx(ledger, hash, timing)
+    else {
+      const deadline = Date.now() + timing.timeoutMs
+      while (found.state !== 'validated' && Date.now() < deadline) {
+        await new Promise(resolve => setTimeout(resolve, timing.pollMs))
+        found = await lookupTx(ledger, hash)
+      }
     }
   }
   if (found.state !== 'validated' || found.meta.TransactionResult !== 'tesSUCCESS' || !matchesCreate(found.tx, terms)) throw new Error('Escrow not validated')

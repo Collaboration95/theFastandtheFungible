@@ -247,7 +247,8 @@ describe('escrow-v1 hybrid', () => {
     expect(s.store.getRun(s.run.runId).reservedMinor).toBe(i.amountMinor)
     expect(s.c.txs.size).toBe(1)
   })
-  it('checks 0.2 XRP owner reserve plus principal and both fees before any signature', async () => {
+  it.each(['0', '1'])('checks owner reserve, principal and both fees before signing with stream flag %s', async flag => {
+    vi.stubEnv('XRPL_STREAM_WAITS', flag)
     const s = await setup()
     s.c.state.balance = 1000000 + 200000 + s.candidate.price.amountMinor * 1000 + 3999
     expect((await s.buy()).status).toBe('FAILED_NOT_SETTLED')

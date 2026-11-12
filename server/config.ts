@@ -17,6 +17,7 @@ const assetMode = z.preprocess(v => typeof v === 'string' ? ({'xrp':'XRP','test-
 const ConfigSchema = z.object({
   AUDIENCE_COUNTS: z.enum(['0', '1']).optional(), OPERATOR_TOKEN: text,
   PUBLIC_FEED: z.enum(['0', '1']).optional(),
+  XRPL_STREAM_WAITS: z.enum(['0', '1']).optional(),
   SETTLEMENT_TIMING: z.enum(['0', '1']).optional(),
   HOSTED: z.enum(['0', '1']).optional(),
   RA_API_TOKEN: text, RA_ALLOWED_HOSTS: text, RA_WEB_ORIGIN: url, WALLET_DAILY_CAP_MINOR: cap, SPENDING_PAUSED: z.enum(['0', '1']).optional(), LEGACY_GAP: z.enum(['0', '1']).optional(),
