@@ -60,6 +60,13 @@ export async function waitForKeyMatch(page, timeout = 60000) {
   return result
 }
 
+/** A configured header alone cannot certify this answer's provider. */
+export function assertHostedModels(text) {
+  const research = text.match(/Research · ([^\n]+)/)?.[1]
+  const decision = text.match(/Decide · ([^\n]+)/)?.[1]
+  if (!research || /fixture|fallback/i.test(research) || !decision?.startsWith('fixture')) throw new Error('Expected live answers, rule-based buying on this run; retain actual provenance')
+}
+
 const title = page => page.title()
 
 async function riseToAnswer(rec, { timeout = 260_000 } = {}) {
@@ -230,6 +237,10 @@ export const SCENES = [
       rec.labels.planComparison = await work.locator('.ra-plan-check').innerText()
       rec.labels.trace = await work.innerText()
       rec.mark('plan_check'); await rec.hold(6500)
+      await work.getByRole('tab', { name: 'Models', exact: true }).click()
+      rec.labels.answerModels = await work.locator('.ra-models').innerText()
+      if (target.kind === 'hosted') assertHostedModels(rec.labels.answerModels)
+      await rec.hold(3000)
       await page.getByRole('button', { name: 'Close show work' }).click()
       await page.keyboard.press('Meta+2')
       await page.getByRole('link', { name: /XRPL Credential · issued by ResearchAgent operator/ }).nth(2).waitFor({ timeout: 60000 })

@@ -141,6 +141,8 @@ The authenticated gh download is launched with `npx --package <local-tgz>
 researchagent-mcp`, since a local archive passed as the executable returns
 Permission denied. No product or gate threshold changed.
 
+<a id="state-second-pass-11-nov"></a>
+
 ## State: VID-4 hosted pass, 12 Nov
 
 Explicit `--target hosted` is restored after DEPLOY-5 accepted deployed build

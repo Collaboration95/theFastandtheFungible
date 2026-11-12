@@ -9,7 +9,7 @@ import { THEMES, lineHtml, paletteColor, parseLine, plain, redactLine } from '..
 import { clockText, fillTokens, placeSentences, planShot, resolveRef, resolveSegments, speedLabel, speechText, splitSentences, splitSubtitles, srtTime, timeCues, toSrt } from '../scripts/video/lib/timeline.mjs'
 import { assertPublished, checkVideoPins } from '../scripts/video/lib/release-pins.mjs'
 import { RELEASE_TAG, TGZ, WHEEL, QUESTIONS, HISTORICAL_MCP_QUESTION } from '../scripts/video/config.mjs'
-import { CLAUDE_PROMPT, SCENES, hasTeamAuthoredResult } from '../scripts/video/scenes.mjs'
+import { CLAUDE_PROMPT, SCENES, hasTeamAuthoredResult, assertHostedModels } from '../scripts/video/scenes.mjs'
 import { resolveRecordingTarget } from '../scripts/video/lib/target.mjs'
 import { sessionEnv } from '../scripts/video/lib/terminal.mjs'
 
@@ -273,4 +273,12 @@ describe('explicit recorder target', () => {
     for (const state of ['paused', 'ended', 'unreachable']) await expect(resolveRecordingTarget('hosted', { probe: async () => ({ reachable: state !== 'unreachable', state }) })).rejects.toThrow('Hosted capture unavailable')
     await expect(resolveRecordingTarget('auto')).rejects.toThrow('Use --target')
   })
+})
+
+
+it('requires actual live answer provenance rather than only a configured buying chip', () => {
+  expect(() => assertHostedModels('Research · deepseek · live\nDecide · fixture · offline rules')).not.toThrow()
+  expect(() => assertHostedModels('Research · fixture · offline extracts (fallback)\nDecide · fixture')).toThrow('retain actual provenance')
+  expect(() => assertHostedModels('Research · deepseek\nDecide · openai')).toThrow()
+  expect(() => assertHostedModels('')).toThrow()
 })
