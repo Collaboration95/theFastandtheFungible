@@ -86,8 +86,8 @@ test('writer credential and domain have separate 44 px phone hit areas', async (
 // Synthetic paid-answer fixture: opt-in rating UI; no providers or ledger calls.
 for (const enabled of [false,true]) test(`answer value rating capability ${enabled?'enabled':'disabled'}`,async({page})=>{
  let voted:boolean|null=null,reads=0,writes=0
- await page.route('**/api/demo/status',r=>r.fulfill({json:{hosted:false}}))
- await page.route('**/api/health',r=>r.fulfill({json:{...recording.health,answerRatings:enabled}}))
+ await page.route('**/api/demo/status',r=>r.fulfill({json:status}))
+ await page.route('**/api/health',r=>r.fulfill({json:{...recording.health,labels:{...recording.health.labels,settlement:'XRPL TESTNET · no real value'},corpusProfile:'real',embeddings:'local',answerRatings:enabled}}))
  await page.route('**/api/runs',r=>r.fulfill({json:[]}))
  await page.route('**/runs/*/events*',r=>r.fulfill({contentType:'text/event-stream',body:''}))
  await page.route('**/runs/*',r=>r.fulfill({json:recording.run}))
@@ -96,6 +96,8 @@ for (const enabled of [false,true]) test(`answer value rating capability ${enabl
   if(r.request().method()==='POST'){writes++;voted=r.request().postDataJSON().yes}else reads++
   await r.fulfill({json:{yes:voted}})
  })
+ await page.goto('/')
+ await expect(page.locator('.ra-presets button').first()).toContainText('XRPL account info')
  const loaded=page.waitForResponse('**/api/health')
  await page.goto(`/?run=${recording.run.runId}`);await loaded
  await expect(page.locator('.ra-q')).toBeVisible()
