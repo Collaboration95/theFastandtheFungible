@@ -39,7 +39,7 @@ export class PurchaseManager {
     this.payer = payer ?? new SimulatedPayer()
     if (this.payer instanceof XrplPayer) this.payer.holdEscrowFees(() => store.listIntents().filter(i => i.escrow).reduce((sum,i) => sum + (i.status === 'SUBMITTING' ? 2000 : 0) + (i.escrow?.holdback?.state === 'pending' ? 2000 : 0),0))
     if (this.payer instanceof XrplPayer) restoreHoldbacks(store,this.payer)
-    if (this.payer instanceof XrplPayer) this.payer.restorePending([...store.listIntents('SUBMITTING').flatMap(i => store.getSubmission(i.intentId) ?? []), ...store.escrowOutbox().filter(s => store.getIntent(s.intentId)?.status === 'SUBMITTING')])
+    if (this.payer instanceof XrplPayer) this.payer.restorePending([...store.listIntents('SUBMITTING').flatMap(i => store.getSubmission(i.intentId) ?? []), ...store.escrowOutbox().filter(s => store.getIntent(s.intentId)?.status === 'SUBMITTING' && (s.operation !== 'create' || typeof store.getRun(store.getIntent(s.intentId)!.runId).checkpoint.delegatedOwner !== 'string'))])
   }
   async drain() { await Promise.allSettled(this.active.values()) }
   private ledgerEvent(runId: string, label: string, data: Record<string, unknown>): void {
@@ -87,7 +87,7 @@ export class PurchaseManager {
     let payer = this.delegatedPayers.get(owner)
     if (!payer) {
       payer = this.payer.forAccount(owner)
-      payer.restorePending(this.store.escrowOutbox().filter(s => this.store.getIntent(s.intentId)?.status === 'SUBMITTING' && this.store.getRun(this.store.getIntent(s.intentId)!.runId).checkpoint.delegatedOwner === owner))
+      payer.restorePending(this.store.escrowOutbox().filter(s => s.operation === 'create' && this.store.getIntent(s.intentId)?.status === 'SUBMITTING' && this.store.getRun(this.store.getIntent(s.intentId)!.runId).checkpoint.delegatedOwner === owner))
       this.delegatedPayers.set(owner, payer)
     }
     return payer

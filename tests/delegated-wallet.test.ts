@@ -27,7 +27,7 @@ async function setup(budget = 200, active = true) {
   store.updateRun(run.runId, { checkpoint: { delegatedOwner: visitor.address } })
   const payer = new XrplPayer(ledger, agent, { pollMs: 1, timeoutMs: 10 }), manager = new PurchaseManager(store, client, payer)
   const candidate = await candidateFrom(client.origin, honestArticle)
-  return { c, store, run, agent, visitor, payer, revoke: () => { permitted = false }, buy: (intentId = 'delegated-one') => manager.purchase({ runId: run.runId, candidate, intentId }) }
+  return { c, store, run, agent, visitor, payer, client, revoke: () => { permitted = false }, buy: (intentId = 'delegated-one') => manager.purchase({ runId: run.runId, candidate, intentId }) }
 }
 it('refuses a delegated purchase with zero policy budget before any signature or grant', async () => {
   const s = await setup(0); await s.buy()
@@ -38,6 +38,15 @@ it('refuses an already-revoked grant before signing, even with policy budget', a
   const s = await setup(200, false); const intent = await s.buy()
   expect(intent.status).toBe('FAILED_NOT_SETTLED'); expect(s.c.txs.size).toBe(0)
   expect(s.store.getRun(s.run.runId).contents).toHaveLength(0)
+})
+it('does not restore an unresolved visitor create into the agent sequence queue', async () => {
+  const s = await setup(); s.c.state.validate = false
+  const pending = await s.buy()
+  expect(pending.status).toBe('SUBMITTING')
+  expect(s.store.escrowOutbox(pending.intentId)).toHaveLength(1)
+  new PurchaseManager(s.store, s.client, s.payer)
+  const independent = await s.payer.escrow({ TransactionType: 'EscrowCreate', Amount: '1', Destination: Wallet.generate().address, FinishAfter: s.c.state.now + 100, CancelAfter: s.c.state.now + 300 }, 1, submission => submission, async () => undefined)
+  expect(decode(independent.submission.txBlob).Account).toBe(s.agent.address)
 })
 it('binds visitor ownership, charges once, and refuses a later create after revocation', async () => {
   const s = await setup(); const result = await s.buy(); await s.buy()
