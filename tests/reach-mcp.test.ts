@@ -21,16 +21,16 @@ it('anonymous SDK ask uses web quotas, identity, receipts and pause checks; reje
   const url = `http://127.0.0.1:${(server.address() as {port:number}).port}/mcp`
   const host = new URL(url).host
   const until = new Date(Date.now() + 3_600_000).toISOString()
-  for (const [key,value] of Object.entries({ HOSTED:'1', MCP_PUBLIC:'on', HOSTED_ORIGIN:`https://${host}`, HOSTED_TRUSTED_PROXY:'127.0.0.1', HOSTED_IP_HMAC_KEY:'a'.repeat(32), HOSTED_CONTROL_PATH:control, SETTLEMENT_RAIL:'simulated', LLM_PROVIDER:'fixture', DECISION_PROVIDER:'fixture', ANCHOR_RAIL:'off' })) vi.stubEnv(key,value)
+  for (const [key,value] of Object.entries({ HOSTED:'1', MCP_PUBLIC:'on', AUDIENCE_COUNTS:'1', OPERATOR_TOKEN:'reach-test-operator-token', HOSTED_ORIGIN:`https://${host}`, HOSTED_TRUSTED_PROXY:'127.0.0.1', HOSTED_IP_HMAC_KEY:'a'.repeat(32), HOSTED_CONTROL_PATH:control, SETTLEMENT_RAIL:'simulated', LLM_PROVIDER:'fixture', DECISION_PROVIDER:'fixture', ANCHOR_RAIL:'off' })) vi.stubEnv(key,value)
   const pause = (paused: boolean) => writeFileSync(control,JSON.stringify({admissionsPaused:paused,spendingPaused:paused,reasonCode:'test',expiresAt:until}))
   pause(false)
   const api = await createApiApp({ dbPath: join(dir,'app.db'), publisherUrl, hostedReadiness:async()=>true })
   server.on('request',api.app)
   const wire = (headers:Record<string,string>,method='POST',body='{}') => new Promise<number>((done,fail) => { const r=request(url,{method,headers:{'Content-Type':'application/json',Accept:'application/json, text/event-stream',...headers}},res=>{res.resume();done(res.statusCode!)});r.on('error',fail);r.end(method==='POST'?body:undefined) })
   const clients: Client[] = []
-  const connect = async (ip='198.51.100.1') => {
+  const connect = async (ip='198.51.100.1', cookie='') => {
     const client = new Client({name:'reach-test',version:'1'}); clients.push(client)
-    await client.connect(new StreamableHTTPClientTransport(new URL(url),{requestInit:{headers:{Host:host,'X-Forwarded-For':ip}}}))
+    await client.connect(new StreamableHTTPClientTransport(new URL(url),{requestInit:{headers:{Host:host,'X-Forwarded-For':ip,...(cookie ? {Cookie:cookie} : {})}}}))
     return client
   }
   try {
@@ -71,8 +71,16 @@ it('anonymous SDK ask uses web quotas, identity, receipts and pause checks; reje
     const other = await connect('198.51.100.2')
     expect((await other.callTool({name:'get_run',arguments:{run_id:run.run_id}})).isError).toBe(true)
     expect((await call(client,'status')).remaining.questions).toBe(4)
+    const login = await fetch(url.replace('/mcp','/api/operator/session'),{method:'POST',headers:{Host:host,Origin:`https://${host}`,'X-Operator-Token':'reach-test-operator-token'}})
+    expect(login.status).toBe(200)
+    const operator = await connect('198.51.100.1',login.headers.get('set-cookie')!.split(';')[0])
+    const internal = await call(operator,'ask_expert',{...args,idempotency_key:'reach-operator'})
+    api.store.hostedState(db => {
+      expect(db.prepare('SELECT audience FROM run_audience WHERE run_id=?').get(run.run_id)?.audience).toBe('external')
+      expect(db.prepare('SELECT audience FROM run_audience WHERE run_id=?').get(internal.run_id)?.audience).toBe('internal')
+    })
     pause(true)
     expect((await client.callTool({name:'ask_expert',arguments:{...args,idempotency_key:'paused'}})).isError).toBe(true)
-    expect(api.store.listRuns()).toHaveLength(1)
+    expect(api.store.listRuns()).toHaveLength(2)
   } finally { await Promise.all(clients.map(c=>c.close()));server.closeAllConnections();await new Promise<void>(r=>server.close(()=>r()));await api.close();publisher.closeAllConnections();await new Promise<void>(r=>publisher.close(()=>r()));pub.locals.journal.close();vi.unstubAllEnvs() }
 },60_000)

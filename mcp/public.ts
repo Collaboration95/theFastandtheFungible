@@ -60,11 +60,14 @@ export function publicMcpRouter(context: ApiContext, config: Config, limits: Hos
       active.set(ipKey, (active.get(ipKey) ?? 0) + 1)
       release = () => { const n = (active.get(ipKey) ?? 1) - 1; if (n) active.set(ipKey,n); else active.delete(ipKey) }
       const session = publicIdentity(limits, ip)
+      // Preserve only the signed operator attribution cookie; the web gateway verifies it again.
+      const operatorCookies = (req.get('Cookie') ?? '').split(';').map(v => v.trim()).filter(v => v.startsWith('__Host-ra_operator='))
+      const operatorCookie = operatorCookies.length === 1 ? `; ${operatorCookies[0]}` : ''
       // Re-enter the existing web gateway using only server-created headers. The target is numeric loopback;
       // neither the caller nor forwarded headers can choose it. All web limits/queue/model envelopes apply.
       const web = (path: string, body?: unknown, key?: string) => new Promise<Record<string, unknown>>((done, fail) => {
         const upstream = request({ hostname: '127.0.0.1', port: req.socket.localPort, path, method: body ? 'POST' : 'GET', headers: {
-          Host: new URL(config.HOSTED_ORIGIN!).host, Origin: config.HOSTED_ORIGIN!, Cookie: `__Host-ra_session=${session.token}`,
+          Host: new URL(config.HOSTED_ORIGIN!).host, Origin: config.HOSTED_ORIGIN!, Cookie: `__Host-ra_session=${session.token}${operatorCookie}`,
           'X-CSRF-Token': session.csrf, 'X-Forwarded-For': ip, 'Content-Type': 'application/json', ...(key ? { 'Idempotency-Key': key } : {}),
         }, timeout: 15_000 }, reply => {
           let text = ''; reply.setEncoding('utf8'); reply.on('data', chunk => { text += chunk })
