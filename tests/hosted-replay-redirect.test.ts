@@ -31,7 +31,7 @@ it.skipIf(spawnSync('nginx', ['-v']).status !== 0).each(['front/default.conf.tem
   let config = readFileSync(`docker/hosted/${file}`, 'utf8')
     .replace('listen 8080;', `listen 127.0.0.1:${port};`)
     .replace('include /etc/nginx/mime.types;', 'types { text/html html; }')
-    .replace('/etc/nginx/proxy-headers.conf', resolve('docker/hosted/proxy-headers.conf'))
+    .replaceAll('/etc/nginx/proxy-headers.conf', resolve('docker/hosted/proxy-headers.conf'))
     .replace('/usr/share/nginx/html', dir)
     .replaceAll('${VM_UPSTREAM}', '127.0.0.1:1').replaceAll('${HOSTED_VIDEO_URL}', '')
   for (const name of ['nginx.pid','client','proxy','fastcgi','uwsgi','scgi']) config = config.replaceAll(`/tmp/${name}`, join(dir,name))

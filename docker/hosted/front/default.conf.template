@@ -62,6 +62,12 @@ server {
     rewrite ^ /readyz/funds break;
     proxy_pass http://${VM_UPSTREAM};
   }
+  # Anonymous aggregate numbers have one public policy; session/API routes retain no-store.
+  location = /api/demo/stats {
+    proxy_hide_header Cache-Control;
+    add_header Cache-Control "public, max-age=60" always;
+    proxy_pass http://${VM_UPSTREAM};
+  }
   # Vite content hashes make these immutable. Hide the upstream cache header so there is exactly one policy.
   location /assets/ {
     proxy_hide_header Cache-Control;

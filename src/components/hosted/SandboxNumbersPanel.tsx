@@ -29,6 +29,7 @@ export default function Numbers() {
     <h2>Sandbox scoreboard</h2>
     <p className="ra-sandbox-label">{stats.label}</p>
     <dl className="ra-sandbox-metrics">{metrics.map(([label,value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
+    <p>{fmt(stats.stoppedBeforeAnswer)} stopped before an answer (nothing to anchor)</p>
     <h3>Gate audit · runs with a recorded violation</h3>
     <dl className="ra-sandbox-audit">{audits.map(([label,value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
     <p>{stats.audit.checked} runs with retained traces · {stats.audit.unavailable} unavailable. {stats.inProgress} in progress; {stats.anchorPending} awaiting an anchor.</p>

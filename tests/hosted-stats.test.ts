@@ -64,7 +64,7 @@ it('uses a 60 s cache even across callers and refreshes at expiry', async () => 
   const app=express(); app.use(sandboxStatsRouter(store,now))
   const server=app.listen(0,'127.0.0.1'); await once(server,'listening'); closers.push(()=>new Promise<void>(r=>server.close(()=>r())))
   const url=`http://127.0.0.1:${(server.address() as {port:number}).port}/api/demo/stats`
-  const first=await get(url); expect(first.status).toBe(200); expect(first.headers['set-cookie']).toBeUndefined()
+  const first=await get(url); expect(first.status).toBe(200); expect(first.headers['set-cookie']).toBeUndefined(); expect(first.headers['cache-control']).toBe('public, max-age=60')
   await get(url); now.mockReturnValue(159999); await get(url); expect(aggregate).toHaveBeenCalledTimes(1)
   now.mockReturnValue(160000); await get(url); expect(aggregate).toHaveBeenCalledTimes(2)
   expect((await get(url+'?question=private')).status).toBe(404)
@@ -170,4 +170,54 @@ it('binds policy authority to the selected writer even when article IDs and vers
   expect(aggregateSandbox(store).audit.buyWithoutPolicy).toBe(0)
   select({...source,origin:'https://writer-b.invalid',sellerKey:'synthetic-seller-b',profileId:'other-writer'})
   expect(aggregateSandbox(store).audit).toMatchObject({buyWithoutPolicy:1,readBeforeGrant:0,overBudget:0,duplicateIntent:0,receiptWithoutIntent:0,unanchored:0})
+})
+
+// Anchors attest delivered answers and settled money, not abandoned empty runs.
+it.each(['STOPPED', 'FAILED'])('separates %s before an answer from missing answer or money anchors', phase => {
+  const store = seeded()
+  store.hostedState(db => {
+    db.prepare(`UPDATE runs SET json=json_remove(json_set(json,'$.phase',?),'$.ledgerAnchor') WHERE id='synthetic-2'`).run(phase)
+    db.prepare(`DELETE FROM events WHERE run_id='synthetic-2' AND json_extract(json,'$.type')='DONE'`).run()
+  })
+  expect(aggregateSandbox(store)).toMatchObject({ stoppedBeforeAnswer: 1, anchorPending: 0, audit: { unanchored: 0 } })
+  // A stopped run that already paid still needs an anchor.
+  store.hostedState(db => {
+    db.prepare(`UPDATE runs SET json=json_remove(json_set(json,'$.phase',?),'$.ledgerAnchor') WHERE id='synthetic-0'`).run(phase)
+    db.prepare(`DELETE FROM events WHERE run_id='synthetic-0' AND json_extract(json,'$.type')='DONE'`).run()
+  })
+  expect(aggregateSandbox(store)).toMatchObject({ stoppedBeforeAnswer: 1, purchasesSettled: 2, audit: { unanchored: 1 } })
+  // Even a free DONE answer needs an anchor.
+  store.hostedState(db => db.prepare(`UPDATE runs SET json=json_remove(json,'$.ledgerAnchor') WHERE id='synthetic-3'`).run())
+  expect(aggregateSandbox(store)).toMatchObject({ stoppedBeforeAnswer: 1, audit: { unanchored: 2 } })
+  // A prior DONE cannot be erased by a subsequent stop/failure.
+  store.hostedState(db => db.prepare(`UPDATE runs SET json=json_set(json,'$.phase',?) WHERE id='synthetic-3'`).run(phase))
+  expect(aggregateSandbox(store)).toMatchObject({ stoppedBeforeAnswer: 1, audit: { unanchored: 2 } })
+})
+it('never exempts a stopped run with an orphan receipt from a missing money anchor', () => {
+  const store = seeded()
+  store.hostedState(db => {
+    db.prepare(`UPDATE runs SET json=json_remove(json_set(json,'$.phase','STOPPED'),'$.ledgerAnchor') WHERE id='synthetic-2'`).run()
+    db.prepare(`DELETE FROM events WHERE run_id='synthetic-2' AND json_extract(json,'$.type')='DONE'`).run()
+    db.prepare('UPDATE receipts SET json=? WHERE intent_id=?').run(JSON.stringify({ runId: 'synthetic-2', intentId: 'orphan', amountMinor: 40 }), 'intent-0')
+  })
+  expect(aggregateSandbox(store)).toMatchObject({ stoppedBeforeAnswer: 0, audit: { unanchored: 1, receiptWithoutIntent: 1 } })
+})
+
+it('does not count a cancelled escrow receipt as a settled purchase on a stopped run', () => {
+  const store = seeded()
+  store.hostedState(db => {
+    db.prepare(`UPDATE runs SET json=json_remove(json_set(json,'$.phase','STOPPED'),'$.ledgerAnchor') WHERE id='synthetic-0'`).run()
+    db.prepare(`DELETE FROM events WHERE run_id='synthetic-0' AND json_extract(json,'$.type')='DONE'`).run()
+    db.prepare(`UPDATE intents SET json=json_set(json,'$.escrow.state','CANCELLED','$.status','FAILED_NOT_SETTLED') WHERE id='intent-0'`).run()
+  })
+  expect(aggregateSandbox(store)).toMatchObject({ stoppedBeforeAnswer: 1, purchasesSettled: 1, audit: { unanchored: 0 } })
+})
+it('keeps a charged intent with a missing receipt in the missing-anchor violations', () => {
+  const store = seeded()
+  store.hostedState(db => {
+    db.prepare(`UPDATE runs SET json=json_remove(json_set(json,'$.phase','STOPPED'),'$.ledgerAnchor') WHERE id='synthetic-0'`).run()
+    db.prepare(`DELETE FROM events WHERE run_id='synthetic-0' AND json_extract(json,'$.type')='DONE'`).run()
+    db.prepare(`DELETE FROM receipts WHERE intent_id='intent-0'`).run()
+  })
+  expect(aggregateSandbox(store)).toMatchObject({ stoppedBeforeAnswer: 0, audit: { unanchored: 1 } })
 })

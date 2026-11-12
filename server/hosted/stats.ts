@@ -11,7 +11,7 @@ export const SCOREBOARD_SINCE = Date.parse('2026-11-11T00:00:00Z')
 const charged = new Set(['SETTLED', 'DELIVERY_PENDING', 'DELIVERY_FAILED', 'VERIFIED', 'CLAIM_FAILED', 'CHALLENGED', 'REFUNDED', 'CHALLENGE_REJECTED', 'CHALLENGE_REFUSED'])
 export type SandboxStats = {
   label: string; updatedAt: string; questions: number; purchaseRuns: number; purchasesSettled: number; refunds: number;
-  completed: number; inProgress: number; excludedSimulated: number; anchored: number; anchorPending: number;
+  completed: number; inProgress: number; excludedSimulated: number; anchored: number; anchorPending: number; stoppedBeforeAnswer: number;
   timing: { samples: number; medianMs: number | null; p90Ms: number | null };
   medianSpendMinor: number | null; medianModelUsd: number | null;
   audit: { checked: number; unavailable: number; readBeforeGrant: number; buyWithoutPolicy: number; overBudget: number; duplicateIntent: number; receiptWithoutIntent: number; unanchored: number };
@@ -32,7 +32,7 @@ type Decision = { round: number; selectedResourceId?: string; selectedSourceKey?
  */
 export function aggregateSandbox(store: Store, now = Date.now()): SandboxStats {
   return store.hostedState(db => {
-    const result: SandboxStats = { label: SCOREBOARD_LABEL, updatedAt: new Date(now).toISOString(), questions: 0, purchaseRuns: 0, purchasesSettled: 0, refunds: 0, completed: 0, inProgress: 0, excludedSimulated: 0, anchored: 0, anchorPending: 0,
+    const result: SandboxStats = { label: SCOREBOARD_LABEL, updatedAt: new Date(now).toISOString(), questions: 0, purchaseRuns: 0, purchasesSettled: 0, refunds: 0, completed: 0, inProgress: 0, excludedSimulated: 0, anchored: 0, anchorPending: 0, stoppedBeforeAnswer: 0,
       timing: { samples: 0, medianMs: null, p90Ms: null }, medianSpendMinor: null, medianModelUsd: null,
       audit: { checked: 0, unavailable: 0, readBeforeGrant: 0, buyWithoutPolicy: 0, overBudget: 0, duplicateIntent: 0, receiptWithoutIntent: 0, unanchored: 0 } }
     const rows = db.prepare(`SELECT r.id, sum(max(h.model_used,coalesce(a.micro,0))) AS model, max(h.state) AS state,
@@ -58,19 +58,26 @@ export function aggregateSandbox(store: Store, now = Date.now()): SandboxStats {
       if (terminal) result.completed++; else result.inProgress++
       const anchor = row.anchor ? LedgerAnchorSchema.safeParse(JSON.parse(String(row.anchor))) : undefined
       const anchored = anchor?.success && anchor.data.runIdHash === createHash('sha256').update(id).digest('hex')
-      if (anchored) result.anchored++; else if (terminal && !['active','queued'].includes(String(row.state))) result.audit.unanchored++; else result.anchorPending++
       const settled = receipts.filter(r => intents.some(i => i.intentId === r.intentId && i.escrow?.state !== 'CANCELLED'))
+      const done = [...events].reverse().find(e => e.type === 'DONE')
+      // A receipt with a missing intent is still evidence of money: never exempt it.
+      const orphanReceipt = receipts.some(r => !intents.some(i => i.intentId === r.intentId))
+      const chargedIntent = intents.some(i => charged.has(i.status) && i.escrow?.state !== 'CANCELLED')
+      const stoppedBeforeAnswer = ['STOPPED','FAILED'].includes(String(row.phase)) && !settled.length && !chargedIntent && !orphanReceipt && !done
+      if (anchored) result.anchored++
+      else if (stoppedBeforeAnswer) result.stoppedBeforeAnswer++
+      else if (terminal && !['active','queued'].includes(String(row.state))) result.audit.unanchored++
+      else result.anchorPending++
       result.purchasesSettled += settled.length
       result.refunds += intents.filter(i => i.refund && i.refund.amountMinor > 0).length
       const spent = intents.filter(i => charged.has(i.status)).reduce((n,i) => n+i.amountMinor,0)
       if (settled.length) { result.purchaseRuns++; spends.push(spent) }
       models.push(Number(row.model) / 1_000_000)
-      const done = [...events].reverse().find(e => e.type === 'DONE')
       const started = events.length ? Date.parse(events[0].at) : NaN
       if (done && Number.isFinite(started) && Number.isFinite(Date.parse(done.at)) && Date.parse(done.at) >= started) times.push(Date.parse(done.at) - started)
       if (Math.max(spent, Number(row.spent), receipts.reduce((n,r) => n+r.amountMinor,0)) > Number(row.budget)) result.audit.overBudget++
       const duplicateIdentity = intents.some(i => i.runId !== id || (allIntentIds.get(i.intentId) ?? 0) > 1) || new Set(receipts.map(r => r.intentId)).size < receipts.length
-      if (receipts.some(r => !intents.some(i => i.intentId === r.intentId))) result.audit.receiptWithoutIntent++
+      if (orphanReceipt) result.audit.receiptWithoutIntent++
       if (!events.length) { result.audit.unavailable++; if (duplicateIdentity) result.audit.duplicateIntent++; continue }
       result.audit.checked++
       const grants = new Set<string>(), bought = new Set<string>(), authorized = new Set<string>(), explicitBuys = new Set<string>()
@@ -121,7 +128,7 @@ export function sandboxStatsRouter(store: Store, now: () => number = Date.now) {
     try {
       if (!cache || at >= cache.expires) cache = { expires: at+60000, body: aggregateSandbox(store,at) }
     } catch { res.status(503).json({ error: 'Sandbox numbers are unavailable.' }); return }
-    res.set({ 'Cache-Control': 'public, max-age=0, must-revalidate', 'X-Content-Type-Options': 'nosniff' }).json(cache.body)
+    res.set({ 'Cache-Control': 'public, max-age=60', 'X-Content-Type-Options': 'nosniff' }).json(cache.body)
   })
   router.all('/api/demo/stats', (_req,res) => res.set('Allow','GET, HEAD').status(405).json({ error: 'Method not allowed.' }))
   return router
