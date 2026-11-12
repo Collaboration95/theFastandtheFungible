@@ -1,6 +1,6 @@
 import { Fragment, lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { BUDGET, ModeLabelsSchema, XRPL_LABEL, type Ask as AskInput, type Citation, type ModeLabels, type Plan, type PublicCandidate, type ReputationRecord, type Receipt as ReceiptData, type RunSnapshot } from '../shared/contracts/index.js'
-import { ApiError, ask, createReport, deleteRun, getDemoStatus, getReputation, getRun, listPastRuns, pinRun, resetReputation, retryDelivery, scope, stop, streamRun, type HostedDemoStatus, type PastRun, type ScopeResult } from './api'
+import { ApiError, walletRequest, ask, createReport, deleteRun, getDemoStatus, getReputation, getRun, listPastRuns, pinRun, resetReputation, retryDelivery, scope, stop, streamRun, type HostedDemoStatus, type PastRun, type ScopeResult } from './api'
 import { canAsk, homeState, HostedContext, questionCap, refusal, type Hosted } from './hosted'
 import { dwell, isPaid, isTerminal, runEvents, SPEED, staged, type Pace } from './stage'
 import { candidateOf, favicon, leadSentence, money } from './format'
@@ -15,6 +15,7 @@ import HostedRunNotice from './components/hosted/HostedRunNotice'
 import Notice from './components/Notice'
 import Ask from './components/Ask'
 import AgentSprite from './components/AgentSprite'
+const DelegatedWallet = lazy(() => import('./components/DelegatedWallet'))
 const Settings = lazy(() => import('./components/Settings'))
 import RunActivity from './components/RunActivity'
 import Sources, { getAccessibleContent } from './components/Sources'
@@ -67,6 +68,9 @@ function initialPace(recording: boolean): Pace {
 /** An end-of-run toast is a courtesy, not a pending task: it clears itself so it never lingers on another screen. */
 const END_TOAST_MS = 10_000
 export default function App({ hosted: boot, bootFailed = false }: { hosted?: HostedDemoStatus; bootFailed?: boolean } = {}) {
+  const [ownWallet, setOwnWallet] = useState(false)
+  const [walletReady, setWalletReady] = useState(false)
+  useEffect(() => { if (!browserDemo) void walletRequest<{ enabled: boolean }>('/api/wallet/delegation').then(s => setOwnWallet(s.enabled)).catch(() => {}) }, [])
   const [recording] = useState(() => !boot && recordRequested())
   const [palette, setPalette] = useState<'commands' | 'shortcuts'>()
   const [writersLoading, setWritersLoading] = useState(false)
@@ -498,11 +502,12 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
   if (screen === 'home' || screen === 'settings' || !shown) return provide(<Layout labels={labels} toggle={toggle} nav={nav} navWidth={navWidth}>
     <main id="main" tabIndex={-1} className={`ra-home-wrap${hosted ? ' is-hosted' : ''}`}>
       {banner}
+      {ownWallet && <Suspense fallback={<p role="status">Loading wallet…</p>}><DelegatedWallet onReady={setWalletReady} /></Suspense>}
       {hosted && state
-        ? <Ask onAsk={sendAsk} busy={!canAsk(state) || sending || !!pending || !!waiting || (!!shown && !finished)} above={waiting ? <HostedWaiting hosted={hosted} onCancel={() => setWaiting(undefined)} /> : pendingCard} settlement={settlement} draft={draft} onDraft={setDraft} picked={Math.min(picked, Math.floor(questionCap(hosted.status) / 5) * 5)} onPick={setPicked}
+        ? <Ask onAsk={sendAsk} busy={(ownWallet && !walletReady) || !canAsk(state) || sending || !!pending || !!waiting || (!!shown && !finished)} above={waiting ? <HostedWaiting hosted={hosted} onCancel={() => setWaiting(undefined)} /> : pendingCard} settlement={settlement} draft={draft} onDraft={setDraft} picked={Math.min(picked, Math.floor(questionCap(hosted.status) / 5) * 5)} onPick={setPicked}
             intro={<HostedIntro hosted={hosted} state={state} />} closed={!canAsk(state)} budgetMax={Math.floor(questionCap(hosted.status) / 5) * 5} composerNote={canAsk(state) ? <HostedComposerNote hosted={hosted} state={state} /> : undefined}
             placeholder={settlement.startsWith('XRPL') ? 'Ask about XRPL payments, escrow, x402 or agent wallets…' : undefined} realCorpus={health.realCorpus} examplesLabel="Questions that answer well today" />
-        : <Ask onAsk={sendAsk} busy={healthError || sending || !!pending || (!!shown && !finished)} above={pendingCard} settlement={settlement} universalMinor={!browserDemo && universal ? universalMinor : undefined} onSettings={openSettings} draft={draft} onDraft={setDraft} picked={picked} onPick={setPicked}
+        : <Ask onAsk={sendAsk} busy={(ownWallet && !walletReady) || healthError || sending || !!pending || (!!shown && !finished)} above={pendingCard} settlement={settlement} universalMinor={!browserDemo && universal ? universalMinor : undefined} onSettings={openSettings} draft={draft} onDraft={setDraft} picked={picked} onPick={setPicked}
             />}
     </main>
     {overlays}

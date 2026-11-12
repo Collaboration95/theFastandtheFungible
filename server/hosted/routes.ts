@@ -75,7 +75,7 @@ export function hostedRouter(context: ApiContext, config: Config, limits: Hosted
     const remaining = limits.remaining(principal), links = readHostedLinks(config)
     const state = ended ? 'ended' : c.admissionsPaused || c.spendingPaused ? 'paused' : !(await ready()) || !remaining.questions || !remaining.minor ? 'degraded' : queue.busy ? 'busy' : 'ready'
     return { state, questionCapMinor: limits.questionMinor, capabilities: { ask: (state === 'ready' || state === 'busy') && queue.canQueue, scope: state === 'ready' || state === 'busy', history: true, receipts: true, pdf: false, settings: false, faultControls: false }, remaining,
-      labels: { models: modelsLabel(isLlmConfigured(), !context.labels.decision.startsWith('fixture')), rail: context.payer ? 'Shared XRPL Testnet demo · no real value' : 'SIMULATED · no real value' },
+      labels: { models: modelsLabel(isLlmConfigured(), !context.labels.decision.startsWith('fixture')), rail: context.payer ? config.WALLET_MODE === 'delegated' ? 'XRPL Testnet · visitor wallet' : 'Shared XRPL Testnet demo · no real value' : 'SIMULATED · no real value' },
       // The operator's links file (state disk, no redeploy) wins over the environment; `proof` is optional and absent until set.
       links: { repo: REPO, deck: config.HOSTED_DECK_URL || `${REPO}/blob/main/docs/submission/ResearchAgent-SFF-deck.pdf`, video: links.video || config.HOSTED_VIDEO_URL || '', progress: config.HOSTED_PROGRESS_URL || `${PAGES}/progress/`, replay: config.HOSTED_REPLAY_URL || `${PAGES}/demo/`, ...(links.proof ? { proof: links.proof } : {}) } }
   }
@@ -139,13 +139,16 @@ export function hostedRouter(context: ApiContext, config: Config, limits: Hosted
     // Read durable identity before queue capacity, including reconnect after a lost response.
     const previous = limits.existing(principal,key,'submit',req.body)
     if (previous?.run_id) return res.status(200).json(store.getRun(previous.run_id))
+    context.wallets?.requireBinding(res)
     queue.capacity(); requireAdmissions(config)
     if (!(await ready())) throw new HostedError(503,'demo_unavailable')
     // Reserve after the async readiness probe, then bind and enqueue without another await.
+    context.wallets?.requireBinding(res)
     const hold = limits.reserve(principal,key,input.question,res.locals.hostedIp,input.budgetMinor,'submit',req.body)
     if (hold.run_id) return res.status(200).json(store.getRun(hold.run_id))
     const admitted = store.admit({surface:'web',principal,question:input.question,requestedMinor:input.budgetMinor,idempotencyKey:key,maxMinor:limits.questionMinor,labels:context.labels})
     const runId = admitted.run.runId
+    if (!admitted.reused) context.wallets?.bindRun(res, runId)
     limits.update(hold.id,{run_id:runId,state:admitted.reused?'interrupted':'queued'})
     if (admitted.reused) return res.status(200).json(store.getRun(runId))
     const expired = () => { loop.stop(runId); limits.update(hold.id,{state:'expired'}); limits.settle(hold.id); store.appendEvent(runId,{type:'SNAPSHOT',label:'The waiting time ended. No new work will start.'}) }

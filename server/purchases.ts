@@ -2,6 +2,7 @@ import { checkFreshness } from '../publisher/writers/ledger-analytics/freshness.
 
 import { regulatedWriterRefusal } from './spend-policy.js'
 import { restoreHoldbacks, settleHoldback } from './holdback.js'
+import { loadConfig } from './config.js'
 import { sourceKey, sameSource, sourceBinding } from '../shared/source-identity.js'
 import { AssetSchema, ledgerAmount, matchesAmount } from '../shared/contracts/asset.js'
 import { EscrowPurchases, escrowSelected } from './escrow.js'
@@ -38,7 +39,7 @@ export class PurchaseManager {
     this.payer = payer ?? new SimulatedPayer()
     if (this.payer instanceof XrplPayer) this.payer.holdEscrowFees(() => store.listIntents().filter(i => i.escrow).reduce((sum,i) => sum + (i.status === 'SUBMITTING' ? 2000 : 0) + (i.escrow?.holdback?.state === 'pending' ? 2000 : 0),0))
     if (this.payer instanceof XrplPayer) restoreHoldbacks(store,this.payer)
-    if (this.payer instanceof XrplPayer) this.payer.restorePending([...store.listIntents('SUBMITTING').flatMap(i => store.getSubmission(i.intentId) ?? []), ...store.escrowOutbox().filter(s => store.getIntent(s.intentId)?.status === 'SUBMITTING')])
+    if (this.payer instanceof XrplPayer) this.payer.restorePending([...store.listIntents('SUBMITTING').flatMap(i => store.getSubmission(i.intentId) ?? []), ...store.escrowOutbox().filter(s => store.getIntent(s.intentId)?.status === 'SUBMITTING' && (s.operation !== 'create' || typeof store.getRun(store.getIntent(s.intentId)!.runId).checkpoint.delegatedOwner !== 'string'))])
   }
   async drain() { await Promise.allSettled(this.active.values()) }
   private ledgerEvent(runId: string, label: string, data: Record<string, unknown>): void {
@@ -75,6 +76,22 @@ export class PurchaseManager {
       }, { asType: 'tool' })
     } finally { this.identities.delete(input.intentId) }
   }
+  private readonly delegatedPayers = new Map<string, XrplPayer>()
+  private escrowPayer(runId: string): XrplPayer {
+    if (!(this.payer instanceof XrplPayer)) throw new Error('Testnet payer required')
+    const owner = this.store.getRun(runId).checkpoint.delegatedOwner
+    if (typeof owner !== 'string') {
+      if (loadConfig().WALLET_MODE === 'delegated') throw new Error('Visitor wallet authority missing')
+      return this.payer
+    }
+    let payer = this.delegatedPayers.get(owner)
+    if (!payer) {
+      payer = this.payer.forAccount(owner)
+      payer.restorePending(this.store.escrowOutbox().filter(s => s.operation === 'create' && this.store.getIntent(s.intentId)?.status === 'SUBMITTING' && this.store.getRun(this.store.getIntent(s.intentId)!.runId).checkpoint.delegatedOwner === owner))
+      this.delegatedPayers.set(owner, payer)
+    }
+    return payer
+  }
   private async policyPurchase(input: Purchase): Promise<PurchaseIntent> {
     const existing = this.store.getIntent(input.intentId)
     const unsignedEscrow=existing?.status==='SUBMITTING' && !!existing.escrow && !this.store.escrowOutbox(input.intentId).some(t=>t.operation==='create')
@@ -89,10 +106,10 @@ export class PurchaseManager {
       }
       if(process.env.REGULATED_MODE==='on' && manifest) this.store.acceptCredentialForIntent(input.intentId,manifest.wallet)
     }
-    const escrow = existing?.escrow || !existing && escrowSelected(this.store, input.runId, input.candidate, input.escrow)
+    const escrow = loadConfig().WALLET_MODE === 'delegated' || typeof this.store.getRun(input.runId).checkpoint.delegatedOwner === 'string' || existing?.escrow || !existing && escrowSelected(this.store, input.runId, input.candidate, input.escrow)
     if (!escrow) return this.buy(input)
     if (!(this.payer instanceof XrplPayer)) return Promise.resolve(this.store.skipEscrow({ source: input.candidate.source, intentId: input.intentId, runId: input.runId, profileId: input.candidate.profileId, resourceId: input.candidate.resourceId, version: input.candidate.version, amountMinor: input.candidate.price.amountMinor, status: 'SKIPPED' }, 'Escrow requires the XRPL Testnet rail; no fallback'))
-    return new EscrowPurchases(this.store, this.client, this.payer).purchase(input.runId, { ...input.candidate, manifest: input.manifest ?? input.candidate.manifest }, input.intentId)
+    return new EscrowPurchases(this.store, this.client, this.escrowPayer(input.runId)).purchase(input.runId, { ...input.candidate, manifest: input.manifest ?? input.candidate.manifest }, input.intentId)
   }
   private async buy({ runId, candidate, intentId, manifest = candidate.manifest }: Purchase): Promise<PurchaseIntent> {
     let intent = this.store.getIntent(intentId)
@@ -300,7 +317,7 @@ export class PurchaseManager {
           if(reason){const refused=this.store.failSubmission(intent.intentId,reason);this.store.appendEvent(intent.runId,{type:'PURCHASE',label:reason,data:{intentId:intent.intentId,status:refused.status}});return refused}
           this.store.acceptCredentialForIntent(intent.intentId,manifest!.wallet)
         }
-        if (this.store.getEscrow(intent.intentId) && this.payer instanceof XrplPayer) return new EscrowPurchases(this.store, this.client, this.payer).advance(intent.intentId)
+        if (this.store.getEscrow(intent.intentId) && this.payer instanceof XrplPayer) return new EscrowPurchases(this.store, this.client, this.escrowPayer(intent.runId)).advance(intent.intentId)
         const submission = this.store.getSubmission(intent.intentId)
         try {
           // Nothing persisted means nothing was ever signed or sent (the blob is stored before it leaves).

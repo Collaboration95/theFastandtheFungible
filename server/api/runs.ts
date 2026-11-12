@@ -74,10 +74,12 @@ export function startRun(context: ApiContext, surface: 'web' | 'mcp' = 'web'): R
     // Read identity before capacity: retries return the original durable run.
     const old = store.admissionRun(admission.surface, admission.principal, admission.idempotencyKey)
     if (old) { if (old.question !== input.question) throw new Error('Idempotency conflict'); res.status(200).json(old); return }
+    context.wallets?.requireBinding(res)
     const release = context.work.acquire()
     let admitted: ReturnType<typeof admit>
     try { admitted = admit(store, admission) } catch (error) { release(); throw error }
     if (!admitted.reused && input.escrow !== undefined) store.updateRun(admitted.run.runId, { checkpoint: { ...admitted.run.checkpoint, escrow: input.escrow } })
+    if (!admitted.reused) context.wallets?.bindRun(res, admitted.run.runId)
     const run = store.getRun(admitted.run.runId)
     res.status(admitted.reused ? 200 : 201).json(run)
     if (admitted.reused) { release(); return }

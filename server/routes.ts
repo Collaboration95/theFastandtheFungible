@@ -5,6 +5,7 @@ import { audienceMiddleware, operatorSessionRouter } from './hosted/audience.js'
 import { publicFeedRouter } from './api/feed.js'
 import { publishingGateway } from '../publisher/publishing/gateway.js'
 import { publicMcpRouter } from '../mcp/public.js'
+import { delegatedWallets, WalletConnectionError } from './delegated-wallet.js'
 import { writeSse, endSse, sseBufferedBytes } from './api/sse.js'
 import { writersRouter } from './api/writers.js'
 import { hostedWriterPages } from './hosted/writers.js'
@@ -144,6 +145,7 @@ async function createConfiguredApi(options: ApiOptions = {}) {
   // Requested Testnet never silently falls back to simulated settlement.
   const payer = options.payer ?? (config.SETTLEMENT_RAIL === 'xrpl-testnet' && config.XRPL_PAYER_SEED ? (hosted ? hostedPayer(config) : XrplPayer.fromEnv()) : undefined)
   if (config.ANCHOR_RAIL !== 'off' && payer instanceof XrplPayer) anchors = new AnswerAnchors(store, payer)
+  if (config.WALLET_MODE === 'delegated' && !payer) throw new Error('Delegated wallet mode requires a Testnet agent signer')
   const purchases = new PurchaseManager(store, client, payer)
   let provider = options.provider
   // DECISION_PROVIDER=openai: OpenAI Decisions (gpt-6-luna, #214); =cloudflare: Clef (the one-line revert); otherwise the labelled fixture.
@@ -205,6 +207,8 @@ async function createConfiguredApi(options: ApiOptions = {}) {
   }, sseGzip: config.HOSTED === '1' && config.HOSTED_SSE_GZIP !== '0', onStreamOpen: runId => { if (config.HOSTED === '1') { lastSnapshot.set(runId, Date.now()); if (['DONE','FAILED','STOPPED'].includes(store.getRun(runId).phase)) terminalSnapshots.add(runId) } }, onStreamEmpty: runId => { clearTimeout(snapshotTimers.get(runId)); snapshotTimers.delete(runId); lastSnapshot.delete(runId); terminalSnapshots.delete(runId) }, reportDir, reportJobs, progress }
   if (hosted) reach.use(express.json({ limit: '16kb' }), publicMcpRouter(context, config, hosted))
   const hire = hireService(context, { principal: publicHirePrincipal, admitted: bindPublicHire, finished: runId => finishPublicHire(hosted, runId) })
+  context.wallets = delegatedWallets(context)
+  app.use(context.wallets.router)
   let readiness: HostedReadiness | undefined
   if (hosted && queue) {
     const payerWatch = new PayerWatch()
@@ -281,6 +285,7 @@ async function createConfiguredApi(options: ApiOptions = {}) {
   app.use(mcpRouter(context))
   app.use(reportsRouter(context))
   const handleError: ErrorRequestHandler = (error, _req, res, _next) => {
+    if (error instanceof WalletConnectionError) { res.status(409).json({ error: error.message }); return }
     const notFound = error instanceof Error && error.message === 'Run not found'
     const status = error instanceof HostedError ? error.status : requestBodyStatus(error) ?? (error instanceof OverloadedError ? 503 : error instanceof AgentDenied ? 403 : notFound ? 404 : error instanceof z.ZodError ? 400 : 500)
     if (error instanceof HostedError) { res.set('Retry-After','30').status(status).json({error:error.code}); return }

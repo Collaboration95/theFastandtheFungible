@@ -32,6 +32,7 @@ export const canAsk = (state: HomeState) => state === 'ready' || state === 'busy
 /** The single environment indicator (hard gate 5). The server's labels decide fixture vs live and Testnet vs simulated. */
 export function environment(status: HostedDemoStatus, connection?: Hosted['connection']) {
   const testnet = /testnet/i.test(status.labels.rail) && !/simulat/i.test(status.labels.rail)
+  const ownWallet = testnet && /visitor wallet/i.test(status.labels.rail)
   // Everything offline, or (11 Nov) live answers with the fixture decision model choosing what to buy.
   const fixture = /^fixture models|unavailable/i.test(status.labels.models)
   const ruleBuying = !fixture && /fixture purchase decisions/i.test(status.labels.models)
@@ -40,10 +41,11 @@ export function environment(status: HostedDemoStatus, connection?: Hosted['conne
   // The phone chip is the same chip, shortened: the same two facts (which rail, no real value), never a second name.
   const compact = testnet ? ENV.testnetShort : ENV.simulatedShort
   const state = status.state === 'ended' ? 'ended' : connection === 'offline' ? 'offline' : status.state === 'paused' ? 'paused' : undefined
+  const full = state ? configured.replace(/ · [^·]+ · no real value$/, ` · ${state} · no real value`) : configured
   return {
-    testnet, fixture, ruleBuying, state,
-    full: state ? configured.replace(/ · [^·]+ · no real value$/, ` · ${state} · no real value`) : configured,
-    short: state ? compact.replace(' · no real value', ` · ${state} · no real value`) : compact,
+    testnet, fixture, ruleBuying, state, ownWallet,
+    full: ownWallet ? full.replace(/^Shared XRPL Testnet demo/, status.labels.rail).replace(/ · no real value$/, '') : full,
+    short: ownWallet ? `XRPL Testnet${state ? ` · ${state}` : ''}` : state ? compact.replace(' · no real value', ` · ${state} · no real value`) : compact,
     tone: state ? 'off' : status.state === 'degraded' || !testnet ? 'warn' : 'live',
   } as const
 }
