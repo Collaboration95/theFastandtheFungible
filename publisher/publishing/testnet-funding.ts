@@ -154,7 +154,9 @@ export async function fundTestnetWallet(wallet: Wallet): Promise<void> {
       await client.request({ command: 'account_info', account: wallet.classicAddress, ledger_index: 'validated' })
       return // Receiving requires no balance top-up for an existing account.
     } catch (error) { if ((error as { data?: { error?: string } }).data?.error !== 'actNotFound') throw error }
-    await client.fundWallet(wallet)
+    let timer: ReturnType<typeof setTimeout> | undefined
+    try { await Promise.race([client.fundWallet(wallet), new Promise<never>((_,reject) => { timer=setTimeout(()=>reject(Error('Faucet timeout')),30000) })]) }
+    finally { clearTimeout(timer) }
   } catch { throw new Error('Testnet wallet funding failed. The key is saved; rerun the same command to retry. Check XRPL_RPC_URL and Testnet faucet availability.') }
   finally { await client.disconnect() }
 }

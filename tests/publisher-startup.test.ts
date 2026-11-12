@@ -12,11 +12,13 @@ it('fails startup and closes the journal when the writer registry cannot load', 
   const app = express()
   app.locals.ready = app.locals.writersReady = Promise.reject(new Error('Writer keys unavailable'))
   app.locals.journal = { close: vi.fn() }
+  app.locals.closePublishing = vi.fn(async () => {})
   const listen = vi.spyOn(app, 'listen')
   vi.mocked(createPublisherApp).mockReturnValue(app)
   await expect(startPublisher()).rejects.toThrow('Writer keys unavailable')
   expect(listen).not.toHaveBeenCalled()
   expect(app.locals.journal.close).toHaveBeenCalledOnce()
+  expect(app.locals.closePublishing).toHaveBeenCalledOnce()
 })
 
 it.each([['simulated', SIMULATED_LABEL], ['xrpl-testnet', XRPL_LABEL]])('labels startup for the %s rail', async (rail, label) => {
@@ -25,6 +27,7 @@ it.each([['simulated', SIMULATED_LABEL], ['xrpl-testnet', XRPL_LABEL]])('labels 
   const app = express()
   app.locals.ready = app.locals.writersReady = Promise.resolve()
   app.locals.journal = { close: vi.fn() }
+  app.locals.closePublishing = vi.fn(async () => {})
   vi.mocked(createPublisherApp).mockReturnValue(app)
   const log = vi.spyOn(console, 'log').mockImplementation(() => {})
   const signals = ['SIGTERM', 'SIGINT'] as const

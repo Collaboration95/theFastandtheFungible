@@ -1,6 +1,7 @@
 import { answerRatingsRouter } from './api/answer-ratings.js'
 import { audienceMiddleware, operatorSessionRouter } from './hosted/audience.js'
 import { publicFeedRouter } from './api/feed.js'
+import { publishingGateway } from '../publisher/publishing/gateway.js'
 import { writeSse, endSse, sseBufferedBytes } from './api/sse.js'
 import { writersRouter } from './api/writers.js'
 import { hostedWriterPages } from './hosted/writers.js'
@@ -125,9 +126,10 @@ async function createConfiguredApi(options: ApiOptions = {}) {
     store.spendingGuard = () => hostedControl(config).spendingPaused
     app.use(sandboxStatsRouter(store))
     app.use(sessionGuard(hosted))
+    app.use(publishingGateway(config, store))
     app.use(express.json({ limit: '16kb' }))
     app.use(accessGuard(hosted))
-  } else app.use(admissionGuard(config, store))
+  } else { app.use(admissionGuard(config, store)); app.use(publishingGateway(config, store)) }
   app.get('/openapi.json', (_req, res) => res.json(openapi))
   app.post('/api/verify', express.json({ limit: '8mb' }), async (req, res) => {
     res.json(await verifyAnswer(req.body, { testnet: req.query.testnet === '1', expectHead: typeof req.query.expectHead === 'string' ? req.query.expectHead : undefined }))

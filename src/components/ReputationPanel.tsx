@@ -1,3 +1,4 @@
+import WebPublishing from './WebPublishing'
 import Icon from './Icon'
 import { useEffect, useState } from 'react'
 import type { ReputationRecord, ReputationSummary, RunSnapshot } from '../../shared/contracts/index.js'
@@ -47,6 +48,7 @@ export default function ReputationPanel({ records, run, full, presenter = false,
   return <section className="ra-panel ra-rep" aria-label="Writers">
     {presenter && onReset && <div className="ra-panel-h"><button type="button" className="ra-btn" onClick={onReset} title="Presenter only: wipe every reputation record">Reset reputation</button></div>}
     <p className="ra-note">Your purchases and demo-wide sales are shown separately.</p>
+    {import.meta.env.MODE !== 'browser-demo' && <WebPublishing />}
     <WriterEarnings />
     {local.length > 0 && <div><h2>Local writers</h2><ul>{local.map(writer => <li key={writer.slug}><a href={`${writer.origin}/w/${writer.slug}/`} target="_blank" rel="noreferrer">{writer.slug}</a></li>)}</ul></div>}
     {list.length === 0 ? <p>No history yet.</p> : <div className="ra-table-scroll"><table>

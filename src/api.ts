@@ -226,3 +226,12 @@ export async function createRefusalProof(runId: string): Promise<RefusalProof> {
 const AnswerRatingSchema = z.object({yes:z.boolean().nullable()})
 export const getAnswerRating = async (runId: string, signal?: AbortSignal) => AnswerRatingSchema.parse(await request(`${runPath(runId)}/rating`,undefined,signal))
 export const rateAnswer = async (runId: string, yes: boolean) => { try { return AnswerRatingSchema.parse(await request(`${runPath(runId)}/rating`,{yes})) } catch (error) { if (error instanceof ApiError && error.status===409) return getAnswerRating(runId); throw error } }
+
+/** Publishing uses the existing hosted CSRF session; operator secrets stay in component memory. */
+export async function publishingRequest(path: string, method = 'GET', body?: unknown, extra: Record<string,string> = {}) {
+  if (!/^\/api\/publishing\//.test(path)) throw Error('Invalid publishing path')
+  const response = await fetch(path, { method, headers: { 'Content-Type':'application/json', ...(hostedCsrf && method !== 'GET' ? {'X-CSRF-Token':hostedCsrf} : {}), ...extra }, ...(body === undefined ? {} : {body:JSON.stringify(body)}) })
+  const value = await response.json()
+  if (!response.ok) throw Error(typeof value.error === 'string' ? value.error : 'Publishing is unavailable.')
+  return value
+}
