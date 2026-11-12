@@ -113,3 +113,51 @@ real Testnet package acceptance below. No hosted endpoint was contacted. The nat
 `/v1/ask` reaches the API and returns 404 with the flag off, and that a dummy
 `PAYMENT-SIGNATURE` arrives unchanged through both nginx proxies. It submits no
 payment.
+
+## Unpublished seller packages
+
+Express, Hono and typed FastAPI packages preserve `key-reveal-escrow` and the
+original v2 headers/envelope fields. A fourth shared Node protocol package
+keeps both adapters on the same verification and recovery logic. All include
+README, types, offline tests and opt-in Testnet tests; each adapter README has
+a 10-line quickstart. Nothing was published to a registry.
+
+Reproduce package-archive tests without root dependency changes:
+
+```sh
+node scripts/reach/package-tests.mjs
+python3 -m venv /tmp/reach-python
+/tmp/reach-python/bin/pip install ./packages/seller-fastapi pytest httpx
+/tmp/reach-python/bin/python -m pytest packages/seller-fastapi -q
+```
+
+Observed Node archive tests: 8 passed, 2 Testnet-only skipped; public TypeScript
+imports compiled. The current opt-in archive run passed all 10 cases (no skips),
+including one real purchase per Node framework:
+
+- Express create: `55B23032BA3C63F82F6B24AB756612B0021A2EAFDD516B96DB8D180FB74D94E4`
+- Express finish: `81D5FF2B97E33D0A4A37627EE7506BA657EEC9A8BE3A9B9055AFF5CE29639F84`
+- Hono create: `49CE4269C95F5E3D8311955A66A2B7A054D8344EF67593B9BFF7E5D29D763F27`
+- Hono finish: `D76F261A427FCA5B5AE958A6DAD1225C7959054FE46D3CFF8E0020B8C039461D`
+
+Command: `XRPL_KEY_REVEAL_TESTNET=1 node scripts/reach/package-tests.mjs`.
+Python offline: 4 passed, 1 skipped, including restart recovery after a lost finish response.
+The built FastAPI wheel also passes these four offline tests (one Testnet case
+skipped), and includes its typing marker, module, license and metadata. The additional FastAPI
+Testnet run (`XRPL_KEY_REVEAL_TESTNET=1 ... pytest -s`) passed all 5 tests in
+55.09 s with these real transactions:
+
+- Create: `16965178A031A17C67A1A95E4B929844D70033AE1034AC50673E24D41B002D3D`
+- Finish: `D7102345A24F21ED592760D516943946B84670D61B28F7DAABEC8B95A89E6866`
+
+Before a new finish, validated-ledger checks before and after autofill require
+more than eight seconds to expiry. Node/Python regressions first reproduced
+key-bearing transaction construction with one second remaining, then passed
+with zero such construction. This reduces stale reveals, not all validation races.
+The concurrent-new-intent regression also proves the journal capacity stays bounded.
+New-invoice regressions reproduced a second signature while an earlier finish
+outcome was uncertain in both Node and Python. The signer now refuses another
+invoice until the original finish is reconciled. The lost-response restart regression checks a recorded finish hash and returns
+its validated result without submitting again. Journals persist keys and the
+original signed finish before submission. One process owns a wallet/journal;
+the package READMEs describe this limit and external ingress controls.

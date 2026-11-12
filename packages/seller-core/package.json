@@ -1,0 +1,38 @@
+{
+  "name": "@researchagent/seller-core",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "XRPL Testnet x402 key-reveal escrow seller protocol",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.mjs"
+    },
+    "./testnet": {
+      "types": "./testnet.d.ts",
+      "import": "./testnet.mjs"
+    }
+  },
+  "files": [
+    "index.mjs",
+    "index.d.ts",
+    "README.md",
+    "testnet.mjs",
+    "LICENSE",
+    "testnet.d.ts"
+  ],
+  "scripts": {
+    "test": "node --test test.mjs"
+  },
+  "dependencies": {
+    "xrpl": "4.7.0",
+    "x402-xrpl": "0.3.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

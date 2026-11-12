@@ -1355,3 +1355,83 @@ persistence or a mainnet deployment. No cloud resource or live ledger call ran.
 - **Workaround:** preserve the original ticket and the two-slot limit. After repeated bypasses, wake only this lane's oldest queued waiter at two-second intervals to recheck admission; no other lane's process, shared wrapper, lock, slot count or gate is changed.
 - **Suggested fix:** reserve a free slot for the earliest pending ticket, or let only the front ticket claim any free slot before removing its ticket.
 - **Severity / mainnet impact:** medium local verification throughput issue; no model spend, XRPL transaction, policy change or mainnet impact.
+
+
+## 2026-11-12 — key-reveal scheme needs a dedicated payer adapter (observed offline)
+
+- **Evidence:** `node --test examples/x402-key-reveal-escrow/example.test.mjs`
+  passes 2 offline tests (1 Testnet test skipped). Pinned `x402-xrpl@0.3.4`
+  preserves the custom `key-reveal-escrow` fields through its v2 header codec,
+  while `XRPLPresignedPaymentPayer.supports()` returns false for that scheme.
+  The new reference packages and real Testnet hashes are in
+  `docs/evidence/reach/REACH.md`.
+- **Workaround:** use a dedicated policy-bound EscrowCreate buyer and verify the
+  validated finish/key/ciphertext. The isolated Python HTTP buyer interoperates
+  with the locally installed Hono seller; exact-payment SDK hire remains a
+  separate endpoint, with no silent scheme substitution.
+- **Suggested fix:** publish a custom-scheme adapter interface and conformance
+  vectors covering challenge commitments, pending/failed reveal, same-blob
+  recovery and explicit expiry cancellation. The proposal under `docs/upstream/`
+  is a draft only, not filed or adopted.
+- **Severity / mainnet impact:** medium interoperability gap. The same scheme
+  negotiation issue would affect other networks, but mainnet was not written
+  or tested; current packages deliberately support XRPL Testnet only.
+
+
+## 2026-11-12 — inline ciphertext expands the payment-required header (code-derived)
+
+- **Evidence:** `packages/seller-core/index.mjs` and
+  `packages/seller-fastapi/src/researchagent_seller_fastapi/__init__.py` preserve
+  the example's complete ciphertext envelope in both 402 JSON and the base64
+  `PAYMENT-REQUIRED` header. Hex and base64 expand each plaintext byte to roughly
+  8/3 header bytes before fixed metadata. This is a code-derived transport limit,
+  not a recorded Testnet outage; the acceptance payload is a short fixture.
+- **Workaround:** bound content and qualify the server, intermediary and buyer
+  response-header limits before exposing long articles. Existing packages keep
+  the scheme name and fields unchanged; they do not silently drop the envelope.
+- **Suggested fix:** define an explicitly negotiated body-only or
+  content-addressed ciphertext extension while retaining the complete challenge
+  commitment and verifying content before release. Add large-payload
+  interoperability vectors across common HTTP stacks.
+- **Severity / mainnet impact:** medium interoperability limit for large content.
+  It is independent of ledger network and could affect mainnet transport too;
+  mainnet was not written or tested. No large-article transport success is claimed.
+
+
+## 2026-11-12 — uncertain finishes need exclusive wallet sequence ownership (observed synthetic)
+
+- **Evidence:** the Node core pending-wallet regression and the typed FastAPI
+  restart regression first reproduced two autofills/submissions for different
+  invoices while the first finish outcome was unresolved. Both use synthetic
+  clients; no public-node collision or mainnet transaction is claimed.
+- **Workaround:** implemented in both seller cores: a persisted unfinished
+  signature prevents another invoice from allocating a finish signature. Retry
+  and reconcile the original invoice/blob; do not replace it after a timeout.
+- **Suggested fix:** escrow seller templates and SDK sequence allocators should
+  preserve an exclusive lease through uncertain submission, expose a recovery
+  operation and include interleaved-invoice timeout conformance cases.
+- **Severity / mainnet impact:** medium recovery/availability risk. A lagging
+  sequence allocator could replace a pending finish, while a fulfillment may
+  already be public. The risk is ledger-independent; this observation is
+  synthetic, and mainnet was not written or tested.
+
+
+## 2026-11-12 — existing escrow does not imply finish headroom (observed synthetic)
+
+- **Evidence:** near-expiry Node core and typed FastAPI regressions first reached
+  autofill with one second remaining on a still-existing validated escrow.
+  No real key or transaction was submitted by those synthetic tests.
+  The current package Testnet purchases are recorded in
+  `docs/evidence/reach/REACH.md` and pass after the fix.
+- **Workaround:** check validated ledger close time before and after autofill;
+  refuse a new finish unless more than eight seconds remain. Retain the original
+  signed finish on uncertain recovery; never sign a replacement. This bound
+  reduces stale revelation but cannot guarantee validation before expiry.
+- **Suggested fix:** include explicit finish-headroom and expiry-race vectors in
+  scheme adapters and documentation. A live escrow entry alone is insufficient.
+  [EscrowFinish rules](https://xrpl.org/docs/references/protocol/transactions/types/escrowfinish)
+  reject settlement once the escrow has expired.
+- **Severity / mainnet impact:** medium confidentiality/atomicity risk for late
+  reveals; the ledger does not hide a signed fulfillment that fails settlement.
+  The same failure mode could affect mainnet, but this regression is synthetic
+  and mainnet was not written or tested.
