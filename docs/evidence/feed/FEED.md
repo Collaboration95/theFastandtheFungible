@@ -1,13 +1,13 @@
 # Public purchase feed
 
-26 targeted feed tests pass. Four screenshots are 71,731–110,247 B each.
+31 targeted feed tests pass. Eight screenshots are each below 200 KB.
 Desktop and 390 px phone axe scans: zero serious/critical violations; no
 document-level horizontal overflow. Local synthetic verification only; no hosted
 deployment or new ledger transactions.
 
 ## Reproduce
 
-Node 22.23.4; `OFFSET=1000 PUBLIC_FEED=1 npm run demo`, then open `/live`.
+Node 22.23.4; `DEMO_PORT_OFFSET=1000 PUBLIC_FEED=1 npm run demo`, then open `/live`.
 Targeted contract/privacy tests: `npx vitest run tests/public-feed.test.ts`.
 Full shipping gate uses the shared heavy lock and `npm run gate -- --publish`.
 
@@ -104,3 +104,78 @@ checks both the endpoint response/cookie and the shared log masker.
 Step 1 clean-head verification: Node 22.23.4; check:fast passed (279 files,
 3,093 tests); local gate passed 20/20. Initial JS: 159,242 B gzip against
 170,000 B. The feed is a separate 1.75 KB gzip JS chunk.
+
+## Answer value ratings
+
+`ANSWER_RATINGS=1` enables `GET/POST /runs/:id/rating` (default off). POST accepts
+only `{ "yes": true|false }`; GET returns `{ "yes": true|false|null }`. Existing
+run ownership and CSRF checks apply. Only terminal runs with a paid, non-cancelled
+receipt and a saved cited answer can vote. Each run has a unique database row;
+the first vote wins atomically, retries are idempotent, and a conflicting vote
+returns 409 with the saved boolean. Rate limit: 30 reads/writes per minute per
+hosted session (local fallback: direct peer); 5,000 bounded rate buckets.
+
+The optional lazy prompt says “Worth S$X?” for the run's gross purchase spend,
+with Yes/No. It renders after the answer and never joins the answer/payment
+pipeline. API or chunk-load failure leaves the answer usable; saving failures
+show a quiet retry. Browser replay does not collect votes. Stats add
+`rating: { rated, yes, yesPercent }` for all/external populations; no ratings means
+null percentage. The feed adds `rating: boolean|null` to each purchase row; this
+is the whole-run rating, shared across that run's purchases, not a separate vote
+per article. Aggregate stats refresh within 60 seconds; feed updates within two.
+
+Reproduce: `npx vitest run tests/answer-ratings.test.ts tests/answer-rating-ui.test.tsx tests/public-feed.test.ts`.
+Tests cover persistence, one vote, conflicting votes, free/unfinished rejection,
+strict payload validation, request limits, cross-visitor rejection, aggregate
+populations and UI save failures. Synthetic component captures `rating-before.png`
+and `rating-after.png` are each under 26 KB. They use a labelled standalone answer
+fixture, not a live purchase or evidence of real visitor feedback.
+
+Settlement display additionally requires a terminal audit event whose transaction
+hash matches the purchase record. A signed finish alone stays pending. Regression
+tests cover that case and the whole-run rating projected into each purchase row.
+The final 1440 x 720 booth capture includes one complete purchase row and the
+rating column without reducing the large type.
+
+Signed-only create attempts are filtered before the snapshot limit, so they cannot
+evict validated purchases. This regression is covered with 101 pending attempts.
+
+Final rating-column layout was rechecked at desktop and 390 px: zero serious or
+critical axe violations and no document-level horizontal overflow.
+
+The feed reuses the existing writer-provenance badge, without adding public
+fields. A page-level regression checks that disclosure, no initial animation,
+new-purchase-only motion and stream cleanup.
+
+Booth mode keeps the collapsed audit available to expand and preserves stale-
+refresh notices; large-type styling does not hide either disclosure.
+
+Additional synthetic captures: `external.png` shows the external headline;
+`booth-720.png` shows a complete row at 1440 x 720.
+
+The first rating browser gate caught disabled-feature probes returning 404. The
+client now waits for the existing health response to explicitly advertise
+`answerRatings: true` before loading the prompt or making any rating request.
+The original clean-console assertions remain intact; a browser regression also
+checks the opt-in prompt and saved vote. No gate was loosened.
+
+Focused regression: `npx playwright test tests/ui-nov11.spec.ts --grep 'money and accessible overlays|answer value rating' --workers=1` passed all six cases.
+
+Feed article/writer lookup uses the existing full source identity and version,
+including a collision regression across two publishers with the same local IDs.
+An old purchase without source identity never borrows a federated writer's
+metadata by guessing from current candidates.
+
+Missing article/writer metadata is labelled unavailable, without substituting a
+question or guessing another publisher identity.
+
+Clicking the selected feed tab preserves its current rows and connection status;
+the page regression covers this without waiting for another purchase.
+
+The live projection requires the recorded XRPL Testnet rail label. Simulated and
+unlabelled runs are excluded before the row limit. The regression failed before
+this filter and passes with it; synthetic screenshots remain labelled fixtures.
+
+With audience attribution off, hosted visitors remain unclassified; they do not
+fall through to the local-script internal default. A real HTTP regression failed
+before the fix and passes afterward. Local scripts still default to internal.

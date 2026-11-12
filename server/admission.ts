@@ -42,7 +42,7 @@ export function admissionGuard(config: Config, store?: Store): RequestHandler {
       if (agent.paused && path !== '/api/spending/pause' && path !== '/api/mcp/status') { res.status(403).json({ ...errorEnvelope('paused', 403), error: 'Agent spending is paused.' }); return }
       res.locals.agent = agent
       // An agent can only use research endpoints and its own runs. No operator controls or wallet-wide export.
-      const run = path.match(/^\/(?:api\/mcp\/)?runs\/([^/]+)(?:\/(?:events|stop|retry-delivery|receipts\.json))?$/)
+      const run = path.match(/^\/(?:api\/mcp\/)?runs\/([^/]+)(?:\/(?:events|stop|retry-delivery|rating|receipts\.json))?$/)
       if (run) {
         let id: string
         try { id = decodeURIComponent(run[1]) } catch { res.sendStatus(400); return }

@@ -53,7 +53,7 @@ export function accessGuard(limits: HostedLimits): RequestHandler {
       if (value.n >= 120 || (!reads.has(key) && reads.size >= 5000)) return res.status(429).json({ error: 'read_rate' })
       value.n++; reads.set(key, value); next(); return
     }
-    const run = path.match(/^\/(?:api\/)?runs\/([a-zA-Z0-9-]+)(?:\/(?:events|stop|retry-delivery|receipts\.json|report\.json|report\.(?:pdf|html)|report|pin|proof|intents\/([a-zA-Z0-9-]+)\/key-reveal-proof\.json))?$/)
+    const run = path.match(/^\/(?:api\/)?runs\/([a-zA-Z0-9-]+)(?:\/(?:events|stop|retry-delivery|rating|receipts\.json|report\.json|report\.(?:pdf|html)|report|pin|proof|intents\/([a-zA-Z0-9-]+)\/key-reveal-proof\.json))?$/)
     const deny = () => res.status(404).json({ error: 'Not found.' })
     if (run) {
       const id = run[1], principal = res.locals.hostedSession?.principal

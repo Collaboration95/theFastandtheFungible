@@ -222,3 +222,7 @@ export const getRefusalProof = async (runId: string, signal?: AbortSignal): Prom
 export async function createRefusalProof(runId: string): Promise<RefusalProof> {
   return z.object({ proof: RefusalProofSchema }).parse(await (await send(`/api${runPath(runId)}/proof`, { method: 'POST', keepDetail: true })).json()).proof
 }
+
+const AnswerRatingSchema = z.object({yes:z.boolean().nullable()})
+export const getAnswerRating = async (runId: string, signal?: AbortSignal) => AnswerRatingSchema.parse(await request(`${runPath(runId)}/rating`,undefined,signal))
+export const rateAnswer = async (runId: string, yes: boolean) => { try { return AnswerRatingSchema.parse(await request(`${runPath(runId)}/rating`,{yes})) } catch (error) { if (error instanceof ApiError && error.status===409) return getAnswerRating(runId); throw error } }

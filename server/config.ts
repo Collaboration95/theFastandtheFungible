@@ -16,6 +16,7 @@ const mode = (values: [string, ...string[]]) => z.preprocess(v => typeof v === '
 const assetMode = z.preprocess(v => typeof v === 'string' ? ({'xrp':'XRP','test-sgd':'test-iou','test-iou':'test-iou'}[v.trim().toLowerCase()] ?? v) : v,z.enum(['','XRP','test-iou']).optional())
 const ConfigSchema = z.object({
   AUDIENCE_COUNTS: z.enum(['0', '1']).optional(), OPERATOR_TOKEN: text,
+  ANSWER_RATINGS: z.enum(['0', '1']).optional(),
   PUBLIC_FEED: z.enum(['0', '1']).optional(),
   XRPL_STREAM_WAITS: z.enum(['0', '1']).optional(),
   SETTLEMENT_TIMING: z.enum(['0', '1']).optional(),

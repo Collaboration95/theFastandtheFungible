@@ -2,12 +2,13 @@ import { AsyncLocalStorage } from 'node:async_hooks'
 import { createHmac, timingSafeEqual } from 'node:crypto'
 import { Router, type RequestHandler } from 'express'
 import type { Config } from '../config.js'
-export const runAudience = new AsyncLocalStorage<'internal'|'external'>()
+export const runAudience = new AsyncLocalStorage<'internal'|'external'|'unclassified'>()
 const equal = (a: string,b: string) => Buffer.byteLength(a) === Buffer.byteLength(b) && timingSafeEqual(Buffer.from(a),Buffer.from(b))
 const cookie = '__Host-ra_operator'
 /** Authenticates before the hosted guard strips Authorization. The token is never stored or returned. */
 export function audienceMiddleware(config: Config): RequestHandler {
   return (req,res,next) => {
+    if (config.HOSTED === '1' && config.AUDIENCE_COUNTS !== '1') { runAudience.run('unclassified',next); return }
     const secret=config.OPERATOR_TOKEN, at=Date.now(), supplied=req.get('Authorization')?.match(/^Bearer (.+)$/i)?.[1]
     let operator=Boolean(secret && supplied && equal(secret,supplied))
     const parts=(req.get('Cookie')??'').split(';').map(v=>v.trim()).filter(v=>v.startsWith(cookie+'='))
