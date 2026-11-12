@@ -147,3 +147,9 @@ for (const state of ['pending','released','refunded'] as const) it(`shows a quie
   expect(document.querySelector(`a[href$="${hash}"]`)).toBeTruthy()
   expect(screen.queryByText('Quality refund: writer-signed')).toBeNull()
 })
+
+it('shows fractional-cent holdbacks without rounding a refund to zero', () => {
+  view({...settled,escrow:{...settled.escrow!,holdback:{state:'refunded',amount:'500',amountMinor:0.5,percent:1,condition:`A0258020${'A'.repeat(64)}810120`,cancelAfter:800000600}}})
+  fireEvent.click(document.querySelector('summary')!)
+  expect(screen.getByText(/0.5 cents/)).toBeTruthy()
+})
