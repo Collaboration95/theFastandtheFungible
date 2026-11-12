@@ -28,6 +28,10 @@ async function run({ store, client, payer }: PurchaseManager, intentId: string, 
   const intent = store.getIntent(intentId)
   if (!intent) throw new Error('Intent not found')
   if (!['CLAIM_FAILED', 'CHALLENGED'].includes(intent.status)) return intent
+  if (intent.escrow?.holdback) {
+    if (payer instanceof XrplPayer) await (await import('./holdback.js')).settleHoldback(store,payer,intentId)
+    return store.getIntent(intentId)!
+  }
   const manifest = store.getManifest(intentId)
   const delivery = store.getDelivery(intentId)
   let passages = delivery?.content.spans, salts = delivery?.salts

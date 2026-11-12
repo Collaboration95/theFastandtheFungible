@@ -65,7 +65,7 @@ export const RunSnapshotSchema = z.object({
   ledgerAnchor: LedgerAnchorSchema.optional(),
   policyVersion: z.string().optional(),
   runId: z.string(), question: z.string(), budgetMinor: z.number().int().nonnegative(), spentMinor: z.number().int().nonnegative(), reservedMinor: z.number().int().nonnegative(), perSourceCapMinor: z.number().int().nonnegative(),
-  /** Derived: sum of intent refunds. spentMinor stays the gross charge. */ refundedMinor: z.number().int().nonnegative().optional(),
+  /** Derived: intent refunds plus partial holdback refunds. Percent splits can be sub-cent; spentMinor stays gross. */ refundedMinor: z.number().nonnegative().optional(),
   phase: RunPhaseSchema, stopped: z.boolean(), round: z.number().int().nonnegative(),
   candidates: z.array(PublicCandidateSchema), contents: z.array(ContentEnvelopeSchema), answers: z.array(AnswerSchema), impact: ImpactSchema.optional(), decisions: z.array(DecisionRoundSchema), intents: z.array(PurchaseIntentSchema), receipts: z.array(ReceiptSchema), grants: z.array(GrantSchema), events: z.array(TraceEventSchema), labels: ModeLabelsSchema,
   checkpoint: RunCheckpointSchema, error: z.string().optional(), reportStatus: z.enum(['NONE', 'GENERATING', 'PDF', 'HTML', 'FAILED']),

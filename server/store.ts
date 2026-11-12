@@ -1,4 +1,5 @@
 import { screenPayee } from './payee-screening.js'
+import { batchInners, innerHash, keyTerms } from '../shared/holdback.js'
 import { runAudience } from './hosted/audience.js'
 import { type SettlementPhase, type PhaseObservation, PhaseObservationSchema } from '../shared/contracts/settlement-timing.js'
 import { probeMetadata } from './agents/precision.js'
@@ -403,7 +404,7 @@ export class Store {
       run.contents = [...run.contents.filter(content => run.candidates.some(c => c.tier === 'FREE' && sameResource(c, content))), ...paid]
       run.spentMinor = run.intents.filter(i => chargedStatuses.has(i.status)).reduce((sum, i) => sum + i.amountMinor, 0)
       run.reservedMinor = run.intents.filter(i => reservedStatuses.has(i.status)).reduce((sum, i) => sum + i.amountMinor, 0)
-      run.refundedMinor = run.intents.reduce((sum, i) => sum + (i.refund?.amountMinor ?? 0), 0)
+      run.refundedMinor = run.intents.reduce((sum, i) => sum + (i.refund?.amountMinor ?? 0) + (i.escrow?.state === 'RELEASED' && i.escrow.holdback?.state === 'refunded' ? i.escrow.holdback.amountMinor : 0), 0)
       return RunSnapshotSchema.parse(run)
     })
   }
@@ -700,6 +701,34 @@ export class Store {
         label: receipt.label, resourceId: receipt.resourceId, version: receipt.version, profileId: intent.profileId, settledAt: receipt.settledAt, policyVersion: this.rawRun(intent.runId).policyVersion ?? POLICY_VERSION } })
     })
   }
+  /** Private holdback journal; secrets and signed blobs never enter snapshots or audit data. */
+  holdbackPrivate<T>(intentId: string, value?: T): T | undefined {
+    this.db.exec('CREATE TABLE IF NOT EXISTS holdback_private (intent_id TEXT PRIMARY KEY, json TEXT NOT NULL)')
+    if (value !== undefined) this.prepare('INSERT INTO holdback_private VALUES (?,?) ON CONFLICT(intent_id) DO UPDATE SET json=excluded.json').run(intentId, JSON.stringify(value))
+    const row = this.prepare('SELECT json FROM holdback_private WHERE intent_id=?').get(intentId)
+    return row ? JSON.parse(String(row.json)) : undefined
+  }
+  reserveHoldbackSequences(intentId: string, owner: string, sequences: number[]) {
+    const intent = this.getIntent(intentId)!
+    if (intent.status !== 'SUBMITTING' || this.isPaused() || this.principalPaused(intent.runId) || this.rawRun(intent.runId).stopped || !this.walletAllows(this.rawRun(intent.runId),0) || Date.parse(intent.quote!.expiresAt) <= Date.now()) throw Error('Batch signing authority expired')
+    this.db.exec('CREATE TABLE IF NOT EXISTS holdback_sequences (owner TEXT NOT NULL, sequence INTEGER NOT NULL, intent_id TEXT NOT NULL, PRIMARY KEY(owner,sequence))')
+    for (const sequence of sequences) this.prepare('INSERT INTO holdback_sequences VALUES (?,?,?)').run(owner, sequence, intentId)
+  }
+  releaseHoldbackSequences(intentId: string, unused = false) {
+    this.db.exec('CREATE TABLE IF NOT EXISTS holdback_sequences (owner TEXT NOT NULL, sequence INTEGER NOT NULL, intent_id TEXT NOT NULL, PRIMARY KEY(owner,sequence))')
+    this.prepare('DELETE FROM holdback_sequences WHERE intent_id=?').run(intentId)
+    if (unused) this.prepare('UPDATE escrows SET owner=NULL, create_sequence=NULL WHERE intent_id=?').run(intentId)
+  }
+  updateHoldback(intentId: string, holdback: NonNullable<EscrowRecord['publicStatus']['holdback']>) {
+    this.atomic(() => {
+      const e = this.getEscrow(intentId)!, intent = this.getIntent(intentId)!
+      e.publicStatus.holdback = holdback
+      this.prepare('UPDATE escrows SET json=? WHERE intent_id=?').run(JSON.stringify(e),intentId)
+      this.saveIntent({ ...intent, escrow: e.publicStatus })
+      const receipt = this.rows<import('../shared/contracts/index.js').Receipt>('SELECT json FROM receipts WHERE intent_id=?',intentId)[0]
+      if (receipt) this.prepare('UPDATE receipts SET json=? WHERE intent_id=?').run(JSON.stringify({ ...receipt, escrow: e.publicStatus }),intentId)
+    })
+  }
   getEscrow(intentId: string): EscrowRecord | undefined { return this.rows<EscrowRecord>('SELECT json FROM escrows WHERE intent_id=?', intentId)[0] }
   persistReveal(intentId: string, reveal: NonNullable<EscrowRecord['reveal']>) {
     const e = this.getEscrow(intentId)!
@@ -749,21 +778,22 @@ export class Store {
       if (old) return old
       const intent = this.getIntent(intentId)!, e = this.getEscrow(intentId)!
       if (!e || intent.status !== 'SUBMITTING') throw new Error('Escrow reservation unavailable')
-      if (operation === 'create' && (this.isPaused() || this.principalPaused(intent.runId) || this.rawRun(intent.runId).stopped || !this.walletAllows(this.rawRun(intent.runId), 0) || Date.parse(intent.quote!.expiresAt) <= Date.now())) throw new Error('Signing authority expired')
+      if (operation === 'create' && !this.holdbackPrivate<{unsigned?:unknown}>(intentId)?.unsigned && (this.isPaused() || this.principalPaused(intent.runId) || this.rawRun(intent.runId).stopped || !this.walletAllows(this.rawRun(intent.runId), 0) || Date.parse(intent.quote!.expiresAt) <= Date.now())) throw new Error('Signing authority expired')
       if (operation === 'finish' && (e.publicStatus.state !== 'VERIFIED_FOR_RELEASE' || !e.publicStatus.proofOk || this.rawRun(intent.runId).stopped || this.isPaused() || this.principalPaused(intent.runId))) throw new Error('Finish requires a verified proof and active run')
       if (operation === 'cancel' && !['LOCKED', 'VERIFIED_FOR_RELEASE', 'CANCEL_DUE'].includes(e.publicStatus.state)) throw new Error('Cancel requires a locked escrow')
       const row = { ...signed, operation, intentId }
       this.prepare('INSERT INTO escrow_outbox VALUES (?,?,?,?)').run(intentId, operation, signed.txHash, JSON.stringify(row))
       if (operation === 'create') {
-        const tx = decode(signed.txBlob)
+        const decoded = decode(signed.txBlob)
+        const tx = decoded.TransactionType === 'Batch' ? batchInners(decoded)[0] : decoded
         if (tx.TransactionType !== 'EscrowCreate' || tx.Account !== e.publicStatus.owner) throw new Error('Create identity mismatch')
         this.prepare('UPDATE escrows SET owner=?, create_sequence=? WHERE intent_id=?').run(tx.Account, Number(tx.Sequence), intentId)
         e.publicStatus.createSequence = Number(tx.Sequence)
       }
-      e.publicStatus = { ...e.publicStatus, [operation + 'Hash']: signed.txHash }
+      e.publicStatus = { ...e.publicStatus, [operation + 'Hash']: operation === 'create' && e.quote.terms.holdback ? innerHash(batchInners(decode(signed.txBlob))[0]) : signed.txHash }
       this.prepare('UPDATE escrows SET json=? WHERE intent_id=?').run(JSON.stringify(e), intentId)
       this.saveIntent({ ...intent, escrow: e.publicStatus })
-      this.audit.append({ runId: intent.runId, intentId, kind: 'escrow-sign', data: { operation, txHash: signed.txHash, owner: e.publicStatus.owner, createSequence: e.publicStatus.createSequence, lastLedgerSequence: signed.lastLedgerSequence, amountDrops: e.quote.terms.amount, payTo: e.quote.terms.payTo, invoiceHash: intent.quote!.quoteHash, proofOk: e.publicStatus.proofOk ?? false } })
+      this.audit.append({ runId: intent.runId, intentId, kind: 'escrow-sign', data: { operation, txHash: signed.txHash, owner: e.publicStatus.owner, createSequence: e.publicStatus.createSequence, lastLedgerSequence: signed.lastLedgerSequence, amountDrops: keyTerms(e.quote.terms).amount, payTo: e.quote.terms.payTo, invoiceHash: intent.quote!.quoteHash, proofOk: e.publicStatus.proofOk ?? false } })
       return signed
     })
   }
@@ -774,7 +804,7 @@ export class Store {
       const next = { ...e, publicStatus: { ...e.publicStatus, ...patch } }
       this.prepare('UPDATE escrows SET json=? WHERE intent_id=?').run(JSON.stringify(next), intentId)
       this.saveIntent({ ...intent, escrow: next.publicStatus })
-      if (patch.state === 'LOCKED' && e.publicStatus.state !== 'LOCKED') this.audit.append({ runId: intent.runId, intentId, kind: 'ESCROW_CREATE', data: { txHash: next.publicStatus.createHash, owner: next.publicStatus.owner, createSequence: next.publicStatus.createSequence, ledgerIndex, result: 'tesSUCCESS', invoiceHash: intent.quote!.quoteHash, amountDrops: e.quote.terms.amount, payTo: e.quote.terms.payTo, cancelAfter: e.quote.terms.cancelAfter } })
+      if (patch.state === 'LOCKED' && e.publicStatus.state !== 'LOCKED') this.audit.append({ runId: intent.runId, intentId, kind: 'ESCROW_CREATE', data: { txHash: next.publicStatus.createHash, owner: next.publicStatus.owner, createSequence: next.publicStatus.createSequence, ledgerIndex, result: 'tesSUCCESS', ...(e.quote.terms.holdback ? {terms:e.quote.terms} : {}), invoiceHash: intent.quote!.quoteHash, amountDrops: keyTerms(e.quote.terms).amount, payTo: e.quote.terms.payTo, cancelAfter: e.quote.terms.cancelAfter } })
       if (patch.proofOk !== undefined && patch.proofOk !== e.publicStatus.proofOk) this.audit.append({ runId: intent.runId, intentId, kind: 'proof', data: { verified: patch.proofOk, status: next.publicStatus.state, scheme: 'escrow-v1', accessible: false } })
       return next
     })
@@ -792,8 +822,8 @@ export class Store {
         xrpl: { asset: terms.asset, txHash: tx.txHash, ledgerIndex, payer: terms.payer, payTo: terminal === 'finish' ? terms.payTo : terms.payer, amountDrops: terminal === 'finish' ? terms.amount : '0', explorerUrl: `https://testnet.xrpl.org/transactions/${tx.txHash}` } })
       this.prepare('INSERT INTO receipts VALUES (?,?,?)').run(intentId, JSON.stringify(receipt), tx.txHash)
       this.prepare('UPDATE escrows SET json=? WHERE intent_id=?').run(JSON.stringify(e), intentId)
-      this.saveIntent({ ...intent, escrow: e.publicStatus, status: terminal === 'finish' ? e.publicStatus.proofOk ? 'VERIFIED' : 'CLAIM_FAILED' : 'FAILED_NOT_SETTLED', settledAt, receiptId: receipt.receiptId, txHash: tx.txHash, ...(failedClaimIds ? { failedClaimIds } : {}), error: terminal === 'cancel' ? 'Escrow cancelled; principal returned, fees remain paid' : undefined })
-      this.audit.append({ runId: intent.runId, intentId, kind: terminal === 'finish' ? 'ESCROW_FINISH' : 'ESCROW_CANCEL', data: { txHash: tx.txHash, ledgerIndex, owner: terms.payer, createSequence: e.publicStatus.createSequence, createHash: e.publicStatus.createHash, result: 'tesSUCCESS', proofOk: e.publicStatus.proofOk ?? false, amountDrops: terms.amount, payTo: terms.payTo } })
+      this.saveIntent({ ...intent, escrow: e.publicStatus, status: terminal === 'finish' ? e.publicStatus.proofOk ? 'VERIFIED' : 'CLAIM_FAILED' : 'FAILED_NOT_SETTLED', settledAt, receiptId: receipt.receiptId, txHash: tx.txHash, ...(failedClaimIds ? { failedClaimIds } : {}), error: terminal === 'cancel' ? terms.holdback ? 'Key-release escrow cancelled; holdback outcome reported separately, fees remain paid' : 'Escrow cancelled; principal returned, fees remain paid' : undefined })
+      this.audit.append({ runId: intent.runId, intentId, kind: terminal === 'finish' ? 'ESCROW_FINISH' : 'ESCROW_CANCEL', data: { txHash: tx.txHash, ledgerIndex, owner: terms.payer, createSequence: e.publicStatus.createSequence, createHash: e.publicStatus.createHash, result: 'tesSUCCESS', proofOk: e.publicStatus.proofOk ?? false, amountDrops: keyTerms(terms).amount, payTo: terms.payTo } })
       this.audit.append({ runId: intent.runId, intentId, kind: 'settle', data: { receiptId: receipt.receiptId, txHash: tx.txHash, ledgerIndex, asset: receipt.xrpl?.asset ?? intent.quote?.payment?.asset ?? 'XRP', deliveredAmount: receipt.xrpl?.deliveredAmount ?? null, amountMinor: receipt.amountMinor, amountDrops: receipt.xrpl!.amountDrops, payTo: terms.payTo, payer: terms.payer, label: receipt.label, scheme: 'escrow-v1', state: e.publicStatus.state } })
     })
   }

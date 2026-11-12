@@ -1,3 +1,4 @@
+import { batchInners, innerHash, matchesHoldbackBatch, keyTerms } from '../shared/holdback.js'
 import { verifyEscrowCredit } from './escrow-asset.js'
 import { EscrowTermsSchema, type EscrowTerms } from '../shared/contracts/escrow.js'
 import { conditionFor, matchesCreate } from '../shared/escrow.js'
@@ -13,7 +14,7 @@ import { lookupTx, verifyPayment, type Ledger } from '../shared/xrpl.js'
 import { ledgerInvoiceId } from '../shared/x402.js'
 
 export const GENESIS_HASH = '0'.repeat(64)
-export const AUDIT_KINDS = ['baseline', 'policy', 'admission', 'decision', 'reserve', 'sign', 'settle', 'deliver', 'proof', 'grant', 'read_paid', 'challenge', 'refund', 'refusal', 'pause', 'prune', 'inbound', 'payout-reserve', 'payout-sign', 'payout-settle', 'escrow-sign', 'ESCROW_CREATE', 'ESCROW_FINISH', 'ESCROW_CANCEL'] as const
+export const AUDIT_KINDS = ['baseline', 'policy', 'admission', 'decision', 'reserve', 'sign', 'settle', 'deliver', 'proof', 'grant', 'read_paid', 'challenge', 'refund', 'refusal', 'pause', 'prune', 'inbound', 'payout-reserve', 'payout-sign', 'payout-settle', 'escrow-sign', 'ESCROW_CREATE', 'ESCROW_FINISH', 'ESCROW_CANCEL', 'holdback'] as const
 export type AuditKind = typeof AUDIT_KINDS[number] | (string & {})
 export type AuditEntry = { seq: number; at: string; prevHash: string; hash: string; runId: string | null; intentId: string | null; surface: string; principal: string; kind: string; data: Record<string, unknown> }
 export type AuditInput = { kind: AuditKind; data: Record<string, unknown>; runId?: string; intentId?: string; surface?: string; principal?: string; at?: string }
@@ -236,7 +237,7 @@ export function auditEntries(db: DatabaseSync, range: DateRange = {}): AuditEntr
 /** `purchase` = the operator paid a writer for an article; `inbound`, `royalty` and `change` are the hire-the-agent flow (#274). */
 export type ReceiptRow = {
   asset?: Asset; deliveredAmount?: unknown
-  escrowTerms?: EscrowTerms; escrowCreateHash?: string; escrowCreateSequence?: number; escrowState?: string
+  holdback?: import('../shared/contracts/escrow.js').EscrowStatus['holdback']; escrowTerms?: EscrowTerms; escrowCreateHash?: string; escrowCreateSequence?: number; escrowState?: string
   kind: 'purchase' | 'inbound' | 'royalty' | 'change'; label: string; network: string; runId: string; intentId: string; surface: string; principal: string; policyVersion: string; writer: string; resourceId: string; version: string
   payee: string; payer: string; amountMinor: number | ''; currency: string; amountDrops: string; txHash: string; invoiceId: string; ledgerIndex: number | ''; explorerUrl: string
   status: string; refundTxHash: string; refundAmountMinor: number | ''; refundExplorerUrl: string; reservedAt: string; settledAt: string
@@ -260,7 +261,7 @@ export function receiptRows(db: DatabaseSync, range: DateRange = {}): ReceiptRow
     const testnet = receipt.label === XRPL_LABEL
     const txHash = receipt.xrpl?.txHash ?? intent.txHash ?? ''
     return [{
-      ...(intent.escrow ? { escrowTerms: EscrowTermsSchema.parse(JSON.parse(intent.quote!.quoteId)), escrowCreateHash: intent.escrow.createHash, escrowCreateSequence: intent.escrow.createSequence, escrowState: intent.escrow.state } : {}),
+      ...(intent.escrow ? { escrowTerms: EscrowTermsSchema.parse(JSON.parse(intent.quote!.quoteId)), escrowCreateHash: intent.escrow.createHash, escrowCreateSequence: intent.escrow.createSequence, escrowState: intent.escrow.state, ...(intent.escrow.holdback ? {holdback:intent.escrow.holdback} : {}) } : {}),
       asset: receipt.xrpl?.asset ?? terms?.asset ?? 'XRP', deliveredAmount: receipt.xrpl?.deliveredAmount, kind: 'purchase', label: receipt.label, network: testnet ? 'XRPL Testnet (xrpl:1), no real value' : 'SIMULATED rail, no real funds', runId: receipt.runId, intentId: receipt.intentId,
       surface: String(admission?.surface ?? 'unattributed'), principal: String(admission?.principal ?? 'unattributed'), policyVersion: String(admission?.policy_version ?? ''),
       writer: intent.profileId, resourceId: receipt.resourceId, version: receipt.version, payee: receipt.xrpl?.payTo ?? terms?.payTo ?? '', payer: receipt.xrpl?.payer ?? '',
@@ -298,7 +299,7 @@ const cell = (value: unknown) => {
 export const toCsv = (rows: ReceiptRow[]) => [RECEIPT_COLUMNS.join(','), ...rows.map(row => RECEIPT_COLUMNS.map(column => cell(row[column])).join(','))].join('\r\n') + '\r\n'
 export const toJsonl = (rows: object[]) => rows.map(row => JSON.stringify(row)).join('\n') + (rows.length ? '\n' : '')
 
-export type TestnetCheck = { intentId: string; txHash: string; kind: 'payment' | 'refund' | 'escrow-create' | 'escrow-finish' | 'escrow-cancel' | 'key-reveal-proof'; status: 'refunded' | 'ok' | 'mismatch' | 'pending' | 'error' | 'skipped'; detail: string }
+export type TestnetCheck = { intentId: string; txHash: string; kind: 'payment' | 'refund' | 'escrow-create' | 'escrow-finish' | 'escrow-cancel' | 'key-reveal-proof' | 'escrow-holdback'; status: 'refunded' | 'ok' | 'mismatch' | 'pending' | 'error' | 'skipped'; detail: string }
 /** Read-only lookups against a public Testnet node: destination, delivered amount and InvoiceID of each payment, and each refund. Spends nothing. */
 export async function verifyOnTestnet(rows: ReceiptRow[], ledger: Ledger): Promise<TestnetCheck[]> {
   const check = async (row: ReceiptRow): Promise<TestnetCheck[]> => {
@@ -338,7 +339,23 @@ async function verifyEscrowOnTestnet(row: ReceiptRow, ledger: Ledger): Promise<T
     const op = row.escrowState === 'RELEASED' ? 'finish' : row.escrowState === 'CANCELLED' ? 'cancel' : undefined
     const createOk = create.state === 'validated' && create.meta.TransactionResult === 'tesSUCCESS' && matchesCreate(create.tx, t) && Number(create.tx.Sequence) === row.escrowCreateSequence
     out.push({ intentId: row.intentId, txHash: row.escrowCreateHash!, kind: 'escrow-create', status: createOk ? 'ok' : 'mismatch', detail: createOk ? 'validated bound escrow principal' : 'create missing or differs from bound terms' })
-    if (op && terminal.state === 'validated') verifyEscrowCredit(terminal.meta, t, op === 'finish' ? t.payTo : t.payer)
+    if (t.holdback) {
+      const h = row.holdback
+      let heldOk = !!h, detail = 'Both escrows and holdback outcome verified'
+      if (h) {
+        const parent = await lookupTx(ledger,h.batchHash!)
+        const held = await lookupTx(ledger,h.createHash!)
+        const pair = parent.state === 'validated' ? batchInners(parent.tx) : []
+        heldOk = parent.state === 'validated' && parent.meta.TransactionResult === 'tesSUCCESS' && matchesHoldbackBatch(parent.tx,t) && create.state === 'validated' && held.state === 'validated' && held.meta.TransactionResult === 'tesSUCCESS' && held.meta.ParentBatchID === h.batchHash && create.meta.ParentBatchID === h.batchHash && held.ledgerIndex === parent.ledgerIndex && create.ledgerIndex === parent.ledgerIndex && innerHash(pair[0]) === row.escrowCreateHash && innerHash(pair[1]) === h.createHash && pair[1].Sequence === h.createSequence
+        if (h.state !== 'pending') {
+          const end = await lookupTx(ledger,(h.state === 'released' ? h.finishHash : h.cancelHash)!)
+          heldOk &&= end.state === 'validated' && end.meta.TransactionResult === 'tesSUCCESS' && end.tx.Owner === t.payer && end.tx.OfferSequence === h.createSequence && end.tx.TransactionType === (h.state === 'released' ? 'EscrowFinish' : 'EscrowCancel') && (h.state !== 'released' || end.tx.Condition === h.condition && conditionFor(String(end.tx.Fulfillment).slice(8)) === h.condition)
+          if (end.state === 'validated') verifyEscrowCredit(end.meta,{...t,amount:h.amount},h.state === 'released' ? t.payTo : t.payer)
+        } else detail = 'Holdback pending; no release or refund claimed'
+      }
+      out.push({intentId:row.intentId,txHash:h?.finishHash ?? h?.cancelHash ?? h?.batchHash ?? '',kind:'escrow-holdback',status:heldOk ? 'ok' : 'mismatch',detail})
+    }
+    if (op && terminal.state === 'validated') verifyEscrowCredit(terminal.meta, keyTerms(t), op === 'finish' ? t.payTo : t.payer)
     const terminalOk = op && terminal.state === 'validated' && terminal.meta.TransactionResult === 'tesSUCCESS' && terminal.tx.TransactionType === (op === 'finish' ? 'EscrowFinish' : 'EscrowCancel') && terminal.tx.Owner === t.payer && Number(terminal.tx.OfferSequence) === row.escrowCreateSequence &&
       (op !== 'finish' || terminal.tx.Condition === t.condition && (!t.keyReveal || typeof terminal.tx.Fulfillment === 'string' && /^A0228020[A-F0-9]{64}$/.test(terminal.tx.Fulfillment) && conditionFor(terminal.tx.Fulfillment.slice(8)) === t.condition)) && row.amountDrops === (op === 'finish' ? t.amount : '0') && (row.ledgerIndex === '' || row.ledgerIndex === terminal.ledgerIndex)
     out.push({ intentId: row.intentId, txHash: row.txHash, kind: op === 'cancel' ? 'escrow-cancel' : 'escrow-finish', status: terminalOk ? 'ok' : 'mismatch', detail: terminalOk ? 'validated terminal for the same escrow object' : 'terminal missing or differs from receipt' })
@@ -358,7 +375,7 @@ export async function verifyEscrowEvents(entries: AuditEntry[], ledger: Ledger):
       if (ok && found.state === 'validated') {
         if (kind === 'escrow-create') {
           const memos = found.tx.Memos as { Memo: { MemoData: string } }[]
-          const invoice = Buffer.from(memos[0].Memo.MemoData, 'hex').toString('utf8')
+          const invoice = e.data.terms ? canonical(e.data.terms) : Buffer.from(memos[0].Memo.MemoData, 'hex').toString('utf8')
           const terms = EscrowTermsSchema.parse(JSON.parse(invoice))
           ok = matchesCreate(found.tx, terms) && ledgerInvoiceId(invoice) === e.data.invoiceHash && found.tx.Account === e.data.owner && found.tx.Sequence === e.data.createSequence && matchesAmount(found.tx.Amount, String(e.data.amountDrops), terms.asset) && found.tx.Destination === e.data.payTo && found.tx.CancelAfter === e.data.cancelAfter
         } else ok = found.tx.TransactionType === (kind === 'escrow-finish' ? 'EscrowFinish' : 'EscrowCancel') && found.tx.Owner === e.data.owner && found.tx.OfferSequence === e.data.createSequence
@@ -371,12 +388,24 @@ export async function verifyEscrowEvents(entries: AuditEntry[], ledger: Ledger):
         if (ok && e.data.proofOk === false && refund && create) {
           const createTx = await lookupTx(ledger, String(create.data.txHash))
           if (createTx.state !== 'validated') throw Error('Create terms unavailable')
-          const terms = EscrowTermsSchema.parse(JSON.parse(Buffer.from((createTx.tx.Memos as {Memo:{MemoData:string}}[])[0].Memo.MemoData,'hex').toString('utf8')))
+          const terms = EscrowTermsSchema.parse(create.data.terms ?? JSON.parse(Buffer.from((createTx.tx.Memos as {Memo:{MemoData:string}}[])[0].Memo.MemoData,'hex').toString('utf8')))
           if (!matchesCreate(createTx.tx, terms)) throw Error('Create terms mismatch')
           const proof = await verifyPayment(ledger, String(refund.data.txHash), { rail: 'xrpl-testnet', network: 'xrpl:1', asset: terms.asset, payTo: String(e.data.owner), amountDrops: String(create.data.amountDrops), invoiceId: base.txHash.toUpperCase() })
           refunded = proof.state === 'ok' && proof.proof.payer === create.data.payTo
         }
-        checks.push({ ...base, kind: 'key-reveal-proof', status: ok && e.data.proofOk === true ? 'ok' : refunded ? 'refunded' : 'mismatch', detail: refunded ? 'Failed proof; validated writer refund' : e.data.proofOk === true ? 'Proof accepted' : 'Failed proof requires validated writer refund' })
+        let holdbackPending = false, heldRefunded = false
+        if (ok && e.data.proofOk === false && create) {
+          const createTx = await lookupTx(ledger,String(create.data.txHash))
+          if (createTx.state === 'validated') {
+            const terms = EscrowTermsSchema.parse(create.data.terms ?? JSON.parse(Buffer.from((createTx.tx.Memos as {Memo:{MemoData:string}}[])[0].Memo.MemoData,'hex').toString('utf8')))
+            if (terms.holdback) {
+              const resolution = entries.find(r => r.kind === 'holdback' && r.intentId === e.intentId && r.data.state === 'refunded')
+              holdbackPending = !resolution
+              if (resolution) { const cancel = await lookupTx(ledger,String(resolution.data.txHash)); heldRefunded = cancel.state === 'validated' && cancel.meta.TransactionResult === 'tesSUCCESS' && cancel.tx.TransactionType === 'EscrowCancel' && cancel.tx.Owner === terms.payer && cancel.tx.OfferSequence === Number(createTx.tx.Sequence)+1 }
+            }
+          }
+        }
+        checks.push({ ...base, kind: 'key-reveal-proof', status: ok && e.data.proofOk === true ? 'ok' : heldRefunded ? 'refunded' : holdbackPending ? 'skipped' : refunded ? 'refunded' : 'mismatch', detail: heldRefunded ? 'Failed promise; holdback refunded, key-release payment retained' : holdbackPending ? 'Failed promise; holdback pending' : refunded ? 'Failed proof; validated writer refund' : e.data.proofOk === true ? 'Proof accepted' : 'Failed proof requires validated writer refund' })
       }
     } catch { checks.push({ ...base, status: 'error', detail: 'escrow event lookup or binding unavailable' }) }
   }

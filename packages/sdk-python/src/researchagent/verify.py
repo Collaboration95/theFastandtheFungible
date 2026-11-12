@@ -375,12 +375,15 @@ def contributions(b):
                                     ),
                                 )
                             )
-        refund = i.get("refund", {}).get("amountMinor", 0)
+        holdback = i.get('escrow', {}).get('holdback', {})
+        refund = i.get("refund", {}).get("amountMinor", holdback.get('amountMinor', 0) if holdback.get('state') == 'refunded' and receipt['amountMinor'] > 0 else 0)
         status = (
             "recorded verified refund"
             if i.get("refund")
+            else "recorded verified holdback refund"
+            if holdback.get('state') == 'refunded'
             else "pending"
-            if i.get("refundCandidate") or i["status"] == "CHALLENGED"
+            if holdback.get('state') == 'pending' or i.get("refundCandidate") or i["status"] == "CHALLENGED"
             else "refused"
             if i["status"] in ("CHALLENGE_REFUSED", "CHALLENGE_REJECTED")
             else "none"
@@ -585,6 +588,8 @@ def verify(export, *, expect_head=None, ledger=False, ledger_lookup=None, testne
                 add('audit anchor', False, str(error))
         else:
             skip('audit anchor', 'simulated run, nothing on a ledger' if 'SIMULATED' in b['label'] else 'offline; add --ledger to look it up on XRPL Testnet (read-only)')
+        from ._holdback import verify_holdbacks
+        verify_holdbacks(b, entries, add, skip, online=testnet or ledger)
         source_ok = {}
         for s in b["sources"]:
             ps = [p for p in b["proofs"] if key(p) == key(s)]
@@ -868,7 +873,7 @@ def verify(export, *, expect_head=None, ledger=False, ledger_lookup=None, testne
         )
         for e in entries:
             if e['kind'] == 'ESCROW_FINISH' and e['data'].get('proofOk') is False:
-                add('key-reveal-proof ' + e['intentId'], any(r['kind'] == 'refund' and r['intentId'] == e['intentId'] and r['data'].get('originalTxHash') == e['data']['txHash'] and any(p['intentId'] == e['intentId'] and p.get('refundTxHash') == r['data'].get('txHash') for p in b['payments']) for r in entries))
+                add('key-reveal-proof ' + e['intentId'], any(i['intentId'] == e['intentId'] and i.get('escrow', {}).get('holdback') for i in b['intents']) or any(r['kind'] == 'refund' and r['intentId'] == e['intentId'] and r['data'].get('originalTxHash') == e['data']['txHash'] and any(p['intentId'] == e['intentId'] and p.get('refundTxHash') == r['data'].get('txHash') for p in b['payments']) for r in entries), 'Failed proof has a bound refund or a separately reported partial holdback outcome')
         if testnet or ledger and ('SIMULATED' not in b['label'] or b.get('ledgerAnchor') or any(p.get('escrowTerms', {}).get('asset', 'XRP') != 'XRP' for p in b['payments'])):
             from ._ledger import lookup, verify_transactions
             verify_transactions(b, entries, ledger_lookup or lookup, add)

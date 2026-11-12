@@ -1,3 +1,5 @@
+import { batchInners, innerHash, keyTerms, matchesHoldbackBatch, matchesHoldbackObject, splitHoldback } from '../shared/holdback.js'
+import { HoldbackTermsSchema } from '../shared/contracts/escrow.js'
 import { amountFor, matchesAmount } from '../shared/contracts/asset.js'
 import { ledgerInvoiceId } from '../shared/x402.js'
 import { escrowAsset } from '../server/escrow-asset.js'
@@ -14,7 +16,7 @@ import { escrowInvoice, ledgerTime, matchesCreate, safeSignature, signEscrowQuot
 import { waitForTx, lookupTx, type Ledger } from '../shared/xrpl.js'
 import type { PublisherJournal } from './journal.js'
 import type { PublisherKeys } from './registry.js'
-export const EscrowRequestSchema = z.object({ mode: z.literal('key-reveal').optional(), payer: z.string().regex(/^r[1-9A-HJ-NP-Za-km-z]{24,34}$/), intentId: z.string().min(1).max(200), condition: z.string().regex(/^A0258020[0-9A-F]{64}810120$/), cancelAfter: z.number().int().positive() })
+export const EscrowRequestSchema = z.object({ holdback: HoldbackTermsSchema.optional(), mode: z.literal('key-reveal').optional(), payer: z.string().regex(/^r[1-9A-HJ-NP-Za-km-z]{24,34}$/), intentId: z.string().min(1).max(200), condition: z.string().regex(/^A0258020[0-9A-F]{64}810120$/), cancelAfter: z.number().int().positive() })
 export async function escrowQuote(input: unknown, item: { publisherSlug: string; articleId: string; version: string; manifestRoot: string; amount: string; payTo: string }, keys: PublisherKeys, ledger: Ledger, journal: PublisherJournal, delivery?: unknown): Promise<EscrowQuote> {
   const request = EscrowRequestSchema.parse(input), now = await ledgerTime(ledger)
   if (request.cancelAfter < now + 60 || request.cancelAfter > now + 120) throw new Error('Escrow deadline outside policy')
@@ -24,6 +26,7 @@ export async function escrowQuote(input: unknown, item: { publisherSlug: string;
   const asset = escrowAsset()
   if (asset !== 'XRP' && !encrypted) throw Error('IOU requires key reveal')
   const terms = { ...base, ...item, ...(encrypted ? { condition: encrypted.condition, keyReveal: encrypted.commitment } : {}), scheme: 'escrow-v1' as const, network: 'xrpl:1' as const, asset, amount: asset === 'XRP' ? item.amount : amountFor(Number(item.amount) / 1000, asset), quoteId: randomUUID() }
+  if (terms.holdback && (!encrypted || terms.holdback.amount !== splitHoldback(terms.amount,terms.holdback.percent,asset === 'XRP').amount || terms.holdback.cancelAfter < now + 30 || terms.holdback.cancelAfter > now + 86400)) throw Error('Holdback terms rejected')
   const quote = { ...signEscrowQuote(terms, keys.publicKey, keys.privateKey), ...(encrypted ? { ciphertext: encrypted.ciphertext } : {}) }
   if (encrypted) journal.saveKeyReveal(escrowInvoice(terms), { secret: encrypted.secret })
   journal.saveEscrowQuote(quote)
@@ -33,7 +36,7 @@ export function verifyEscrowSignature(signature: PaymentSignature, journal: Publ
   const quote = journal.escrowQuote(signature.accepted.extra.invoiceId)
   if (!quote) throw new Error('Unknown escrow invoice')
   const t = quote.terms, a = signature.accepted
-  if (a.scheme !== 'escrow-v1' || a.network !== t.network || canonicalJson(a.asset) !== canonicalJson(t.asset) || a.payTo !== t.payTo || a.amount !== t.amount || a.maxTimeoutSeconds !== 120 || !safeSignature(signature.payload.signedTxBlob) || !matchesCreate(decode(signature.payload.signedTxBlob), t)) throw new Error('Escrow signature binding rejected')
+  if (a.scheme !== 'escrow-v1' || a.network !== t.network || canonicalJson(a.asset) !== canonicalJson(t.asset) || a.payTo !== t.payTo || a.amount !== t.amount || a.maxTimeoutSeconds !== 120 || !safeSignature(signature.payload.signedTxBlob) || !(t.holdback ? matchesHoldbackBatch(decode(signature.payload.signedTxBlob),t) : matchesCreate(decode(signature.payload.signedTxBlob), t))) throw new Error('Escrow signature binding rejected')
   return quote
 }
 /** Validate the exact create and object before issuing a durable conditional grant. */
@@ -41,7 +44,9 @@ export async function lockEscrow(blob: string, invoice: string, articleId: strin
   const quote = journal.escrowQuote(invoice)
   if (!quote) throw new Error('Unknown escrow invoice')
   const { terms } = EscrowQuoteSchema.parse(quote)
-  const tx = decode(blob), hash = hashes.hashSignedTx(blob).toUpperCase()
+  const outer = decode(blob), pair = batchInners(outer)
+  const tx = terms.holdback ? pair[0] : outer, hash = terms.holdback ? innerHash(tx) : hashes.hashSignedTx(blob).toUpperCase()
+  if (terms.holdback && !matchesHoldbackBatch(outer,terms)) throw Error('Batch binding rejected')
   if (escrowInvoice(terms) !== invoice || terms.articleId !== articleId || terms.version !== version || !safeSignature(blob) || !matchesCreate(tx, terms)) throw new Error('Escrow create does not match signed quote')
   const existing = journal.escrowGrant(hash)
   if (existing) {
@@ -52,7 +57,7 @@ export async function lockEscrow(blob: string, invoice: string, articleId: strin
   if (found.state !== 'validated') {
     const now = await ledgerTime(ledger)
     const index = Number((await ledger.request({ command: 'ledger', ledger_index: 'validated' })).result.ledger_index)
-    if (now >= terms.cancelAfter || Number(tx.LastLedgerSequence) < index || Number(tx.LastLedgerSequence) > index + 25) throw new Error('Escrow create expired or unbounded')
+    if (now >= terms.cancelAfter || Number(outer.LastLedgerSequence) < index || Number(outer.LastLedgerSequence) > index + 25) throw new Error('Escrow create expired or unbounded')
     try { await ledger.request({ command: 'submit', tx_blob: blob }) } catch { /* hash lookup decides */ }
     if (process.env.XRPL_STREAM_WAITS === '1') found = await waitForTx(ledger, hash, timing)
     else {
@@ -65,7 +70,13 @@ export async function lockEscrow(blob: string, invoice: string, articleId: strin
   }
   if (found.state !== 'validated' || found.meta.TransactionResult !== 'tesSUCCESS' || !matchesCreate(found.tx, terms)) throw new Error('Escrow not validated')
   const object = (await ledger.request({ command: 'ledger_entry', escrow: { owner: terms.payer, seq: Number(tx.Sequence) }, ledger_index: 'validated' })).result.node
-  if (object.Account !== terms.payer || object.Destination !== terms.payTo || !matchesAmount(object.Amount, terms.amount, terms.asset) || object.Condition !== terms.condition || object.CancelAfter !== terms.cancelAfter) throw new Error('Locked object mismatch')
+  if (terms.holdback) {
+    const parent = await lookupTx(ledger,hashes.hashSignedTx(blob))
+    const second = await lookupTx(ledger,innerHash(pair[1]))
+    const held = (await ledger.request({command:'ledger_entry',escrow:{owner:terms.payer,seq:Number(pair[1].Sequence)},ledger_index:found.ledgerIndex})).result.node
+    if (parent.state !== 'validated' || parent.meta.TransactionResult !== 'tesSUCCESS' || second.state !== 'validated' || second.meta.TransactionResult !== 'tesSUCCESS' || second.ledgerIndex !== found.ledgerIndex || found.meta.ParentBatchID !== hashes.hashSignedTx(blob) || second.meta.ParentBatchID !== hashes.hashSignedTx(blob) || !matchesHoldbackObject(held,terms,true)) throw Error('Batch holdback not validated')
+  }
+  if (object.Account !== terms.payer || object.Destination !== terms.payTo || !matchesAmount(object.Amount, keyTerms(terms).amount, terms.asset) || object.Condition !== terms.condition || object.CancelAfter !== terms.cancelAfter) throw new Error('Locked object mismatch')
   const grant = { scheme: 'escrow-v1', state: 'LOCKED', articleId, version, manifestRoot: terms.manifestRoot, createHash: hash }
   journal.saveEscrowGrant(hash, invoice, grant)
   return { hash, payer: terms.payer, grant }
@@ -102,7 +113,7 @@ async function revealOnce(quote: EscrowQuote, createBlob: string, keys: Publishe
   if (!finish) {
     await lockEscrow(createBlob, invoice, quote.terms.articleId, quote.terms.version, ledger, journal)
     const lockProvenAt = new Date().toISOString()
-    const sent = await payer.escrow({ TransactionType: 'EscrowFinish', Owner: quote.terms.payer, OfferSequence: Number(decode(createBlob).Sequence), Condition: quote.terms.condition, Fulfillment: fulfillmentFor(privateState.secret) }, 0,
+    const sent = await payer.escrow({ TransactionType: 'EscrowFinish', Owner: quote.terms.payer, OfferSequence: Number((quote.terms.holdback ? batchInners(decode(createBlob))[0] : decode(createBlob)).Sequence), Condition: quote.terms.condition, Fulfillment: fulfillmentFor(privateState.secret) }, 0,
       s => journal.saveKeyReveal(invoice, { ...privateState, finish: { ...s, ledgerPreCheck: true, ...(process.env.SETTLEMENT_TIMING === '1' ? { writerTiming: { lockProvenAt, finishSubmittedAt: new Date().toISOString() } } : {}) } })!,
       s => ledger.request({ command: 'submit', tx_blob: s.txBlob }),
       async () => {
@@ -110,9 +121,9 @@ async function revealOnce(quote: EscrowQuote, createBlob: string, keys: Publishe
         // An unfinished, uncancelled escrow still exists in the validated ledger.
         // These reads contain neither K nor its fulfillment; never simulate a finish.
         const t = quote.terms
-        const object = (await ledger.request({ command: 'ledger_entry', escrow: { owner: t.payer, seq: Number(decode(createBlob).Sequence) }, ledger_index: 'validated' })).result.node
+        const object = (await ledger.request({ command: 'ledger_entry', escrow: { owner: t.payer, seq: Number((quote.terms.holdback ? batchInners(decode(createBlob))[0] : decode(createBlob)).Sequence) }, ledger_index: 'validated' })).result.node
         if (!object || object.Account !== t.payer || object.Destination !== payer.address || object.Destination !== t.payTo ||
-          !matchesAmount(object.Amount, t.amount, t.asset) || object.Condition !== t.condition || object.Condition !== conditionFor(privateState.secret) ||
+          !matchesAmount(object.Amount, keyTerms(t).amount, t.asset) || object.Condition !== t.condition || object.Condition !== conditionFor(privateState.secret) ||
           object.CancelAfter !== t.cancelAfter || object.FinishAfter !== undefined) throw new BeforeSignError('Writer escrow pre-check failed; key was not signed')
         if (await ledgerTime(ledger) + 30 >= t.cancelAfter) throw new BeforeSignError('Writer reveal window closed; key was not signed')
       },

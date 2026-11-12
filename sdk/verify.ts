@@ -1,3 +1,6 @@
+import { encode, hashes, verifySignature, type Transaction } from 'xrpl'
+import { batchInners, innerHash, matchesHoldbackBatch, holdbackMinor } from '../shared/holdback.js'
+import { conditionFor } from '../shared/escrow.js'
 import { anchorLookup, checkAnchor } from './anchor.js'
 import { decryptDelivery } from '../shared/key-reveal.js'
 import { contributions } from '../shared/contribution.js'
@@ -70,7 +73,22 @@ export async function verifyAnswer(input: unknown, options: VerifyOptions = {}):
     } catch (e) { add('audit anchor', false, e instanceof Error ? e.message : 'Ledger unavailable') }
   } else checks.push({ check: 'audit anchor', status: 'SKIP', detail: b.label.includes('SIMULATED') ? 'simulated run, nothing on a ledger' : 'offline; add --ledger to look it up on XRPL Testnet (read-only)' })
   for (const e of entries.filter(e => e.kind === 'ESCROW_FINISH' && e.data.proofOk === false)) {
-    add(`key-reveal-proof ${e.intentId}`, entries.some(r => r.kind === 'refund' && r.intentId === e.intentId && r.data.originalTxHash === e.data.txHash && b.payments.some(p => p.intentId === e.intentId && p.refundTxHash === r.data.txHash)), 'Failed proof requires a bound refund; validation requires --ledger')
+    add(`key-reveal-proof ${e.intentId}`, b.intents.some(i => i.intentId === e.intentId && !!i.escrow?.holdback) || entries.some(r => r.kind === 'refund' && r.intentId === e.intentId && r.data.originalTxHash === e.data.txHash && b.payments.some(p => p.intentId === e.intentId && p.refundTxHash === r.data.txHash)), 'Failed proof requires a bound refund; validation requires --ledger')
+  }
+  for (const row of b.payments.filter(p => p.escrowTerms?.holdback)) add(`holdback coverage ${row.intentId}`,!!b.intents.find(i => i.intentId === row.intentId)?.escrow?.holdback,'Holdback status must accompany signed split terms')
+  for (const intent of b.intents.filter(i => i.escrow?.holdback)) {
+    const h = intent.escrow!.holdback!, row = b.payments.find(p => p.intentId === intent.intentId)
+    const proof = b.holdbacks?.find(p => p.intentId === intent.intentId)
+    let ok = false
+    try {
+      const pair = batchInners(proof!.batch), t = row!.escrowTerms!
+      ok = matchesHoldbackBatch(proof!.batch,t) && hashes.hashSignedTx(proof!.batch as unknown as Transaction) === h.batchHash && verifySignature(encode(proof!.batch as unknown as Transaction)) && innerHash(pair[0]) === intent.escrow!.createHash && innerHash(pair[1]) === h.createHash && pair[0].Sequence === intent.escrow!.createSequence && pair[1].Sequence === h.createSequence && h.condition === t.holdback!.condition && h.amount === t.holdback!.amount && h.cancelAfter === t.holdback!.cancelAfter && h.percent === t.holdback!.percent && h.amountMinor === holdbackMinor(t) && canonical(b.receipts.find(r => r.intentId === intent.intentId)?.escrow?.holdback) === canonical(h) && canonical(row!.holdback) === canonical(h)
+      if (h.state !== 'pending') {
+        const terminal = proof!.terminal!, hash = hashes.hashSignedTx(terminal as unknown as Transaction)
+        ok &&= verifySignature(encode(terminal as unknown as Transaction)) && terminal.Account === t.payer && terminal.Owner === t.payer && terminal.OfferSequence === h.createSequence && (h.state === 'released' ? hash === h.finishHash && h.checks === 'pass' && terminal.TransactionType === 'EscrowFinish' && terminal.Condition === h.condition && /^A0228020[A-F0-9]{64}$/.test(String(terminal.Fulfillment)) && conditionFor(String(terminal.Fulfillment).slice(8)) === h.condition : hash === h.cancelHash && terminal.TransactionType === 'EscrowCancel')
+      } else ok &&= !h.finishHash && !h.cancelHash
+    } catch { /* incomplete or tampered holdback evidence fails closed */ }
+    add(`holdback ${intent.intentId}`,ok,`Two escrow identities; holdback ${h.state}; ledger confirmation requires --testnet`)
   }
   const sourceOk = new Map<string, boolean>()
   for (const s of b.sources) {
@@ -174,7 +192,7 @@ export async function verifyAnswer(input: unknown, options: VerifyOptions = {}):
 }
 
 export function verificationText(result: VerificationResult): string {
-  const groups = ['contributions', 'manifest ', 'passages ', 'citation ', 'grant ', 'receipt ', 'refund ', 'audit chain', 'testnet ']
+  const groups = ['contributions', 'manifest ', 'passages ', 'citation ', 'grant ', 'receipt ', 'refund ', 'holdback ', 'audit chain', 'testnet ']
   const lines = [`VERIFY ${result.runId ?? 'report'}`]
   for (const prefix of groups) {
     const checks = result.checks.filter(c => c.check.startsWith(prefix))

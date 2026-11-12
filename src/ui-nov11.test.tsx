@@ -15,6 +15,7 @@ import { ucRuns, uc2Scope } from './fixtures/run'
 import { VERDICT_LABEL } from './copy'
 import { readFileSync } from 'node:fs'
 import { RunSnapshotSchema } from '../shared/contracts'
+import { money } from '../shared/presentation'
 
 Object.defineProperty(HTMLDialogElement.prototype, 'showModal', { value() { this.setAttribute('open', '') }, configurable: true })
 Object.defineProperty(HTMLDialogElement.prototype, 'close', { value() { this.removeAttribute('open') }, configurable: true })
@@ -51,6 +52,16 @@ it('handles a denied invoice clipboard write with visible feedback', async () =>
  const invoice=run.intents.find(i=>i.intentId===receipt.intentId)?.quote?.quoteHash
  expect(invoice).toBeTruthy();fireEvent.click(screen.getByTitle(invoice!))
  expect(await screen.findByRole('status')).toBeTruthy();expect(screen.getByRole('status').textContent).toContain('Couldn’t copy')
+})
+it('shows a holdback refund as partial net cost with the buyer cancel link', () => {
+ const run=RunSnapshotSchema.parse(JSON.parse(readFileSync('demo/traces/UC3-key-reveal.json','utf8')).run)
+ const receipt=run.receipts.find(r=>r.amountMinor>0 && run.intents.some(i=>i.intentId===r.intentId && i.status==='VERIFIED'))!,intent=run.intents.find(i=>i.intentId===receipt.intentId)!,hash='B'.repeat(64),refund=receipt.amountMinor/5
+ intent.escrow!.holdback={state:'refunded',amount:String(refund*1000),amountMinor:refund,percent:20,condition:`A0258020${'A'.repeat(64)}810120`,cancelAfter:800000600,cancelHash:hash}
+ vi.stubGlobal('fetch',vi.fn().mockResolvedValue({ok:false}))
+ render(<ReceiptSheet run={run} receipt={receipt} onClose={()=>{}} />)
+ expect(screen.getByText('Net cost').nextElementSibling?.textContent).toBe(money(receipt.amountMinor-refund))
+ expect(screen.getAllByText('Holdback refunded').length).toBeGreaterThan(0)
+ expect(screen.getByText('Refund tx').nextElementSibling?.querySelector('a')?.getAttribute('href')).toContain(hash)
 })
 it('retries a failed ledger balance read on a terminal run', async () => {
  const recording=JSON.parse(readFileSync('demo/traces/UC3-key-reveal.json','utf8'))

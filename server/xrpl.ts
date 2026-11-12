@@ -1,4 +1,5 @@
 import { signPayment } from '../shared/xrpl.js'
+import { batchInners } from '../shared/holdback.js'
 import { amountFor, ledgerAmount } from '../shared/contracts/asset.js'
 import { checkIssuedPayment } from '../shared/issued-currency.js'
 import { screenPayee } from './payee-screening.js'
@@ -98,7 +99,7 @@ export class XrplPayer {
     shared.queue = run.catch(() => undefined)
     return run
   }
-  escrow<T>(tx: Omit<Transaction, 'Account'>, principal: number, persist: (s: Submission) => Submission, send: (s: Submission) => Promise<T>, beforeSign?: () => Promise<void>, reservedTerminalFees: () => number = () => 0, options: { lastLedgerOffset?: number } = {}) {
+  escrow<T>(tx: Omit<Transaction, 'Account'>, principal: number, persist: (s: Submission) => Submission, send: (s: Submission) => Promise<T>, beforeSign?: () => Promise<void>, reservedTerminalFees: () => number = () => 0, options: { lastLedgerOffset?: number; reserve?: (tx: Transaction) => Transaction } = {}) {
     return this.queued(async () => {
       if (!this.wallet || this.address === simulatedPayerWallet().classicAddress) throw new BeforeSignError('Testnet signer unavailable')
       const info = await this.ledger.request({ command: 'server_info' })
@@ -114,21 +115,32 @@ export class XrplPayer {
       ])
       const increment = Math.ceil(Number(info.result.info.validated_ledger.reserve_inc_xrp) * 1_000_000)
       if (!Number.isSafeInteger(increment) || increment < 200000) throw new BeforeSignError('Escrow reserve unavailable')
-      const needed = reservedTerminalFees() + principal + FEE_CAP_DROPS + (tx.TransactionType === 'EscrowCreate' ? increment + FEE_CAP_DROPS : 0)
+      const creates = tx.TransactionType === 'Batch' ? 2 : tx.TransactionType === 'EscrowCreate' ? 1 : 0
+      const needed = creates * (increment + FEE_CAP_DROPS) + reservedTerminalFees() + principal + FEE_CAP_DROPS
       if (balance.availableDrops < needed) throw new BeforeSignError('Payer balance below escrow reserve; nothing was charged')
       const base = Math.max(12, Number(fee.result.drops?.open_ledger_fee ?? 12))
-      const cost = Math.ceil(base * (tx.TransactionType === 'EscrowFinish' && typeof tx.Fulfillment === 'string' ? 33 + tx.Fulfillment.length / 2 / 16 : 1))
+      const cost = Math.ceil(base * (tx.TransactionType === 'Batch' ? 4 : tx.TransactionType === 'EscrowFinish' && typeof tx.Fulfillment === 'string' ? 33 + tx.Fulfillment.length / 2 / 16 : 1))
       if (!Number.isSafeInteger(cost) || cost > FEE_CAP_DROPS) throw new BeforeSignError('Escrow fee exceeds policy ceiling')
       const lastLedgerSequence = Number(current.result.ledger_current_index) + (options.lastLedgerOffset ?? 20)
-      const unsigned = { ...tx, Account: this.address!, Sequence: Number(account.result.account_data.Sequence), Fee: String(cost), LastLedgerSequence: lastLedgerSequence } as Transaction
+      let unsigned = { ...tx, Account: this.address!, Sequence: Number(account.result.account_data.Sequence), Fee: String(cost), LastLedgerSequence: lastLedgerSequence } as Transaction
+      if (tx.TransactionType === 'Batch') {
+        unsigned.RawTransactions = batchInners(unsigned).map((inner,i) => ({ RawTransaction: { ...inner, Sequence: Number(unsigned.Sequence) + i + 1, Fee: '0', SigningPubKey: '', Flags: 1073741824 } }))
+        unsigned = options.reserve ? options.reserve(unsigned) : (() => { throw new BeforeSignError('Batch requires durable reservation') })()
+      }
       // A finish carries K: only the signed submit may send it to the node.
-      const [, dryRun] = await Promise.all([beforeSign?.(), tx.TransactionType === 'EscrowFinish' ? undefined : this.dryRun(unsigned)])
+      const [, dryRun] = await Promise.all([beforeSign?.(), ['EscrowFinish','Batch'].includes(String(tx.TransactionType)) ? undefined : this.dryRun(unsigned)])
       if (dryRun?.state === 'refused') throw new BeforeSignError(`Ledger dry run refused (${dryRun.code}); nothing was charged`)
       const signed = this.wallet.sign(unsigned)
       // Until the next validated refresh, a direct payment must see this new principal/reserve too.
-      this.balanceCache!.committed += principal + FEE_CAP_DROPS + (tx.TransactionType === 'EscrowCreate' ? increment : 0)
-      return { txHash: signed.hash.toUpperCase(), txBlob: signed.tx_blob, lastLedgerSequence, dryRun }
+      this.balanceCache!.committed += principal + FEE_CAP_DROPS + creates * increment
+      return { txHash: signed.hash.toUpperCase(), txBlob: signed.tx_blob, lastLedgerSequence: unsigned.LastLedgerSequence!, dryRun }
     }, persist, send)
+  }
+  /** Reconstruct only an already reserved transaction during crash recovery. */
+  signReservedBatch(tx: Transaction): Submission {
+    if (!this.wallet || tx.TransactionType !== 'Batch' || tx.Account !== this.address) throw new BeforeSignError('Reserved Batch identity mismatch')
+    const s = this.wallet.sign(tx)
+    return { txHash: s.hash.toUpperCase(), txBlob: s.tx_blob, lastLedgerSequence: tx.LastLedgerSequence! }
   }
   anchor<T>(memo: string, persist: (s: Submission) => Submission, send: (s: Submission) => Promise<T>) {
     return this.escrow({ TransactionType: 'AccountSet', Memos: [{ Memo: { MemoType: Buffer.from('researchagent/anchor-v1').toString('hex').toUpperCase(), MemoData: Buffer.from(memo).toString('hex').toUpperCase() } }] } as Omit<Transaction, 'Account'>, 0, persist, send)
