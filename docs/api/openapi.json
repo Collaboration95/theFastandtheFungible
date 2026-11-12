@@ -942,6 +942,25 @@
           },
           "403": {
             "$ref": "#/components/responses/Error403"
+          },
+          "409": {
+            "description": "Delegated wallet is not connected. Connect the visitor wallet before admitting a new run.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Connect your Testnet wallet before asking."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "x-internal": true

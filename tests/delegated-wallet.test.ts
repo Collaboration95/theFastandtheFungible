@@ -34,6 +34,17 @@ it('refuses a delegated purchase with zero policy budget before any signature or
   expect(s.c.txs.size).toBe(0); expect(s.store.getRun(s.run.runId).spentMinor).toBe(0)
   expect(s.store.getRun(s.run.runId).grants).toHaveLength(0)
 })
+it('reports a disconnected wallet as an admission conflict before a run can spend', async () => {
+  const s = await setup()
+  const { createApiApp } = await import('../server/routes.js')
+  const api = await createApiApp({ dbPath: ':memory:', payer: s.payer, publisherUrl: s.client.origin })
+  cleanup.push(() => api.close())
+  const server = api.app.listen(0, '127.0.0.1'); await new Promise(r => server.once('listening', r))
+  cleanup.push(async () => { server.closeAllConnections(); await new Promise<void>(r => server.close(() => r())) })
+  const response = await fetch(`http://127.0.0.1:${(server.address() as { port: number }).port}/runs`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question: 'SYNTHETIC disconnected wallet', budgetMinor: 100 }) })
+  expect(response.status).toBe(409); expect(await response.json()).toEqual({ error: 'Connect your Testnet wallet before asking.' })
+  expect(s.c.txs.size).toBe(0)
+})
 it('refuses an already-revoked grant before signing, even with policy budget', async () => {
   const s = await setup(200, false); const intent = await s.buy()
   expect(intent.status).toBe('FAILED_NOT_SETTLED'); expect(s.c.txs.size).toBe(0)

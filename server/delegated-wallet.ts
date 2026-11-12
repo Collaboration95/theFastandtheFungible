@@ -6,6 +6,9 @@ import type { ApiContext } from './api/context.js'
 import type { Ledger } from '../shared/xrpl.js'
 import { loadConfig } from './config.js'
 
+export class WalletConnectionError extends Error {
+  constructor() { super('Connect your Testnet wallet before asking.') }
+}
 /** A ledger grant never replaces application policy or proof of visitor identity. */
 export async function hasEscrowDelegation(ledger: Ledger, owner: string, delegate: string) {
   let marker: unknown
@@ -56,10 +59,10 @@ export function delegatedWallets(context: ApiContext) {
   return { router, bindRun(res: Response, runId: string) {
     if (loadConfig().WALLET_MODE !== 'delegated') return
     const address = bindings.get(principal(res))
-    if (!address) throw new Error('Connect your Testnet wallet before asking.')
+    if (!address) throw new WalletConnectionError()
     const run = context.store.getRun(runId)
     context.store.updateRun(runId, { checkpoint: { ...run.checkpoint, delegatedOwner: address } })
   }, requireBinding(res: Response) {
-    if (loadConfig().WALLET_MODE === 'delegated' && !bindings.has(principal(res))) throw new Error('Connect your Testnet wallet before asking.')
+    if (loadConfig().WALLET_MODE === 'delegated' && !bindings.has(principal(res))) throw new WalletConnectionError()
   } }
 }
