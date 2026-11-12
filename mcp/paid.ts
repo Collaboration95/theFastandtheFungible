@@ -41,7 +41,7 @@ export function publicPaidRouter(config:Config,limits:HostedLimits,hire:RequestH
       if(input.budgetMinor>limits.questionMinor)throw new HostedError(400,'invalid_budget')
       requireAdmissions(config)
       if(!(await ready()))throw new HostedError(503,'demo_unavailable')
-      const hold=limits.reserve(session.principal,`paid-${key}`,input.question,ip,input.budgetMinor,'submit',input)
+      const hold=limits.reserve(session.principal,`paid:${key}`,input.question,ip,input.budgetMinor,'submit',input)
       if (!hold.run_id && ['expired','interrupted'].includes(hold.state)) throw new HostedError(409,'quote_expired')
       // Namespace the existing durable hire invoice by the server-owned anonymous identity.
       req.headers['idempotency-key']=`reach:${session.principal}:${key}`
