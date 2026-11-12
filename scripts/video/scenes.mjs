@@ -1,9 +1,9 @@
 // The scenes of the demo video, one clip each. Every wait is a condition on what is on screen, never a fixed guess;
 // every interaction is a gentle glide or an eased scroll. `marks` name the moments the cut (shots.json) refers to.
-import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs'
+import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
-import { HOSTED_URL, QUESTIONS, REPO, RECEIPTS, RELEASE, ROOT, SITE, scratchDir, sleep } from './config.mjs'
+import { CLIPS, HOSTED_URL, QUESTIONS, REPO, RECEIPTS, RELEASE, ROOT, SITE, scratchDir, sleep } from './config.mjs'
 import { closeCardHtml, titleCardHtml, dryRunCardHtml } from './lib/cards.mjs'
 import { run as runCommand } from './lib/proc.mjs'
 
@@ -71,9 +71,14 @@ const title = page => page.title()
 
 async function riseToAnswer(rec, { timeout = 260_000 } = {}) {
   const { page } = rec
+  const journey = page.locator('.ra-payment-journey').first()
+  let centred = false
   await watch(rec, {
-    probes: { payment: page.locator('.ra-payment'), locking: page.getByText('Payment held until the writer releases the key'), escrow: page.getByText('Payment locked in escrow'), key: page.getByText('Writer released the key'), unlocked: page.getByText('Article unlocked') },
-    done: async () => { const t = await title(page); if (/Couldn.t finish/.test(t)) throw new Error('the run failed'); return /Answer ready|Stopped/.test(t) },
+    probes: { payment: journey, locking: journey.locator('summary').filter({ hasText: 'Creating escrow' }), escrow: journey.getByRole('link', { name: 'EscrowCreate', exact: true }), key: journey.getByRole('link', { name: 'EscrowFinish', exact: true }), unlocked: journey.locator('summary').filter({ hasText: 'Unlocked' }) },
+    done: async () => {
+      if (!centred && await journey.isVisible()) { centred = true; await rec.scrollIntoView(journey, 400, 170); rec.mark('stepper_centred') }
+      const t = await title(page); if (/Couldn.t finish/.test(t)) throw new Error('the run failed'); return /Answer ready|Stopped/.test(t)
+    },
     timeout, label: 'the answer',
   })
   rec.mark('answer_ready')
@@ -90,7 +95,7 @@ async function openHome(rec, target) {
   await page.getByRole('heading', { level: 1, name: 'Research with a wallet.' }).waitFor({ timeout: 60_000 })
   await page.evaluate(() => document.fonts.ready)
   rec.mark('orientation')
-  const pill = page.getByRole('button', { name: /Testnet demo|Shared (?:XRPL Testnet )?demo/ }).first()
+  const pill = page.getByRole('button', { name: /^XRPL Testnet$|Testnet demo|Shared (?:XRPL Testnet )?demo/ }).first()
   rec.labels.indicator = (await pill.innerText().catch(() => '')).trim()
   rec.labels.freshSession = true
   return pill
@@ -219,8 +224,12 @@ export const SCENES = [
       await rec.glide(1100, 600, 800)
       const answer = page.getByRole('region', { name: 'Research answer' })
       if (await answer.count()) { await rec.scrollIntoView(answer, 1300, 100); rec.mark('answer_read'); await rec.hold(3200) }
-      await rec.click(page.locator('.ra-spend:visible .ra-spending-proof > summary'))
-      const key = page.getByRole('button', { name: 'Check the key yourself' }).first()
+      const stepper = page.locator('.ra-payment-stepper').first()
+      if (!await stepper.evaluate(el => el.open)) await rec.click(stepper.locator('summary').first())
+      await rec.scrollIntoView(stepper, 900, 140)
+      rec.labels.paymentSteps = await stepper.innerText()
+      rec.mark('key_check_started')
+      const key = stepper.getByRole('button', { name: 'Check the key yourself' })
       await rec.glideTo(key); await key.click()
       await waitForKeyMatch(page)
       rec.labels.keyResult = 'sha256(key) = lock ✓'
@@ -230,18 +239,14 @@ export const SCENES = [
       rec.labels.payment = await page.locator('.ra-spend:visible').innerText()
       rec.labels.transactions = await page.locator('a[href*="testnet.xrpl.org"]').evaluateAll(els => els.map(el => ({ text: el.textContent, href: el.href })))
       rec.mark('why_bought'); await rec.hold(4000)
-      await page.getByRole('button', { name: 'Show work', exact: true }).click()
-      const work = page.getByRole('dialog', { name: 'Show work' })
-      await work.getByRole('tab', { name: 'Trace', exact: true }).click()
-      await work.locator('.ra-plan-check').waitFor()
-      rec.labels.planComparison = await work.locator('.ra-plan-check').innerText()
-      rec.labels.trace = await work.innerText()
-      rec.mark('plan_check'); await rec.hold(6500)
-      await work.getByRole('tab', { name: 'Models', exact: true }).click()
-      rec.labels.answerModels = await work.locator('.ra-models').innerText()
-      if (target.kind === 'hosted') assertHostedModels(rec.labels.answerModels)
-      await rec.hold(3000)
-      await page.getByRole('button', { name: 'Close show work' }).click()
+      // Keep technical model identifiers out of the picture. Per-run labels are retained in the sidecar.
+      const runId = new URL(page.url()).searchParams.get('run')
+      const receipts = await page.request.get(`${target.base}/runs/${encodeURIComponent(runId)}/receipts.json`)
+      if (!receipts.ok()) throw new Error('Could not retain this take’s receipts')
+      const bundle = await receipts.json()
+      rec.labels.receiptLabel = bundle.label
+      rec.labels.runId = runId
+      writeFileSync(join(CLIPS, 'hosted-ask.receipts.json'), JSON.stringify(bundle, null, 2) + '\n')
       await page.keyboard.press('Meta+2')
       await page.getByRole('link', { name: /XRPL Credential · issued by ResearchAgent operator/ }).nth(2).waitFor({ timeout: 60000 })
       rec.labels.verifiedWriters = await page.getByRole('link', { name: /XRPL Credential · issued by ResearchAgent operator/ }).count()
