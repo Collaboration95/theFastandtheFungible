@@ -9,7 +9,8 @@ import { THEMES, lineHtml, paletteColor, parseLine, plain, redactLine } from '..
 import { clockText, fillTokens, placeSentences, planShot, resolveRef, resolveSegments, speedLabel, speechText, splitSentences, splitSubtitles, srtTime, timeCues, toSrt } from '../scripts/video/lib/timeline.mjs'
 import { assertPublished, checkVideoPins } from '../scripts/video/lib/release-pins.mjs'
 import { RELEASE_TAG, TGZ, WHEEL, QUESTIONS, HISTORICAL_MCP_QUESTION } from '../scripts/video/config.mjs'
-import { CLAUDE_PROMPT, SCENES, hasTeamAuthoredResult } from '../scripts/video/scenes.mjs'
+import { CLAUDE_PROMPT, SCENES, hasTeamAuthoredResult, assertHostedModels } from '../scripts/video/scenes.mjs'
+import { resolveRecordingTarget } from '../scripts/video/lib/target.mjs'
 import { sessionEnv } from '../scripts/video/lib/terminal.mjs'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
@@ -177,7 +178,11 @@ describe('the video stays honest', () => {
     expect(words).toBeLessThan(360)
   })
   it('reuses the refusal voice-file ID for zero-question verification and preserves the optional safe decline', () => {
-    expect(spec.shots.find(s => s.id === 's3b-refusal').segments.every(s => s.scene === 'judges-corner')).toBe(true)
+    const corner = spec.shots.find(s => s.id === 's3b-refusal')
+    expect(corner.segments.every(s => s.scene === 'hosted-ask')).toBe(true)
+    expect(corner.label).toContain('featured run 421bae3d · 12 Nov · 5/5 gates Held')
+    expect(corner.vo).toContain('twenty-four checks passed and two not checked')
+    expect(spec.shots.indexOf(corner)).toBeLessThan(spec.shots.findIndex(s => s.id === 's2-sandbox'))
     // "outlook" and "prices" match the open central-bank records, which answer from free sources and leave no refusal to prove.
     expect(QUESTIONS.decline).not.toMatch(/\b(outlook|prices?|rates?|yields?|bonds?|bank|inflation|forecast)\b/i)
     for (const question of [QUESTIONS.buy, QUESTIONS.decline]) expect(norm(script), question).toContain(norm(question.replace(/\s+/g, ' ')))
@@ -187,19 +192,25 @@ describe('the video stays honest', () => {
     expect(HISTORICAL_MCP_QUESTION).not.toBe(QUESTIONS.buy)
     expect(norm(script)).toContain(norm(`ask_expert '${HISTORICAL_MCP_QUESTION}' with budget_sgd=2`))
   })
-  it('uses the exact third preset and its own measured payment for the deferred hosted run', () => {
+  it('uses the exact third preset and its own measured payment for the hosted run', () => {
     expect(QUESTIONS.buy).toBe('How does the writer get paid, and what stops the agent from reading the article and then refusing to pay?')
     const hosted = spec.shots.find(s => s.id === 's2-sandbox')
     expect(hosted.vo).toContain(QUESTIONS.buy)
     expect(hosted.vo).toContain('S$0.40')
-    expect(hosted.deferred).toBe('record after redeploy')
-    const guide = readFileSync(join(root, 'docs/submission/video/README.md'), 'utf8')
-    for (const text of [script, guide]) {
-      expect(text).toContain(QUESTIONS.buy)
-      expect(text).toContain('the writer gets paid by publishing the article\'s key on the XRP Ledger')
-      expect(text).toContain('https://testnet.xrpl.org/transactions/BC2B4BAD2D7E7615E3A3B6A74888899F433615EE99D4E0ACD75F5CC9C2BA9F01')
-      expect(text).toContain('T3-1')
+    expect(hosted.vo).toContain('20.7 seconds')
+    expect(hosted.deferred).toBeUndefined()
+    expect(script).toContain('0fe8cdb8-541e-4c7b-80c6-854c73cfb4f6')
+    expect(script).toContain('https://testnet.xrpl.org/transactions/60D4CA28A9BCB7E1C792CF71261AAEE520CAE117245F9E32E12259D05E1B814C')
+    expect(script).toContain('421bae3d-564c-48f8-b5e8-5034b195860a')
+  })
+  it('describes the shared key without an absolute secrecy claim and qualifies domain excerpts', () => {
+    const voice = readFileSync(join(root, 'docs/submission/video/voiceover.txt'), 'utf8')
+    for (const text of [script, voice, ...spec.shots.map(s => s.vo)]) {
+      expect(text).not.toContain('an agent cannot read the article unless the writer is paid')
+      expect(text).not.toMatch(/(?<!Testnet )Permissioned Domain/)
     }
+    expect(spec.shots.find(s => s.id === 's2-sandbox').vo).toContain("The key that unlocks the article is the same key that releases the writer's payment.")
+    expect(voice).toContain('Signed submission can expose the key before validation.')
   })
   it('starts terminal sessions from an allowlist: no key, token or seed is inherited', () => {
     const before = { ...process.env }
@@ -231,9 +242,9 @@ describe('VID-3 release pins and local recording boundaries', () => {
   it.runIf(process.env.CHECK_RELEASE_URLS === '1')('checks real release and uploaded package assets through gh', async () => {
     await checkVideoPins()
   }, 90000)
-  it('defers every hosted-URL scene and keeps the primary hosted ask out of the partial cut', () => {
-    for (const id of ['hosted-ask', 'hosted-decline', 'ledger']) expect(SCENES.find(s => s.id === id).defer).toBe('record after redeploy')
-    expect(spec.shots.find(s => s.id === 's2-sandbox').deferred).toBe('record after redeploy')
+  it('enables hosted scenes and includes the primary hosted ask in the full cut', () => {
+    for (const id of ['hosted-ask', 'hosted-decline', 'ledger']) expect(SCENES.find(s => s.id === id).defer).toBeUndefined()
+    expect(spec.shots.find(s => s.id === 's2-sandbox').deferred).toBeUndefined()
     expect(spec.shots.find(s => s.id === 's2-sandbox').label).toContain('live answers, rule-based buying')
   })
   it('keeps the five-second spending plan at 1× while compressing surrounding waits', () => {
@@ -254,4 +265,30 @@ describe('VID-3 release pins and local recording boundaries', () => {
     expect(source).not.toContain('raw.githubusercontent.com')
     expect(source).toContain('MCP result must visibly say team-authored')
   })
+})
+
+
+describe('explicit recorder target', () => {
+  it('never probes hosted in local mode', async () => {
+    const target = await resolveRecordingTarget('local', { startLocal: async () => ({ url: 'https://localhost:12345' }), probe: () => { throw new Error('unexpected hosted probe') } })
+    expect(target).toEqual({ kind: 'local', base: 'https://localhost:12345' })
+  })
+  it('uses the accepted hosted target without starting local', async () => {
+    const status = { reachable: true, state: 'ready', labels: { models: 'live answers, rule-based buying' } }
+    const target = await resolveRecordingTarget('hosted', { probe: async () => status, startLocal: () => { throw new Error('unexpected local fallback') } })
+    expect(target).toMatchObject({ kind: 'hosted', base: 'https://ra-front-651013803640.asia-southeast1.run.app', status })
+    expect(SCENES.find(s => s.id === 'hosted-ask').contextOptions(target).viewport).toEqual({ width: 1280, height: 720 })
+  })
+  it('refuses unavailable hosted targets instead of substituting local footage', async () => {
+    for (const state of ['paused', 'ended', 'unreachable']) await expect(resolveRecordingTarget('hosted', { probe: async () => ({ reachable: state !== 'unreachable', state }) })).rejects.toThrow('Hosted capture unavailable')
+    await expect(resolveRecordingTarget('auto')).rejects.toThrow('Use --target')
+  })
+})
+
+
+it('requires actual live answer provenance rather than only a configured buying chip', () => {
+  expect(() => assertHostedModels('Research · deepseek · live\nDecide · fixture · offline rules')).not.toThrow()
+  expect(() => assertHostedModels('Research · fixture · offline extracts (fallback)\nDecide · fixture')).toThrow('retain actual provenance')
+  expect(() => assertHostedModels('Research · deepseek\nDecide · openai')).toThrow()
+  expect(() => assertHostedModels('')).toThrow()
 })

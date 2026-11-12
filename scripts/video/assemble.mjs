@@ -22,7 +22,9 @@ const flag = name => args.includes(`--${name}`)
 const option = name => { const i = args.indexOf(`--${name}`); return i >= 0 ? args[i + 1] : undefined }
 const list = name => (option(name) ?? '').split(',').map(s => s.trim()).filter(Boolean)
 
-const spec = JSON.parse(readFileSync(join(KIT_DOCS, 'shots.json'), 'utf8'))
+const spec = JSON.parse(readFileSync((option('spec') ?? join(KIT_DOCS, 'shots.json')), 'utf8'))
+const docsOut = option('docs-out') ?? KIT_DOCS
+mkdirSync(docsOut, { recursive: true })
 const facts = Object.fromEntries(Object.entries(JSON.parse(readFileSync(join(ROOT, 'docs/submission/facts.json'), 'utf8')).facts).map(([k, v]) => [k, v.value]))
 const only = list('only'), without = list('without')
 const full = only.length === 0 && without.length === 0
@@ -114,7 +116,7 @@ async function buildClean(plan) {
   const inputs = [], chains = []
   plan.segments.forEach((seg, i) => {
     inputs.push('-ss', seg.from.toFixed(3), '-t', seg.source.toFixed(3), '-i', join(CLIPS, `${seg.scene}.mp4`))
-    chains.push(`[${i}:v]setpts=(PTS-STARTPTS)/${seg.speed.toFixed(5)},fps=${FPS},format=yuv420p[s${i}]`)
+    chains.push(`[${i}:v]setpts=(PTS-STARTPTS)/${seg.speed.toFixed(5)},fps=${FPS},scale=${W}:${H},setsar=1,format=yuv420p[s${i}]`)
   })
   const n = plan.segments.length
   chains.push(`${plan.segments.map((_, i) => `[s${i}]`).join('')}concat=n=${n}:v=1:a=0[cat]`)
@@ -249,10 +251,10 @@ const timing = {
   })),
 }
 if (full) {
-  writeFileSync(join(KIT_DOCS, 'captions.srt'), toSrt(srtCues))
-  writeFileSync(join(KIT_DOCS, 'timing.json'), JSON.stringify(timing, null, 2) + '\n')
-  writeFileSync(join(KIT_DOCS, 'timing.csv'), ['shot,title,start,end,vo_start,vo_end,words', ...timing.shots.map(s => [s.id, `"${s.title}"`, srtTime(s.start).slice(3, 8), srtTime(s.end).slice(3, 8), srtTime(s.voStart).slice(3, 8), s.voEnd === null ? '' : srtTime(s.voEnd).slice(3, 8), s.words].join(','))].join('\n') + '\n')
-  writeFileSync(join(KIT_DOCS, 'voiceover.txt'), spec.shots.map(s => `# ${s.id} · ${s.title}${s.deferred ? ' · record after redeploy' : ''}\n${s.vo}\n`).join('\n'))
+  writeFileSync(join(docsOut, 'captions.srt'), toSrt(srtCues))
+  writeFileSync(join(docsOut, 'timing.json'), JSON.stringify(timing, null, 2) + '\n')
+  writeFileSync(join(docsOut, 'timing.csv'), ['shot,title,start,end,vo_start,vo_end,words', ...timing.shots.map(s => [s.id, `"${s.title}"`, srtTime(s.start).slice(3, 8), srtTime(s.end).slice(3, 8), srtTime(s.voStart).slice(3, 8), s.voEnd === null ? '' : srtTime(s.voEnd).slice(3, 8), s.words].join(','))].join('\n') + '\n')
+  writeFileSync(join(docsOut, 'voiceover.txt'), spec.shots.map(s => `# ${s.id} · ${s.title}${s.deferred ? ' · record after redeploy' : ''}\n${s.vo}\n`).join('\n'))
 }
 writeFileSync(join(OUT, 'last-build.json'), JSON.stringify({ at: new Date().toISOString(), ...timing, outputs }, null, 2) + '\n')
 

@@ -20,13 +20,35 @@
       ]
     },
     {
+      "id": "s3b-refusal",
+      "title": "Verify without a question",
+      "enabled": true,
+      "voStart": 0.4,
+      "minSeconds": 18,
+      "label": "Hosted demo \u00b7 featured run 421bae3d \u00b7 12 Nov \u00b7 5/5 gates Held \u00b7 no question used \u00b7 XRPL Testnet",
+      "vo": "The featured recorded run is from 12 November: all five gates held. Verify it without asking a question. The browser reports twenty-four checks passed and two not checked.",
+      "segments": [
+        {
+          "scene": "hosted-ask",
+          "from": "corner_check_started",
+          "to": "corner_check_done",
+          "maxSeconds": 9
+        },
+        {
+          "scene": "hosted-ask",
+          "from": "corner_check_done",
+          "to": "corner_check_done+7"
+        }
+      ]
+    },
+    {
       "id": "s2-sandbox",
       "title": "Ask, plan and buy",
       "enabled": true,
       "voStart": 0.4,
       "minSeconds": 26,
       "label": "Live sandbox \u00b7 XRPL Testnet \u00b7 live answers, rule-based buying \u00b7 team-authored writers \u00b7 no real value",
-      "vo": "How does the writer get paid, and what stops the agent from reading the article and then refusing to pay? Set a budget. This run bought one S$0.40 article. Only policy code pays. The answer says: the writer gets paid by publishing the article's key on the XRP Ledger: the payment waits in an escrow that only that key can open, so an agent cannot read the article unless the writer is paid. Show work compares the searches with the confirmed plan.",
+      "vo": "How does the writer get paid, and what stops the agent from reading the article and then refusing to pay? Set a budget. This run finished in 20.7 seconds and bought one S$0.40 article. Only policy code pays. The key that unlocks the article is the same key that releases the writer's payment. Show work compares the searches with the confirmed plan.",
       "segments": [
         {
           "scene": "hosted-ask",
@@ -50,8 +72,7 @@
           "from": "plan_check",
           "to": "plan_check+6"
         }
-      ],
-      "deferred": "record after redeploy"
+      ]
     },
     {
       "id": "s3-refund",
@@ -60,7 +81,7 @@
       "voStart": 0.4,
       "minSeconds": 22,
       "label": "Local replay \u00b7 recorded Testnet escrow \u00b7 fictional writers \u00b7 browser key check \u00b7 no real value",
-      "vo": "The writer collects by publishing the article key. Check it yourself: this browser reads the create and finish from a public node and hashes the key. It matches. That proves the key reveal, not quality. This recorded refund needed the writer's signature; a real writer could refuse.",
+      "vo": "The writer collects by publishing the article key. Signed submission can expose the key before validation. This browser reads the create and finish from a public node and hashes the key. It matches. That proves the key reveal, not quality. This recorded refund needed the writer's signature; a real writer could refuse.",
       "segments": [
         {
           "scene": "key-check",
@@ -78,28 +99,6 @@
           "from": "refund_in_view",
           "to": "refund_in_view+4",
           "label": "Replay of a recorded Testnet run \u00b7 fictional writers \u00b7 writer-signed refund \u00b7 no real value"
-        }
-      ]
-    },
-    {
-      "id": "s3b-refusal",
-      "title": "Verify without a question",
-      "enabled": true,
-      "voStart": 0.4,
-      "minSeconds": 18,
-      "label": "Local acceptance \u00b7 recorded sandbox run, 11 Nov \u00b7 public XRPL Testnet reads \u00b7 no question used",
-      "vo": "Here is our local acceptance of recorded-run verification. This button verifies signatures, passage hashes, the audit chain and payments against public Testnet data. Paused research doesn't prevent that check while the page and public node remain reachable.",
-      "segments": [
-        {
-          "scene": "judges-corner",
-          "from": "corner_check_started",
-          "to": "corner_check_done",
-          "maxSeconds": 9
-        },
-        {
-          "scene": "judges-corner",
-          "from": "corner_check_done",
-          "to": "corner_check_done+7"
         }
       ]
     },
@@ -159,11 +158,11 @@
       "enabled": true,
       "voStart": 0.4,
       "minSeconds": 13,
-      "label": "Local HOSTED=1 \u00b7 live Testnet identity \u00b7 operator-issued, not KYC \u00b7 simulated buyer rail \u00b7 no real value",
-      "vo": "Three operator-run writers now hold accepted Testnet Credentials. A Permissioned Domain lists the credential issuer and type accepted for identity display. It's our attestation: not KYC, quality certification or payment permission.",
+      "label": "Hosted demo \u00b7 accepted Testnet Credentials \u00b7 Testnet Permissioned Domain \u00b7 operator-issued identity, not KYC or quality \u00b7 no real value",
+      "vo": "Three operator-run writers now hold accepted Testnet Credentials. A Testnet Permissioned Domain lists the credential issuer and type accepted for identity display. It's our attestation: not KYC, quality certification or payment permission.",
       "segments": [
         {
-          "scene": "writer-credentials",
+          "scene": "hosted-ask",
           "from": "writer_identity",
           "to": "writer_identity+9"
         }

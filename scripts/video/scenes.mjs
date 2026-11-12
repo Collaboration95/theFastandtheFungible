@@ -28,8 +28,9 @@ async function watch(rec, { probes = {}, done, timeout, label }) {
 async function askQuestion(rec, question, { keepPlanOnScreenMs = 2600 } = {}) {
   const { page } = rec
   const box = page.getByRole('textbox', { name: 'Your question' })
-  await rec.click(box)
-  await rec.type(box, question)
+  const preset = page.getByRole('button', { name: `How writers get paid ${question}`, exact: true })
+  if (question === QUESTIONS.buy && await preset.count()) await rec.click(preset)
+  else { await rec.click(box); await rec.type(box, question) }
   rec.mark('typed')
   await rec.hold(700)
   await rec.glideTo(page.locator('.ra-budget-chip'), 700)
@@ -52,6 +53,20 @@ async function askQuestion(rec, question, { keepPlanOnScreenMs = 2600 } = {}) {
   rec.mark('plan_confirmed')
 }
 
+/** The UI renders the checkmark as SVG, so success must use its semantic result state. */
+export async function waitForKeyMatch(page, timeout = 60000) {
+  const result = page.locator('.ra-key-check-out.is-match').first()
+  await result.waitFor({ timeout })
+  return result
+}
+
+/** A configured header alone cannot certify this answer's provider. */
+export function assertHostedModels(text) {
+  const research = text.match(/Research · ([^\n]+)/)?.[1]
+  const decision = text.match(/Decide · ([^\n]+)/)?.[1]
+  if (!research || /fixture|fallback/i.test(research) || !decision?.startsWith('fixture')) throw new Error('Expected live answers, rule-based buying on this run; retain actual provenance')
+}
+
 const title = page => page.title()
 
 async function riseToAnswer(rec, { timeout = 260_000 } = {}) {
@@ -68,14 +83,14 @@ async function riseToAnswer(rec, { timeout = 260_000 } = {}) {
   if (rec.marks.escrow === undefined && await page.getByText(/Paid for \d+ articles?/).first().isVisible().catch(() => false)) rec.marks.escrow = rec.marks.answer_ready
 }
 
-function hostedContext(target) { return { ignoreHTTPSErrors: target.kind === 'local' } }
+function hostedContext(target) { return { ignoreHTTPSErrors: target.kind === 'local', ...(target.kind === 'hosted' ? { viewport: { width: 1280, height: 720 } } : {}) } }
 async function openHome(rec, target) {
   const { page } = rec
   await page.goto(`${target.base}/`, { waitUntil: 'domcontentloaded' })
   await page.getByRole('heading', { level: 1, name: 'Research with a wallet.' }).waitFor({ timeout: 60_000 })
   await page.evaluate(() => document.fonts.ready)
   rec.mark('orientation')
-  const pill = page.getByRole('button', { name: /Testnet demo|Shared demo/ }).first()
+  const pill = page.getByRole('button', { name: /Testnet demo|Shared (?:XRPL Testnet )?demo/ }).first()
   rec.labels.indicator = (await pill.innerText().catch(() => '')).trim()
   rec.labels.freshSession = true
   return pill
@@ -126,8 +141,7 @@ export const SCENES = [
       await button.waitFor({ timeout: 90000 })
       await rec.scrollIntoView(button, 1000, 320)
       rec.mark('key_check_started'); await rec.glideTo(button); await button.click()
-      const result = rec.page.getByText('sha256(key) = lock ✓', { exact: true }).first()
-      await result.waitFor({ timeout: 60000 })
+      const result = await waitForKeyMatch(rec.page)
       rec.labels.result = await result.innerText()
       rec.mark('key_check_done'); await rec.hold(6500)
     },
@@ -166,13 +180,28 @@ export const SCENES = [
     html: () => closeCardHtml({ lockup: join(ROOT, 'design/brand/lockup.svg'), repo: REPO.replace('https://', '') }),
   },
   {
-    id: 'hosted-ask', defer: 'record after redeploy', kind: 'browser', hosted: true, liveQuestions: 1,
+    id: 'hosted-ask', kind: 'browser', hosted: true, liveQuestions: 1,
     labels: hostedLabels, contextOptions: hostedContext,
     async run(rec, target) {
       const { page } = rec
       const pill = await openHome(rec, target)
-      // This body stays deferred until redeploy; reuse the same real, zero-question corner check first.
-      await SCENES.find(scene => scene.id === 'judges-corner').run(rec, target)
+      const questionCalls = []
+      page.on('request', req => { if (req.method() === 'POST' && /\/api\/(?:runs|scope|admission)/.test(req.url())) questionCalls.push(req.url()) })
+      await rec.click(page.getByRole('button', { name: 'Verify a recorded run, no question used', exact: true }))
+      const corner = page.getByRole('region', { name: 'Check our work without asking a question' })
+      rec.mark('corner_check_started')
+      await rec.click(corner.getByRole('button', { name: 'Run the checks', exact: true }))
+      await corner.locator('.ra-hv-head.is-ok').waitFor({ timeout: 90000 })
+      const gates = corner.locator('.ra-gates')
+      await gates.locator('strong').filter({ hasText: /^Passed$/ }).nth(4).waitFor({ timeout: 30000 })
+      if (await gates.locator('strong').filter({ hasText: /^Passed$/ }).count() !== 5) throw new Error('Expected five passed recorded gates')
+      rec.labels.cornerResult = await corner.locator('.ra-hv-head').innerText()
+      rec.labels.cornerGates = await gates.innerText()
+      if (questionCalls.length) throw new Error('Recorded verification consumed a question')
+      rec.labels.cornerQuestionRequests = 0
+      await rec.scrollIntoView(gates, 1000, 140)
+      rec.mark('corner_check_done'); await rec.hold(7000)
+      await rec.click(page.locator('.ra-hwork > summary'))
       await rec.hold(1500)
       await rec.glideTo(pill, 1000)       // the one environment indicator
       await rec.hold(1800)
@@ -193,22 +222,34 @@ export const SCENES = [
       await rec.click(page.locator('.ra-spend:visible .ra-spending-proof > summary'))
       const key = page.getByRole('button', { name: 'Check the key yourself' }).first()
       await rec.glideTo(key); await key.click()
-      await page.getByText('sha256(key) = lock ✓', { exact: true }).first().waitFor({ timeout: 60000 })
+      await waitForKeyMatch(page)
+      rec.labels.keyResult = 'sha256(key) = lock ✓'
       rec.mark('key_check_done'); await rec.hold(6000)
+      rec.labels.runUrl = page.url()
+      rec.labels.answer = await page.getByRole('region', { name: 'Research answer' }).innerText()
+      rec.labels.payment = await page.locator('.ra-spend:visible').innerText()
+      rec.labels.transactions = await page.locator('a[href*="testnet.xrpl.org"]').evaluateAll(els => els.map(el => ({ text: el.textContent, href: el.href })))
+      rec.mark('why_bought'); await rec.hold(4000)
       await page.getByRole('button', { name: 'Show work', exact: true }).click()
       const work = page.getByRole('dialog', { name: 'Show work' })
       await work.getByRole('tab', { name: 'Trace', exact: true }).click()
       await work.locator('.ra-plan-check').waitFor()
       rec.labels.planComparison = await work.locator('.ra-plan-check').innerText()
+      rec.labels.trace = await work.innerText()
       rec.mark('plan_check'); await rec.hold(6500)
+      await work.getByRole('tab', { name: 'Models', exact: true }).click()
+      rec.labels.answerModels = await work.locator('.ra-models').innerText()
+      if (target.kind === 'hosted') assertHostedModels(rec.labels.answerModels)
+      await rec.hold(3000)
       await page.getByRole('button', { name: 'Close show work' }).click()
       await page.keyboard.press('Meta+2')
       await page.getByRole('link', { name: /XRPL Credential · issued by ResearchAgent operator/ }).nth(2).waitFor({ timeout: 60000 })
+      rec.labels.verifiedWriters = await page.getByRole('link', { name: /XRPL Credential · issued by ResearchAgent operator/ }).count()
       rec.mark('writer_identity'); await rec.hold(9500)
     },
   },
   {
-    id: 'hosted-decline', defer: 'record after redeploy', kind: 'browser', hosted: true, liveQuestions: 1,
+    id: 'hosted-decline', kind: 'browser', hosted: true, liveQuestions: 1,
     labels: hostedLabels, contextOptions: hostedContext,
     async run(rec, target) {
       const { page } = rec
@@ -216,7 +257,7 @@ export const SCENES = [
       await rec.hold(800)
       await askQuestion(rec, QUESTIONS.decline, { keepPlanOnScreenMs: 1500 })
       await riseToAnswer(rec)
-      rec.labels.models = (await page.getByRole('button', { name: /Testnet demo|Shared demo/ }).first().innerText().catch(() => '')).trim()
+      rec.labels.models = (await page.getByRole('button', { name: /Testnet demo|Shared (?:XRPL Testnet )?demo/ }).first().innerText().catch(() => '')).trim()
       rec.labels.caption = caption(target, rec.labels.models, target.kind === 'local' ? 'synthetic test anchor' : undefined)
       await rec.hold(2200)
       const share = page.getByRole('button', { name: 'Share proof of refusal' })
@@ -272,7 +313,7 @@ export const SCENES = [
     },
   },
   {
-    id: 'ledger', defer: 'record after redeploy', kind: 'browser', source: 'site',
+    id: 'ledger', kind: 'browser', source: 'site',
     labels: () => ({ env: 'XRPL Testnet · no real value', backend: 'site' }),
     async run(rec) {
       const { page } = rec

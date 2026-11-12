@@ -107,7 +107,7 @@ export async function recordScene({ id, contextOptions = {}, source, labels = {}
   }
 
   let failed
-  await page.screencast.start({ size: VIEWPORT, quality: 95, onFrame: f => {
+  await page.screencast.start({ size: page.viewportSize(), quality: 95, onFrame: f => {
     latest = f.data
     if (!t0) { t0 = Date.now(); ticker = setInterval(pump, 8) }
   } })
