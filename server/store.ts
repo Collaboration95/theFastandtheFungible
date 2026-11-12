@@ -714,6 +714,11 @@ export class Store {
     this.db.exec('CREATE TABLE IF NOT EXISTS holdback_sequences (owner TEXT NOT NULL, sequence INTEGER NOT NULL, intent_id TEXT NOT NULL, PRIMARY KEY(owner,sequence))')
     for (const sequence of sequences) this.prepare('INSERT INTO holdback_sequences VALUES (?,?,?)').run(owner, sequence, intentId)
   }
+  releaseHoldbackSequences(intentId: string, unused = false) {
+    this.db.exec('CREATE TABLE IF NOT EXISTS holdback_sequences (owner TEXT NOT NULL, sequence INTEGER NOT NULL, intent_id TEXT NOT NULL, PRIMARY KEY(owner,sequence))')
+    this.prepare('DELETE FROM holdback_sequences WHERE intent_id=?').run(intentId)
+    if (unused) this.prepare('UPDATE escrows SET owner=NULL, create_sequence=NULL WHERE intent_id=?').run(intentId)
+  }
   updateHoldback(intentId: string, holdback: NonNullable<EscrowRecord['publicStatus']['holdback']>) {
     this.atomic(() => {
       const e = this.getEscrow(intentId)!, intent = this.getIntent(intentId)!

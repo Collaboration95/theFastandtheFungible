@@ -1,6 +1,6 @@
 # Buyer-controlled holdback
 
-**15 purchases: 10 passing holdbacks released and 5 forced promise failures refunded through buyer EscrowCancel. All 17 receipt exports, including both compact-memo controls, pass the current offline verifier and read-only Testnet verification.** Every cancellation validates after its CancelAfter. Content and promise failures are synthetic fixtures; transactions are real XRPL Testnet. Two additional compact-memo controls completed: one release and one buyer cancellation. **17 total purchases: 11 released and 6 refunded.** Local tests: 16 holdback cases and 18 stepper cases, including the three new fourth-state checks. The full Node 22 merge gate is pending the shared heavy-verification queue.
+**15 purchases: 10 passing holdbacks released and 5 forced promise failures refunded through buyer EscrowCancel. All 17 receipt exports, including both compact-memo controls, pass the current offline verifier and read-only Testnet verification.** Every cancellation validates after its CancelAfter. Content and promise failures are synthetic fixtures; transactions are real XRPL Testnet. Two additional compact-memo controls completed: one release and one buyer cancellation. **17 total purchases: 11 released and 6 refunded.** Local tests: 17 holdback cases and 18 stepper cases, including the three new fourth-state checks. The exact clean-head Node 22 merge gate is recorded on the PR status.
 
 Opt in with `ESCROW_HOLDBACK=on` and `ESCROW_MODE=key-reveal`. `HOLDBACK_PERCENT` defaults to 20; `HOLDBACK_CANCEL_AFTER_S` defaults to 600. The flag defaults off. The evidence command uses 60 seconds and synthetic signed fixture articles, with real XRPL Testnet settlement. It does not deploy or call a live model.
 
@@ -29,7 +29,7 @@ The evidence harness resumes completed rows unless `--fresh` is supplied. Privat
 
 The first 15 purchases used exact full-quote memos. The new signer uses quote-hash commitments to keep IOU Batch headers under the unchanged 8 KiB cap. Both memo forms bind the same quote and are verified; the controls below exercise the new signer on Testnet. No issued-token Testnet holdback claim is made: issued-currency credit checks use a labelled fake ledger.
 
-`holdback-transactions.json` retains every outer/inner create, key finish and holdback terminal hash. `holdback-verification.json` retains every offline and ledger check. `holdback-NN.receipt.json` are the portable exports. Five failure trials retain their deadline and validated close-time comparisons.
+`holdback-transactions.json` retains every outer/inner create, key finish and holdback terminal hash. `holdback-verification.json` retains every offline and ledger check. `holdback-NN.receipt.json` are the portable exports. All six failure trials retain their deadline and validated close-time comparisons.
 
 | Trial | Outcome | Batch | Holdback terminal | Deadline / validated close time |
 |---|---|---|---|---|

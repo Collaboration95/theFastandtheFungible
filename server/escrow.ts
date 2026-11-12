@@ -214,7 +214,10 @@ export class EscrowPurchases {
       let justSubmitted = false
       let create = this.store.escrowOutbox(intentId).find(t => t.operation === 'create')
       if (!create) {
-        if (this.store.isPaused() || this.store.getRun(intent.runId).stopped || await ledgerTime(this.payer.ledger) >= e.quote.terms.cancelAfter - 15) return this.store.failSubmission(intentId, 'Escrow not signed before stop or expiry')
+        if (this.store.isPaused() || this.store.getRun(intent.runId).stopped || await ledgerTime(this.payer.ledger) >= e.quote.terms.cancelAfter - 15) {
+          if (e.quote.terms.holdback) this.store.releaseHoldbackSequences(intentId,true)
+          return this.store.failSubmission(intentId, 'Escrow not signed before stop or expiry')
+        }
         const t = e.quote.terms
         await preflightEscrow(this.payer.ledger, t)
         if (t.holdback) {
@@ -234,8 +237,12 @@ export class EscrowPurchases {
           if (!justSubmitted || process.env.XRPL_STREAM_WAITS !== '1') { try { await this.payer.ledger.request({ command: 'submit', tx_blob: create.txBlob }) } catch { /* same persisted hash decides */ } }
           status = await this.payer.waitFor(create)
         }
-        if (status.state === 'failed' || status.state === 'expired') return this.store.failSubmission(intentId, 'Escrow create ledger-proven not applied; no principal paid')
+        if (status.state === 'failed' || status.state === 'expired') {
+          if (e.quote.terms.holdback) this.store.releaseHoldbackSequences(intentId,true)
+          return this.store.failSubmission(intentId, 'Escrow create ledger-proven not applied; no principal paid')
+        }
         if (status.state !== 'success') return this.store.getIntent(intentId)!
+        if (e.quote.terms.holdback) this.store.releaseHoldbackSequences(intentId) // Outer sequence is now ledger-consumed; retain the immutable outbox.
         const found = await lookupTx(this.payer.ledger, create.txHash)
         if (e.quote.terms.holdback && !await verifyHoldbackBatch(this.payer,create,e.quote.terms)) throw Error('Batch inner results or objects not proven')
         const keyCreate = e.quote.terms.holdback ? batchInners(decode(create.txBlob))[0] : found.state === 'validated' ? found.tx : {}

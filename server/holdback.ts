@@ -23,7 +23,11 @@ export function restoreHoldbacks(store: Store, payer: XrplPayer) {
     if (!intent.escrow?.holdback) continue
     const state = store.holdbackPrivate<HoldbackPrivate>(intent.intentId)
     if (state?.unsigned && !state.signed) {
-      if (store.isPaused() || store.getRun(intent.runId).stopped) continue
+      if (intent.status !== 'SUBMITTING') continue
+      if (store.isPaused() || store.getRun(intent.runId).stopped) {
+        store.withTransaction(() => { store.releaseHoldbackSequences(intent.intentId,true); store.failSubmission(intent.intentId,'Unsigned Batch abandoned before Stop or pause; nothing was charged') })
+        continue
+      }
       state.signed = payer.signReservedBatch(state.unsigned)
       store.withTransaction(() => {
         store.holdbackPrivate(intent.intentId,state)

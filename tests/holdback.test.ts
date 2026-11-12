@@ -184,14 +184,17 @@ it('does not release a holdback while live relevance calibration is unavailable'
   expect(s.store.getIntent('escrow-one')!.escrow!.holdback).toMatchObject({state:'refunded',checks:'fail'})
 })
 
-it('does not turn an unsigned reservation into spending after Stop', async () => {
+for (const restart of [false,true]) it(`does not turn an unsigned reservation into spending after Stop${restart?' and restart':''}`, async () => {
   const s = await setup()
   const original = s.wallet.sign.bind(s.wallet)
   vi.spyOn(s.wallet,'sign').mockImplementation(tx => { if(tx.TransactionType==='Batch') throw Error('crash'); return original(tx) })
   await s.buy(); s.store.updateRun(s.run.runId,{stopped:true})
-  vi.restoreAllMocks(); s.restart(); await s.buy()
+  vi.restoreAllMocks(); if(restart) s.restart(); await s.buy()
   expect(s.c.txs.size).toBe(0)
   expect(s.store.getIntent('escrow-one')!.status).toBe('FAILED_NOT_SETTLED')
+  const next=s.store.createRun('New synthetic authorization after Stop',200)
+  const result=await s.manager.purchase({runId:next.runId,candidate:s.candidate,intentId:'after-stop',escrow:true})
+  expect(result.status).toBe('VERIFIED')
 })
 it('preserves check evidence while a completed run still owes holdback settlement', async () => {
   const s = await setup()
