@@ -106,6 +106,7 @@ export class XrplPayer {
     return run
   }
   escrow<T>(tx: Omit<Transaction, 'Account'>, principal: number, persist: (s: Submission) => Submission, send: (s: Submission) => Promise<T>, beforeSign?: () => Promise<void>, reservedTerminalFees: () => number = () => 0, options: { lastLedgerOffset?: number; reserve?: (tx: Transaction) => Transaction } = {}): Promise<{ submission: Submission; sent: Promise<T> }> {
+    if (this.delegatedOwner && tx.TransactionType === 'Batch') return Promise.reject(new BeforeSignError('Delegated Batch requires visitor co-signing'))
     // Anyone may finish/cancel an escrow. Only creates use the visitor's delegation.
     if (this.delegatedOwner && tx.TransactionType !== 'EscrowCreate') return new XrplPayer(this.ledger, this.wallet, this.timing).escrow(tx, principal, persist, send, beforeSign, reservedTerminalFees, options)
     return this.queued(async () => {
