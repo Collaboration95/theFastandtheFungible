@@ -95,6 +95,7 @@ it('refuses Batch on an escrow-only visitor grant before falling back to the age
   const sign = vi.spyOn(s.agent, 'sign')
   const scoped = s.payer.forAccount(s.visitor.address)
   await expect(scoped.escrow({ TransactionType: 'Batch', Flags: 65536, RawTransactions: [] }, 0, submission => submission, async () => undefined)).rejects.toThrow('Delegated Batch requires visitor co-signing')
+  expect(() => scoped.signReservedBatch({ TransactionType: 'Batch', Account: s.visitor.address, Flags: 65536, RawTransactions: [] })).toThrow('Delegated Batch requires visitor co-signing')
   expect(sign).not.toHaveBeenCalled()
   expect(s.c.txs.size).toBe(0)
 })
