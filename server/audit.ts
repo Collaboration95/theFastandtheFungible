@@ -375,7 +375,7 @@ export async function verifyEscrowEvents(entries: AuditEntry[], ledger: Ledger):
       if (ok && found.state === 'validated') {
         if (kind === 'escrow-create') {
           const memos = found.tx.Memos as { Memo: { MemoData: string } }[]
-          const invoice = Buffer.from(memos[0].Memo.MemoData, 'hex').toString('utf8')
+          const invoice = e.data.terms ? canonical(e.data.terms) : Buffer.from(memos[0].Memo.MemoData, 'hex').toString('utf8')
           const terms = EscrowTermsSchema.parse(JSON.parse(invoice))
           ok = matchesCreate(found.tx, terms) && ledgerInvoiceId(invoice) === e.data.invoiceHash && found.tx.Account === e.data.owner && found.tx.Sequence === e.data.createSequence && matchesAmount(found.tx.Amount, String(e.data.amountDrops), terms.asset) && found.tx.Destination === e.data.payTo && found.tx.CancelAfter === e.data.cancelAfter
         } else ok = found.tx.TransactionType === (kind === 'escrow-finish' ? 'EscrowFinish' : 'EscrowCancel') && found.tx.Owner === e.data.owner && found.tx.OfferSequence === e.data.createSequence
@@ -388,7 +388,7 @@ export async function verifyEscrowEvents(entries: AuditEntry[], ledger: Ledger):
         if (ok && e.data.proofOk === false && refund && create) {
           const createTx = await lookupTx(ledger, String(create.data.txHash))
           if (createTx.state !== 'validated') throw Error('Create terms unavailable')
-          const terms = EscrowTermsSchema.parse(JSON.parse(Buffer.from((createTx.tx.Memos as {Memo:{MemoData:string}}[])[0].Memo.MemoData,'hex').toString('utf8')))
+          const terms = EscrowTermsSchema.parse(create.data.terms ?? JSON.parse(Buffer.from((createTx.tx.Memos as {Memo:{MemoData:string}}[])[0].Memo.MemoData,'hex').toString('utf8')))
           if (!matchesCreate(createTx.tx, terms)) throw Error('Create terms mismatch')
           const proof = await verifyPayment(ledger, String(refund.data.txHash), { rail: 'xrpl-testnet', network: 'xrpl:1', asset: terms.asset, payTo: String(e.data.owner), amountDrops: String(create.data.amountDrops), invoiceId: base.txHash.toUpperCase() })
           refunded = proof.state === 'ok' && proof.proof.payer === create.data.payTo
@@ -397,7 +397,7 @@ export async function verifyEscrowEvents(entries: AuditEntry[], ledger: Ledger):
         if (ok && e.data.proofOk === false && create) {
           const createTx = await lookupTx(ledger,String(create.data.txHash))
           if (createTx.state === 'validated') {
-            const terms = EscrowTermsSchema.parse(JSON.parse(Buffer.from((createTx.tx.Memos as {Memo:{MemoData:string}}[])[0].Memo.MemoData,'hex').toString('utf8')))
+            const terms = EscrowTermsSchema.parse(create.data.terms ?? JSON.parse(Buffer.from((createTx.tx.Memos as {Memo:{MemoData:string}}[])[0].Memo.MemoData,'hex').toString('utf8')))
             if (terms.holdback) {
               const resolution = entries.find(r => r.kind === 'holdback' && r.intentId === e.intentId && r.data.state === 'refunded')
               holdbackPending = !resolution

@@ -799,7 +799,7 @@ export class Store {
       const next = { ...e, publicStatus: { ...e.publicStatus, ...patch } }
       this.prepare('UPDATE escrows SET json=? WHERE intent_id=?').run(JSON.stringify(next), intentId)
       this.saveIntent({ ...intent, escrow: next.publicStatus })
-      if (patch.state === 'LOCKED' && e.publicStatus.state !== 'LOCKED') this.audit.append({ runId: intent.runId, intentId, kind: 'ESCROW_CREATE', data: { txHash: next.publicStatus.createHash, owner: next.publicStatus.owner, createSequence: next.publicStatus.createSequence, ledgerIndex, result: 'tesSUCCESS', invoiceHash: intent.quote!.quoteHash, amountDrops: keyTerms(e.quote.terms).amount, payTo: e.quote.terms.payTo, cancelAfter: e.quote.terms.cancelAfter } })
+      if (patch.state === 'LOCKED' && e.publicStatus.state !== 'LOCKED') this.audit.append({ runId: intent.runId, intentId, kind: 'ESCROW_CREATE', data: { txHash: next.publicStatus.createHash, owner: next.publicStatus.owner, createSequence: next.publicStatus.createSequence, ledgerIndex, result: 'tesSUCCESS', ...(e.quote.terms.holdback ? {terms:e.quote.terms} : {}), invoiceHash: intent.quote!.quoteHash, amountDrops: keyTerms(e.quote.terms).amount, payTo: e.quote.terms.payTo, cancelAfter: e.quote.terms.cancelAfter } })
       if (patch.proofOk !== undefined && patch.proofOk !== e.publicStatus.proofOk) this.audit.append({ runId: intent.runId, intentId, kind: 'proof', data: { verified: patch.proofOk, status: next.publicStatus.state, scheme: 'escrow-v1', accessible: false } })
       return next
     })

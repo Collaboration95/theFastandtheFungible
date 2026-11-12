@@ -14,7 +14,7 @@ import { candidateFrom, honestArticle, alphaLeakArticle } from '../tests/fixture
 import { receiptBundle } from '../server/receipt-bundle.ts'
 process.env.ESCROW_MODE='key-reveal'; process.env.ESCROW_HOLDBACK='on'; process.env.HOLDBACK_CANCEL_AFTER_S='60'
 const scope = new ResourceScope(), dir = scope.tempDir('holdback-testnet-'), c = new Client('wss://s.altnet.rippletest.net:51233',{timeout:20000})
-const output = 'docs/evidence/money', previous=existsSync('docs/evidence/money/holdback-transactions.json') ? JSON.parse(readFileSync('docs/evidence/money/holdback-transactions.json','utf8')) : undefined, rows=previous?.rows ?? []
+const output = 'docs/evidence/money', previous=!process.argv.includes('--fresh') && existsSync('docs/evidence/money/holdback-transactions.json') ? JSON.parse(readFileSync('docs/evidence/money/holdback-transactions.json','utf8')) : undefined, rows=previous?.rows ?? []
 mkdirSync(output,{recursive:true})
 try {
   await c.connect(); scope.defer(() => c.disconnect())
@@ -26,8 +26,8 @@ try {
   const server=app.listen(0,'127.0.0.1'); await new Promise(r=>server.once('listening',r)); scope.defer(()=>new Promise(r=>{server.closeAllConnections();server.close(r)}))
   const url=`http://127.0.0.1:${server.address().port}`,client=new PublisherClient({baseUrl:url}),store=scope.own(new Store(join(dir,'buyer.db'))),payer=new XrplPayer(ledger,buyer,{pollMs:500,timeoutMs:45000}),manager=new PurchaseManager(store,client,payer)
   const save=()=>writeFileSync(`${output}/holdback-transactions.json`,JSON.stringify({at:new Date().toISOString(),network:'XRPL Testnet',content:'Synthetic fixture writers and promises',buyer:buyer.address,writer:writer.address,rows},null,2)+'\n')
-  for(let i=rows.length;i<15;i++) {
-    const fail=i>=10
+  for(let i=rows.length;i<(process.argv.includes('--controls')?17:15);i++) {
+    const fail=i>=10 && i!==15
     if(fail) store.resetReputation() // Independent synthetic promise-failure trials, not a production policy bypass.
     const candidate=await candidateFrom(url,fail?alphaLeakArticle:honestArticle)
     const run=store.createRun(`Synthetic holdback ${fail?'promise mismatch':'passing promise'} ${i+1}`,200,{research:'fixture',decision:'fixture',publisher:'local fixture',settlement:'XRPL TESTNET · no real value'})

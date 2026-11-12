@@ -200,3 +200,18 @@ it('preserves check evidence while a completed run still owes holdback settlemen
   expect(s.store.prune({olderThanDays:0,now:Date.now()+86400000,dryRun:true}).runIds).toEqual([])
   expect(s.store.getRun(s.run.runId).contents).toHaveLength(1)
 })
+
+for (const broken of [false,true]) it(`verifies exact issued-currency credits for ${broken?'refund':'release'}`, async () => {
+  const s = await setup({iou:true,broken}); const result=await s.buy()
+  expect(result.status).toBe(broken?'CLAIM_FAILED':'VERIFIED')
+  if(broken) { s.c.state.now=result.escrow!.holdback!.cancelAfter+1; await s.manager.reconcile() }
+  expect(s.store.getIntent('escrow-one')!.escrow!.holdback!.state).toBe(broken?'refunded':'released')
+  expect((await verifyAnswer(receiptBundle(s.store,s.run.runId),{testnet:true,ledger:s.c.ledger})).checks.filter(c=>c.status==='FAIL')).toEqual([])
+})
+
+it('records sub-cent holdbacks exactly rather than rounding their refund to zero', async () => {
+  const s = await setup(); vi.stubEnv('HOLDBACK_PERCENT','1')
+  const result=await s.buy()
+  expect(result.escrow!.holdback!.amountMinor).toBe(s.candidate.price.amountMinor/100)
+  expect((await verifyAnswer(receiptBundle(s.store,s.run.runId))).ok).toBe(true)
+})

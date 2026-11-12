@@ -56,6 +56,7 @@ export async function createHoldback(store: Store, payer: XrplPayer, intentId: s
       if (store.isPaused() || store.getRun(intent.runId).stopped || intent.status !== 'SUBMITTING') throw Error('Purchase authority unavailable')
       store.reserveHoldbackSequences(intentId,t.payer,[0,1,2].map(i => Number(unsigned.Sequence)+i))
       store.holdbackPrivate(intentId,{ ...old,unsigned })
+      store.recordAudit({runId:intent.runId,intentId,kind:'holdback-reserve',data:{owner:t.payer,sequences:[0,1,2].map(i=>Number(unsigned.Sequence)+i),amount:t.amount,holdbackAmount:t.holdback!.amount}})
       return unsigned
     }) })
   await sent.sent
@@ -110,7 +111,11 @@ async function settle(store: Store, payer: XrplPayer, intentId: string) {
     const operation = checks === 'pass' && now + 15 < h.cancelAfter ? 'finish' : now > h.cancelAfter ? 'cancel' : undefined
     if (!operation) return
     const sent = await payer.escrow(operation === 'finish' ? { TransactionType:'EscrowFinish',Owner:t.payer,OfferSequence:h.createSequence,Condition:h.condition,Fulfillment:fulfillmentFor(state.secret) } : { TransactionType:'EscrowCancel',Owner:t.payer,OfferSequence:h.createSequence },0,
-      s => { store.holdbackPrivate(intentId,{ ...state,terminal:{...s,operation} }); return s },
+      s => store.withTransaction(() => {
+        store.holdbackPrivate(intentId,{ ...state,terminal:{...s,operation} })
+        store.recordAudit({runId:store.getIntent(intentId)!.runId,intentId,kind:'holdback-sign',data:{operation,txHash:s.txHash,owner:t.payer,createSequence:h.createSequence,checks:checks ?? 'unavailable'}})
+        return s
+      }),
       s => payer.ledger.request({ command:'submit',tx_blob:s.txBlob }), async () => {
         if (operation === 'finish' && (holdbackChecks(store,intentId) !== 'pass' || await ledgerTime(payer.ledger) + 15 >= h.cancelAfter)) throw Error('Holdback release authority unavailable')
       }, () => store.listIntents().filter(i => i.intentId !== intentId && i.escrow).reduce((sum,i) => sum + (i.status === 'SUBMITTING' ? 2000 : 0) + (i.escrow?.holdback?.state === 'pending' ? 2000 : 0),0))

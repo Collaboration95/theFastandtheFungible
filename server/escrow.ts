@@ -1,5 +1,5 @@
 import { holdbackOffer, createHoldback, verifyHoldbackBatch, settleHoldback } from './holdback.js'
-import { batchInners, innerHash, keyTerms } from '../shared/holdback.js'
+import { batchInners, innerHash, keyTerms, holdbackMinor } from '../shared/holdback.js'
 import { createHash } from 'node:crypto'
 import { loadConfig } from './config.js'
 // Trusted policy purchase path. Bytes are quarantined until proof AND validated finish.
@@ -76,7 +76,7 @@ export class EscrowPurchases {
       if (!this.store.claimSubmitting(intentId)) return this.store.getIntent(intentId)!
       this.store.withTransaction(() => {
       if (holdback) this.store.holdbackPrivate(intentId,{secret:holdback.secret})
-      this.store.prepareEscrow({ intentId, secret: t.keyReveal ? '' : hashlock.secret, quote, publicStatus: { scheme: 'escrow-v1', policy: 'escrow-policy-v1', ...(t.keyReveal ? { mode: 'key-reveal' as const } : {}), state: 'PREPARED', owner: t.payer, cancelAfter, ...(t.holdback ? {holdback:{...t.holdback,state:'pending' as const,amountMinor:Math.floor(candidate.price.amountMinor*t.holdback.percent/100)}} : {}) } })
+      this.store.prepareEscrow({ intentId, secret: t.keyReveal ? '' : hashlock.secret, quote, publicStatus: { scheme: 'escrow-v1', policy: 'escrow-policy-v1', ...(t.keyReveal ? { mode: 'key-reveal' as const } : {}), state: 'PREPARED', owner: t.payer, cancelAfter, ...(t.holdback ? {holdback:{...t.holdback,state:'pending' as const,amountMinor:holdbackMinor(t)}} : {}) } })
       })
     }
     return this.advance(intentId)
@@ -155,7 +155,7 @@ export class EscrowPurchases {
         const op = found.tx.TransactionType === 'EscrowFinish' ? 'finish' : found.tx.TransactionType === 'EscrowCancel' ? 'cancel' : undefined
         if (!op || op === 'finish' && (found.tx.Condition !== t.condition || (!t.keyReveal && found.tx.Fulfillment !== fulfillmentFor(e.secret)))) continue
         if (op === 'finish' && t.keyReveal) { await this.acceptReveal(intent, hash); return true }
-        verifyEscrowCredit(found.meta, t, op === 'finish' ? t.payTo : t.payer)
+        verifyEscrowCredit(found.meta, keyTerms(t), op === 'finish' ? t.payTo : t.payer)
         this.store.completeEscrow(intent.intentId, op, found.ledgerIndex, hash)
         this.event(intent, op, hash, found.ledgerIndex)
         if (op === 'finish') this.store.appendEvent(intent.runId, { type: 'GRANT', label: 'Proof verified and relayed escrow release validated', data: { intentId: intent.intentId, resourceId: intent.resourceId, version: intent.version } })
@@ -195,7 +195,7 @@ export class EscrowPurchases {
     if (result.state === 'success') {
       const found = await lookupTx(this.payer.ledger, tx.txHash)
       if (found.state !== 'validated') return
-      verifyEscrowCredit(found.meta, e.quote.terms, op === 'finish' ? e.quote.terms.payTo : e.quote.terms.payer)
+      verifyEscrowCredit(found.meta, keyTerms(e.quote.terms), op === 'finish' ? e.quote.terms.payTo : e.quote.terms.payer)
       // The signed outbox fixes operation, owner and object; successful validation proves its terminal branch.
       if (op === 'finish') this.store.recordTiming(intent.intentId, 'finishValidated', { txHash: tx.txHash, ledgerIndex: result.ledgerIndex })
       this.store.completeEscrow(intent.intentId, op, result.ledgerIndex)

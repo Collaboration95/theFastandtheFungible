@@ -1,5 +1,5 @@
 import { encode, hashes, verifySignature, type Transaction } from 'xrpl'
-import { batchInners, innerHash, matchesHoldbackBatch } from '../shared/holdback.js'
+import { batchInners, innerHash, matchesHoldbackBatch, holdbackMinor } from '../shared/holdback.js'
 import { conditionFor } from '../shared/escrow.js'
 import { anchorLookup, checkAnchor } from './anchor.js'
 import { decryptDelivery } from '../shared/key-reveal.js'
@@ -82,7 +82,7 @@ export async function verifyAnswer(input: unknown, options: VerifyOptions = {}):
     let ok = false
     try {
       const pair = batchInners(proof!.batch), t = row!.escrowTerms!
-      ok = matchesHoldbackBatch(proof!.batch,t) && hashes.hashSignedTx(proof!.batch as unknown as Transaction) === h.batchHash && verifySignature(encode(proof!.batch as unknown as Transaction)) && innerHash(pair[0]) === intent.escrow!.createHash && innerHash(pair[1]) === h.createHash && pair[0].Sequence === intent.escrow!.createSequence && pair[1].Sequence === h.createSequence && h.condition === t.holdback!.condition && h.amount === t.holdback!.amount && h.cancelAfter === t.holdback!.cancelAfter && h.percent === t.holdback!.percent && h.amountMinor === Math.floor(intent.amountMinor*h.percent/100) && canonical(b.receipts.find(r => r.intentId === intent.intentId)?.escrow?.holdback) === canonical(h) && canonical(row!.holdback) === canonical(h)
+      ok = matchesHoldbackBatch(proof!.batch,t) && hashes.hashSignedTx(proof!.batch as unknown as Transaction) === h.batchHash && verifySignature(encode(proof!.batch as unknown as Transaction)) && innerHash(pair[0]) === intent.escrow!.createHash && innerHash(pair[1]) === h.createHash && pair[0].Sequence === intent.escrow!.createSequence && pair[1].Sequence === h.createSequence && h.condition === t.holdback!.condition && h.amount === t.holdback!.amount && h.cancelAfter === t.holdback!.cancelAfter && h.percent === t.holdback!.percent && h.amountMinor === holdbackMinor(t) && canonical(b.receipts.find(r => r.intentId === intent.intentId)?.escrow?.holdback) === canonical(h) && canonical(row!.holdback) === canonical(h)
       if (h.state !== 'pending') {
         const terminal = proof!.terminal!, hash = hashes.hashSignedTx(terminal as unknown as Transaction)
         ok &&= verifySignature(encode(terminal as unknown as Transaction)) && terminal.Account === t.payer && terminal.Owner === t.payer && terminal.OfferSequence === h.createSequence && (h.state === 'released' ? hash === h.finishHash && h.checks === 'pass' && terminal.TransactionType === 'EscrowFinish' && terminal.Condition === h.condition && /^A0228020[A-F0-9]{64}$/.test(String(terminal.Fulfillment)) && conditionFor(String(terminal.Fulfillment).slice(8)) === h.condition : hash === h.cancelHash && terminal.TransactionType === 'EscrowCancel')
