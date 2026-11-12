@@ -6,14 +6,14 @@ Writer provenance: two team-authored writers supply paid implementation notes; O
 
 ## ~50 words
 
-ResearchAgent gives coding agents a research wallet on XRPL Testnet. Ask a question and set a budget.
+ResearchAgent helps coding agents buy implementation knowledge on XRPL Testnet. Ask a question and set a budget.
 It searches free sources, then policy rules decide purchases
 over x402. Writers collect by revealing the article key on the XRP Ledger.
 Your browser independently checks that the key matches the payment lock.
 
 ## ~150 words
 
-ResearchAgent gives coding agents a research wallet on XRPL Testnet. Ask a question and set a budget.
+ResearchAgent helps coding agents buy implementation knowledge on XRPL Testnet. Ask a question and set a budget.
 It searches free sources first, then policy rules decide purchases of missing expertise
 over x402. The language model cannot spend or raise the budget.
 
@@ -30,7 +30,7 @@ the same tools to Claude Code over MCP: one question, one budget, verifiable del
 
 ## ~300 words
 
-ResearchAgent is a search engine for agent-readable expertise, with a wallet on XRPL Testnet.
+ResearchAgent helps coding agents buy implementation knowledge on XRPL Testnet.
 A coding agent can ask a question and set a budget, search free sources, then buy
 missing expertise over x402. Policy rules decide purchases, at most one article per
 round for three rounds. The budget is the only spending authority; the language model
@@ -46,6 +46,8 @@ The same research tools work in Claude Code over MCP, in the browser, and throug
 TypeScript and Python SDKs. Export receipts to check them outside the app with our
 separately written verifiers. Judges can verify a recorded hosted run without asking
 a question: the featured run’s browser check shows all five hard gates Held.
+The recorded run used team-authored writers, live planning and final writing, a first
+draft from recorded extracts, keyword search and policy rules for purchases.
 
 We target XRPL/x402 integrators using coding agents to implement paid endpoints or
 diagnose failed settlement. Practitioner notes offer the specific detail a free abstract

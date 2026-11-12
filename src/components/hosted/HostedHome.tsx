@@ -41,10 +41,11 @@ export function HostedJudgesCorner({ hosted, detailsRef }: { hosted: Hosted; det
   const [opened, setOpened] = useState(false)
   return <details ref={detailsRef} className="ra-hwork" onToggle={event => setOpened(event.currentTarget.open)}>
     <summary>Check our work</summary>
-    <section className="ra-hjc" aria-label="Check our work without asking a question">
-    <p className="ra-hjc-label" aria-hidden="true">Check our work without asking a question</p>
+    <section className="ra-hjc" aria-label="Check the recorded evidence">
+    <p className="ra-hjc-label" aria-hidden="true">Check the recorded evidence</p>
+    <p className="ra-note">Uses no question allowance.</p>
     <ul className={proof ? 'ra-hjc-list' : 'ra-hjc-list is-two'}>
-      <li className="ra-hjc-verify">{icons.verify}{opened && <Suspense fallback={<p role="status">Loading recorded run checks…</p>}><VerifyInBrowser bundleUrl={JUDGE_RUN.bundleUrl} caption={JUDGE_RUN.caption} title="Verify a real run from this demo in your browser" /></Suspense>}</li>
+      <li className="ra-hjc-verify">{icons.verify}{opened && <div><Suspense fallback={<p role="status">Loading recorded run checks…</p>}><VerifyInBrowser bundleUrl={JUDGE_RUN.bundleUrl} caption={JUDGE_RUN.caption} title="Verify a real run from this demo in your browser" /></Suspense><p className="ra-note">{JUDGE_RUN.summary}</p></div>}</li>
       <li>{icons.key}<div><h2>See the key on the ledger</h2><p>The key is in the transaction’s Fulfillment field.</p><Out href={explorerTx(JUDGE_RUN.keyTx)}>View key-release transaction</Out></div></li>
       {proof && <li>{icons.refuse}<div><h2>See it refuse to spend</h2><p>A question it declined to pay for, S$0.00 spent, anchored on the ledger.</p><Out href={proof}>Open the proof of refusal</Out></div></li>}
     </ul>
@@ -67,7 +68,7 @@ export function BuildersCorner({ hosted }: { hosted: Hosted }) {
   return <details className="ra-hbuild">
     <summary>{icons.agent}<span><b>Use it from your own agent</b><small>Claude Code, a terminal or your own code · {lines.tag}</small></span></summary>
     <ul>{rows.map(row => <li key={row.title}><b>{row.title}</b><small>{row.note}</small><CopyLine label={row.title} text={row.text} /></li>)}</ul>
-    <p className="ra-hbuild-foot">Needs Node 22.13 or later.{proof && <> · <Out href={proof}>See a real proof of refusal (no question used)</Out></>}</p>
+    <p className="ra-hbuild-foot">Needs Node 22.13 or later.{proof && <> · <Out href={proof}>See a real proof of refusal</Out></>}</p>
   </details>
 }
 

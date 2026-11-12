@@ -53,7 +53,7 @@ it('the composer proof button opens the existing corner without submitting a que
   HTMLElement.prototype.scrollIntoView = vi.fn()
   const onAsk = vi.fn()
   render(<HostedContext.Provider value={{ status: { links: {}, labels: { rail: 'XRPL Testnet' } } } as never}><Ask onAsk={onAsk} settlement="XRPL Testnet" /></HostedContext.Provider>)
-  const button = screen.getByRole('button', { name: 'Verify a recorded run, no question used' })
+  const button = screen.getByRole('button', { name: 'Verify a recorded run' })
   fireEvent.click(button)
   const corner = document.querySelector<HTMLDetailsElement>('.ra-hwork')!
   expect(corner.open).toBe(true)

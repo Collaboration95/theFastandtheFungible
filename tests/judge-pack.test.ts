@@ -227,7 +227,7 @@ describe('judge pack: one true story', () => {
     expect(talk).toContain('October replay: writers and articles SYNTHETIC')
     const home = read('site/index.html')
     expect(home).toContain('XRPL Testnet demo')
-    expect(home).toContain('recorded run (fixture models, fictional writers)')
+    expect(home).toContain('recorded run (simulated models, fictional writers)')
     expect(home).toContain('Two team-authored writers')
     expect(home).not.toContain('no real value')
   })

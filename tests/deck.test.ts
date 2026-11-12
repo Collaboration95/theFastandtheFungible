@@ -55,8 +55,10 @@ describe('finals deck', () => {
     expect(text).toContain(`${fact('featured_browser')} passed`)
     expect(text).toContain(`${fact('featured_wheel')} passed`)
     expect(text).toContain('two not checked')
-    expect(text).toContain('initial fixture draft')
-    expect(text).toContain('docs/evidence/hosted-export-nov12/')
+    expect(text).toContain('initial draft from recorded extracts')
+    expect(slides[6].querySelector('a[href="https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs/evidence/hosted-export-nov12/README.md"]')).not.toBeNull()
+    expect(text).toContain('Paid passages were read after access was granted.')
+    expect(text).not.toMatch(/1953|1954|421bae3d|preset 2|No question used/)
   })
 
   it('links every Testnet hash to the explorer page of that exact hash', () => {

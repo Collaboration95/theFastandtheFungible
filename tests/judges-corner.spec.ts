@@ -16,7 +16,7 @@ const statusAs = (page: Page, patch: (status: Record<string, unknown>) => Record
 const admissionsOpen = Date.now() < Date.parse('2026-11-19T16:00:00Z')
 test.skip(!admissionsOpen, 'The hosted demo’s admission window has closed.')
 
-const strip = (page: Page) => page.getByRole('region', { name: 'Check our work without asking a question' })
+const strip = (page: Page) => page.getByRole('region', { name: 'Check the recorded evidence' })
 
 for (const [name, width, height] of [['desktop', 1280, 800], ['phone', 390, 844]] as const) {
   test(`${name}: the shared disclosure follows examples and contains the builders’ row, nothing overflows, axe is clean`, async ({ browser }) => {
