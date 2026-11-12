@@ -20,7 +20,7 @@ it('anonymous SDK ask uses web quotas, identity, receipts and pause checks; reje
   const server = createServer().listen(0,'127.0.0.1'); await once(server,'listening')
   const url = `http://127.0.0.1:${(server.address() as {port:number}).port}/mcp`
   const host = new URL(url).host
-  const until = '2026-11-19T16:00:00Z'
+  const until = new Date(Date.now() + 3_600_000).toISOString()
   for (const [key,value] of Object.entries({ HOSTED:'1', MCP_PUBLIC:'on', HOSTED_ORIGIN:`https://${host}`, HOSTED_TRUSTED_PROXY:'127.0.0.1', HOSTED_IP_HMAC_KEY:'a'.repeat(32), HOSTED_CONTROL_PATH:control, SETTLEMENT_RAIL:'simulated', LLM_PROVIDER:'fixture', DECISION_PROVIDER:'fixture', ANCHOR_RAIL:'off' })) vi.stubEnv(key,value)
   const pause = (paused: boolean) => writeFileSync(control,JSON.stringify({admissionsPaused:paused,spendingPaused:paused,reasonCode:'test',expiresAt:until}))
   pause(false)
@@ -55,6 +55,9 @@ it('anonymous SDK ask uses web quotas, identity, receipts and pause checks; reje
     expect(metadata.hits.some((hit: {writerProvenance:{synthetic:boolean}}) => hit.writerProvenance.synthetic === true)).toBe(true)
     const offline = vi.spyOn(PublisherClient.prototype,'searchPublisher').mockRejectedValueOnce(new Error('writer unavailable'))
     try { expect((await call(client,'search_expertise',{query:'x402 pricing'})).unavailable).toBe(true) } finally { offline.mockRestore() }
+    const roundedUp = await client.callTool({name:'ask_expert',arguments:{question:USE_CASES.UC2.question,budget_sgd:1.999,idempotency_key:'subcent-budget'}})
+    expect(roundedUp.isError).toBe(true)
+    expect(api.store.listRuns()).toHaveLength(0)
     const args = {question:USE_CASES.UC2.question,budget_sgd:2,idempotency_key:'reach-once'}
     const run = await call(client,'ask_expert',args)
     expect(run.phase).toBe('DONE'); expect(run.purchases.length).toBeGreaterThan(0)

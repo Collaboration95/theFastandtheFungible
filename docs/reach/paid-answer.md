@@ -55,7 +55,8 @@ Install the existing `@researchagent/sdk` from a local packed archive or an
 owner-published release, plus `xrpl`, in your project. Registry publication is a
 separate owner action. The owner
 provides a **dedicated Testnet** wallet and an explicit cap; models never get
-signing authority. Public hosted URLs need no token:
+signing authority. Public hosted URLs need no token. Create the journal directory first with
+`mkdir -p private && chmod 700 private`:
 
 ```js
 import {createClient} from '@researchagent/sdk'

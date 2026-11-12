@@ -219,3 +219,26 @@ deliver finish: 0ECB222103F8DB986DA890894DA3F8B8FE59A9B463E959797CD39982EDB58A2A
 withhold cancel: 5C45927F70795449769FC1D856AE927ED3C578570D3B887B2ABAD7D0060C2085
 RESULT PASS: independent Python buyer; installed Hono seller; key, ciphertext, replay and expiry refund verified
 ```
+
+## Scheme proposal draft
+
+`docs/upstream/x402-scheme-key-reveal-escrow.md` follows the x402 generic scheme
+and XRPL binding format read through authenticated `gh`, read-only at upstream
+commit `0e6e8c55d86b4f14234fb6e49a4052074fb93e57`. It covers motivation,
+challenge/payload fields, verification, settlement, explicit expiry recovery,
+front-running, pending-reveal atomicity limits and reference implementations.
+It is a draft for the owner to file. No upstream issue or PR was filed, no scheme
+was registered, and no package was published.
+
+The final public-MCP regression reproduced S$1.999 being rounded up to 200 cents
+before web admission. Its tool schema now uses the web's existing five-cent
+budget denomination and refuses that request before a run or quota hold is
+created. The same SDK fixture ask, idempotency, receipts and pause proof pass.
+Pause proof fixtures use a relative future expiry so they remain valid after
+the event week; no operator lifetime or production policy changed.
+
+A synthetic-ledger regression also reproduced a caller-chosen MCP key colliding
+with the original paid hold prefix: two runs consumed one question and replaced
+the first run's hold binding. Paid holds now use a server-owned namespace that
+the public MCP key grammar cannot produce. All six paid-route tests pass,
+including separate quota accounting and continued access to both runs.
