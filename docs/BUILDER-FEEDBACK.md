@@ -1342,3 +1342,10 @@ persistence or a mainnet deployment. No cloud resource or live ledger call ran.
 - **Workaround:** use the spike's explicit version-compatible Batch payload, reconcile committed inner transactions only with complete-ledger coverage, and retain exact RLUSD Payment or the labelled TEST-SGD escrow control. No new ledger submission by this lane.
 - **Suggested fix:** upgrade/backport the product's pinned Batch helper in its owning lane; clarify missing inner metadata in docs; ask Ripple for a documented per-network RLUSD escrow policy. Delegation fee docs and generic issuer-opt-in docs already cover their requested rules and were dropped from filing.
 - **Severity / mainnet impact:** medium SDK/receipt-integration friction; high constraint for RLUSD escrow. Mainnet issuer flags were read only; no Mainnet signing, transaction or operational acceptance. No upstream issue, fork, PR, comment or support message was posted; owner approval remains #265 A11.
+## 12 November 2026: public-docs archive acquisition exceeds the buffer limit (observed tooling)
+
+- **Evidence:** ignored `scratch/public-docs-build.log` shows `spawnSync gh ENOBUFS` when the merged builder captures the pinned XRPL documentation tarball with a 128 MB `execFileSync` buffer. `scratch/public-docs-streamed-build.log` records the successful workaround; the rebuilt index exactly matches committed SHA-256 `f0ec75b8ea5426d6c25fd40415d2d673dc6b00599082e891cfa67419cee15383` (12,104 passages / 1,136 chunks).
+- **Workaround:** stream authenticated `gh api` tarball output directly into temporary files, extract outside the checkout, then use the existing `PUBLIC_DOCS_ARCHIVES_DIR` option. Temporary archives were deleted after the verified rebuild. CONTENT-owned source and manifest remain unchanged.
+- **Suggested fix:** stream tarball bytes to disk in the builder rather than collecting an entire upstream repository archive in a bounded Node buffer.
+- **Severity / mainnet impact:** medium local build/evaluation setup blocker, worked around; no model calls, XRPL transactions or mainnet writes.
+
