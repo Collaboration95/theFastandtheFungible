@@ -77,7 +77,9 @@ test('using the strip costs no question: no run, scope or admission request is m
   const page = await context.newPage()
   const calls: string[] = []
   page.on('request', request => { if (/\/api\//.test(request.url()) && !/\/api\/(demo\/status|health)/.test(request.url())) calls.push(`${request.method()} ${new URL(request.url()).pathname}`); if (request.method() !== 'GET' && /\/api\//.test(request.url())) calls.push(`${request.method()} ${new URL(request.url()).pathname}`) })
+  const arrivalHistory = page.waitForResponse(response => response.request().method() === 'GET' && new URL(response.url()).pathname === '/api/runs')
   await page.goto('/')
+  await arrivalHistory // finish the existing Home load before measuring strip actions
   await expect(page.getByText('5 of 5 questions left today')).toBeVisible()
   calls.length = 0 // whatever the app loaded on arrival is not what the strip does
   // The verifier's public-node lookups and the explorer are outside the app; keep this test off the network.
