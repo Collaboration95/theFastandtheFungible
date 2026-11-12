@@ -6,7 +6,7 @@ import { bounded } from './dependencies.js'
 import { loadConfig } from './config.js'
 import { Wallet, decode, type Transaction } from 'xrpl'
 import type { PaymentRequirement } from '../shared/contracts/index.js'
-import { lookupTx, simulatedLedgerIndex, simulatedPayerWallet, testnetLedger, validatedLedgerIndex, type Ledger } from '../shared/xrpl.js'
+import { autofillHint, ledgerWake, lookupTx, simulatedLedgerIndex, simulatedPayerWallet, testnetLedger, validatedLedgerIndex, type Ledger } from '../shared/xrpl.js'
 
 /** A signed payment, persisted before it is ever submitted so a restart can find it by hash. */
 export type DryRun = { state: 'accepted' | 'refused' | 'unavailable'; code?: string; ledgerIndex?: number; elapsedMs: number }
@@ -106,10 +106,11 @@ export class XrplPayer {
       // Independent read-only guards share a round trip after the network check.
       // Reuse the same validated reserve snapshot for balance and owner increment.
       this.balanceCache = undefined
+      const accountRead = process.env.XRPL_STREAM_WAITS === '1' ? this.ledger.request({ command: 'account_info', account: this.address, ledger_index: 'validated' }) : undefined
       const [balance, account, current, fee] = await Promise.all([
-        this.balance(Promise.resolve(info)),
-        this.ledger.request({ command: 'account_info', account: this.address, ledger_index: 'current' }),
-        this.ledger.request({ command: 'ledger_current' }), this.ledger.request({ command: 'fee' }),
+        this.balance(Promise.resolve(info), accountRead),
+        accountRead ?? this.ledger.request({ command: 'account_info', account: this.address, ledger_index: 'current' }),
+        autofillHint(this.ledger, 'ledger_current'), autofillHint(this.ledger, 'fee'),
       ])
       const increment = Math.ceil(Number(info.result.info.validated_ledger.reserve_inc_xrp) * 1_000_000)
       if (!Number.isSafeInteger(increment) || increment < 200000) throw new BeforeSignError('Escrow reserve unavailable')
@@ -143,20 +144,23 @@ export class XrplPayer {
   }
   private async waitForSequence(submission: Submission): Promise<PaymentOutcome> {
     const deadline = Date.now() + Math.min(5000, this.timing.timeoutMs)
-    do {
-      const result = await bounded(this.status(submission), Math.max(1, deadline - Date.now())).catch((): PaymentOutcome => ({ state: 'pending' }))
-      if (result.state !== 'pending') return result
-      if (Date.now() >= deadline) break
-      await new Promise(resolve => setTimeout(resolve, this.timing.pollMs))
-    } while (Date.now() < deadline)
-    return { state: 'pending' }
+    const wake = ledgerWake(this.ledger, this.timing.pollMs, submission.txHash)
+    try {
+      do {
+        const result = await bounded(this.status(submission), Math.max(1, deadline - Date.now())).catch((): PaymentOutcome => ({ state: 'pending' }))
+        if (result.state !== 'pending') return result
+        if (Date.now() >= deadline) break
+        await wake.wait(Math.max(1, deadline - Date.now()))
+      } while (Date.now() < deadline)
+      return { state: 'pending' }
+    } finally { wake.close() }
   }
-  async balance(serverInfo?: ReturnType<Ledger['request']>): Promise<BalanceSnapshot> {
+  async balance(serverInfo?: ReturnType<Ledger['request']>, accountRead?: ReturnType<Ledger['request']>): Promise<BalanceSnapshot> {
     if (!this.address) throw new BeforeSignError('XRPL payer is not configured; nothing was charged')
     if (!this.balanceCache || Date.now() - this.balanceCache.at >= 5000) {
       this.balanceLoading ??= (async () => {
         const [account, server] = await Promise.all([
-          this.ledger.request({ command: 'account_info', account: this.address, ledger_index: 'validated' }),
+          accountRead ?? this.ledger.request({ command: 'account_info', account: this.address, ledger_index: 'validated' }),
           serverInfo ?? this.ledger.request({ command: 'server_info' }),
         ])
         const validated = server.result.info.validated_ledger
@@ -201,8 +205,10 @@ export class XrplPayer {
     return { txHash: signed.hash.toUpperCase(), txBlob: signed.tx_blob, lastLedgerSequence }
   }
   async status(submission: Submission): Promise<PaymentOutcome> {
-    const validatedBefore = await validatedLedgerIndex(this.ledger)
-    const found = await lookupTx(this.ledger, submission.txHash)
+    // Preserve the validated-before-lookup expiry proof when no stream result exists.
+    const cached = this.ledger.cachedTx?.(submission.txHash)
+    const validatedBefore = cached ? 0 : await validatedLedgerIndex(this.ledger)
+    const found = cached ?? await lookupTx(this.ledger, submission.txHash)
     if (found.state === 'validated') {
       const result = String(found.meta.TransactionResult)
       return result === 'tesSUCCESS' ? { state: 'success', ledgerIndex: found.ledgerIndex } : { state: 'failed', result }
@@ -219,11 +225,14 @@ export class XrplPayer {
   }
   async waitFor(submission: Submission): Promise<PaymentOutcome> {
     const deadline = Date.now() + this.timing.timeoutMs
-    for (;;) {
-      const outcome = await bounded(this.status(submission), Math.max(1, deadline - Date.now())).catch((): PaymentOutcome => ({ state: 'pending' }))
-      if (outcome.state !== 'pending' || Date.now() > deadline) return outcome
-      await new Promise(resolve => setTimeout(resolve, this.timing.pollMs))
-    }
+    const wake = ledgerWake(this.ledger, this.timing.pollMs, submission.txHash)
+    try {
+      for (;;) {
+        const outcome = await bounded(this.status(submission), Math.max(1, deadline - Date.now())).catch((): PaymentOutcome => ({ state: 'pending' }))
+        if (outcome.state !== 'pending' || Date.now() >= deadline) return outcome
+        await wake.wait(Math.max(1, deadline - Date.now()))
+      }
+    } finally { wake.close() }
   }
 }
 

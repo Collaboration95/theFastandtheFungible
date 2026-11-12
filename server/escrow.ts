@@ -13,7 +13,7 @@ import { type PublicCandidate, type PurchaseIntent } from '../shared/contracts/i
 import { verifyDelivery, verifyManifestSignature } from '../shared/manifest.js'
 import { escrowInvoice, escrowMemo, fulfillmentFor, ledgerTime, matchesCreate, newHashlock, verifyEscrowQuote } from '../shared/escrow.js'
 import { encodeHeader, ledgerInvoiceId } from '../shared/x402.js'
-import { lookupTx } from '../shared/xrpl.js'
+import { lookupTx, waitForTx } from '../shared/xrpl.js'
 import { Reputation } from './reputation.js'
 import { payeeRefusal } from './payee-screening.js'
 import type { Store } from './store.js'
@@ -202,6 +202,7 @@ export class EscrowPurchases {
     if (e) this.recordFailedProof(intent)
     if (!e || intent.status !== 'SUBMITTING' || ['RELEASED', 'CANCELLED'].includes(e.publicStatus.state)) return intent
     try {
+      let justSubmitted = false
       let create = this.store.escrowOutbox(intentId).find(t => t.operation === 'create')
       if (!create) {
         if (this.store.isPaused() || this.store.getRun(intent.runId).stopped || await ledgerTime(this.payer.ledger) >= e.quote.terms.cancelAfter - 15) return this.store.failSubmission(intentId, 'Escrow not signed before stop or expiry')
@@ -210,12 +211,13 @@ export class EscrowPurchases {
         const sent = await this.payer.escrow({ TransactionType: 'EscrowCreate', Destination: t.payTo, Amount: ledgerAmount(t.amount, t.asset), Condition: t.condition, CancelAfter: t.cancelAfter, Memos: escrowMemo(t) }, t.asset === 'XRP' ? Number(t.amount) : 0,
           s => this.store.recordEscrowSubmission(intentId, 'create', s), async s => { this.store.recordTiming(intentId, 'createSubmitted', { txHash: s.txHash }); try { await this.payer.ledger.request({ command: 'submit', tx_blob: s.txBlob }) } catch { /* hash decides */ } }, undefined, () => this.terminalFeeHolds(intentId))
         await sent.sent
+        justSubmitted = true
         create = { ...sent.submission, intentId, operation: 'create' }
       }
       if (e.publicStatus.state === 'PREPARED') {
         let status = await this.payer.status(create)
         if (status.state === 'pending') {
-          try { await this.payer.ledger.request({ command: 'submit', tx_blob: create.txBlob }) } catch { /* hash decides */ }
+          if (!justSubmitted || process.env.XRPL_STREAM_WAITS !== '1') { try { await this.payer.ledger.request({ command: 'submit', tx_blob: create.txBlob }) } catch { /* same persisted hash decides */ } }
           status = await this.payer.waitFor(create)
         }
         if (status.state === 'failed' || status.state === 'expired') return this.store.failSubmission(intentId, 'Escrow create ledger-proven not applied; no principal paid')
@@ -244,8 +246,7 @@ export class EscrowPurchases {
           if (response.dryRun && !this.store.getRun(intent.runId).events.some(event => event.type === 'LEDGER_DRY_RUN' && event.data?.txHash === response.finishHash)) this.dryRunEvent(intent.runId, response.dryRun, { intentId, operation: 'EscrowFinish', txHash: response.finishHash, reportedBy: 'writer' })
           // The writer has submitted, not necessarily validated. Keep the normal hire
           // flow open for ledger close; durable reconciliation still owns timeouts.
-          const deadline = Date.now() + 30000
-          while ((await lookupTx(this.payer.ledger, response.finishHash)).state !== 'validated' && Date.now() < deadline) await new Promise(r => setTimeout(r, 250))
+          await waitForTx(this.payer.ledger, response.finishHash, { pollMs: 250, timeoutMs: 30000 })
           await this.acceptReveal(intent, response.finishHash)
         }
         return this.store.getIntent(intentId)!
