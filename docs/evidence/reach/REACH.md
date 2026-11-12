@@ -26,12 +26,14 @@ use SSE. The retained synthetic proxy checks also verify the header whitelist,
 one forwarded hop, a first SSE frame before 900 ms, and a paused 503 when the
 backend is unreachable. Both proxies disable buffering and caching and preserve the original Host
 authority, including an explicitly configured local port. The test covers denied
-Host/Origin/forwarded chains, other-IP run isolation, reconnect, idempotency,
+Host/Origin/forwarded chains, unsupported protocol versions (400), optional
+GET refusal (405), other-IP run isolation, reconnect, idempotency,
 receipts, verification and an operator pause. Metadata keeps writer provenance
 and links to reachable public article pages instead of the internal publisher.
 Signed source identities and external passage URLs are preserved. Search
 marks partial writer failures as `unavailable: true`. Local bearer MCP retains its
-numeric-loopback Host check and rejects all Origin headers.
+numeric-loopback Host check and rejects all Origin headers. Transport behavior
+follows the [MCP Streamable HTTP specification](https://modelcontextprotocol.io/specification/2025-11-25/basic/transports).
 
 ## Deployment configuration (owner only)
 

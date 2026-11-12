@@ -26,7 +26,7 @@ it('anonymous SDK ask uses web quotas, identity, receipts and pause checks; reje
   pause(false)
   const api = await createApiApp({ dbPath: join(dir,'app.db'), publisherUrl, hostedReadiness:async()=>true })
   server.on('request',api.app)
-  const wire = (headers:Record<string,string>) => new Promise<number>((done,fail) => { const r=request(url,{method:'POST',headers},res=>{res.resume();done(res.statusCode!)});r.on('error',fail);r.end('{}') })
+  const wire = (headers:Record<string,string>,method='POST',body='{}') => new Promise<number>((done,fail) => { const r=request(url,{method,headers:{'Content-Type':'application/json',Accept:'application/json, text/event-stream',...headers}},res=>{res.resume();done(res.statusCode!)});r.on('error',fail);r.end(method==='POST'?body:undefined) })
   const clients: Client[] = []
   const connect = async (ip='198.51.100.1') => {
     const client = new Client({name:'reach-test',version:'1'}); clients.push(client)
@@ -37,6 +37,8 @@ it('anonymous SDK ask uses web quotas, identity, receipts and pause checks; reje
     expect(await wire({Host:'evil.example'})).toBe(403)
     expect(await wire({Host:host,Origin:'https://evil.example'})).toBe(403)
     expect(await wire({Host:host,'X-Forwarded-For':'1.2.3.4, 5.6.7.8'})).toBe(403)
+    expect(await wire({Host:host},'GET')).toBe(405)
+    expect(await wire({Host:host,'MCP-Protocol-Version':'2099-01-01'},'POST',JSON.stringify({jsonrpc:'2.0',id:99,method:'tools/list',params:{}}))).toBe(400)
     const client = await connect()
     expect((await client.listTools()).tools.map(t=>t.name).sort()).toEqual(['ask_expert','get_run','lookup_receipt','search_expertise','status','verify_answer'])
     const call = async (c:Client,name:string,args:Record<string,unknown>={}) => {
