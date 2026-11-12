@@ -143,6 +143,7 @@ export function hostedRouter(context: ApiContext, config: Config, limits: Hosted
     queue.capacity(); requireAdmissions(config)
     if (!(await ready())) throw new HostedError(503,'demo_unavailable')
     // Reserve after the async readiness probe, then bind and enqueue without another await.
+    context.wallets?.requireBinding(res)
     const hold = limits.reserve(principal,key,input.question,res.locals.hostedIp,input.budgetMinor,'submit',req.body)
     if (hold.run_id) return res.status(200).json(store.getRun(hold.run_id))
     const admitted = store.admit({surface:'web',principal,question:input.question,requestedMinor:input.budgetMinor,idempotencyKey:key,maxMinor:limits.questionMinor,labels:context.labels})
