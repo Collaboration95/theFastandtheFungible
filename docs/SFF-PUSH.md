@@ -10,6 +10,8 @@ something significant: a feature, a metric move, a finished deliverable. Don't
 add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
+- 13 Nov: Judges’ corner, stage check and future video captures use a freshly verified hosted ledger-report purchase; exact payment is labelled and bound to its payer, recipient, amount and invoice. Historical escrow exports remain intact.
+
 - 13 Nov: Hosted startup validates holdback promotion and shared/delegated wallet overrides before using them; unknown names and invalid limits remain rejected.
 
 - 13 Nov: Hosted health advertises the configured real corpus, answer ratings and embedding provider so hosted presets and paid-answer feedback follow the active capabilities.

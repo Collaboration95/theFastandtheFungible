@@ -37,3 +37,5 @@ export function parseArgs(argv: string[]): { json: boolean; serveReplay: boolean
 export function main(argv?: string[], deps?: Deps, io?: { out(text: string): void; err(text: string): void }): Promise<number>
 export function readHeader(file: string): Uint8Array
 export function checkFiles(options: { deck: string; video?: string; receipts: string; evidence: string; exists: Deps['exists']; readFile: Deps['readFile']; stat?: Deps['stat']; header?: Deps['header']; replay?: string[] }): CheckResult[]
+
+export function featuredTransactionMatches(result: unknown): boolean

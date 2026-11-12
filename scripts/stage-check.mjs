@@ -19,7 +19,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 export const CHECK_MS = 5000
 const recordedRun = JSON.parse(readFileSync(join(ROOT, 'shared/judge-run.json'), 'utf8'))
-export const KEY_TX = recordedRun.keyTx
+export const KEY_TX = recordedRun.transaction.hash
 export const RECEIPTS_SHA256 = recordedRun.sha256
 export const NODES = ['wss://s.altnet.rippletest.net:51233', 'wss://clio.altnet.rippletest.net:51233']
 export const PAGES = 'https://collaboration95.github.io/theFastandtheFungible'
@@ -32,7 +32,7 @@ export const DEFAULTS = { hosted: links.hostedApp, deck: join(ROOT, 'docs/submis
 
 /** The fallback ladder (story §2.3). `say` is the label to speak; `show` is what is on screen. */
 export const TIERS = {
-  1: { name: 'Live', say: 'a run from ten minutes ago on our live Testnet sandbox', show: 'Tabs A to D as prepared: the x402 run, the validators refusal, its proof page, the EscrowFinish on the explorer. The live clicks are the explorer link and "Run the checks"; both read the public ledger.' },
+  1: { name: 'Live', say: 'a run from ten minutes ago on our live Testnet sandbox', show: 'Tabs A to D as prepared: the x402 run, the validators refusal, its proof page, the report payment on the explorer. The live clicks are the explorer link and "Run the checks"; both read the public ledger.' },
   2: { name: 'Sandbox down', say: `a recorded run from the live sandbox, ${recordedRun.recordedOn}`, show: `The prepared tabs if they are still open. Otherwise the Judges’ corner on the sandbox home (a committed run, verified in the browser) plus the explorer links alongside ${recordedRun.evidence}.` },
   3: { name: 'Explorer or public node down', say: 'replay of a recorded Testnet run, no backend', show: 'Tab E, the /demo/ replay (or serve it from this Mac: node scripts/stage-check.mjs --serve-replay), and offline "researchagent verify receipts.json" without --ledger.' },
   4: { name: 'No network', say: 'this is our recorded demo', show: 'The local video MP4 (0:09 to 1:27) and slides 3, 5 and 10 from the PDF. Offline verify in the terminal still works.' },
@@ -192,15 +192,23 @@ export async function checkNode({ session, ms }) {
   } catch (error) { return nogo('node', name, reason(error)) }
 }
 
-/** 5. The EscrowFinish the pitch opens is on the ledger: validated, with the key in Fulfillment. The same lookup "Run the checks" makes. */
+/** 5. Bind the featured exact-payment transaction to its committed receipt terms. */
+export function featuredTransactionMatches(result) {
+  const tx = result?.tx_json ?? result ?? {}
+  const terms = recordedRun.transaction
+  const meta = result?.meta
+  return result?.validated === true && tx.TransactionType === terms.type && tx.Account === terms.payer &&
+    result.hash === terms.hash && tx.Destination === terms.payTo && (tx.Amount ?? tx.DeliverMax) === terms.amountDrops && tx.InvoiceID === terms.invoiceId &&
+    meta?.TransactionResult === 'tesSUCCESS' && meta.delivered_amount === terms.amountDrops
+}
+// Retain the stage-kit function/result IDs for existing consumers.
 export async function checkKeyTx({ session, ms }) {
-  const name = 'Key transaction is on the ledger (EscrowFinish)'
+  const name = 'Report payment matches its receipt on the ledger'
   try {
     const body = await timed(ms, () => session.request({ command: 'tx', transaction: KEY_TX, binary: false }))
-    const tx = body?.result?.tx_json ?? body?.result ?? {}
-    if (body?.error === 'txnNotFound' || body?.result?.error === 'txnNotFound') throw new Error('not found on this node')
-    const ok = body?.result?.validated === true && tx.TransactionType === 'EscrowFinish' && typeof tx.Fulfillment === 'string' && tx.Fulfillment.length > 8
-    return ok ? go('key-tx', name, `validated, ledger ${body.result.ledger_index ?? '?'}, Fulfillment present`) : nogo('key-tx', name, 'answered, but not a validated EscrowFinish with a Fulfillment')
+    return featuredTransactionMatches(body?.result)
+      ? go('key-tx', name, `validated, ledger ${body.result.ledger_index ?? '?'}, exact payer, recipient, amount and invoice`)
+      : nogo('key-tx', name, 'not a validated successful payment matching the committed receipt')
   } catch (error) { return nogo('key-tx', name, reason(error)) }
 }
 

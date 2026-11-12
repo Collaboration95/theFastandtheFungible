@@ -6,7 +6,7 @@ import { request as httpRequest } from 'node:http'
 import { join } from 'node:path'
 import { resources } from './helpers/resource-scope.js'
 import {
-  CHECK_MS, DEFAULTS, FORBIDDEN_PORTS, KEY_TX, NODES, REPLAY_BASE, REPLAY_CSP, ROOT, TIERS, checkFiles, cookieJar, decideTier, githubFetch, main, parseArgs, renderReport, runChecks, serveReplay, timed,
+  CHECK_MS, DEFAULTS, featuredTransactionMatches, FORBIDDEN_PORTS, KEY_TX, NODES, REPLAY_BASE, REPLAY_CSP, ROOT, TIERS, checkFiles, cookieJar, decideTier, githubFetch, main, parseArgs, renderReport, runChecks, serveReplay, timed,
   type CheckResult, type Deps,
 } from '../scripts/stage-check.mjs'
 
@@ -75,7 +75,7 @@ function mocks(world: World = {}): Deps {
         ? { id, status: 'success', result: { ledger_current_index: 22_236_000 } }
         : world.tx === 'not-found' ? { id, status: 'error', error: 'txnNotFound' }
         : world.tx === 'wrong' ? { id, status: 'success', result: { validated: false, TransactionType: 'Payment' } }
-        : { id, status: 'success', result: { validated: true, ledger_index: 22_228_567, TransactionType: 'EscrowFinish', Fulfillment: 'A0228020' + 'AB'.repeat(32) } }
+        : { id, status: 'success', result: { hash: KEY_TX, validated: true, ledger_index: 22_228_567, TransactionType: 'Payment', Account: 'rbcLo4UJCbQMYzrYTLfdUcdSbJvYyc5Q1', Destination: 'rpnCnwxSw7Ligg1S71kADyKDG8Wm637UJu', Amount: '40000', InvoiceID: 'BA3758F2DFEBE236446A3D43D64922FEED671591B8CDBBCA782915186C45ADFB', meta: { TransactionResult: 'tesSUCCESS', delivered_amount: '40000' } } }
       setTimeout(() => this.emit('message', { data: JSON.stringify(reply) }), 0)
     }
     close() { closed.push(this.url) }
@@ -297,7 +297,7 @@ describe('what it asks the hosted sandbox', () => {
     await run()
     expect(sockets.filter(url => url === NODES[0])).toHaveLength(1)
     expect(closed).toEqual([NODES[0]])
-    expect(KEY_TX).toMatch(/^01A6A7E0[0-9A-F]{56}$/)
+    expect(KEY_TX).toMatch(/^3AEF0565[0-9A-F]{56}$/)
   })
   it('closes an unfinished connection when the checks time out, without opening a fallback after returning', async () => {
     const opened: string[] = [], stopped: string[] = []
@@ -404,4 +404,16 @@ describe('--serve-replay', () => {
   it('says so when there is no build to serve', async () => {
     await expect(serveReplay({ dir: scratch() })).rejects.toThrow(/no replay build/)
   })
+})
+
+// The featured ledger purchase uses exact payment; reject every altered settlement term.
+it('refuses a featured payment with altered payer, recipient, amount, invoice or result', () => {
+  const terms = JSON.parse(readFileSync('shared/judge-run.json', 'utf8')).transaction
+  const tx = { hash: terms.hash, validated: true, TransactionType: 'Payment', Account: terms.payer, Destination: terms.payTo, Amount: terms.amountDrops, InvoiceID: terms.invoiceId, meta: { TransactionResult: 'tesSUCCESS', delivered_amount: terms.amountDrops } }
+  expect(featuredTransactionMatches(tx)).toBe(true)
+  const { Amount, ...v2 } = tx
+  expect(featuredTransactionMatches({ hash: terms.hash, validated: true, tx_json: { ...v2, DeliverMax: Amount }, meta: tx.meta })).toBe(true)
+  expect(featuredTransactionMatches({ hash: terms.hash, validated: true, tx_json: { ...v2, DeliverMax: '1' }, meta: tx.meta })).toBe(false)
+  for (const [key, value] of Object.entries({ hash: '0'.repeat(64), Account: 'wrong', Destination: 'wrong', Amount: '1', InvoiceID: '0'.repeat(64), TransactionType: 'EscrowFinish', validated: false, meta: { TransactionResult: 'tecFAILED', delivered_amount: terms.amountDrops } })) expect(featuredTransactionMatches({ ...tx, [key]: value })).toBe(false)
+  expect(featuredTransactionMatches({ ...tx, meta: { TransactionResult: 'tesSUCCESS', delivered_amount: '1' } })).toBe(false)
 })

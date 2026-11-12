@@ -47,7 +47,7 @@ export function HostedJudgesCorner({ hosted, detailsRef }: { hosted: Hosted; det
     <p className="ra-note">Uses no question allowance.</p>
     <ul className={proof ? 'ra-hjc-list' : 'ra-hjc-list is-two'}>
       <li className="ra-hjc-verify">{icons.verify}{opened && <div><Suspense fallback={<p role="status">Loading recorded run checks…</p>}><VerifyInBrowser bundleUrl={JUDGE_RUN.bundleUrl} caption={JUDGE_RUN.caption} title="Verify a real run from this demo in your browser" /></Suspense><p className="ra-note">{JUDGE_RUN.summary}</p></div>}</li>
-      <li>{icons.key}<div><h2>See the key on the ledger</h2><p>The key is in the transaction’s Fulfillment field.</p><Out href={explorerTx(JUDGE_RUN.keyTx)}>View key-release transaction</Out></div></li>
+      <li>{icons.key}<div><h2>See the payment on the ledger</h2><p>The ledger report was delivered against this exact Testnet payment.</p><Out href={explorerTx(JUDGE_RUN.proofTx)}>View payment transaction</Out></div></li>
       {proof && <li>{icons.refuse}<div><h2>See it refuse to spend</h2><p>A question it declined to pay for, S$0.00 spent, anchored on the ledger.</p><Out href={proof}>Open the proof of refusal</Out></div></li>}
     </ul>
     {opened && <SharedPayer />}
