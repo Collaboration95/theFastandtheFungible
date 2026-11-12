@@ -34,7 +34,7 @@ def terminal_ok(tx, terms, holdback):
     return holdback['state'] == 'released' and holdback.get('checks') == 'pass' and tx.get('TransactionType') == 'EscrowFinish' and tx.get('Condition') == holdback['condition'] and bool(re.fullmatch('A0228020[A-F0-9]{64}', fulfillment)) and 'A0258020' + hashlib.sha256(bytes.fromhex(fulfillment[8:])).hexdigest().upper() + '810120' == holdback['condition']
 
 
-def verify_holdbacks(bundle, entries, add, skip):
+def verify_holdbacks(bundle, entries, add, skip, online=False):
     from .verify import canonical, find
     for row in bundle['payments']:
         if row.get('escrowTerms', {}).get('holdback'):
@@ -60,5 +60,5 @@ def verify_holdbacks(bundle, entries, add, skip):
         except (ValueError, KeyError, TypeError, IndexError):
             pass
         add('holdback ' + intent['intentId'], bool(ok), 'Two escrow identities; holdback ' + h['state'] + '; offline structural binding')
-    if any(i.get('escrow', {}).get('holdback') for i in bundle['intents']):
+    if not online and any(i.get('escrow', {}).get('holdback') for i in bundle['intents']):
         skip('holdback transaction authentication', 'Python checks structure offline; use --ledger for transaction authentication, or the TypeScript verifier for offline transaction signatures and hashes')

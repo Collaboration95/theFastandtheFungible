@@ -30,6 +30,17 @@ def test_holdback_tampering(mutation):
     assert not verify(b)['ok']
 
 
+def test_contributions_report_partial_refund_and_net_spend():
+    from researchagent.verify import contributions
+    b = json.loads((EVIDENCE / 'holdback-17.receipt.json').read_text())
+    b['contributions'] = contributions(b)
+    purchase = b['contributions']['purchases'][0]
+    assert purchase['refundMinor'] == b['intents'][0]['escrow']['holdback']['amountMinor']
+    assert purchase['netMinor'] == purchase['grossMinor'] - purchase['refundMinor']
+    assert purchase['refundStatus'] == 'recorded verified holdback refund'
+    assert verify(b)['ok']
+
+
 @pytest.mark.parametrize('fault', [None, 'rollback', 'parent', 'object'])
 def test_fake_ledger_requires_both_validated_inners_and_objects(fault):
     b = json.loads((EVIDENCE / 'holdback-16.receipt.json').read_text())

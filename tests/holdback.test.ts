@@ -213,8 +213,11 @@ for (const broken of [false,true]) it(`verifies exact issued-currency credits fo
 })
 
 it('records sub-cent holdbacks exactly rather than rounding their refund to zero', async () => {
-  const s = await setup(); vi.stubEnv('HOLDBACK_PERCENT','1')
+  const s = await setup({broken:true}); vi.stubEnv('HOLDBACK_PERCENT','1')
   const result=await s.buy()
   expect(result.escrow!.holdback!.amountMinor).toBe(s.candidate.price.amountMinor/100)
-  expect((await verifyAnswer(receiptBundle(s.store,s.run.runId))).ok).toBe(true)
+  s.c.state.now=result.escrow!.holdback!.cancelAfter+1; await s.manager.reconcile()
+  const bundle=receiptBundle(s.store,s.run.runId)
+  expect(bundle.contributions!.purchases[0]).toMatchObject({refundMinor:s.candidate.price.amountMinor/100,netMinor:s.candidate.price.amountMinor*0.99,refundStatus:'recorded verified holdback refund'})
+  expect((await verifyAnswer(bundle)).ok).toBe(true)
 })

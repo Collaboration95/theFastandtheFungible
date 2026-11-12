@@ -375,12 +375,15 @@ def contributions(b):
                                     ),
                                 )
                             )
-        refund = i.get("refund", {}).get("amountMinor", 0)
+        holdback = i.get('escrow', {}).get('holdback', {})
+        refund = i.get("refund", {}).get("amountMinor", holdback.get('amountMinor', 0) if holdback.get('state') == 'refunded' else 0)
         status = (
             "recorded verified refund"
             if i.get("refund")
+            else "recorded verified holdback refund"
+            if holdback.get('state') == 'refunded'
             else "pending"
-            if i.get("refundCandidate") or i["status"] == "CHALLENGED"
+            if holdback.get('state') == 'pending' or i.get("refundCandidate") or i["status"] == "CHALLENGED"
             else "refused"
             if i["status"] in ("CHALLENGE_REFUSED", "CHALLENGE_REJECTED")
             else "none"
@@ -586,7 +589,7 @@ def verify(export, *, expect_head=None, ledger=False, ledger_lookup=None, testne
         else:
             skip('audit anchor', 'simulated run, nothing on a ledger' if 'SIMULATED' in b['label'] else 'offline; add --ledger to look it up on XRPL Testnet (read-only)')
         from ._holdback import verify_holdbacks
-        verify_holdbacks(b, entries, add, skip)
+        verify_holdbacks(b, entries, add, skip, online=testnet or ledger)
         source_ok = {}
         for s in b["sources"]:
             ps = [p for p in b["proofs"] if key(p) == key(s)]
