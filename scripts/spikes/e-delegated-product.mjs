@@ -1,4 +1,4 @@
-// HTTP end-to-end: real publisher/server entry points, fixture models, Testnet IOU.
+// HTTP end-to-end: real publisher/server entry points, fixture models, Testnet XRP.
 // Product modules are deliberately not imported by the spike.
 import assert from 'node:assert/strict'
 import { randomBytes } from 'node:crypto'

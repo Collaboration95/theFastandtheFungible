@@ -5,7 +5,7 @@ import { audienceMiddleware, operatorSessionRouter } from './hosted/audience.js'
 import { publicFeedRouter } from './api/feed.js'
 import { publishingGateway } from '../publisher/publishing/gateway.js'
 import { publicMcpRouter } from '../mcp/public.js'
-import { delegatedWallets } from './delegated-wallet.js'
+import { delegatedWallets, WalletConnectionError } from './delegated-wallet.js'
 import { writeSse, endSse, sseBufferedBytes } from './api/sse.js'
 import { writersRouter } from './api/writers.js'
 import { hostedWriterPages } from './hosted/writers.js'
@@ -285,6 +285,7 @@ async function createConfiguredApi(options: ApiOptions = {}) {
   app.use(mcpRouter(context))
   app.use(reportsRouter(context))
   const handleError: ErrorRequestHandler = (error, _req, res, _next) => {
+    if (error instanceof WalletConnectionError) { res.status(409).json({ error: error.message }); return }
     const notFound = error instanceof Error && error.message === 'Run not found'
     const status = error instanceof HostedError ? error.status : requestBodyStatus(error) ?? (error instanceof OverloadedError ? 503 : error instanceof AgentDenied ? 403 : notFound ? 404 : error instanceof z.ZodError ? 400 : 500)
     if (error instanceof HostedError) { res.set('Retry-After','30').status(status).json({error:error.code}); return }
