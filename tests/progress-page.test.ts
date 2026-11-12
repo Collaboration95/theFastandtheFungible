@@ -67,8 +67,8 @@ describe('progress page', () => {
   it('puts model, date and answer-quality limits beside both held-out headline and chart', () => {
     const scope = 'Fixture research and decision models · offline answers · XRP Ledger · 11 Nov 2026 · leading fact 7/20'
     expect(html.match(new RegExp(scope, 'g'))).toHaveLength(2)
-    expect(html).toContain('Quality refunds need the writer’s signature (cooperative)')
-    expect(html).toContain('automatic EscrowCancel after the deadline')
+    expect(html).toContain('An opt-in holdback returns a share of the price without the writer')
+    expect(html).toContain('EscrowCancel after the deadline')
     expect(html).toContain('Validated answer anchors')
   })
   it('is rendered from the committed data (render-progress --check)', () => {

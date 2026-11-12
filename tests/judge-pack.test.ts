@@ -153,11 +153,11 @@ describe('judge pack: one true story', () => {
       const text = read(file).replace(/\s+/g, ' ')
       expect(text, file).toContain('XRPL/x402 integrators')
       expect(text, file).toContain('coding agents')
-      expect(text, file).toMatch(/No independent writers, customers, pilots or revenue/i)
+      expect(text, file).toMatch(/No outside customers, pilots or revenue/i)
       expect(text, file).toMatch(/not yet validated/)
     }
     expect(read('docs/submission/deck/index.html')).toContain('Who buys first')
-    expect(read('docs/submission/short-description.md')).not.toMatch(/No independent writers|No real value|not validated/)
+    expect(read('docs/submission/short-description.md')).not.toMatch(/No independent writers|No outside customers|No real value|not validated/)
   })
 
   it('preserves the historical paid-answer evidence and keeps its telemetry gap in Q&A', () => {

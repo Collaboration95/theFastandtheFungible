@@ -10,6 +10,7 @@ something significant: a feature, a metric move, a finished deliverable. Don't
 add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
+- 12 Nov: Judge copy now leads with real content, 1,000 independently verified purchases, the protocol proofs, reach by URL, open publishing, holdback refunds and the RLUSD escrow finding; limits are stated once and the deck PDF is regenerated. Items that depend on the next hosted deploy carry a pending marker in the source.
 - 13 Nov: Judges’ corner, stage check and future video captures use a freshly verified hosted ledger-report purchase; exact payment is labelled and bound to its payer, recipient, amount and invoice. Historical escrow exports remain intact.
 
 - 13 Nov: Hosted startup validates holdback promotion and shared/delegated wallet overrides before using them; unknown names and invalid limits remain rejected.
