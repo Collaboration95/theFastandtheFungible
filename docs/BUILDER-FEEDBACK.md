@@ -1271,3 +1271,17 @@ persistence or a mainnet deployment. No cloud resource or live ledger call ran.
 - Workaround: return 4.2 XRP from one funded writer to the buyer, then top up each other payer by 1 XRP. All eight payers retain enough principal, reserves and maximum capped fees for up to 1,100 purchases of this 40-minor resource; writer fee reserves remain funded. Persist the funding-complete checkpoint so a resume does not request an unnecessary faucet refill.
 - Suggested fix: expose a helper's planned allocation and remaining buyer balance before signing fleet top-ups. This was an integration error in our scale tooling, not an observed faucet or XRPL node defect.
 - Severity: Medium for reproducibility. Mainnet impact: the same allocation arithmetic needs checking for any wallet fleet; no mainnet funding or payment was attempted.
+## 12 November 2026: local model packaging qualified after Docker recovery (observed tooling)
+
+- **Evidence:** `docs/evidence/models/container.json` and `MODELS.md`; prior WIP `707d74b0` records ENOSPC and unresponsive Docker. After the orchestrator enlarged Docker to a 64 GB disk / 4 CPUs / 4 GB RAM and pruned build cache, both opt-in hosted model targets built and a network-disabled API container embedded a query.
+- **Workaround:** Debian/glibc model targets with a bounded CPU dependency closure and pinned build-time model acquisition. Existing Alpine targets remain available. Builder cache was pruned afterwards; images and volumes were retained.
+- **Suggested fix:** document minimal glibc/CPU ONNX distributions and bounded Docker diagnostics/recovery after disk exhaustion.
+- **Severity / mainnet impact:** medium local packaging friction resolved for this build; no XRPL transaction, cloud deployment or mainnet effect.
+
+
+## 12 November 2026: retained eval snapshots entered ESLint discovery (observed tooling)
+
+- **Evidence:** embedding qualification head `a637e567`; ignored `scratch/pr-a-first-check-fast.log` reported 1,444 errors because the retained `scratch/r3-live-tree` source snapshot introduced a second ESLint/TypeScript root. This stopped `check:fast` before typecheck or unit tests.
+- **Workaround:** preserve the old snapshot and scratch source files outside the checkout's lint root; the local retention path is recorded in `scratch/retained-source-location.txt`. Re-running the unchanged `npm run lint` passes with zero errors (15 existing warnings).
+- **Suggested fix:** document that source snapshots belong outside the source lint root, or explicitly define the intended TypeScript config root for local tooling.
+- **Severity / mainnet impact:** low local gate setup friction; no lint rule, test, threshold, production behavior or ledger operation changed.

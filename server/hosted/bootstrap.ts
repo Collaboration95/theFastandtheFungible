@@ -13,7 +13,7 @@ export function validateHosted(config: Config) {
   if (!Number.isFinite(end) || end > Date.parse('2026-11-19T16:00:00Z')) throw new Error('Invalid admissions deadline')
   const minor = Number(config.HOSTED_QUESTION_CAP_MINOR ?? 200)
   if (!Number.isSafeInteger(minor) || minor < 0 || minor > 200) throw new Error('Invalid hosted question cap')
-  if (config.SEARCH_EMBEDDINGS === 'live') throw new Error('Hosted remote embedding attempts are not qualified; use keyword discovery')
+  if (config.SEARCH_EMBEDDINGS === 'live' && config.EMBEDDING_PROVIDER !== 'local') throw new Error('Hosted remote embedding attempts are not qualified; use keyword discovery')
   if (config.LLM_PROVIDER === 'openai-compatible' || config.DECISION_PROVIDER === 'compatible') throw new Error('Hosted providers must use qualified bounded profiles')
 }
 export function hostedPayer(config: Config) {

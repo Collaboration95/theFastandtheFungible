@@ -34,7 +34,7 @@ const ConfigSchema = z.object({
   DECISIONS_WORDING: text, DECISIONS_GAP_WORDING: text,
   BUY_THRESHOLD: numeric(n => n >= 0 && n <= 1), DECISION_CALIBRATION: text, DECISION_CALIBRATION_DIR: text,
   CLOUDFLARE_API_TOKEN: text, CLOUDFLARE_ACCOUNT_ID: text,
-  CLOUDFLARE_API_TOKEN_2: text, CLOUDFLARE_ACCOUNT_ID_2: text, CF_BACKUP: text, SEARCH_EMBEDDINGS: mode(['off','live']), ESCROW_MODE: mode(['key-reveal','payment']), ESCROW_ASSET: assetMode,
+  CLOUDFLARE_API_TOKEN_2: text, CLOUDFLARE_ACCOUNT_ID_2: text, CF_BACKUP: text, SEARCH_EMBEDDINGS: mode(['off','live']), EMBEDDING_PROVIDER: mode(['cloudflare','local']), EMBEDDING_MODEL_DIR: text, ESCROW_MODE: mode(['key-reveal','payment']), ESCROW_ASSET: assetMode,
   LANGFUSE_ENABLED: text, LANGFUSE_PUBLIC_KEY: text, LANGFUSE_SECRET_KEY: text,
   LANGFUSE_BASE_URL: url, LANGFUSE_TRACING_ENVIRONMENT: text, LANGFUSE_PUBLIC_TRACES: text,
   OPENAI_API_KEY: text, MCP_MAX_BUDGET_MINOR: cap, MCP_DAILY_CAP_MINOR: cap,
