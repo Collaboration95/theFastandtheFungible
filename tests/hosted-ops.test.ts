@@ -204,12 +204,14 @@ it('selects CPU model targets and private operator mapping only when opted in',(
 
 it('retains promotion overrides in the actual startup loop and rejects unknown names',()=>{
  const dir=resources().tempDir('ra-deploy9-flags-')
- const flags='FREE_TIER=public-docs\nCORPUS_PROFILE=real\nLEDGER_ANALYTICS=1\nEMBEDDING_PROVIDER=local\nXRPL_STREAM_WAITS=1\nSETTLEMENT_TIMING=1\nPUBLIC_FEED=1\nAUDIENCE_COUNTS=1\nANSWER_RATINGS=1\nMCP_PUBLIC=on\nPAID_ENDPOINT_PUBLIC=on\nWEB_PUBLISHING=on\nAUTO_APPROVE=off\n'
+ const flags='FREE_TIER=public-docs\nCORPUS_PROFILE=real\nLEDGER_ANALYTICS=1\nEMBEDDING_PROVIDER=local\nXRPL_STREAM_WAITS=1\nSETTLEMENT_TIMING=1\nPUBLIC_FEED=1\nAUDIENCE_COUNTS=1\nANSWER_RATINGS=1\nMCP_PUBLIC=on\nPAID_ENDPOINT_PUBLIC=on\nWEB_PUBLISHING=on\nAUTO_APPROVE=off\nESCROW_HOLDBACK=on\nHOLDBACK_PERCENT=20\nHOLDBACK_CANCEL_AFTER_S=600\nWALLET_MODE=shared\n'
  const startup=readFileSync('docker/hosted/startup.sh','utf8')
  const block=startup.slice(startup.indexOf('if [[ -f /etc/researchagent/env.local'),startup.indexOf('# Each value is immutable')).replaceAll('/etc/researchagent/',dir+'/').replaceAll('sed -i ','sed -i.bak ')
  writeFileSync(join(dir,'env.local'),flags);writeFileSync(join(dir,'env.new'),'HOSTED=1\n')
  expect(spawnSync('bash',['-euc',block]).status).toBe(0)
  expect(readFileSync(join(dir,'env.new'),'utf8')).toBe('HOSTED=1\n'+flags)
- writeFileSync(join(dir,'env.local'),'UNRECOGNIZED_OPTION=on\n')
- expect(spawnSync('bash',['-euc',block]).status).toBe(1)
+ for(const invalid of ['UNRECOGNIZED_OPTION=on','ESCROW_HOLDBACK=enabled','HOLDBACK_PERCENT=0','HOLDBACK_PERCENT=100','HOLDBACK_CANCEL_AFTER_S=29','HOLDBACK_CANCEL_AFTER_S=86401','WALLET_MODE=off']) {
+ writeFileSync(join(dir,'env.local'),invalid+'\n')
+ expect(spawnSync('bash',['-euc',block]).status,invalid).toBe(1)
+ }
 })
