@@ -44,12 +44,20 @@ it('anonymous SDK ask uses web quotas, identity, receipts and pause checks; reje
     }
     const metadata = await call(client,'search_expertise',{query:'x402 pricing'})
     expect(metadata.hits.length).toBeGreaterThan(0)
+    for (const hit of metadata.hits) {
+      expect(new URL(hit.url).origin).toBe(`https://${host}`)
+      expect(new URL(hit.url).pathname).toMatch(/^\/w\/[^/]+\/blog\//)
+    }
+    const page = await fetch(metadata.hits[0].url.replace('https:', 'http:'))
+    expect(page.status).toBe(200)
     expect(metadata.hits.some((hit: {writerProvenance:{synthetic:boolean}}) => hit.writerProvenance.synthetic === true)).toBe(true)
     const offline = vi.spyOn(PublisherClient.prototype,'searchPublisher').mockRejectedValueOnce(new Error('writer unavailable'))
     try { expect((await call(client,'search_expertise',{query:'x402 pricing'})).unavailable).toBe(true) } finally { offline.mockRestore() }
     const args = {question:USE_CASES.UC2.question,budget_sgd:2,idempotency_key:'reach-once'}
     const run = await call(client,'ask_expert',args)
     expect(run.phase).toBe('DONE'); expect(run.purchases.length).toBeGreaterThan(0)
+    expect(run.citations.length).toBeGreaterThan(0)
+    expect(run.citations.every((citation: {url: string}) => new URL(citation.url).origin === `https://${host}`)).toBe(true)
     expect((await call(client,'ask_expert',args)).run_id).toBe(run.run_id)
     const reconnect = await connect()
     expect((await call(reconnect,'get_run',{run_id:run.run_id})).run_id).toBe(run.run_id)

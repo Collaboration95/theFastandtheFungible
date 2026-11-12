@@ -42,9 +42,15 @@ try {
   assert(!tools.includes('hire'));assert(!tools.includes('pause_spending'))
   const init=await fetch(url+'/mcp',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json, text/event-stream'},body:JSON.stringify({jsonrpc:'2.0',id:20,method:'initialize',params:{protocolVersion:'2025-11-25',capabilities:{},clientInfo:{name:'sse-proof',version:'1'}}})})
   assert.match(init.headers.get('content-type'),/text\/event-stream/);assert.match(await init.text(),/event: message/)
-  const args={question:'How do x402 payments work?',budget_sgd:2,idempotency_key:'local-reach-proof'}
+  const search=await client.callTool({name:'search_expertise',arguments:{query:'x402 pricing'}})
+  assert(!search.isError);const hits=JSON.parse(search.content[0].text).hits;assert(hits.length>0)
+  assert(hits.every(hit=>new URL(hit.url).origin===origin&&/^\/w\/[^/]+\/blog\//.test(new URL(hit.url).pathname)))
+  assert.equal((await fetch(hits[0].url.replace('https:', 'http:'))).status,200)
+  const question=JSON.parse(readFileSync('data/corpus/v2/story-bible.json','utf8')).useCases.find(row=>row.id==='UC2').question
+  const args={question,budget_sgd:2,idempotency_key:'local-reach-proof'}
   const result=await client.callTool({name:'ask_expert',arguments:args});assert(!result.isError,JSON.stringify(result))
   const run=JSON.parse(result.content[0].text);assert.equal(run.phase,'DONE');assert(run.purchases.length>0)
+  assert(run.citations.length>0&&run.citations.every(citation=>new URL(citation.url).origin===origin),JSON.stringify({citationUrls:run.citations.map(citation=>citation.url)}))
   const again=await client.callTool({name:'ask_expert',arguments:args});assert.equal(JSON.parse(again.content[0].text).run_id,run.run_id)
   const verified=await client.callTool({name:'verify_answer',arguments:{run_id:run.run_id}});assert.equal(JSON.parse(verified.content[0].text).ok,true)
   const probeUrl=`http://127.0.0.1:${probeFrontPort}`
@@ -58,7 +64,7 @@ try {
   await reader.cancel();probe.closeAllConnections();await new Promise(r=>probe.close(r))
   const unreachable=await fetch(probeUrl+'/unreachable')
   assert.equal(unreachable.status,503);assert((await unreachable.text()).includes('shared demo is paused'))
-  console.log(JSON.stringify({kind:'native-two-nginx-hosted-gateway',models:'fixture',settlement:'simulated',readiness:'test override; no Testnet balance proof',tools,sse:true,ask:run.phase,purchases:run.purchases.length,retrySameRun:true,receiptsVerified:true,headerWhitelist:true,oneForwardedHop:true,sseUnbuffered:true,unreachablePaused503:true,cloud:false}))
+  console.log(JSON.stringify({kind:'native-two-nginx-hosted-gateway',models:'fixture',settlement:'simulated',readiness:'test override; no Testnet balance proof',tools,sse:true,ask:run.phase,purchases:run.purchases.length,retrySameRun:true,receiptsVerified:true,publicLinks:true,headerWhitelist:true,oneForwardedHop:true,sseUnbuffered:true,unreachablePaused503:true,cloud:false}))
 } finally {
   probe.closeAllConnections();probe.close()
   await client.close();processNginx.kill('SIGTERM');await once(processNginx,'exit').catch(()=>{})

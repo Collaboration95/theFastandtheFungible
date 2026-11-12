@@ -17,7 +17,7 @@ nginx configurations; fixture models, simulated settlement; readiness overridden
 only in this local harness):
 
 ```json
-{"kind":"native-two-nginx-hosted-gateway","models":"fixture","settlement":"simulated","readiness":"test override; no Testnet balance proof","tools":["ask_expert","get_run","status","search_expertise","lookup_receipt","verify_answer"],"sse":true,"ask":"DONE","purchases":1,"retrySameRun":true,"receiptsVerified":true,"headerWhitelist":true,"oneForwardedHop":true,"sseUnbuffered":true,"unreachablePaused503":true,"cloud":false}
+{"kind":"native-two-nginx-hosted-gateway","models":"fixture","settlement":"simulated","readiness":"test override; no Testnet balance proof","tools":["ask_expert","get_run","status","search_expertise","lookup_receipt","verify_answer"],"sse":true,"ask":"DONE","purchases":1,"retrySameRun":true,"receiptsVerified":true,"publicLinks":true,"headerWhitelist":true,"oneForwardedHop":true,"sseUnbuffered":true,"unreachablePaused503":true,"cloud":false}
 ```
 
 The SDK connects without credentials. Its ask traverses front nginx, VM nginx,
@@ -28,7 +28,9 @@ backend is unreachable. Both proxies disable buffering and caching and preserve 
 authority, including an explicitly configured local port. The test covers denied
 Host/Origin/forwarded chains, other-IP run isolation, reconnect, idempotency,
 receipts, verification and an operator pause. Metadata keeps writer provenance
-and marks partial writer failures as `unavailable: true`. Local bearer MCP retains its
+and links to reachable public article pages instead of the internal publisher.
+Signed source identities and external passage URLs are preserved. Search
+marks partial writer failures as `unavailable: true`. Local bearer MCP retains its
 numeric-loopback Host check and rejects all Origin headers.
 
 ## Deployment configuration (owner only)
