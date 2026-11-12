@@ -1311,3 +1311,22 @@ persistence or a mainnet deployment. No cloud resource or live ledger call ran.
 - Evidence: content full-gate receipt `1794485991609-26693-29efce53-0b1d-4cca-b975-a3e5e1fc72dc.json` at `35727b70aa8ae2dcc4c7f56025e6162b75aeef2d`; 19/20 checks passed. The desktop replay accessibility test sent a global Escape, then its citation click was intercepted by the still-open receipt dialog. No ledger transaction.
 - Workaround: wait for the complete lazy-loaded receipt, send Escape to that dialog and assert dismissal before the next interaction. Suggested fix: browser examples should synchronize modal readiness and closure explicitly around accessibility tooling. The standalone rerun also reproduced the previously documented lint discovery of copied source under `scratch/`; its generated Pages tree was retained outside the checkout rather than excluding checks.
 - Severity: Low tooling friction. Mainnet impact: none; existing accessibility, keyboard and timeout assertions are retained.
+
+
+## 2026-11-12 — failed exact payments surface as receipt mismatch (observed offline)
+
+- **Evidence:** `tests/reach-paid.test.ts`, failed-inbound reconciliation case:
+  the synthetic ledger returns `tecUNFUNDED_PAYMENT`; HTTP is 402 with a failed
+  `PAYMENT-RESPONSE`, while the existing TypeScript payer reports
+  `x402 settlement receipt mismatch; reuse this intent`. No real transaction
+  was sent in this test. Hosted terminal-hold reconciliation is fixed here.
+- **Workaround:** keep the original signed journal and request key; inspect the
+  HTTP failure and reconcile the original ledger hash before retrying. Never
+  sign a replacement because the error text is generic.
+- **Suggested fix:** retain a safe facilitator reason and HTTP status in the SDK
+  error for failed settlement responses, separately from mismatched successful
+  receipts. Keep original-intent recovery authority unchanged.
+- **Severity / mainnet impact:** low diagnostic friction; the failure reason is
+  obscured, while retry safety is retained. The same SDK error path could affect
+  mainnet diagnostics, but this observation is synthetic and mainnet was not
+  written or tested.

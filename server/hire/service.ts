@@ -20,7 +20,7 @@ import { HireJournal, type Hire } from './journal.js'
 
 const Input = z.object({ question: z.string().trim().min(1).max(2000), budgetMinor: z.union([z.literal(100), z.literal(200), z.literal(500)]) }).strict()
 /** Payment authority is a settled invoice, never a model tool. No browser/UI surface. */
-export function hireService(context: ApiContext) {
+export function hireService(context: ApiContext, hooks: { principal?: () => string | undefined; admitted?: (runId: string) => void; finished?: (runId?: string) => void } = {}) {
   const { store, payer, loop } = context
   // Same SQLite file; isolated tables avoid purchase-manager changes.
   const journal = new PublisherJournal(store.path)
@@ -164,7 +164,7 @@ export function hireService(context: ApiContext) {
     if (!(payer instanceof XrplPayer)) return
     await Promise.allSettled(hires.due().filter(h => !active.has(h.key)).map(async hire => {
       const release = context.work.acquire()
-      try { await recover(hire) } finally { release() }
+      try { await recover(hire) } finally { release(); hooks.finished?.(hire.runId) }
     }))
   }
   router.post('/v1/ask', async (req, res) => {
@@ -195,7 +195,7 @@ export function hireService(context: ApiContext) {
     if (!verified.ok || verified.quote.ledgerInvoiceId !== hire.quote.ledgerInvoiceId) return res.status(402).json({ error: 'Payment does not match hire invoice' })
     hire = hires.patch(key, { signature }) // first blob wins even if settlement is ambiguous
     if (!hire.runId) {
-      const admitted = admit(store, { surface: agentId ? 'agent' : 'x402', principal: agentId ?? verified.payer, question: input.question,
+      const admitted = admit(store, { surface: agentId ? 'agent' : 'x402', principal: hooks.principal?.() ?? agentId ?? verified.payer, question: input.question,
         requestedMinor: input.budgetMinor, idempotencyKey: hire.quote.invoiceId, maxMinor: 500, reserveMinor: SERVICE_FEE_MINOR, labels: context.labels })
       hire = hires.patch(key, { runId: admitted.run.runId })
       // Never accept money that could not fit in the already-reserved operator cap.
@@ -206,6 +206,7 @@ export function hireService(context: ApiContext) {
       }
     }
     if (store.getRun(hire.runId!).budgetMinor !== input.budgetMinor) return res.status(409).json({ error: 'Hire admission refused' })
+    hooks.admitted?.(hire.runId!)
     if (!journal.settlementByTx(verified.txHash)) {
       if (agentId) {
         const agent = store.agentStatus(agentId)
@@ -220,7 +221,7 @@ export function hireService(context: ApiContext) {
     recordInbound(hire, verified.payer, verified.txHash, settled.settlement)
     if (hire.result) { store.closeHireReserve(hire.runId!); return res.json(hire.result) }
     return res.json(await resume(hire, verified.payer))
-    } finally { release() }
+    } finally { release(); hooks.finished?.() }
   })
   return { router, reconcile, close: () => { hires.close(); journal.close() }, drain: () => Promise.allSettled(active.values()) }
 }

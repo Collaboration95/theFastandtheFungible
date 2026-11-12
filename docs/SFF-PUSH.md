@@ -10,6 +10,7 @@ something significant: a feature, a metric move, a finished deliverable. Don't
 add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
+- 12 Nov: Hosted paid answers can opt into `/v1/ask` with `PAID_ENDPOINT_PUBLIC=on` (default off), retaining exact Testnet payment verification, hosted quotas and pause controls; curl/SDK examples live in `docs/reach/paid-answer.md`. No deployment.
 - 12 Nov: Added a resumable Testnet purchase runner and independent ledger verifier with 1,000 real key-reveal purchases, hash-only receipts, observed phase percentiles and a documented feed schema; hosted deployment and judge-facing copy remain with the orchestrator. [Evidence](evidence/proof/TESTNET-1000.md).
 - 12 Nov: [Proof tools (#530)](https://github.com/Collaboration95/theFastandtheFungible/pull/530) add bounded protocol checking with mutation witnesses, opt-in synthetic crash/retry scale measurements and 34 attacks against the local publisher/API stack; repair the reservation-to-manifest crash gap. [Evidence and exact reproduction commands](evidence/proof/PROOF-REPORT.md).
 - 12 Nov: Adds opt-in paid-answer value ratings, one durable vote per run, population aggregates and purchase-row feedback; keeps unobserved settlements pending. Evidence: `docs/evidence/feed/FEED.md`.

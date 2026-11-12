@@ -1,3 +1,4 @@
+import { publicPaidRouter, bindPublicHire, finishPublicHire, publicHirePrincipal } from '../mcp/paid.js'
 import { answerRatingsRouter } from './api/answer-ratings.js'
 import { audienceMiddleware, operatorSessionRouter } from './hosted/audience.js'
 import { publicFeedRouter } from './api/feed.js'
@@ -202,6 +203,7 @@ async function createConfiguredApi(options: ApiOptions = {}) {
     jobs.add(pending); void pending.then(() => jobs.delete(pending))
   }, sseGzip: config.HOSTED === '1' && config.HOSTED_SSE_GZIP !== '0', onStreamOpen: runId => { if (config.HOSTED === '1') { lastSnapshot.set(runId, Date.now()); if (['DONE','FAILED','STOPPED'].includes(store.getRun(runId).phase)) terminalSnapshots.add(runId) } }, onStreamEmpty: runId => { clearTimeout(snapshotTimers.get(runId)); snapshotTimers.delete(runId); lastSnapshot.delete(runId); terminalSnapshots.delete(runId) }, reportDir, reportJobs, progress }
   if (hosted) reach.use(express.json({ limit: '16kb' }), publicMcpRouter(context, config, hosted))
+  const hire = hireService(context, { principal: publicHirePrincipal, admitted: bindPublicHire, finished: runId => finishPublicHire(hosted, runId) })
   let readiness: HostedReadiness | undefined
   if (hosted && queue) {
     const payerWatch = new PayerWatch()
@@ -222,6 +224,7 @@ async function createConfiguredApi(options: ApiOptions = {}) {
     })
     if (!options.hostedReadiness) readiness = new HostedReadiness(probeReadiness)
     const ready = () => options.hostedReadiness ? options.hostedReadiness() : readiness!.ready()
+    reach.use(publicPaidRouter(config, hosted, hire.router, ready))
     app.use(hostedRouter(context,config,hosted,queue,ready,async () => {
       try { store.checkWritable(); return (await client.registry()).length > 0 } catch { return false }
     }, () => payerWatch.state()))
@@ -266,7 +269,6 @@ async function createConfiguredApi(options: ApiOptions = {}) {
     if (!response.ok) return res.status(502).json({ error: 'Local publisher fault control is unavailable.' })
     res.json({ failNextDelivery: true, label: 'SIMULATED fault · no real funds' })
   })
-  const hire = hireService(context)
   app.use(hire.router)
   // Proof of refusal (W1): owner share routes under /api/runs/:id/proof, public read-only pages under /proof/:id.
   const refusal = refusalProofRouter(context, { hosted: !!hosted, origin: hosted ? config.HOSTED_ORIGIN : undefined })
