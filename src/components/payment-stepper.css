@@ -1,0 +1,27 @@
+.ra-payment-journey{margin:20px 0;display:grid;gap:10px;min-width:0}
+.ra-payment-stepper{border:1px solid var(--rule);border-radius:12px;background:var(--surface);min-width:0}
+.ra-payment-stepper>summary{display:flex;align-items:center;gap:10px;min-height:56px;padding:10px 16px;cursor:pointer;list-style:none}
+.ra-payment-stepper>summary::-webkit-details-marker,.ra-payment-journey .ra-payment-stepper>summary::before,.ra-payment-journey .ra-payment-stepper[open]>summary::before{display:none}
+.ra-payment-stepper>summary>span{flex:1;min-width:0;display:flex;align-items:baseline;gap:10px}
+.ra-payment-stepper>summary b{font-size:13px;font-weight:550;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ra-payment-stepper>summary small{display:block;font-size:12px;color:var(--muted);flex:1;min-width:52px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.ra-payment-steps-body{padding:4px 16px 16px}
+.ra-payment-steps-body>.ra-step-title{margin:0 0 16px;color:var(--muted)}
+.ra-payment-steps-body>ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.ra-payment-steps-body>ol>li{display:flex;gap:8px;min-width:0;color:var(--muted)}
+.ra-payment-steps-body>ol>li>div{min-width:0}
+.ra-payment-steps-body>ol>li b{font-size:14px;color:var(--ink)}
+.ra-payment-steps-body p{font-size:12px;line-height:1.5;margin:4px 0;overflow-wrap:anywhere}
+.ra-step-icon{flex:0 0 24px;display:flex;justify-content:center;padding-top:1px;color:var(--muted)}
+.ra-payment-steps-body>ol>.is-complete>.ra-step-icon{color:var(--ok);transition:color 180ms ease}
+.ra-payment-steps-body a{display:inline-flex;align-items:center;gap:5px;min-width:44px;min-height:44px;font-size:12px;text-underline-offset:3px}
+.ra-payment-steps-body .ra-key-check{margin-top:0;padding:0;border:0}
+.ra-payment-steps-body .ra-key-check-btn{min-height:44px;white-space:normal;text-align:left}
+.ra-payment-steps-body .ra-key-check-hint{display:block}
+.ra-step-note{color:var(--muted);padding-top:10px}
+.ra-step-refund{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:8px;color:var(--ok)}
+.ra-step-technical{margin-top:8px;font-size:12px;color:var(--muted)}
+.ra-step-technical>summary{min-height:44px;display:flex;align-items:center;cursor:pointer}
+.ra-payment-steps-body .ra-key-check-out{background:white;min-width:0}
+@media(max-width:780px){.ra-payment-steps-body>ol{grid-template-columns:1fr;gap:12px}.ra-payment-stepper>summary{padding:10px 12px}.ra-payment-steps-body{padding:4px 12px 12px}.ra-payment-steps-body .ra-key-check-btn{width:auto}.ra-payment-stepper>summary b{line-height:1.5}}
+@media(prefers-reduced-motion:reduce){.ra-payment-steps-body>ol>.is-complete>.ra-step-icon{transition:none}}

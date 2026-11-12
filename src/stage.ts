@@ -46,7 +46,10 @@ export function staged(run: RunSnapshot, cursor: number): RunSnapshot {
     } else if (event.type === 'WIRE') {
       // x402 v2: GET → 402 (terms), then the same GET with PAYMENT-SIGNATURE → 200 (settled and delivered).
       if (event.data?.method === 'GET' && Number(event.data?.status) === 200 && intent && !isPaid({ ...intent, status: status.get(intent.intentId) ?? 'DECIDED' })) set('DELIVERY_PENDING')
-    } else if (event.type === 'PROOF') { if (event.data?.ok === false) set('CLAIM_FAILED') }
+    } else if (event.type === 'ESCROW_CREATE') set('SUBMITTING')
+    else if (event.type === 'ESCROW_FINISH' && intent && !isPaid({ ...intent, status: status.get(intent.intentId) ?? 'DECIDED' })) set('DELIVERY_PENDING')
+    else if (event.type === 'ESCROW_CANCEL') set('FAILED_NOT_SETTLED')
+    else if (event.type === 'PROOF') { if (event.data?.ok === false) set('CLAIM_FAILED') }
     else if (event.type === 'CHALLENGE') {
       const parsed = IntentStatusSchema.safeParse(event.data?.status)
       set(parsed.success ? parsed.data : 'CHALLENGED')
@@ -57,7 +60,17 @@ export function staged(run: RunSnapshot, cursor: number): RunSnapshot {
     } else if (event.type === 'FAILED' && intent && ['SETTLED', 'DELIVERY_PENDING'].includes(status.get(intent.intentId) ?? '')) set('DELIVERY_FAILED')
   }
   if (phase === 'FAILED' && run.phase === 'DONE' && run.intents.some(i => i.escrow?.mode === 'key-reveal')) phase = 'BUY'
-  const intents = run.intents.filter(item => status.has(item.intentId)).map(item => ({ ...item, status: status.get(item.intentId)! }))
+  const intents = run.intents.filter(item => status.has(item.intentId)).map(item => {
+    const shown = { ...item, status: status.get(item.intentId)!, refund: events.some(e => e.type === 'REFUND' && e.data?.intentId === item.intentId) ? item.refund : undefined }
+    if (item.escrow?.mode !== 'key-reveal') return shown
+    const seen = (type: string) => events.some(e => e.type === type && e.data?.intentId === item.intentId)
+    const created = seen('ESCROW_CREATE'), released = seen('ESCROW_FINISH') || seen('GRANT'), cancelled = seen('ESCROW_CANCEL')
+    // Never leak the final escrow/key state into an earlier frame of a recorded run.
+    return { ...shown, escrow: { ...item.escrow, state: cancelled ? 'CANCELLED' as const : released ? 'RELEASED' as const : created ? 'LOCKED' as const : 'PREPARED' as const,
+      createHash: created ? item.escrow.createHash : undefined, finishHash: released ? item.escrow.finishHash : undefined,
+      cancelHash: cancelled ? item.escrow.cancelHash : undefined, revealLedger: released ? item.escrow.revealLedger : undefined,
+      keyVerified: released ? item.escrow.keyVerified : undefined, decryptVerified: released ? item.escrow.decryptVerified : undefined, proofOk: released ? item.escrow.proofOk : undefined } }
+  })
   const paid = intents.filter(isPaid)
   const verified = new Set(intents.filter(item => item.status === 'VERIFIED').map(item => item.intentId))
   const ready = all.some(event => event.type === 'ANSWER_READY') ? count('ANSWER_READY') : count('ANSWER')

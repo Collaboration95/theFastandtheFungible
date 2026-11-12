@@ -16,12 +16,12 @@ it('defers the shared payer until the grouped proof area opens', async () => {
   await act(async () => { container.querySelector('details')!.open = true; fireEvent(container.querySelector('details')!, new Event('toggle')) })
   expect(payer).toHaveBeenCalled()
 })
-it('keeps the paired promise and provenance visible, with a truthful simulated variant', () => {
+it('keeps the promise visible and provenance on writer badges, with a truthful simulated variant', () => {
   const view = render(<HostedIntro hosted={hosted} state="ready" />)
   expect(screen.getByText('Paid on delivery. Proven on the ledger.')).toBeTruthy()
-  expect(screen.getByText(/Rule-based buying · team-authored/)).toBeTruthy()
+  expect(screen.queryByText(/Rule-based buying · team-authored/)).toBeNull()
   view.rerender(<HostedIntro hosted={{ status: { ...hosted.status, labels: { ...hosted.status.labels, rail: 'Simulated payments' } } }} state="ready" />)
-  expect(screen.getByText('Simulated payments. Receipts you can check.')).toBeTruthy()
+  expect(screen.getByText('Receipts you can check.')).toBeTruthy()
   expect(screen.queryByText('Paid on delivery. Proven on the ledger.')).toBeNull()
 })
 it('does not open successful promise checks when the proof arrives, but opens failures', async () => {

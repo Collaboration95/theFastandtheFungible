@@ -6,8 +6,7 @@ import { dwell, isPaid, isTerminal, runEvents, SPEED, staged, type Pace } from '
 import { candidateOf, favicon, leadSentence, money } from './format'
 import Layout from './components/Layout'
 import Sidebar, { NAV_WIDTH, NavToggle } from './components/Sidebar'
-import EnvIndicator, { EnvNote } from './components/EnvIndicator'
-import { environmentSeen, markEnvironmentSeen } from './environment'
+import EnvIndicator from './components/EnvIndicator'
 import { environmentLabel } from '../shared/presentation'
 import { runSettled } from '../shared/anchor-status'
 import HostedEnv from './components/hosted/HostedEnv'
@@ -22,6 +21,7 @@ import Sources, { getAccessibleContent } from './components/Sources'
 import Answer, { validatedAnswers } from './components/Answer'
 import MobileSpend from './components/MobileSpend'
 import ReportButton from './components/ReportButton'
+const PaymentStepper = lazy(() => import('./components/PaymentStepper'))
 import SpendPanel from './components/SpendPanel'
 import DecisionPanel from './components/DecisionPanel'
 const Passage = lazy(() => import('./components/Passage'))
@@ -121,7 +121,6 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
   const [connection, setConnection] = useState<Hosted['connection']>()
   const [detecting, setDetecting] = useState(bootFailed)
   const [waiting, setWaiting] = useState<{ input: AskInput; since: number }>()
-  const [envNote, setEnvNote] = useState(() => !boot && !recording && !browserDemo && !environmentSeen() && !new URLSearchParams(location.search).has('run'))
   // One Idempotency-Key per hosted question: its scope and its submit share it, and re-asking the same text reuses it.
   const draftKey = useRef<{ question: string; key: string }>(undefined)
   const keyFor = (question: string) => { if (draftKey.current?.question !== question) draftKey.current = { question, key: crypto.randomUUID() }; return draftKey.current.key }
@@ -334,7 +333,6 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
   // Clarify (D8): questions as chips, then the 5 s plan card; the run starts only from the card.
   const sendAsk = async (input: AskInput) => {
     setSending(true); setError('')
-    if (envNote) { setEnvNote(false); markEnvironmentSeen() }
     const key = demo ? keyFor(input.question) : undefined
     try {
       const result = await scope(input.question, clarifyNever ? 'never' : undefined, key)
@@ -501,7 +499,7 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
             intro={<HostedIntro hosted={hosted} state={state} />} closed={!canAsk(state)} budgetMax={Math.floor(questionCap(hosted.status) / 5) * 5} composerNote={canAsk(state) ? <HostedComposerNote hosted={hosted} state={state} /> : undefined}
             placeholder={settlement.startsWith('XRPL') ? 'Ask about XRPL payments, escrow, x402 or agent wallets…' : undefined} examplesLabel="Questions that answer well today" />
         : <Ask onAsk={sendAsk} busy={healthError || sending || !!pending || (!!shown && !finished)} above={pendingCard} settlement={settlement} universalMinor={!browserDemo && universal ? universalMinor : undefined} onSettings={openSettings} draft={draft} onDraft={setDraft} picked={picked} onPick={setPicked}
-            note={envNote && !recording ? <EnvNote labels={health.labels} onDone={() => setEnvNote(false)} /> : undefined} />}
+            />}
     </main>
     {overlays}
   </Layout>)
@@ -513,6 +511,7 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
         <MobileSpend run={shown} onRetry={id => void retry(id)} onReceipt={setReceipt} />
         <RunActivity run={shown} actualTerminal={!!run && isTerminal(run)} onStop={() => void stopRun()} stopping={stopping} onShowWork={() => setWork(true)} />
         {hosted && <HostedRunNotice hosted={hosted} run={shown} stopping={stopping} onCancel={() => void stopRun()} />}
+        {shown.intents.some(intent => intent.escrow?.mode === 'key-reveal') && <Suspense fallback={<p role="status">Loading payment steps…</p>}><PaymentStepper run={shown} /></Suspense>}
         {/* Replace the draft reading surface when the activity timeline closes. */}
         <Fragment key={`${shown.runId}:${finished ? 'final' : 'draft'}`}>
         {model.phase === 'recovering' && <Notice>Payment verified. Resume the answer to finish recovery. <button className="ra-link" onClick={() => { const paid = shown.intents.find(i => i.status === 'VERIFIED' && (!shown.checkpoint?.intentId || i.intentId === shown.checkpoint.intentId)); if (paid) void retry(paid.intentId) }}>Resume answer</button></Notice>}

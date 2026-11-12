@@ -8,6 +8,7 @@ test('UX-2: UC4, exact lead citation, export, supporting screens and mobile Spen
   await mkdir(dir, { recursive: true })
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/?pace=real')
+  await page.getByRole('button', { name: 'Simulated payments', exact: true }).click()
   await expect(page.getByRole('region', { name: "What’s real here" })).toBeVisible()
   await page.keyboard.press('Escape')
   await page.getByRole('textbox', { name: 'Your question' }).fill(DEMO_QUESTIONS.find(q => q.id === 'UC4')!.text)
@@ -59,7 +60,7 @@ test('UX-2: UC4, exact lead citation, export, supporting screens and mobile Spen
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await page.getByRole('button', { name: 'Show sidebar' }).click()
   await page.getByRole('button', { name: 'Writers', exact: true }).click()
-  await expect(page.getByText('Each writer carries an authorship label. Your purchases and demo-wide sales are shown separately.')).toBeVisible()
+  await expect(page.getByText('Your purchases and demo-wide sales are shown separately.')).toBeVisible()
   await writeFile(`${dir}/environment.txt`, 'Local Chromium; offline demo; simulated payments; no live providers or Testnet.\n')
 })
 
@@ -158,10 +159,12 @@ for (const viewport of [{width:1440,height:900},{width:1280,height:800}]) {
  test(`Lane K popover clears Ask at ${viewport.width}`, async ({page}) => {
   await page.setViewportSize(viewport)
   await page.goto('/')
-  const pop=page.locator('#environment-details')
+  await expect(page.locator('#environment-details')).toHaveCount(0)
+  await page.getByRole('button', { name: 'Simulated payments', exact: true }).click()
+  const pop=page.locator('#environment-popover')
   await expect(pop).toBeVisible()
   // Measure both boxes in one evaluation so no layout shift can land between the two reads, then again once fonts settle.
-  const overlap = () => page.evaluate(() => { const a = document.querySelector('button.ra-ask')!.getBoundingClientRect(), b = document.querySelector('#environment-details')!.getBoundingClientRect(); return a.x < b.right && a.right > b.x && a.y < b.bottom && a.bottom > b.y })
+  const overlap = () => page.evaluate(() => { const a = document.querySelector('button.ra-ask')!.getBoundingClientRect(), b = document.querySelector('#environment-popover')!.getBoundingClientRect(); return a.x < b.right && a.right > b.x && a.y < b.bottom && a.bottom > b.y })
   expect(await overlap()).toBe(false) // first paint
   await page.evaluate(() => document.fonts.ready)
   for (let i = 0; i < 8; i++) { expect(await overlap()).toBe(false); await page.waitForTimeout(60) } // settled, and while the layout keeps moving
@@ -181,7 +184,7 @@ test('the first-visit environment note never opens over a deep-linked result', a
  await expect(page.getByRole('region', { name: 'Research answer' })).toBeVisible()
  await page.waitForTimeout(500)
  await expect(page.locator('#environment-details')).toHaveCount(0)
- await expect(page.getByRole('button', { name: /Simulated demo · fixture models · no real value/ })).toBeVisible() // the indicator itself stays
+ await expect(page.getByRole('button', { name: /^Simulated payments$/ })).toBeVisible() // the indicator itself stays
 })
 
 test('Lane K decline explains three policy decisions', async ({page}) => {

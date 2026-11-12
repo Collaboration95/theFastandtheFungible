@@ -69,7 +69,7 @@ for (const width of [1280, 390]) test(`UI-A fixes at ${width}`, async ({ page })
   await page.locator('.ra-cite').first().click()
   await expect(page.locator('.ra-passage')).toBeVisible()
   if (!before) {
-    await expect(page.locator('.ra-passage .ra-provenance > summary')).toHaveText('Team-authored · Testnet')
+    await expect(page.locator('.ra-passage .ra-provenance > summary')).toHaveText('Team-authored')
     await page.locator('.ra-passage .ra-provenance > summary').click()
     await expect(page.locator('.ra-passage .ra-provenance > p')).toHaveText(provenance)
     expect(await page.locator('.ra-passage .ra-provenance').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true)
@@ -85,7 +85,7 @@ for (const width of [1280, 390]) test(`UI-A fixes at ${width}`, async ({ page })
   await expect(page.getByText('24 sales')).toBeVisible()
   if (!before) {
     await expect(page.getByText('Your purchases and demo-wide sales are shown separately.', { exact: false })).toBeVisible()
-    await expect(page.getByText('Sales on this demo since 11 Nov', { exact: true })).toBeVisible()
+    await expect(page.getByText('Settled sales on this demo since 11 Nov (UTC)', { exact: true })).toBeVisible()
     await expect(page.getByText('You haven’t bought from this writer yet')).toBeVisible()
     await expect(page.getByText('No sales yet', { exact: true })).toHaveCount(0)
   }

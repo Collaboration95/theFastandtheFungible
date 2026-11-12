@@ -63,7 +63,7 @@ export default function WriterEarnings() {
       <div><dt>Your purchases</dt><dd>{w.sales.length ? `${w.sales.length} purchase${w.sales.length === 1 ? '' : 's'}` : 'None yet'}</dd></div>
       {w.sales.length > 0 && <div><dt>Refunds</dt><dd>{refunds} · {(100 * refunds / w.sales.length).toFixed(0)}%</dd></div>}</dl>
       <details><summary>Articles and prices</summary>{w.articleCount > w.articles.length && <p>Showing {w.articles.length} of {w.articleCount} articles. Visit the writer’s site for all articles.</p>}<ul>{w.articles.map(a => <li key={a.id}><a href={`/w/${w.publisherSlug}/blog/${a.id}`} target="_blank" rel="noreferrer">{a.title}</a> · {a.tier === 'FREE' ? 'Free' : price(a.priceMinor)}</li>)}</ul></details>
-      {w.sales.length > 0 && <details><summary>Your purchases on XRPL Testnet</summary><ol>{w.sales.map((s,i) => <li key={s.finishHash}><a href={explorer(s.finishHash)} target="_blank" rel="noreferrer">Sale {i + 1} · EscrowFinish <Icon name="external" size={16} /></a>{s.refunded && <span> · Refunded {s.refundHash && <a href={explorer(s.refundHash)} target="_blank" rel="noreferrer">receipt <Icon name="external" size={16} /></a>}</span>}</li>)}</ol></details>}
+      {w.sales.length > 0 && <details><summary>Your purchase receipts</summary><ol>{w.sales.map((s,i) => <li key={s.finishHash}><a href={explorer(s.finishHash)} target="_blank" rel="noreferrer">Sale {i + 1} · EscrowFinish <Icon name="external" size={16} /></a>{s.refunded && <span> · Refunded {s.refundHash && <a href={explorer(s.refundHash)} target="_blank" rel="noreferrer">receipt <Icon name="external" size={16} /></a>}</span>}</li>)}</ol></details>}
       {w.trust.length > 0 && <p className="ra-note">Trust over time · latest {w.trust.at(-1)!.value.toFixed(2)}</p>}
       {w.trust.length > 1 && <svg viewBox="0 0 160 40" width="160" height="40" role="img" aria-label={`Trust from ${w.trust[0].value.toFixed(2)} to ${w.trust.at(-1)!.value.toFixed(2)} across ${w.trust.length} observations`}><polyline points={points} fill="none" stroke="currentColor" strokeWidth="2" /></svg>}
     </article>
@@ -71,9 +71,9 @@ export default function WriterEarnings() {
   return <div className="ra-writer-earnings">
     <p><a href="https://github.com/Collaboration95/theFastandtheFungible/blob/main/docs/publishing.md" target="_blank" rel="noreferrer">Publish your notes <Icon name="external" size={16} /></a></p>
     {!data ? <p role="status">{failed ? 'Writer catalogue unavailable. Try again later.' : 'Loading writers…'}</p> : <>
-      <p className="ra-note">{data.scope} Your purchase history shows confirmed key-reveal sales. Simulated payments are excluded.</p>
+      <details className="ra-writer-sales-scope"><summary>About these sales</summary><p className="ra-note">{data.scope} Your purchase history shows confirmed key-reveal sales. Simulated payments are excluded.</p></details>
       {/* H9-15: a new visitor has bought nothing yet; say what will appear instead of a row of zeros on every card. */}
-      {!data.writers.some(w => w.sales.length) && <p className="ra-writer-empty" role="note">No purchases in your history yet. When a question buys an article, the sale appears on its writer’s card with a link to the XRPL Testnet transaction.</p>}
+      {!data.writers.some(w => w.sales.length) && <p className="ra-writer-empty" role="note">No purchases in your history yet.</p>}
       <div className="ra-writer-grid">{shown.map(card)}</div>
       {demo.length > 0 && <details className="ra-writer-demo"><summary>Fictional demo writers ({demo.length})</summary><p className="ra-note">Made-up writers that fill out the demo catalogue. None has a confirmed sale on this demo.</p><div className="ra-writer-grid">{demo.map(card)}</div></details>}
     </>}

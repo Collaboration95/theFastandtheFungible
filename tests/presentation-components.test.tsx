@@ -13,13 +13,13 @@ import type { RunSnapshot } from '../shared/contracts'
 import recording from '../demo/traces/UC3-key-reveal.json'
 
 it('renders canonical labels for local simulated/Testnet, hosted, and receipt surfaces', () => {
-  for (const [settlement, full, short] of [['SIMULATED SGD · no real funds', ENV.simulated, ENV.simulatedShort], ['XRPL TESTNET · no real value', ENV.localTestnet('fixture models'), ENV.testnetShort]]) {
+  for (const [settlement, full, short] of [['SIMULATED SGD · no real funds', 'Simulated payments', 'Simulated payments'], ['XRPL TESTNET · no real value', 'XRPL Testnet', 'XRPL Testnet']]) {
     const labels = { ...ucRuns.UC2.labels, settlement } as RunSnapshot['labels']
     const html = renderToStaticMarkup(<EnvIndicator labels={labels} />)
     expect(html).toContain(full); expect(html).toContain(short)
   }
   const status = { state: 'ready', remaining: { questions: 5, minor: 1000 }, labels: { rail: 'XRPL Testnet', models: 'live research · fixture purchase decisions' } } as Hosted['status']
-  expect(renderToStaticMarkup(<HostedEnv hosted={{ status }} />)).toContain(ENV.hostedConfigured(true, 'fixture'))
+  expect(renderToStaticMarkup(<HostedEnv hosted={{ status }} />)).toContain('XRPL Testnet')
   const run = recording.run as unknown as RunSnapshot
   const receipt = run.receipts[0]
   const html = renderToStaticMarkup(<ReceiptSheet run={run} receipt={receipt} onClose={() => {}} />)

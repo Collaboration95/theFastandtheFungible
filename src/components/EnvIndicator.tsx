@@ -3,7 +3,7 @@ import type { ModeLabels } from '../../shared/contracts'
 import { useDismiss } from '../useDismiss'
 import { useClearOfAsk } from '../useClearOfAsk'
 import { markEnvironmentSeen as markSeen } from '../environment'
-import { ENV, environmentLabel, modelsLabel } from '../../shared/presentation'
+import { ENV } from '../../shared/presentation'
 
 const testnetOf = (labels?: ModeLabels) => labels?.settlement.startsWith('XRPL') ?? false
 
@@ -37,7 +37,7 @@ export default function EnvIndicator({ labels }: { labels?: ModeLabels; recordin
   useDismiss(open, box, close)
   const top = useClearOfAsk(open, trigger)
   return <div className="ra-env" ref={box}>
-    <button ref={trigger} className="ra-env-trigger" aria-expanded={open} aria-controls={open ? 'environment-popover' : undefined} onClick={() => { if (open) close(); else setOpen(true) }}><i aria-hidden="true" style={{ background: testnet ? 'var(--ok)' : 'var(--warn)' }} /><span className="ra-env-full">{environmentLabel(labels?.settlement, modelsLabel(labels?.research, labels?.decision))}</span><span className="ra-env-short">{testnet ? ENV.testnetShort : ENV.simulatedShort}</span></button>
+    <button ref={trigger} className="ra-env-trigger" aria-expanded={open} aria-controls={open ? 'environment-popover' : undefined} onClick={() => { if (open) close(); else setOpen(true) }}><i aria-hidden="true" style={{ background: testnet ? 'var(--ok)' : 'var(--warn)' }} /><span>{testnet ? 'XRPL Testnet' : 'Simulated payments'}</span></button>
     {open && <section id="environment-popover" className="ra-env-pop" style={{ position: 'fixed', top, bottom: 'auto', right: 16, left: 'auto', width: 'min(360px, calc(100vw - 32px))', maxHeight: `calc(100dvh - ${top + 12}px)`, overflow: 'auto' }} aria-label="What’s real here">
       <h2>What’s real here</h2><p>{testnet ? 'No real value. Built-in writers are fictional; local notes carry their own provenance.' : 'Built-in writers are fictional and payments are simulated. Local notes carry their own provenance. No real money moves.'}</p>
       {labels?.testnetFallback && <p role="status">Testnet setup unavailable ({labels.testnetFallback.replaceAll('_', ' ')}); running a simulated preview. Retry Testnet setup from the terminal. No ledger transactions are made.</p>}

@@ -121,14 +121,14 @@ describe('visible internals', () => {
   })
 
   it('labels the environment once and keeps raw model labels in Show work', () => {
-    expect(renderToStaticMarkup(<EnvIndicator labels={exampleRun.labels} recording />)).toContain('Simulated demo · fixture models · no real value')
+    expect(renderToStaticMarkup(<EnvIndicator labels={exampleRun.labels} recording />)).toContain('Simulated payments')
     const models = renderToStaticMarkup(<ModelLabels labels={exampleRun.labels} />)
     for (const text of ['Research ·', 'Decide ·', 'Publisher ·', 'SIMULATED SGD']) expect(models).toContain(text)
   })
 
   it('folds the decision round to what was bought and skipped, with Why these? to reopen it', () => {
     const html = renderToStaticMarkup(<DecisionPanel run={offlineZeroBudgetRun} fold onWhy={() => {}} />)
-    for (const text of ['Article', 'Writer', 'Price', 'Decision', 'Would buy', 'Offline rules']) expect(html).toContain(text)
+    for (const text of ['Article', 'Writer', 'Price', 'Decision', 'Would buy', 'Policy rules']) expect(html).toContain(text)
     expect(html).not.toContain('value = gap')
   })
 

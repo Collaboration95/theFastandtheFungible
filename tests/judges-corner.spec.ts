@@ -78,14 +78,14 @@ test('using the strip costs no question: no run, scope or admission request is m
   const calls: string[] = []
   page.on('request', request => { if (/\/api\//.test(request.url()) && !/\/api\/(demo\/status|health)/.test(request.url())) calls.push(`${request.method()} ${new URL(request.url()).pathname}`); if (request.method() !== 'GET' && /\/api\//.test(request.url())) calls.push(`${request.method()} ${new URL(request.url()).pathname}`) })
   await page.goto('/')
-  await expect(page.getByText('5 of 5 questions left today · test funds only')).toBeVisible()
+  await expect(page.getByText('5 of 5 questions left today')).toBeVisible()
   calls.length = 0 // whatever the app loaded on arrival is not what the strip does
   // The verifier's public-node lookups and the explorer are outside the app; keep this test off the network.
   await page.route(/rippletest\.net/, route => route.abort())
   await page.locator('.ra-hwork > summary').click()
   await strip(page).getByRole('button', { name: 'Run the checks' }).click()
   await expect(strip(page).locator('.ra-hv-head, [role=alert]').first()).toBeVisible({ timeout: 30000 })
-  await expect(page.getByText('5 of 5 questions left today · test funds only')).toBeVisible()
+  await expect(page.getByText('5 of 5 questions left today')).toBeVisible()
   const link = strip(page).getByRole('link', { name: /View key-release transaction/ })
   await expect(link).toHaveAttribute('href', /testnet\.xrpl\.org\/transactions\/01A6A7E07652216B102DFD1FED13462539D43475DFFBBA5A3C6E0FB12F643F1D$/)
   expect(calls).toEqual([])

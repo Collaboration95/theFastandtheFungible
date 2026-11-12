@@ -696,3 +696,8 @@ details[open]:not(.ra-export) > summary::before { transform: translateY(-4px) ro
   .ra-run-activity.is-done, .ra-run-activity.is-done .ra-run-status { display: contents; }
   .ra-run-activity.is-done .ra-show-work, .ra-run-activity.is-done .ra-activity-details { order: 30; align-self: flex-start; }
 }
+
+/* One recorded-run entry beside Ask; the same checker opens in the corner. */
+.ra-comp-row > .ra-home-verify { order:1; min-height:44px; font-size:12px; }
+.ra-comp-row { flex-wrap:wrap; }
+@media (max-width:780px) { .ra-comp-row > .ra-home-verify { flex:1 0 100%; } }

@@ -17,17 +17,18 @@ export default function HostedEnv({ hosted }: { hosted: Hosted }) {
   const used = status.remaining.questions === 0 || status.remaining.minor < questionCap(status)
   const tone = env.tone === 'warn' && used && env.testnet ? 'live' : env.tone
   return <div className="ra-env ra-henv" ref={box}>
-    <button ref={trigger} className={`ra-env-trigger is-${tone}`} aria-expanded={open} aria-controls="hosted-environment" aria-label={env.full} onClick={() => open ? close() : setOpen(true)}>
-      <i aria-hidden="true" /><span className="ra-env-full">{env.full}</span><span className="ra-env-short">{env.short}</span>
+    <button ref={trigger} className={`ra-env-trigger is-${tone}`} aria-expanded={open} aria-controls={open ? 'hosted-environment' : undefined} aria-label={env.testnet ? 'XRPL Testnet' : 'Simulated payments'} onClick={() => open ? close() : setOpen(true)}>
+      <i aria-hidden="true" /><span>{env.testnet ? 'XRPL Testnet' : 'Simulated payments'}</span>
     </button>
     {open && <section id="hosted-environment" className="ra-env-pop ra-henv-pop" style={{ position: 'fixed', top, bottom: 'auto', right: 16, left: 'auto', width: 'min(380px, calc(100vw - 32px))', maxHeight: `calc(100dvh - ${top + 12}px)`, overflow: 'auto' }} aria-label="About this demo">
-      <h2>{env.full}</h2>
-      <p>Every visitor shares one sponsor wallet{env.testnet ? ' on the XRPL Testnet' : ''}. No real value. Nothing here costs you money.</p>
+      <h2>{env.testnet ? 'XRPL Testnet' : 'Simulated payments'}</h2>
+      <p>This shared demo uses one sponsor wallet{env.testnet ? ' on the XRPL Testnet' : ''}. No real value. Nothing here costs you money.</p>
       <dl>
         <div><dt>Payments</dt><dd>{env.testnet ? 'Paid over x402 on XRPL Testnet. Escrowed articles unlock when the writer publishes the key. Every transaction has a public link.' : 'Simulated: no ledger transactions. Receipts say so.'}</dd></div>
-        <div><dt>Models</dt><dd>{env.fixture ? 'Fixture models: offline extracts and rules, labelled on each answer.'
-          : env.ruleBuying ? 'A live model plans and writes each answer. What to buy is decided by fixed offline rules (the fixture decision model) while the live decision model is offline. If an answer falls back to offline extracts, that answer says so.'
+        <div><dt>Models</dt><dd>{env.fixture ? 'Offline extracts write the answers. Policy rules decide purchases deterministically; each decision is auditable.'
+          : env.ruleBuying ? 'A live model plans and writes each answer. Policy rules decide purchases deterministically; each decision is auditable. If an answer falls back to offline extracts, that answer says so.'
           : 'Live models plan, judge what to buy and write. If one is unavailable, that answer says so.'}</dd></div>
+        <div><dt>Technical details</dt><dd>{status.labels.models} · {status.labels.rail}</dd></div>
         <div><dt>Search</dt><dd>Keyword matching across every listed writer. This demo doesn’t use embeddings.</dd></div>
         <div><dt>Writers</dt><dd>{ENV.hostedWriters} and fictional demo writers, labelled on every source.</dd></div>
         <div><dt>Your limits</dt><dd>Up to {minorText(questionCap(status))} of test funds per question, {HOSTED_DAILY_QUESTIONS} questions a day, one at a time. Today: {status.remaining.questions} left.</dd></div>

@@ -22,13 +22,12 @@ export function HostedIntro({ hosted, state }: { hosted: Hosted; state: HomeStat
   const testnet = /testnet/i.test(hosted.status.labels.rail) && !/simulat/i.test(hosted.status.labels.rail)
   return <>
     <h1 className="ra-hero ra-hhero">Research with a wallet.</h1>
-    <p className="ra-hpromise">{testnet ? 'Paid on delivery. Proven on the ledger.' : 'Simulated payments. Receipts you can check.'}</p>
+    <p className="ra-hpromise">{testnet ? 'Paid on delivery. Proven on the ledger.' : 'Receipts you can check.'}</p>
     <p className="ra-home-description ra-hlede">Free sources first. Pay writers for missing evidence, within your budget.</p>
-    <p className="ra-hprovenance">{hosted.status.labels.models.includes('fixture') ? 'Rule-based buying' : 'Live-model buying'} · team-authored notes and fictional demo writers</p>
     <ol className="ra-hsteps" aria-label="How it works">
-      <li>{icons.ask}<span><b>Ask with a budget</b><small>Up to {minorText(questionCap(hosted.status))} in test funds</small></span></li>
+      <li>{icons.ask}<span><b>Ask with a budget</b><small>Up to {minorText(questionCap(hosted.status))} per question</small></span></li>
       <li>{icons.pay}<span><b>It buys only to fill a gap</b><small>One article at a time</small></span></li>
-      <li>{icons.verify}<span><b>Verify every receipt</b><small>{testnet ? 'On XRPL Testnet, in your browser' : 'Signatures and hashes, in your browser'}</small></span></li>
+      <li>{icons.verify}<span><b>Verify every receipt</b><small>In your browser</small></span></li>
     </ol>
     <HostedState hosted={hosted} state={state} />
     {!canAsk(state) && <HostedJudgesCorner hosted={hosted} />}
@@ -41,7 +40,7 @@ export function HostedJudgesCorner({ hosted, detailsRef }: { hosted: Hosted; det
   const proof = proofLink(hosted)
   const [opened, setOpened] = useState(false)
   return <details ref={detailsRef} className="ra-hwork" onToggle={event => setOpened(event.currentTarget.open)}>
-    <summary>Check our work · recorded run and ledger</summary>
+    <summary>Check our work</summary>
     <section className="ra-hjc" aria-label="Check our work without asking a question">
     <p className="ra-hjc-label" aria-hidden="true">Check our work without asking a question</p>
     <ul className={proof ? 'ra-hjc-list' : 'ra-hjc-list is-two'}>
@@ -68,7 +67,7 @@ export function BuildersCorner({ hosted }: { hosted: Hosted }) {
   return <details className="ra-hbuild">
     <summary>{icons.agent}<span><b>Use it from your own agent</b><small>Claude Code, a terminal or your own code · {lines.tag}</small></span></summary>
     <ul>{rows.map(row => <li key={row.title}><b>{row.title}</b><small>{row.note}</small><CopyLine label={row.title} text={row.text} /></li>)}</ul>
-    <p className="ra-hbuild-foot">XRPL Testnet only, no real value. Needs Node 22.13 or later.{proof && <> · <Out href={proof}>See a real proof of refusal (no question used)</Out></>}</p>
+    <p className="ra-hbuild-foot">Needs Node 22.13 or later.{proof && <> · <Out href={proof}>See a real proof of refusal (no question used)</Out></>}</p>
   </details>
 }
 
@@ -92,12 +91,12 @@ export function HostedState({ hosted, state }: { hosted: Hosted; state: HomeStat
   const card = (tone: 'pause' | 'info' | 'warn', title: string, body: ReactNode, more?: ReactNode) =>
     <section className={`ra-hstate is-${tone}`} role="status" aria-labelledby="ra-hstate-title"><h2 id="ra-hstate-title">{title}</h2><p>{body}</p>{more && <p className="ra-hstate-links">{more}</p>}</section>
   switch (state) {
-    case 'paused': return card('pause', 'Paused', 'The shared Testnet demo is paused. No new purchases will start. You can still view your receipts or watch the recorded walkthrough.', walk)
+    case 'paused': return card('pause', 'Paused', 'The shared demo is paused. No new purchases will start. You can still view your receipts or watch the recorded walkthrough.', walk)
     case 'ended': return card('info', 'The live demo has ended', `New questions closed on ${HOSTED_ENDS}. You can still view your receipts for 24 hours, watch the recorded walkthrough or read the source code.`, <>{walk} · <Out href={links.repo}>Source code</Out></>)
     case 'allowance': return card('info', 'You’ve used today’s questions', hosted.status.remaining.questions === 0
       ? `Each visitor gets ${HOSTED_DAILY_QUESTIONS} questions a day on the shared demo; yours reset at 08:00 SGT. Your answers and receipts stay in the sidebar.`
       : `Your test-fund allowance for today is used up; it resets at 08:00 SGT. Your answers and receipts stay in the sidebar.`, walk)
-    case 'degraded': return card('warn', 'New questions are on hold', 'A model provider or the XRPL Testnet isn’t responding right now. This page checks again on its own; your receipts are still available.', walk)
+    case 'degraded': return card('warn', 'New questions are on hold', 'A model provider or the payment network isn’t responding right now. This page checks again on its own; your receipts are still available.', walk)
     case 'offline': return card('warn', 'You’re offline', 'Your question and receipts come back when your connection does. Nothing you started is lost.')
     case 'unreachable': return card('warn', 'The demo server isn’t responding', 'This page retries on its own. Payments already started keep settling on the ledger.', walk)
     default: return null
@@ -107,7 +106,7 @@ export function HostedState({ hosted, state }: { hosted: Hosted; state: HomeStat
 /** Under the composer: what this question may use, and what happens to it. */
 export function HostedComposerNote({ hosted, state }: { hosted: Hosted; state: HomeState }) {
   return <p className="ra-hnote">
-    {state === 'busy' ? <span className="ra-hbusy">The demo is finishing another question; yours starts as soon as it’s free.</span> : <span>{allowanceText(hosted.status)} · test funds only</span>}
+    {state === 'busy' ? <span className="ra-hbusy">The demo is finishing another question; yours starts as soon as it’s free.</span> : <span>{allowanceText(hosted.status)}</span>}
     <span>Questions go to our model providers and are kept for 24 hours. Don’t enter personal or confidential information.</span>
   </p>
 }

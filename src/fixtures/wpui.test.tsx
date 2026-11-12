@@ -433,7 +433,7 @@ describe('budget slider and the universal budget in Settings', () => {
 
   it('keeps the environment on the header, and Escape closes its details', () => {
     render(<EnvIndicator labels={exampleRun.labels} recording />)
-    const dot = screen.getByRole('button', { name: /Simulated demo · fixture models · no real value/ })
+    const dot = screen.getByRole('button', { name: /Simulated payments/ })
     fireEvent.click(dot)
     expect(screen.getByRole('region', { name: "What’s real here" }).textContent).toContain('fictional writers and labelled team-authored notes')
     fireEvent.keyDown(document, { key: 'Escape' })
@@ -441,6 +441,6 @@ describe('budget slider and the universal budget in Settings', () => {
   })
   it('names the Testnet environment', () => {
     render(<EnvIndicator labels={{ ...exampleRun.labels, settlement: 'XRPL TESTNET · no real value' }} recording />)
-    expect(screen.getByRole('button', { name: /Testnet demo · no real value/ })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /^XRPL Testnet$/ })).toBeTruthy()
   })
 })
