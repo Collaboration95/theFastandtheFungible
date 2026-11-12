@@ -62,7 +62,7 @@ export function BuildersCorner({ hosted }: { hosted: Hosted }) {
   const proof = proofLink(hosted)
   const rows = [
     { title: 'Add it to Claude Code', note: 'The spending caps are set in this command, not by the model.', text: lines.claude },
-    { title: 'Run the whole money path once', note: 'No clone and no account. About 75 seconds, and it ends in RESULT PASS.', text: lines.try },
+    { title: 'Run the whole money path once', note: 'No clone and no account. Measured cold run: 84.2 seconds; 2 of 4 cold runs exceeded 90 seconds (one Mac, 7 Nov). A successful run ends in RESULT PASS.', text: lines.try },
     { title: 'Verify a receipts.json', note: 'Export one from any answer here, then check it against the public ledger.', text: lines.verify },
   ]
   return <details className="ra-hbuild">

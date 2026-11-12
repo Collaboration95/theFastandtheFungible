@@ -20,6 +20,7 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 const day = d => `${Number(d.slice(8, 10))} ${MONTHS[Number(d.slice(5, 7)) - 1]}`
 const longDay = d => dateSGT(`${d}T00:00:00Z`)
 const pct = (v, max) => `${Math.max(0, Math.min(100, (v / max) * 100)).toFixed(2)}%`
+const heldoutScope = (h, year) => `Fixture research and decision models · offline answers · XRPL Testnet · ${h.day} ${year} · leading fact ${h.answersIt.n}/${h.answersIt.N}`
 const slug = id => `stop-${id.replaceAll('.', '-')}`
 // Inline code in generated bullets: `x` → <code>x</code>, everything else escaped.
 const prose = s => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>')
@@ -67,7 +68,7 @@ function hero(d) {
 ${stat(n(h.prs), h.prs, 'Pull requests merged', `since ${esc(d.since.label.replace(' 2026', ''))}`)}
 ${stat(n(h.releases), h.releases, 'Releases', `${esc(d.rail.find(r => r.kind === 'release').tag)} to ${esc(t.release)}`)}
 ${stat(n(h.transactions), h.transactions, 'Testnet transactions', '<a href="../ledger/">re-checked live in your browser</a>')}
-${stat(`${h.heldout.n}/${h.heldout.N}`, h.heldout.n, 'Blind questions bought and cited', `${h.heldout.offTopic.n}/${h.heldout.offTopic.N} off-topic purchases`, { suffix: `/${h.heldout.N}` })}
+${stat(`${h.heldout.n}/${h.heldout.N}`, h.heldout.n, 'Blind questions bought and cited', `${esc(heldoutScope(h.heldout, d.as_of.slice(0, 4)))}; ${h.heldout.offTopic.n}/${h.heldout.offTopic.N} off-topic purchases`, { suffix: `/${h.heldout.N}` })}
 ${stat(`${h.try.seconds.toFixed(1)} s`, h.try.seconds.toFixed(1), 'One command to a verified purchase', `cold run, ${h.try.limit} s target`, { decimals: 1, suffix: ' s' })}
 ${stat(n(h.tests), h.tests, 'Tests in the repo', `${n(s.tests)} on 20 Sep`)}
 </dl>
@@ -157,6 +158,7 @@ ${table('Cold try --testnet runs', ['Run', 'Seconds', 'Result', 'Evidence'], m.t
     ? `<div class="hbar pending"><p class="hl">${esc(b.label)}</p><div class="htrack"><span class="ghost"></span></div><p class="hv">${b.status === 'pending' ? `frozen ${esc(day(b.frozen))} · not run yet` : 'not frozen'}</p></div>`
     : `<div class="hbar${b.heldout ? ' strong' : ''}"><p class="hl">${esc(b.label)}</p><div class="htrack"><span class="fill" style="width:${pct(b.n, b.N)}" data-tip="${esc(`${b.label}: ${b.n} of ${b.N} bought and cited`)}"></span></div><p class="hv mono">${b.n}/${b.N}</p></div>`).join('')
   const C = `<article class="card chart"><h3>Questions bought and cited</h3><p class="take">Development banks guided the work; the blind bank is the number we report. Off-topic purchases: <strong>${m.offTopic.n}/${m.offTopic.N}</strong>.</p>${banks}
+<p class="take">${esc(heldoutScope(d.headline.heldout, d.as_of.slice(0, 4)))}.</p>
 <p class="legend"><span class="key soft"></span>development <span class="key ink"></span>blind held-out <span class="key dash"></span>not run yet</p>${src(d.headline.heldout.source ?? 'docs/evidence/v4-heldout/README.md', (d.headline.heldout.source ?? 'v4-heldout').split('/').slice(-2, -1)[0] ?? 'v4-heldout')}
 ${table('Judge banks', ['Bank', 'Bought and cited', 'Source'], m.banks.map(b => [esc(b.label), b.n !== undefined ? `${b.n}/${b.N}` : esc(b.status), ext(blob(d, b.source), b.source.split('/').slice(-2).join('/'))]))}</article>`
   // D. Ledger rows over time (step line with HTML dots and labels).

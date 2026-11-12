@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto'
 import { Router } from 'express'
 import type { Store } from '../store.js'
+import { sandboxPopulation, settledReceipts } from './population.js'
 import { XRPL_LABEL } from '../../shared/contracts/index.js'
 
 import { LedgerAnchorSchema } from '../../shared/contracts/anchor.js'
@@ -35,12 +36,7 @@ export function aggregateSandbox(store: Store, now = Date.now()): SandboxStats {
     const result: SandboxStats = { label: SCOREBOARD_LABEL, updatedAt: new Date(now).toISOString(), questions: 0, purchaseRuns: 0, purchasesSettled: 0, refunds: 0, completed: 0, inProgress: 0, excludedSimulated: 0, anchored: 0, anchorPending: 0, stoppedBeforeAnswer: 0,
       timing: { samples: 0, medianMs: null, p90Ms: null }, medianSpendMinor: null, medianModelUsd: null,
       audit: { checked: 0, unavailable: 0, readBeforeGrant: 0, buyWithoutPolicy: 0, overBudget: 0, duplicateIntent: 0, receiptWithoutIntent: 0, unanchored: 0 } }
-    const rows = db.prepare(`SELECT r.id, sum(max(h.model_used,coalesce(a.micro,0))) AS model, max(h.state) AS state,
-      json_extract(r.json,'$.phase') AS phase, json_extract(r.json,'$.budgetMinor') AS budget,
-      json_extract(r.json,'$.spentMinor') AS spent, json_extract(r.json,'$.ledgerAnchor') AS anchor,
-      json_extract(r.json,'$.labels.settlement') AS rail
-      FROM hosted_holds h JOIN runs r ON r.id=h.run_id
-      LEFT JOIN (SELECT hold_id,sum(reserved) AS micro FROM hosted_attempts GROUP BY hold_id) a ON a.hold_id=h.id WHERE coalesce(h.started_day,h.day)>=? GROUP BY r.id`).all('2026-11-11')
+    const rows = sandboxPopulation(db, true)
     const runs = new Map(rows.filter(row => row.rail === XRPL_LABEL).map(row => [String(row.id), { row, intents: [] as Intent[], events: [] as Event[], decisions: [] as Decision[], receipts: [] as { intentId: string; amountMinor: number }[] }]))
     result.excludedSimulated = rows.length - runs.size
     // These tables are already indexed by run identity. Reading once avoids N+1 snapshots at 5,000 runs.
@@ -58,7 +54,7 @@ export function aggregateSandbox(store: Store, now = Date.now()): SandboxStats {
       if (terminal) result.completed++; else result.inProgress++
       const anchor = row.anchor ? LedgerAnchorSchema.safeParse(JSON.parse(String(row.anchor))) : undefined
       const anchored = anchor?.success && anchor.data.runIdHash === createHash('sha256').update(id).digest('hex')
-      const settled = receipts.filter(r => intents.some(i => i.intentId === r.intentId && i.escrow?.state !== 'CANCELLED'))
+      const settled = settledReceipts(receipts, intents)
       const done = [...events].reverse().find(e => e.type === 'DONE')
       // A receipt with a missing intent is still evidence of money: never exempt it.
       const orphanReceipt = receipts.some(r => !intents.some(i => i.intentId === r.intentId))

@@ -185,7 +185,7 @@ td.was { color: var(--muted); }
   </div>
   <p class="cap" style="margin-top:18px">Check the recorded receipts in the judges’ corner — no question used.</p>
   <div class="cmdline" style="margin-top:24px"><span class="p">$</span> <!--f:try_line-->npx -y https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-mcp-1.1.1.tgz try --testnet<!--/f--></div>
-  <div class="src"><span>SingHacks finals · Ripple track · Swiss Pavilion, SFF · 18 Nov 2026 · facts as of <!--f:as_of-->12 Nov 2026<!--/f--> at <!--f:sha-->88c3a00b<!--/f--></span><span class="n mono">github.com/Collaboration95/theFastandtheFungible</span></div>
+  <div class="src"><span>SingHacks finals · Ripple track · Swiss Pavilion, SFF · 18 Nov 2026 · facts as of <!--f:as_of-->12 Nov 2026<!--/f--> at <!--f:sha-->e37be882<!--/f--></span><span class="n mono">github.com/Collaboration95/theFastandtheFungible</span></div>
   <aside class="notes">
     <p><b>Criteria:</b> Reachability (25%) first: three ways in on the first page, none needing an install. Sets the honesty frame for every other criterion.</p>
     <p><b>Say:</b> ResearchAgent is research with a wallet. It answers from free sources, then buys the articles it is missing straight from the writer, over x402 on the XRP Ledger, inside your budget. Everything runs on XRPL Testnet, and you can try it in the live sandbox until 19 November.</p>
@@ -206,15 +206,15 @@ td.was { color: var(--muted); }
     <tr><td class="k">Identity</td><td class="was">No operator credential domain</td><td>Three accepted Testnet writer Credentials; one Testnet Permissioned Domain for identity display</td></tr>
   </table>
   <div class="stats" style="margin-top:36px">
-    <div class="stat"><b><!--f:prs-->304<!--/f--></b><span>pull requests merged since <!--f:since-->21 Sep<!--/f--></span></div>
+    <div class="stat"><b><!--f:prs-->305<!--/f--></b><span>pull requests merged since <!--f:since-->21 Sep<!--/f--></span></div>
     <div class="stat"><b><!--f:releases-->15<!--/f--></b><span>releases, v0.1.0 to <!--f:release-->v1.1.1<!--/f--></span></div>
     <div class="stat"><b><!--f:transactions-->61<!--/f--></b><span>Testnet transactions you can re-check live on our ledger page</span></div>
     <div class="stat"><b><!--f:vectors-->224<!--/f--></b><span>receipt test vectors; two verifiers, written separately, agree on all</span></div>
   </div>
-  <div class="src"><span>Counted at <!--f:sha-->88c3a00b<!--/f--> on <!--f:as_of-->12 Nov 2026<!--/f--> (git and gh queries in site/progress/data.json) · “At SingHacks” is the 19–20 Sep event build (e16435a3)</span><span class="n"></span></div>
+  <div class="src"><span>Counted at <!--f:sha-->e37be882<!--/f--> on <!--f:as_of-->12 Nov 2026<!--/f--> (git and gh queries in site/progress/data.json) · “At SingHacks” is the 19–20 Sep event build (e16435a3)</span><span class="n"></span></div>
   <aside class="notes">
     <p><b>Criteria:</b> all six; this is the organisers’ “progress since SingHacks” requirement. Strongest for Technical depth (who may spend) and Creativity (key reveal).</p>
-    <p><b>Say:</b> At SingHacks a language model proposed each purchase, a person approved every quote, and payment was simulated by default. Since then: policy code buys, writers are paid by key reveal, refunds happen on the ledger, and anyone can verify a receipt offline. The old deck line about people approving purchases was wrong; do not repeat it.</p>
+    <p><b>Say:</b> At SingHacks a language model proposed each purchase, a person approved every quote, and payment was simulated by default. Since then: policy code buys, writers are paid by key reveal, refunds happen on the ledger, and anyone can verify a receipt offline.</p>
   </aside>
 </section>
 
@@ -302,8 +302,8 @@ td.was { color: var(--muted); }
   <div class="crit">Creativity</div>
   <h1>Check the delivery key yourself, from the public ledger</h1>
   <div class="cols" style="grid-template-columns:0.8fr 1.2fr;gap:48px;margin-top:36px">
-    <div><ol class="points"><li>Writer encrypts and signs the price, key hash and content hashes.</li><li>Policy locks payment to the key hash in native Testnet escrow.</li><li>Writer publishes the key in EscrowFinish to collect; the browser checks both transactions.</li></ol>
-    <p class="honest" style="margin-top:24px">A matching key proves this escrow’s key reveal, not article quality. Refunds after delivery need the writer’s signature; a real writer could refuse. A no-show requires EscrowCancel after CancelAfter.</p></div>
+    <div><ol class="points"><li>Writer encrypts and signs the price, key hash and content hashes.</li><li>Policy locks payment to the key hash in native Testnet escrow.</li><li>The key that unlocks the article is the same key that releases the writer’s payment. The app waits for ledger validation.</li></ol>
+    <p class="honest" style="margin-top:24px">A signed submission exposes the key before validation; the escrow stays claimable with that key until CancelAfter. A matching key proves reveal, not quality. Refunds after delivery need the writer’s signature; a real writer could refuse. A no-show requires EscrowCancel after CancelAfter.</p></div>
     <figure style="margin:0"><img style="width:100%;max-height:570px;object-fit:contain" src="../../evidence/key-on-ledger/shots/second-resume-key-match-1280.png" alt="Local replay UI checking a recorded Testnet key reveal against a public node"><figcaption class="cap">Local replay UI · recorded Testnet run · fictional writer · public-node check, 11 Nov. The browser recomputes sha256(key) against the lock.</figcaption></figure>
   </div>
   <div class="src"><span>docs/key-reveal-escrow.md · kept and broken: the 7 Nov run (docs/evidence/r5-a/) · no-show: docs/evidence/round3-e/runs.json · fixture models, fictional writers</span><span class="n"></span></div>
@@ -314,7 +314,7 @@ td.was { color: var(--muted); }
   </div>
 
     <p><b>Criteria:</b> Creativity (20%): a new use of a native XRPL primitive for agent commerce. Technical depth: crypto-condition escrow, no smart contract.</p>
-    <p><b>Say:</b> Here is what’s new. The writer only gets paid by publishing the article’s key on the ledger. We lock payment in a native XRPL escrow whose condition is the hash of that key, so delivery and payment become one ledger event.</p>
+    <p><b>Say:</b> The article's key is the only thing that opens the writer's escrow. The app shows the article only after that escrow finish validates on the ledger, and once the key is public anyone (the writer first) can still claim the payment before the deadline.</p>
   </aside>
 </section>
 
@@ -415,8 +415,8 @@ td.was { color: var(--muted); }
     <div><div class="h3">HOSTED-12 · 12 Nov · DEPLOY-3</div><ol class="points" style="margin-top:16px;font-size:27px">
       <li><b>Free draft:</b> no citable answer; <!--f:paid_before-->2<!--/f--> recorded open gaps.</li>
       <li><b>Missing:</b> what binds publishing the article key to payment?</li>
-      <li><b>Paid p3:</b> validated EscrowFinish publishes the key and releases payment in the same event.</li>
-      <li><b>Final answer:</b> the writer collects by publishing the key; escrow opens only with that key. <!--f:paid_after-->0<!--/f--> recorded open gaps; no independent quality score.</li>
+      <li><b>Paid p3 (historical):</b> describes validated EscrowFinish. Signed submission can expose the key earlier; the escrow stays claimable until CancelAfter.</li>
+      <li><b>Final answer:</b> the key unlocks both article and payment; the app waits for ledger validation. <!--f:paid_after-->0<!--/f--> recorded open gaps; no independent quality score.</li>
     </ol></div>
     <div><div class="h3">This run’s cost</div><ul class="points" style="margin-top:16px;font-size:27px">
       <li><!--f:paid_articles-->1<!--/f--> article · <!--f:paid_passages-->4<!--/f--> passages · S$<!--f:paid_spend-->0.40<!--/f--> display price = <!--f:paid_principal-->40,000<!--/f--> Testnet drops (fixed demo rate, not FX).</li>
@@ -519,7 +519,7 @@ td.was { color: var(--muted); }
       <div class="person"><b>Guruprasath</b><span>Product and engineering since SingHacks: plans the work, directs the coding agents and owns the merge gate.</span></div>
       <div class="person"><b>Miul</b><span>SingHacks build: the research-plan contracts, quote binding and the first test harness.</span></div>
       <div class="person"><b>Andrew Nguyen</b><span>Before SingHacks: the idea briefs and data sources.</span></div>
-      <div class="person" style="border-bottom:1px solid var(--rule)"><b style="font-size:26px">How we build</b><span>Coding agents work in parallel lanes; every merge passes one local gate of tests and the five hard gates. <!--f:prs-->304<!--/f--> pull requests since <!--f:since-->21 Sep<!--/f-->.</span></div>
+      <div class="person" style="border-bottom:1px solid var(--rule)"><b style="font-size:26px">How we build</b><span>Coding agents work in parallel lanes; every merge passes one local gate of tests and the five hard gates. <!--f:prs-->305<!--/f--> pull requests since <!--f:since-->21 Sep<!--/f-->.</span></div>
     </div>
     <table class="links">
       <tr><th>Check it yourself</th><th></th></tr>

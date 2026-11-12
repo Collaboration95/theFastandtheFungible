@@ -30,7 +30,7 @@ describe('R9-C H9-15: the Writers tab has a zero state and a demo-wide sales cou
     await waitFor(() => expect(container.querySelector('.ra-writer-card')).toBeTruthy())
     expect(container.querySelector('.ra-writer-empty')?.textContent).toMatch(/^No purchases in your history yet\./)
     const rows = Object.fromEntries([...container.querySelectorAll('.ra-writer-card dl > div')].map(row => [row.querySelector('dt')!.textContent, row.querySelector('dd')!.textContent]))
-    expect(rows).toEqual({ Articles: '182', 'Price range': 'S$0.40', 'Sales on this demo since 11 Nov': '12 sales', 'Your purchases': 'None yet' })
+    expect(rows).toEqual({ Articles: '182', 'Price range': 'S$0.40', 'Settled sales on this demo since 11 Nov (UTC)': '12 sales', 'Your purchases': 'None yet' })
     expect(container.textContent).not.toMatch(/rate unavailable|no observations|No sales yet/)
     expect(container.textContent).toContain('You haven’t bought from this writer yet')
   })

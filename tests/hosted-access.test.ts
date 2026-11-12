@@ -135,18 +135,22 @@ it('writer reads cannot tunnel to private data, purchases or state changes and a
   expect((await wire(url+'/api/writers/earnings','GET',b)).status).toBe(429)
 })
 it('earnings expose only confirmed sales and trust from the caller, without raw intent or premium data',async()=>{
+  vi.mocked(Date.now).mockReturnValue(Date.parse('2026-11-12T12:00:00Z'))
   const {url,a,b,seed,store}=await setup(), id=seed(a,'earnings')
   const corpus=await import('../publisher/corpus.js').then(m=>m.loadWriterCorpus())
   const article=corpus.articles.find(a=>a.tier==='PAID')!
   store.updateRun(id,{labels:{...store.getRun(id).labels,settlement:'XRPL TESTNET · no real value'}})
   const hash='A'.repeat(64)
   const intent={runId:id,intentId:'private-intent',profileId:article.publisherSlug,resourceId:article.articleId,version:article.version,amountMinor:article.priceMinor,status:'VERIFIED',escrow:{scheme:'escrow-v1',policy:'escrow-policy-v1',owner:'rOwner',cancelAfter:1,finishHash:hash,revealLedger:123,state:'RELEASED'},refund:{txHash:'B'.repeat(64),amountMinor:article.priceMinor}}
-  store.hostedState(db=>db.prepare('INSERT INTO intents VALUES (?,?,?)').run(intent.intentId,id,JSON.stringify(intent)))
+  store.hostedState(db=>{
+    db.prepare('INSERT INTO intents VALUES (?,?,?)').run(intent.intentId,id,JSON.stringify(intent))
+    db.prepare('INSERT INTO receipts VALUES (?,?,?)').run(intent.intentId,JSON.stringify({receiptId:'synthetic-receipt',intentId:intent.intentId,runId:id,resourceId:article.articleId,version:article.version,amountMinor:article.priceMinor,currency:'SGD',settledAt:'2026-11-12T12:00:00Z',label:'XRPL TESTNET · no real value'}),'synthetic-private-token')
+  })
   const mine=await wire(url+'/api/writers/earnings','GET',a),foreign=await wire(url+'/api/writers/earnings','GET',b)
   expect(mine.text).toContain(hash);expect(foreign.text).not.toContain(hash)
   expect(mine.text).not.toContain('private-intent');expect(mine.text).not.toContain(article.body);expect(mine.text).not.toContain('Private question')
   expect(foreign.text).not.toContain(article.body)
-  // R9-C (H9-15): every visitor sees the demo-wide count of confirmed sales, as a number only; another visitor's sale
+  // R9-C (H9-15): every visitor sees the demo-wide count of admitted settled sales, as a number only; another visitor's sale
   // stays out of their own purchases and its hash, intent and question never leak.
   const card=(text:string)=>(JSON.parse(text) as {writers:{publisherSlug:string;demoSales?:number;sales:unknown[]}[]}).writers.find(w=>w.publisherSlug===article.publisherSlug)!
   expect(card(foreign.text)).toMatchObject({demoSales:1,sales:[]});expect(card(mine.text)).toMatchObject({demoSales:1})

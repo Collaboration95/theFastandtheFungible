@@ -1,7 +1,7 @@
 // Public catalogue plus the caller's own sales/trust history. Never serialize corpus bodies or raw intents.
 import { Router } from 'express'
 import { loadWriterCorpus } from '../../publisher/corpus.js'
-import { confirmedSale, demoSalesByArticle } from '../hosted/writers.js'
+import { confirmedSale, sandboxSalesByArticle } from '../hosted/writers.js'
 import type { ApiContext } from './context.js'
 import { TEAM_AUTHORED_PUBLISHERS } from '../../shared/writer-authorship.js'
 export function writersRouter(context: ApiContext, hosted: boolean) {
@@ -19,10 +19,9 @@ export function writersRouter(context: ApiContext, hosted: boolean) {
     const testnet = new Set(snapshots.filter(r => /testnet/i.test(r.labels.settlement) && !/simulat/i.test(r.labels.settlement)).map(r => r.runId))
     const all = context.store.listIntents()
     const intents = all.filter(i => own.has(i.runId) && testnet.has(i.runId))
-    // Hosted only (H9-15): confirmed sales across all visitors, as counts. Only a validated key reveal counts, so simulated
-    // payments never do.
-    const demo = hosted ? demoSalesByArticle(all) : undefined
-    res.json({ scope: hosted ? 'Your purchases and trust come from your retained history. Sales on this demo since 11 Nov include all visitors.' : 'Your purchases and trust come from your retained history.', writers: corpus.writers.filter(w => !served || served.some(p => p.slug === w.publisherSlug)).slice(0, 100).map(writer => {
+    // Demo totals use exactly the scoreboard population; personal history stays scoped to this visitor.
+    const demo = hosted ? sandboxSalesByArticle(context.store) : undefined
+    res.json({ scope: hosted ? 'Your purchases and trust come from your retained history. Settled sales on this demo since 11 Nov (UTC) include all visitors and our test runs on XRPL Testnet, matching the scoreboard.' : 'Your purchases and trust come from your retained history.', writers: corpus.writers.filter(w => !served || served.some(p => p.slug === w.publisherSlug)).slice(0, 100).map(writer => {
       const publisher = corpus.publishers.find(p => p.slug === writer.publisherSlug)!
       const articles = corpus.articles.filter(a => a.writerSlug === writer.slug)
       const ids = new Set(articles.map(a => a.articleId))

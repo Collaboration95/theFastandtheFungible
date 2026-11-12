@@ -16,6 +16,8 @@ article and then refusing to pay?**
 | Bought passage | `product-writer-paid` p3: “That one validated transaction releases the payment to the writer and makes the key public, so payment and delivery are a single event.” |
 | Final answer | The writer gets paid by publishing the article key on the XRP Ledger; the payment waits in escrow that only that key can open. The final answer records no open gaps. This is its answer record, not an independent quality score or T3's different 3/3 fixture-coverage measurement. |
 
+**Clarification added 12 Nov (the retained quotation and run are unchanged):** the article’s key is the only thing that opens the writer’s escrow. The app shows the article only after EscrowFinish validates. Signed submission exposes the key before validation; anyone (the writer first) can still claim the payment with that key until CancelAfter. The quoted “single event” describes validated settlement, not secrecy before validation.
+
 One article, four delivered passages, S$0.40 gross/net display price, no refunds.
 Principal 40,000 drops at the fixed demo display rate, not FX. Start
 `2026-11-12T00:27:58.254Z` → Done `2026-11-12T00:29:04.051Z`: 65,797 ms, or **65.8 s**.
