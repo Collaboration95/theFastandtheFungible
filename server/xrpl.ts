@@ -133,7 +133,7 @@ export class XrplPayer {
       const signed = this.wallet.sign(unsigned)
       // Until the next validated refresh, a direct payment must see this new principal/reserve too.
       this.balanceCache!.committed += principal + FEE_CAP_DROPS + creates * increment
-      return { txHash: signed.hash.toUpperCase(), txBlob: signed.tx_blob, lastLedgerSequence, dryRun }
+      return { txHash: signed.hash.toUpperCase(), txBlob: signed.tx_blob, lastLedgerSequence: unsigned.LastLedgerSequence!, dryRun }
     }, persist, send)
   }
   /** Reconstruct only an already reserved transaction during crash recovery. */

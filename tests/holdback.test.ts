@@ -138,7 +138,7 @@ for (const stage of ['before submit','after submit','after validation'] as const
   expect([...s.c.txs.values()].filter(t => t.tx_json.TransactionType === 'Batch')).toHaveLength(1)
 })
 
-it('recovers a crash between durable sequence reservation and signing', async () => {
+for (const restart of [false,true]) it(`recovers a crash between durable sequence reservation and signing${restart?' across restart':''}`, async () => {
   const s = await setup()
   const save = s.store.holdbackPrivate.bind(s.store)
   // Commit the reservation, then make signing fail before any outbox or submit.
@@ -149,9 +149,12 @@ it('recovers a crash between durable sequence reservation and signing', async ()
   })
   await s.buy()
   expect(s.store.escrowOutbox('escrow-one')).toHaveLength(0)
-  expect(save<{unsigned?:unknown}>('escrow-one')?.unsigned).toBeDefined()
+  const unsigned=save<{unsigned?:{LastLedgerSequence:number}}>('escrow-one')?.unsigned
+  expect(unsigned).toBeDefined()
   expect(s.c.txs.size).toBe(0)
-  vi.restoreAllMocks(); s.restart(); await s.buy()
+  s.c.state.index+=3
+  vi.restoreAllMocks(); if(restart) s.restart(); await s.buy()
+  expect(s.store.escrowOutbox('escrow-one')[0].lastLedgerSequence).toBe(unsigned!.LastLedgerSequence)
   expect(s.store.getIntent('escrow-one')!.status).toBe('VERIFIED')
   expect([...s.c.txs.values()].filter(t => t.tx_json.TransactionType === 'Batch')).toHaveLength(1)
 })
