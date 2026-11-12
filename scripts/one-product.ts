@@ -21,11 +21,14 @@ export function presentationDrift(code: string, file: string, headingClasses = n
   const found: Drift[] = []
   const add = (rule: string, text: string) => { if (!found.some(v => v.rule === rule && v.text === text)) found.push({ rule, text }) }
   const text = (value: string, visible = false) => {
+    // Static Pages use one short network indicator; deployment limits live in the judge pack.
+    // App and receipt labels retain their existing canonical contract.
+    const validEnvironment = canonicalEnvironment(value.trim()) || (file.startsWith('site/') && value.trim() === 'XRPL Testnet demo')
     if (visible) for (const m of value.matchAll(/\b\d{4}-\d{2}-\d{2}(?:T[\d:.]+Z)?\b/g)) add('date', m[0])
     for (const m of value.matchAll(/S\$(-?\d+(?:\.\d+)?)/g)) if (!/^-?\d+\.\d{2}$/.test(m[1])) add('money', m[0])
     for (const m of value.matchAll(/\b([a-f0-9]{4,})(…|\.{3})([a-f0-9]*)(?![a-z0-9])/gi)) if (m[1].length !== 8 || m[3].length !== 8 || m[2] !== '…' || m[0] !== m[0].toUpperCase()) add('hash', m[0])
-    if (/^(?:Shared (?:XRPL Testnet demo|demo ·)|XRPL Testnet demo|Testnet demo|Simulated demo|Simulated ·|Replay ·)/.test(value.trim()) && !canonicalEnvironment(value.trim()) && !/no real value$/.test(value.trim())) add('environment', value.trim())
-    if (/no real (?:value|funds)/i.test(value) && /(?:testnet|simulated|demo|replay|sandbox).*·/i.test(value) && !canonicalEnvironment(value.trim())) add('environment', value.trim())
+    if (/^(?:Shared (?:XRPL Testnet demo|demo ·)|XRPL Testnet demo|Testnet demo|Simulated demo|Simulated ·|Replay ·)/.test(value.trim()) && !validEnvironment && !/no real value$/.test(value.trim())) add('environment', value.trim())
+    if (/no real (?:value|funds)/i.test(value) && /(?:testnet|simulated|demo|replay|sandbox).*·/i.test(value) && !validEnvironment) add('environment', value.trim())
   }
   const css = (value: string) => {
     for (const m of value.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/([^{}]+)\{([^{}]*)\}/g)) {

@@ -78,6 +78,11 @@ REL=https://github.com/Collaboration95/theFastandtheFungible/releases/download/v
 npx -y $REL/researchagent-mcp-1.1.1.tgz try --testnet
 ```
 
+```sh
+npm i https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-sdk-1.1.1.tgz
+pip install https://github.com/Collaboration95/theFastandtheFungible/releases/download/v1.1.1/researchagent-1.1.1-py3-none-any.whl
+```
+
 [Install guide: TypeScript, Python, web and Mac](docs/install.md) ·
 [Agent hires agent, with writer royalties](docs/hire.md).
 

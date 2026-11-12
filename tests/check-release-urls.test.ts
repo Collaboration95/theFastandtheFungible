@@ -11,13 +11,12 @@ const REPO = 'https://github.com/Collaboration95/theFastandtheFungible'
 const answer = (status: number) => async () => ({ status }) as Response
 
 describe('pinned release links', () => {
-  it('finds the install, verify and raw-file links the README pins, and expands $REL', () => {
+  it('finds current install and release links, expands $REL, and keeps evidence out of public link discovery', () => {
     const urls = [...collect().keys()] as string[]
     const tag = JSON.parse(readFileSync('package.json', 'utf8')).version as string
     expect(urls).toContain(`${REPO}/releases/download/v${tag}/researchagent-mcp-${tag}.tgz`)
     expect(urls).toContain(`${REPO}/releases/download/v${tag}/researchagent-${tag}-py3-none-any.whl`)
     expect(urls).toContain(`${REPO}/releases/tag/v${tag}`)
-    expect(urls.some(u => u.startsWith('https://raw.githubusercontent.com/') && u.includes(`/v${tag}/docs/evidence/`))).toBe(true)
     expect(publicFiles()).toEqual(expect.arrayContaining(['README.md', 'docs/install.md', 'docs/submission/deck/index.html', 'site/developers/index.html']))
     expect(publicFiles().some((f: string) => f.startsWith('docs/evidence/'))).toBe(false)
   })

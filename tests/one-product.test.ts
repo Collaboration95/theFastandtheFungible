@@ -70,3 +70,9 @@ it('rejects planted drift for every rule', () => {
     ['date', 'const date = new Date().toLocaleDateString()', 'broken.ts'],
   ]) expect(presentationDrift(code, file).some(v => v.rule === rule), `${rule}: ${code}`).toBe(true)
 })
+
+it('allows only the exact short Pages indicator while preserving app environment checks', () => {
+  expect(presentationDrift('<span>XRPL Testnet demo</span>', 'site/index.html').filter(v => v.rule === 'environment')).toEqual([])
+  expect(presentationDrift('<span>XRPL Testnet demo</span>', 'src/view.tsx').some(v => v.rule === 'environment')).toBe(true)
+  expect(presentationDrift('<span>Shared XRPL Testnet demo</span>', 'site/index.html').some(v => v.rule === 'environment')).toBe(true)
+})
