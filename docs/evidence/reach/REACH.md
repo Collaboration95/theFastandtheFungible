@@ -1,7 +1,9 @@
 # Reachability evidence
 
 1 local end-to-end SDK ask, 1 simulated purchase, 1 verified receipt bundle,
-2 nginx proxies, 0 deployments. Real Testnet package acceptance: pending.
+2 nginx proxies, 0 deployments. Real Testnet package acceptance: 4 validated
+transactions, 1 independent Python buyer, 1 installed Hono seller, 1 decrypt,
+1 same-finish retry, 1,000 drops reclaimed after explicit expiry cancellation.
 
 ## Local MCP proof (12 November 2026)
 
@@ -92,8 +94,8 @@ Public hire remains disabled in MCP.
 
 ## Testnet transaction hashes
 
-None for the local MCP proof: its settlement is simulated. Package acceptance
-will add real hashes here; none are inferred from fixtures.
+None for the local MCP proof: its settlement is simulated. Real Testnet
+package hashes appear in the seller-package and independent-buyer sections below.
 
 ## Hosted paid-answer route
 
@@ -161,3 +163,59 @@ invoice until the original finish is reconciled. The lost-response restart regre
 its validated result without submitting again. Journals persist keys and the
 original signed finish before submission. One process owns a wallet/journal;
 the package READMEs describe this limit and external ingress controls.
+
+## Independent buyer acceptance: real Testnet
+
+**PASS, 12 November 2026:** Python/httpx bought from a Hono seller installed
+from local npm archives. Four validated transactions prove delivery, same-finish
+retry and an explicit expiry cancellation returning 1,000 drops of principal.
+The fixture article is synthetic; all four ledger transactions are real Testnet.
+Network fees were not refunded. No hosted service, mainnet or registry was used.
+
+```sh
+python3 -m venv /tmp/reach-buyer
+/tmp/reach-buyer/bin/pip install httpx 'xrpl-py>=4.4,<5' cryptography
+PATH=$HOME/.local/share/mise/installs/node/22.23.4/bin:$PATH \
+  XRPL_KEY_REVEAL_TESTNET=1 REACH_PYTHON=/tmp/reach-buyer/bin/python \
+  node scripts/reach/acceptance.mjs
+```
+
+The runner packs `seller-core` and `seller-hono`, installs them in an isolated
+consumer, and copies only the HTTP harnesses there. The seller imports installed
+packages; the Python buyer imports httpx, xrpl-py and cryptography. Neither uses
+repository-internal implementation imports. Wallet seeds and original signed
+transactions stay in private durable recovery files, never in this evidence.
+The run refuses mainnet, caps principal and network fees independently, records
+hashes and private signed blobs before submission, and retains private recovery state on failure.
+The launcher uses ResourceScope for child cleanup; its durable evidence directory
+is deleted only after successful reconciliation. Never
+blindly restart a failed run: reconcile the original recorded hashes first.
+`REACH_WALLETS_FILE` optionally reuses dedicated funded Testnet wallets;
+`REACH_EVIDENCE` optionally selects the public JSON destination.
+
+Final run, Node v22.23.4, completed 2026-11-12T13:21:22.217Z:
+
+| Transaction | Hash |
+| --- | --- |
+| Withheld escrow create | `CAD54DBCFB9A3CD9C01D30A6029042C802848FA25651384B4CD4E263FBEE526A` |
+| Delivered escrow create | `5B02B41ABD6FFCCC58DC251CC64B6C634CE5D98651A1C1402A8570DD5D93327B` |
+| Delivered escrow finish | `0ECB222103F8DB986DA890894DA3F8B8FE59A9B463E959797CD39982EDB58A2A` |
+| Expired escrow cancel | `5C45927F70795449769FC1D856AE927ED3C578570D3B887B2ABAD7D0060C2085` |
+
+`testnet-acceptance.json` records the same hashes, verified key/ciphertext/retry
+outcomes and SHA-256 of both installed package archives. The final staged
+archives used for the live purchase were repacked from the committed package
+sources and their digests matched exactly before this evidence shipped. The buyer independently
+reads the validated finish, checks owner/sequence/condition/success, derives the
+key and verifies AES-GCM plus plaintextHash before releasing the fixture bytes.
+The cancellation check measures the buyer balance increase excluding its fee.
+
+Transcript:
+
+```text
+withhold create: CAD54DBCFB9A3CD9C01D30A6029042C802848FA25651384B4CD4E263FBEE526A
+deliver create: 5B02B41ABD6FFCCC58DC251CC64B6C634CE5D98651A1C1402A8570DD5D93327B
+deliver finish: 0ECB222103F8DB986DA890894DA3F8B8FE59A9B463E959797CD39982EDB58A2A
+withhold cancel: 5C45927F70795449769FC1D856AE927ED3C578570D3B887B2ABAD7D0060C2085
+RESULT PASS: independent Python buyer; installed Hono seller; key, ciphertext, replay and expiry refund verified
+```
