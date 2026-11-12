@@ -1,4 +1,5 @@
 import Icon from './Icon'
+import WriterProvenance from './WriterProvenance'
 import { REFUND_LABEL } from '../copy'
 import KeyRevealLifecycle from './KeyRevealLifecycle'
 import { keyRevealLabel } from '../format'
@@ -32,8 +33,7 @@ export default function PaymentRow({ run, intent, onRetry, onReceipt }: { run: R
   const elapsed = start && receipt ? Math.max(0, (Date.parse(receipt.settledAt) - Date.parse(start)) / 1000) : undefined
   return <section className="ra-payment" aria-label={`Payment: ${source?.publisher ?? intent.resourceId}`}>
     <div className="ra-payment-heading"><b><Icon name={refunded ? 'refund' : state.ok ? 'check' : state.failed ? 'close' : 'circle'} size={16} /> {source?.publisher.split(' · ')[0] ?? intent.resourceId}</b><span>{money(intent.amountMinor)}</span></div>
-    {source?.publisher.includes(' · ') && /team-authored|fictional/i.test(source.publisher) && <p className="ra-note">{source.publisher.split(' · ').slice(1).join(' · ')}</p>}
-    {source?.publisher.includes(' · ') && !/team-authored|fictional/i.test(source.publisher) && <details className="ra-writer-details"><summary>Writer details</summary><p>{source.publisher}</p></details>}
+    {source && <WriterProvenance nameShown publisher={source.publisher} testnet={testnet} />}
     <p className="ra-payment-title">{source?.title ?? intent.resourceId}</p>
     {why && <p className="ra-why-line">{why}</p>}
     {intent.purchaseKind && <p>{intent.purchaseKind}</p>}

@@ -74,7 +74,7 @@ describe('the strip', () => {
     const strip = screen.getByRole('region', { name: 'Check our work without asking a question' })
     expect(within(strip).getByRole('heading', { name: 'Verify a real run from this demo in your browser' })).toBeTruthy()
     expect(within(strip).getByRole('heading', { name: 'See the key on the ledger' })).toBeTruthy()
-    expect(within(strip).getByText('The Fulfillment field is the article key.')).toBeTruthy()
+    expect(within(strip).getByText('The key is in the transaction’s Fulfillment field.')).toBeTruthy()
     expect(within(strip).getByRole('button', { name: 'Run the checks' })).toBeTruthy()
     expect(within(strip).getByText(JUDGE_RUN.caption)).toBeTruthy()
     expect(within(strip).queryByText('See it refuse to spend')).toBeNull()
@@ -136,7 +136,7 @@ describe('using it costs no question', () => {
   it('(b) is a plain link to the explorer: clicking it makes no request of ours', async () => {
     const fetchSpy = setup([check('PASS')])
     await showHome(hosted({ state: 'ended' }), 'ended')
-    const link = screen.getByRole('link', { name: /Open the EscrowFinish/ })
+    const link = screen.getByRole('link', { name: /View key-release transaction/ })
     expect(link.getAttribute('href')).toBe(explorerTx(JUDGE_RUN.keyTx))
     expect(link.getAttribute('target')).toBe('_blank'); expect(link.getAttribute('rel')).toContain('noopener')
     link.addEventListener('click', event => event.preventDefault())

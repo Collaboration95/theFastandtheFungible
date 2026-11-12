@@ -73,7 +73,7 @@ test('UX-1: honest labels, UC1/2/3 money, receipts, reflow and recovery', async 
   await page.addStyleTag({ content: 'html { font-size: 200% }' })
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await page.keyboard.press('Control+2')
-  await expect(page.getByText('Each writer carries an authorship label. Sales and trust below come from your history.')).toBeVisible()
+  await expect(page.getByText('Each writer carries an authorship label. Your purchases and demo-wide sales are shown separately.')).toBeVisible()
   await page.keyboard.press('Control+1')
   await page.locator('.ra-decision-details > summary').click()
   await expect(page.getByText('Decided by Offline rules').first()).toBeVisible()

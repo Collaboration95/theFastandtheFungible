@@ -96,7 +96,7 @@ describe('notices state their real reason', () => {
   it('says "written from offline extracts" only when something was written (or bought, H9-03)', () => {
     const answered = { labels: { research: 'fixture · extractive-fixture' }, answers: [{ claims: [{ id: 'c' }] }], receipts: [], events: [] } as unknown as RunSnapshot
     const decline = { labels: { research: 'fixture · extractive-fixture' }, answers: [{ claims: [] }], receipts: [], events: [] } as unknown as RunSnapshot
-    expect([offlineNotice(answered), offlineNotice(decline)]).toEqual(['Written from offline extracts: the model was unavailable.', undefined])
+    expect([offlineNotice(answered), offlineNotice(decline)]).toEqual(['Written from offline extracts.', undefined])
     expect(offlineNotice({ labels: { research: 'DeepSeek · deepseek-flash' }, answers: [{ claims: [{ id: 'c' }] }], receipts: [], events: [] } as unknown as RunSnapshot)).toBeUndefined()
   })
 })

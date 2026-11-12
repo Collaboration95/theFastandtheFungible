@@ -13,7 +13,7 @@ it.each(['verified','check_pending','check_failed'])('fresh hosted view renders 
   const cards=container.querySelectorAll('.ra-writer-grid')[0].querySelectorAll('article')
   expect(cards).toHaveLength(3)
   const label=status==='verified'?'XRPL Credential · issued by ResearchAgent operator (Testnet, identity only, not KYC)':status==='check_pending'?'check pending':'check unavailable'
-  for(const card of cards) { expect(within(card as HTMLElement).getByText(label)).toBeTruthy(); expect(card.textContent).toContain('No sales yet'); expect(card.textContent).toContain('7 sales') }
+  for(const card of cards) { expect(within(card as HTMLElement).getByText(label)).toBeTruthy(); expect(card.textContent).toContain('You haven’t bought from this writer yet'); expect(card.textContent).toContain('7 sales') }
   expect(screen.getByText('Synthetic demo content')).toBeTruthy()
   expect(screen.getByText('Fictional · unverified')).toBeTruthy()
   expect(container.querySelector('.ra-writer-demo')?.textContent).not.toContain('XRPL Credential')

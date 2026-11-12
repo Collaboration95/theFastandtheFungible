@@ -22,7 +22,7 @@ export function writersRouter(context: ApiContext, hosted: boolean) {
     // Hosted only (H9-15): confirmed sales across all visitors, as counts. Only a validated key reveal counts, so simulated
     // payments never do.
     const demo = hosted ? demoSalesByArticle(all) : undefined
-    res.json({ scope: 'Your retained history only; not total writer earnings.', writers: corpus.writers.filter(w => !served || served.some(p => p.slug === w.publisherSlug)).slice(0, 100).map(writer => {
+    res.json({ scope: hosted ? 'Your purchases and trust come from your retained history. Sales on this demo since 11 Nov include all visitors.' : 'Your purchases and trust come from your retained history.', writers: corpus.writers.filter(w => !served || served.some(p => p.slug === w.publisherSlug)).slice(0, 100).map(writer => {
       const publisher = corpus.publishers.find(p => p.slug === writer.publisherSlug)!
       const articles = corpus.articles.filter(a => a.writerSlug === writer.slug)
       const ids = new Set(articles.map(a => a.articleId))

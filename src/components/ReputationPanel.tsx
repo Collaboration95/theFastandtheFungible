@@ -47,7 +47,7 @@ export default function ReputationPanel({ records, run, full, presenter = false,
   const list = rows(records, run, full)
   return <section className="ra-panel ra-rep" aria-label="Writers">
     {presenter && onReset && <div className="ra-panel-h"><button type="button" className="ra-btn" onClick={onReset} title="Presenter only: wipe every reputation record">Reset reputation</button></div>}
-    <p className="ra-note">Each writer carries an authorship label. Sales and trust below come from your history.</p>
+    <p className="ra-note">Each writer carries an authorship label. Your purchases and demo-wide sales are shown separately.</p>
     <WriterEarnings />
     {local.length > 0 && <div><h2>Writers · local · Testnet</h2><ul>{local.map(writer => <li key={writer.slug}><a href={`${writer.origin}/w/${writer.slug}/`} target="_blank" rel="noreferrer">{writer.slug}</a> · {ENV.testnet}</li>)}</ul></div>}
     {list.length === 0 ? <p>No history yet.</p> : <div className="ra-table-scroll"><table>

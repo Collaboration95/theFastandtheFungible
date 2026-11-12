@@ -112,7 +112,7 @@ describe('Stop during each payment phase', () => {
     expect(line(cancelled, labelled).text).toBe('ResearchAgent builders (team-authored): escrow cancelled. S$0.90 returned to the sponsor wallet.')
     // The escrow-cancel transaction leaves a receipt; the strip must not count it as bought next to "Net cost S$0.00".
     const stopped = { ...labelled, intents: [{ ...base, ...cancelled } as PurchaseIntent], receipts: [{ ...run.receipts[0], intentId: base.intentId }] }
-    expect(purchaseCounts(stopped)).toEqual({ paid: 0, refunded: 0 })
+    expect(purchaseCounts(stopped)).toEqual({ paid: 0, refunded: 0, cancelled: 1 })
   })
 })
 

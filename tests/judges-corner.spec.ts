@@ -86,7 +86,7 @@ test('using the strip costs no question: no run, scope or admission request is m
   await strip(page).getByRole('button', { name: 'Run the checks' }).click()
   await expect(strip(page).locator('.ra-hv-head, [role=alert]').first()).toBeVisible({ timeout: 30000 })
   await expect(page.getByText('5 of 5 questions left today · test funds only')).toBeVisible()
-  const link = strip(page).getByRole('link', { name: /Open the EscrowFinish/ })
+  const link = strip(page).getByRole('link', { name: /View key-release transaction/ })
   await expect(link).toHaveAttribute('href', /testnet\.xrpl\.org\/transactions\/01A6A7E07652216B102DFD1FED13462539D43475DFFBBA5A3C6E0FB12F643F1D$/)
   expect(calls).toEqual([])
   await context.close()

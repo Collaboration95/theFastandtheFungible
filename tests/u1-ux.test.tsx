@@ -22,7 +22,7 @@ it('never marks an upcoming step done: nothing reads as paid or checked before i
   expect(html).toContain('Searching writers…')
   expect(html).not.toContain('Searched writers · 0 sources')
   for (const upcoming of ['Pay the writer, only if an article helps', 'Check the article against the writer’s promises', 'Update the answer with verified evidence']) {
-    expect(html).toMatch(new RegExp(`<li class="is-todo"><span><i aria-hidden="true"><svg[^>]*>.*?</svg></i><span class="ra-sr">Next: </span>${upcoming}`))
+    expect(html).toMatch(new RegExp(`<li class="is-todo"><span><i aria-hidden="true"><svg[^>]*>.*?</svg></i><span class="ra-sr">Next: </span><span>${upcoming}`))
   }
   expect(html).not.toMatch(/✓<\/i>(?:<span[^>]*>[^<]*<\/span>)?Pay/)
 })

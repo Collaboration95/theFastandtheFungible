@@ -29,7 +29,7 @@ const stripOf = (run: RunSnapshot) => render(<Sources run={run} />).container.qu
 
 describe('S5 one counting rule: "bought" means paid', () => {
   it('counts a refunded purchase as paid in the summary and in the strip, never as "kept"', () => {
-    expect(purchaseCounts(keyReveal)).toEqual({ paid: 2, refunded: 1 })
+    expect(purchaseCounts(keyReveal)).toEqual({ paid: 2, refunded: 1, cancelled: 0 })
     expect(summaryOf(keyReveal)).toContain('Paid for 2 articles, 1 refunded.')
     expect(stripOf(keyReveal)).toContain('2 bought · 1 refunded')
     expect(`${summaryOf(keyReveal)}${stripOf(keyReveal)}`).not.toMatch(/kept|Bought 2/i)
