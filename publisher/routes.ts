@@ -1,3 +1,4 @@
+import { webPublishing, webQueueFile } from './publishing/web.js'
 import { loadConfig } from '../server/config.js'
 import { TEAM_AUTHORED_PUBLISHERS } from '../shared/writer-authorship.js'
 import { requestBodyStatus } from '../server/body-limit.js'
@@ -69,7 +70,7 @@ export function createPublisherApp(config: PublisherConfig = {}) {
   const app = express()
   const env = loadConfig(config.env ?? process.env)
   const assetFor = (slug: string): Asset => env[`XRPL_PUBLISHER_${slug.toUpperCase().replace(/-/g, '_')}_CURRENCY`] === 'RLUSD' ? AssetSchema.parse({ currency: RLUSD_CURRENCY, issuer: env.XRPL_RLUSD_ISSUER || RLUSD_TESTNET_ISSUER, label: !env.XRPL_RLUSD_ISSUER || env.XRPL_RLUSD_ISSUER === RLUSD_TESTNET_ISSUER ? 'RLUSD (Testnet)' : 'test USD (substitute for RLUSD)' }) : 'XRP'
-  const escrowEnabled = (slug: string) => rail === 'xrpl-testnet' && assetFor(slug) === 'XRP' && (config.escrowWriters ?? (env.ESCROW_WRITERS ?? '').split(',')).includes(slug)
+  const escrowEnabled = (slug: string) => rail === 'xrpl-testnet' && assetFor(slug) === 'XRP' && (slug.startsWith('community-') || (config.escrowWriters ?? (env.ESCROW_WRITERS ?? '').split(',')).includes(slug))
   const secret = config.secret ?? process.env.PUBLISHER_SECRET
   const faults = config.faults ?? process.env.PUBLISHER_FAULTS === '1'
   // The only Bearer secret left guards the fault toggle; payments carry their own signed proof.
@@ -79,7 +80,7 @@ export function createPublisherApp(config: PublisherConfig = {}) {
   const ledger = rail === 'xrpl-testnet' ? config.ledger ?? testnetLedger() : undefined
   const label = rail === 'xrpl-testnet' ? XRPL_LABEL : SIMULATED_LABEL
   let failNextDelivery = false
-  let registry = new Map<string, PublisherEntry>()
+  const registry = new Map<string, PublisherEntry>()
   const localEmbedder = env.EMBEDDING_PROVIDER === 'local' ? createLocalEmbedder(undefined, env) : undefined
   const embedder = config.embedder ?? (embeddingsLive(env) ? createQueryEmbedder((texts, signal) => localEmbedder ? localEmbedder(texts, signal) : embedTexts(texts, { signal, provider: 'cloudflare', token: env.CLOUDFLARE_API_TOKEN, accountId: env.CLOUDFLARE_ACCOUNT_ID })) : undefined)
   // Live only: one warm-up call at startup, so the first question doesn't lose hybrid search to a cold-start timeout.
@@ -91,11 +92,13 @@ export function createPublisherApp(config: PublisherConfig = {}) {
       if (env.EMBEDDING_PROVIDER === 'local' && !cache) throw new Error('Build local corpus embeddings before starting the publisher')
       return buildRegistry(corpus, { rail, env, embeddings: config.embeddings ?? (env.EMBEDDING_PROVIDER === 'local' ? cache : localEmbeddingCache(cache)) })
     })
-    .then(built => { registry = built })
+    .then(built => { for (const [slug, entry] of built) registry.set(slug, entry) })
   void writersReady.catch(() => {})
   app.locals.writersReady = writersReady
   /** Startup readiness (kept for callers): the writer registry is the only corpus. */
-  app.locals.ready = writersReady
+  const publishing = webPublishing({ env: { ...env, SETTLEMENT_RAIL: rail }, file: webQueueFile(journal.path), install: entry => { if (!registry.has(entry.publisher.slug) && registry.size >= 50) throw Error('Registry capacity reached'); registry.set(entry.publisher.slug, entry) } })
+  app.locals.ready = Promise.all([writersReady, publishing.ready])
+  app.locals.closePublishing = publishing.close
   const manifests = createManifests(journal)
   app.locals.manifests = manifests
   const facilitator = new Facilitator(journal, rail, ledger, config.facilitatorTiming)
@@ -104,6 +107,7 @@ export function createPublisherApp(config: PublisherConfig = {}) {
   app.locals.ledger = ledger
   app.disable('x-powered-by')
   app.use((_req, res, next) => { res.set('Cache-Control', 'no-store'); next() })
+  app.use(publishing.router)
   app.use(express.json({ limit: '16kb' }))
   const authenticate: RequestHandler = (req, res, next) => {
     const actual = Buffer.from(req.get('Authorization') ?? '')

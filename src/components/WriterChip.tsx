@@ -44,14 +44,15 @@ export default function WriterChip({ candidate, reputation, variant = 'full' }: 
   // Hosted links stay on the gateway, which permits only public writer reads.
   const link = slug ? <a href={import.meta.env.MODE === 'browser-demo' ? `${import.meta.env.BASE_URL}?writers=1` : candidate.source && !hosted ? new URL(`/w/${slug}`, candidate.source.origin).href : `/w/${slug}`} target="_blank" rel="noreferrer" className="ra-writer-n" title="Open the writer’s site in a new tab">{writer} <Icon name="external" size={16} /></a> : <span className="ra-writer-n">{writer}</span>
   const verification = <WriterVerification value={candidate.verification} />
+  const community = candidate.publisherSlug?.startsWith('community-') && <span className="ra-chip">Community writer</span>
   const authorship = ['team-builder-notes', 'team-xrpl-explainers'].includes(candidate.publisherSlug ?? '') && <span className="ra-chip" title={candidate.publisherSlug === 'team-xrpl-explainers' ? 'Team-authored explainer with cited sources. Not an independent writer.' : 'Team-authored notes with real content. Not an independent writer.'}>Team-authored</span>
   const synthetic = candidate.license.kind === 'SYNTHETIC' && <span className="ra-chip is-sim">SYNTHETIC</span>
-  if (variant === 'card') return <span className="ra-writer">{writer !== candidate.publisher && link}{authorship}{synthetic}{verification}{trust}</span>
+  if (variant === 'card') return <span className="ra-writer">{writer !== candidate.publisher && link}{community}{authorship}{synthetic}{verification}{trust}</span>
   return <span className="ra-writer">
     {link}
     {writer !== candidate.publisher && <span className="ra-writer-p">{candidate.publisher}</span>}
-    {card?.domain && <span className="ra-writer-d">{card.domain}</span>}
-    {authorship}{synthetic}{verification}
+    {card?.domain && !community && <span className="ra-writer-d">{card.domain}</span>}
+    {community}{authorship}{synthetic}{verification}
     <span className={`ra-tier is-${candidate.tier.toLowerCase()}`}>{candidate.tier === 'FREE' ? 'FREE' : `PAID ${money(candidate.price.amountMinor)}`}</span>
     {trust}
   </span>

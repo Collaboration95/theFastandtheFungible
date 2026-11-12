@@ -1468,6 +1468,48 @@
         },
         "x-internal": true
       }
+    },
+    "/api/publishing/config": {
+      "get": {
+        "summary": "Publishing form availability and public limits",
+        "description": "Returns enabled:false by default. WEB_PUBLISHING=on exposes public form limits; operator tokens and private keys are never returned. See docs/evidence/publish/PUBLISH.md for opt-in submission and moderation routes.",
+        "responses": {
+          "200": {
+            "description": "Feature availability",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "enabled"
+                  ],
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "minPriceMinor": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "maxPriceMinor": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "autoApprove": {
+                      "type": "boolean"
+                    },
+                    "autoApproveSeconds": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 3600
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

@@ -1285,3 +1285,12 @@ persistence or a mainnet deployment. No cloud resource or live ledger call ran.
 - **Workaround:** preserve the old snapshot and scratch source files outside the checkout's lint root; the local retention path is recorded in `scratch/retained-source-location.txt`. Re-running the unchanged `npm run lint` passes with zero errors (15 existing warnings).
 - **Suggested fix:** document that source snapshots belong outside the source lint root, or explicitly define the intended TypeScript config root for local tooling.
 - **Severity / mainnet impact:** low local gate setup friction; no lint rule, test, threshold, production behavior or ledger operation changed.
+
+
+## 12 November 2026: browser publishing requires an address-bound signer (code-derived)
+
+- **Evidence:** `publisher/publishing/web.ts`, `shared/manifest.ts`, and `docs/evidence/publish/PUBLISH.md`; the scripted Testnet first sale finishes in transaction `505FD24BFDCF4C9402701E1C1B1114D5D0BA3702095D6A73FA99A1D4A3125347`.
+- **Finding / severity:** medium integration friction. A pasted payout address alone cannot sign a wallet-bound manifest or finish its key-reveal escrow. This is derived from the contract, not an observed wallet compromise.
+- **Workaround:** create and fund a custodial Testnet account, or use an operator-held matching signer. Browser inputs reject seeds. Faucet calls now have a 30-second local deadline; no faucet outage was observed.
+- **Suggested fix:** provide a wallet-signing publishing example that separately proves address ownership and signs manifests without exposing a seed to a web form.
+- **Mainnet impact:** a real deployment needs a noncustodial wallet integration and appropriate key custody; this Testnet flow establishes neither mainnet custody nor compliance.

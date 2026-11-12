@@ -101,7 +101,7 @@ export default function App({ hosted: boot, bootFailed = false }: { hosted?: Hos
   const [pending, setPending] = useState<{ input: AskInput; scope: ScopeResult; answers: Record<string, string>; step: 'clarify' | 'plan' }>()
   // A question that needs no research opens the chat page (owner, 9 Oct): a plain conversation, never saved to history, no run.
   const [thread, setThread] = useState<ChatMessage[]>([])
-  const [tab, setTab] = useState<'run' | 'writers'>(browserDemo && new URLSearchParams(location.search).has('writers') ? 'writers' : 'run')
+  const [tab, setTab] = useState<'run' | 'writers'>(new URLSearchParams(location.search).has('writers') ? 'writers' : 'run')
   const [reputation, setReputation] = useState<ReputationRecord[]>([])
   const [clarifyNever, setClarifyNever] = useState(() => !recording && (new URLSearchParams(window.location.search).get('clarify') === 'never' || prefs.get(clarifyKey) === '1'))
   const [navOpen, setNavOpen] = useState(() => !recording && !(typeof matchMedia === 'function' && matchMedia('(max-width: 780px)').matches) && prefs.get(navKey) !== 'rail')
