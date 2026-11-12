@@ -1,3 +1,4 @@
+import { hasEscrowDelegation } from './delegated-wallet.js'
 import { signPayment } from '../shared/xrpl.js'
 import { batchInners } from '../shared/holdback.js'
 import { amountFor, ledgerAmount } from '../shared/contracts/asset.js'
@@ -48,8 +49,13 @@ export class XrplPayer {
   private balanceLoading?: Promise<void>
   private balanceCache?: { at: number; value: BalanceSnapshot; committed: number }
   readonly address?: string
-  constructor(readonly ledger: Ledger, private readonly wallet?: Wallet, private readonly timing = { pollMs: 1000, timeoutMs: 120_000 }) {
-    this.address = wallet?.classicAddress
+  constructor(readonly ledger: Ledger, private readonly wallet?: Wallet, private readonly timing = { pollMs: 1000, timeoutMs: 120_000 }, private readonly delegatedOwner?: string) {
+    this.address = delegatedOwner ?? wallet?.classicAddress
+  }
+  /** Reuse the guarded hosted signer; a visitor seed never exists on the server. */
+  forAccount(owner: string): XrplPayer {
+    if (!this.wallet || owner === this.wallet.address) throw new BeforeSignError('Invalid delegated owner')
+    return new XrplPayer(this.ledger, this.wallet, this.timing, owner)
   }
   static fromEnv(): XrplPayer {
     const seed = loadConfig().XRPL_PAYER_SEED
@@ -99,7 +105,9 @@ export class XrplPayer {
     shared.queue = run.catch(() => undefined)
     return run
   }
-  escrow<T>(tx: Omit<Transaction, 'Account'>, principal: number, persist: (s: Submission) => Submission, send: (s: Submission) => Promise<T>, beforeSign?: () => Promise<void>, reservedTerminalFees: () => number = () => 0, options: { lastLedgerOffset?: number; reserve?: (tx: Transaction) => Transaction } = {}) {
+  escrow<T>(tx: Omit<Transaction, 'Account'>, principal: number, persist: (s: Submission) => Submission, send: (s: Submission) => Promise<T>, beforeSign?: () => Promise<void>, reservedTerminalFees: () => number = () => 0, options: { lastLedgerOffset?: number; reserve?: (tx: Transaction) => Transaction } = {}): Promise<{ submission: Submission; sent: Promise<T> }> {
+    // Anyone may finish/cancel an escrow. Only creates use the visitor's delegation.
+    if (this.delegatedOwner && tx.TransactionType !== 'EscrowCreate') return new XrplPayer(this.ledger, this.wallet, this.timing).escrow(tx, principal, persist, send, beforeSign, reservedTerminalFees, options)
     return this.queued(async () => {
       if (!this.wallet || this.address === simulatedPayerWallet().classicAddress) throw new BeforeSignError('Testnet signer unavailable')
       const info = await this.ledger.request({ command: 'server_info' })
@@ -122,7 +130,13 @@ export class XrplPayer {
       const cost = Math.ceil(base * (tx.TransactionType === 'Batch' ? 4 : tx.TransactionType === 'EscrowFinish' && typeof tx.Fulfillment === 'string' ? 33 + tx.Fulfillment.length / 2 / 16 : 1))
       if (!Number.isSafeInteger(cost) || cost > FEE_CAP_DROPS) throw new BeforeSignError('Escrow fee exceeds policy ceiling')
       const lastLedgerSequence = Number(current.result.ledger_current_index) + (options.lastLedgerOffset ?? 20)
-      let unsigned = { ...tx, Account: this.address!, Sequence: Number(account.result.account_data.Sequence), Fee: String(cost), LastLedgerSequence: lastLedgerSequence } as Transaction
+      if (this.delegatedOwner) {
+        if (!(await hasEscrowDelegation(this.ledger, this.delegatedOwner, this.wallet.address))) throw new BeforeSignError('EscrowCreate delegation is inactive; nothing was charged')
+        const agent = await this.ledger.request({ command: 'account_info', account: this.wallet.address, ledger_index: 'validated' })
+        const reserve = Math.ceil((Number(info.result.info.validated_ledger.reserve_base_xrp) + Number(agent.result.account_data.OwnerCount) * Number(info.result.info.validated_ledger.reserve_inc_xrp)) * 1e6)
+        if (!Number.isSafeInteger(reserve) || Number(agent.result.account_data.Balance) - reserve < cost + FEE_CAP_DROPS) throw new BeforeSignError('Agent fee reserve unavailable')
+      }
+      let unsigned = { ...tx, ...(this.delegatedOwner ? { Delegate: this.wallet.address } : {}), Account: this.address!, Sequence: Number(account.result.account_data.Sequence), Fee: String(cost), LastLedgerSequence: lastLedgerSequence } as Transaction
       if (tx.TransactionType === 'Batch') {
         unsigned.RawTransactions = batchInners(unsigned).map((inner,i) => ({ RawTransaction: { ...inner, Sequence: Number(unsigned.Sequence) + i + 1, Fee: '0', SigningPubKey: '', Flags: 1073741824 } }))
         unsigned = options.reserve ? options.reserve(unsigned) : (() => { throw new BeforeSignError('Batch requires durable reservation') })()
@@ -189,6 +203,7 @@ export class XrplPayer {
       ledgerAgeSeconds: cache.value.ledgerAgeSeconds + (Date.now() - cache.at) / 1000 }
   }
   private async sign(terms: PaymentRequirement & { memo?: string }): Promise<Submission> {
+    if (this.delegatedOwner) throw new BeforeSignError('Delegated wallet permits escrow creation only')
     if (!this.wallet) throw new Error('XRPL payer seed is not configured')
     if (this.wallet.classicAddress === simulatedPayerWallet().classicAddress) throw new Error('The SIMULATED test payer is refused on the XRPL Testnet')
     if (terms.asset !== 'XRP') {

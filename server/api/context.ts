@@ -10,6 +10,7 @@ import type { XrplPayer } from '../xrpl.js'
 
 /** The engine owns these services; surface routers only register existing handlers. */
 export type ApiContext = {
+  wallets?: ReturnType<typeof import('../delegated-wallet.js').delegatedWallets>;
   work: ActiveWork;
   store: Store; client: PublisherClient; purchases: PurchaseManager; loop: RunLoop
   reputation: Reputation; payer?: XrplPayer; labels: ModeLabels

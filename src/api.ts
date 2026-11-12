@@ -235,3 +235,8 @@ export async function publishingRequest(path: string, method = 'GET', body?: unk
   if (!response.ok) throw Error(typeof value.error === 'string' ? value.error : 'Publishing is unavailable.')
   return value
 }
+
+/** Public key and signed session proof only. Never pass a seed to this helper. */
+export async function walletRequest<T = unknown>(path: string, body?: unknown): Promise<T> {
+  return request(path, body) as Promise<T>
+}

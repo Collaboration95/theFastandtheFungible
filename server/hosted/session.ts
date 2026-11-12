@@ -44,7 +44,7 @@ export function accessGuard(limits: HostedLimits): RequestHandler {
   return (req,res,next) => {
     // Deny by default, including alternate case, encoded slashes and trailing-path aliases.
     const path = req.path
-    const publicReads = ['/api/demo/status','/api/health','/health','/api/runs','/api/reputation','/api/writers/status','/api/writers/earnings','/livez','/startupz','/readyz','/readyz/funds']
+    const publicReads = ['/api/wallet/delegation','/api/demo/status','/api/health','/health','/api/runs','/api/reputation','/api/writers/status','/api/writers/earnings','/livez','/startupz','/readyz','/readyz/funds']
     if (['GET','HEAD'].includes(req.method) && (publicWriterPath(path) || path === '/api/writers/earnings' || publicProofPath(path))) {
       if (Object.keys(req.query).length) return res.status(404).json({ error: 'Not found.' })
       const now = Date.now(), key = limits.ipKey(res.locals.hostedIp)
@@ -65,7 +65,7 @@ export function accessGuard(limits: HostedLimits): RequestHandler {
       if (/\/(?:report|report\.pdf|report\.html)$/.test(path)) { deny(); return }
       next(); return
     }
-    if ((['GET','HEAD'].includes(req.method) && publicReads.includes(path) && !Object.keys(req.query).length) || (req.method === 'POST' && ['/runs','/api/scope'].includes(path))) { next(); return }
+    if ((['GET','HEAD'].includes(req.method) && publicReads.includes(path) && !Object.keys(req.query).length) || (req.method === 'POST' && ['/runs','/api/scope','/api/wallet/delegation/challenge','/api/wallet/delegation/connect','/api/wallet/delegation/disconnect'].includes(path))) { next(); return }
     deny()
   }
 }
