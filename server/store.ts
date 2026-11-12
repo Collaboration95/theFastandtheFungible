@@ -13,7 +13,7 @@ import { spendPolicy, POLICY_VERSION, PAUSED, type Surface } from './spend-polic
 import { budgetPolicy, clampBudget } from '../mcp/policy.js'
 import { AuditLog, auditEntries, receiptRows, verifyChain, type AuditInput, type DateRange } from './audit.js'
 import { pruneRunData, type PruneOptions } from './retention.js'
-import { randomUUID } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import { mkdirSync } from 'node:fs'
 import type { Submission } from './xrpl.js'
 import { leafHash, manifestRoot } from '../shared/manifest.js'
@@ -359,9 +359,22 @@ export class Store {
       run.decisions = this.rows('SELECT json FROM decisions WHERE run_id=? ORDER BY round', runId)
       run.events = this.rows('SELECT json FROM events WHERE run_id=? ORDER BY id', runId)
       // Quarantine (#131): only a grant whose proof verified is accessible content; a failed one stays for audit only.
-      const paid = this.prepare('SELECT g.content, i.json FROM grants g JOIN intents i ON i.id=g.intent_id WHERE i.run_id=?').all(runId)
+      const paid = this.prepare('SELECT g.content, g.json AS grant_json, i.json FROM grants g JOIN intents i ON i.id=g.intent_id WHERE i.run_id=?').all(runId)
         .filter(row => (JSON.parse(row.json as string) as PurchaseIntent).status === 'VERIFIED' && (!(JSON.parse(row.json as string) as PurchaseIntent).escrow || (JSON.parse(row.json as string) as PurchaseIntent).escrow?.state === 'RELEASED'))
-        .map(row => ContentEnvelopeSchema.parse(JSON.parse(row.content as string)))
+        .map(row => {
+          const grant = GrantSchema.parse(JSON.parse(row.grant_json as string))
+          const content = ContentEnvelopeSchema.parse(JSON.parse(row.content as string))
+          // This is the shared release boundary for research, snapshots and exports. The join and
+          // filter above require a stored, verified grant and a released escrow before any bytes leave.
+          // Both the grant and its first passage reads commit in this transaction, before returning.
+          const recorded = this.prepare("SELECT kind, data FROM audit_log WHERE run_id=? AND intent_id=? AND kind IN ('grant','read_paid')").all(runId, grant.intentId)
+          if (!recorded.some(e => e.kind === 'grant')) this.audit.append({ runId, intentId: grant.intentId, kind: 'grant', data: { contentDigest: grant.contentDigest } })
+          const read = new Set(recorded.filter(e => e.kind === 'read_paid').map(e => (JSON.parse(e.data as string) as { passageId: string }).passageId))
+          for (const passage of content.spans) if (!read.has(passage.id)) this.audit.append({ runId, intentId: grant.intentId, kind: 'read_paid', data: {
+            passageId: passage.id, passageSha256: createHash('sha256').update(passage.text, 'utf8').digest('hex'),
+          } })
+          return content
+        })
       run.contents = [...run.contents.filter(content => run.candidates.some(c => c.tier === 'FREE' && sameResource(c, content))), ...paid]
       run.spentMinor = run.intents.filter(i => chargedStatuses.has(i.status)).reduce((sum, i) => sum + i.amountMinor, 0)
       run.reservedMinor = run.intents.filter(i => reservedStatuses.has(i.status)).reduce((sum, i) => sum + i.amountMinor, 0)

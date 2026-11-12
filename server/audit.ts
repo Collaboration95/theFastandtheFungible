@@ -13,7 +13,7 @@ import { lookupTx, verifyPayment, type Ledger } from '../shared/xrpl.js'
 import { ledgerInvoiceId } from '../shared/x402.js'
 
 export const GENESIS_HASH = '0'.repeat(64)
-export const AUDIT_KINDS = ['baseline', 'policy', 'admission', 'decision', 'reserve', 'sign', 'settle', 'deliver', 'proof', 'challenge', 'refund', 'refusal', 'pause', 'prune', 'inbound', 'payout-reserve', 'payout-sign', 'payout-settle', 'escrow-sign', 'ESCROW_CREATE', 'ESCROW_FINISH', 'ESCROW_CANCEL'] as const
+export const AUDIT_KINDS = ['baseline', 'policy', 'admission', 'decision', 'reserve', 'sign', 'settle', 'deliver', 'proof', 'grant', 'read_paid', 'challenge', 'refund', 'refusal', 'pause', 'prune', 'inbound', 'payout-reserve', 'payout-sign', 'payout-settle', 'escrow-sign', 'ESCROW_CREATE', 'ESCROW_FINISH', 'ESCROW_CANCEL'] as const
 export type AuditKind = typeof AUDIT_KINDS[number] | (string & {})
 export type AuditEntry = { seq: number; at: string; prevHash: string; hash: string; runId: string | null; intentId: string | null; surface: string; principal: string; kind: string; data: Record<string, unknown> }
 export type AuditInput = { kind: AuditKind; data: Record<string, unknown>; runId?: string; intentId?: string; surface?: string; principal?: string; at?: string }
