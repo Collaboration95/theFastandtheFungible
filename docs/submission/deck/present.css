@@ -1,0 +1,33 @@
+/* Browser presenter for site/deck/ (added by web.mjs; the PDF export never loads it).
+   One 1920 x 1080 slide at a time, scaled to the space between the site header and the controls. */
+@media screen {
+  html, body { height: 100%; overflow: hidden; }
+  body { background: #E9E4DA; }
+  #deck { position: fixed; inset: 52px 0 60px; overflow: hidden; }
+  #deck .slide { position: absolute; left: 50%; top: 50%; margin: 0; transform-origin: 50% 50%;
+    transform: translate(-50%, -50%) scale(var(--s, .5)); opacity: 0; visibility: hidden; cursor: pointer;
+    box-shadow: 0 1px 2px rgba(36,33,30,.06), 0 24px 60px -20px rgba(36,33,30,.28);
+    transition: opacity .2s ease, visibility 0s linear .2s; }
+  #deck .slide.on { opacity: 1; visibility: visible; transition: opacity .2s ease, visibility 0s; }
+  #deck .slide a { cursor: pointer; }
+  #bar { position: fixed; left: 0; right: 0; bottom: 0; height: 60px; padding: 0 max(16px, env(safe-area-inset-right, 0px)) env(safe-area-inset-bottom, 0px) max(16px, env(safe-area-inset-left, 0px));
+    display: flex; align-items: center; justify-content: center; gap: 6px; font: 500 14px/1 var(--f); color: var(--muted); font-variant-numeric: tabular-nums; }
+  #bar button { all: unset; cursor: pointer; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 8px; color: var(--ink); }
+  #bar button:hover { background: rgba(36,33,30,.07); }
+  #bar button:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
+  #bar button:disabled { color: var(--rule-2); cursor: default; background: none; }
+  #bar svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  #bar .count { min-width: 64px; text-align: center; }
+  #bar .count b { color: var(--ink); font-weight: 600; }
+  #bar .fs { position: absolute; right: max(16px, env(safe-area-inset-right, 0px)); }
+  #bar .hint { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); font-size: 13px; }
+  #bar .hint kbd { font: 600 12px var(--f); border: 1px solid var(--rule-2); border-bottom-width: 2px; border-radius: 5px; padding: 1px 5px; background: #fff; color: var(--ink); }
+  @media (max-width: 720px) { #bar .hint { display: none; } }
+  /* Fullscreen: the slide gets the whole screen; the controls appear on mouse move. */
+  :fullscreen #deck, .fs-on #deck { inset: 0; }
+  :fullscreen .ra-hdr, .fs-on .ra-hdr { display: none; }
+  :fullscreen body, .fs-on body { background: #24211E; }
+  .fs-on #bar { background: rgba(251,248,242,.94); transition: opacity .3s ease; }
+  .fs-on.idle #bar { opacity: 0; }
+  @media (prefers-reduced-motion: reduce) { #deck .slide, #deck .slide.on, .fs-on #bar { transition: none; } }
+}

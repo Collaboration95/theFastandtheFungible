@@ -11,7 +11,7 @@ import { HOSTED_APP_URL } from './site-config.mjs'
 const REPO = 'https://github.com/Collaboration95/theFastandtheFungible'
 // Discover every page, including future verify pages, instead of silently skipping new routes.
 const siteRoot = join(import.meta.dirname, '..', 'site')
-const keys = { 'notes/index.html': 'notes', 'index.html': 'home', 'progress/index.html': 'progress', 'talk/index.html': 'talk', 'slides/index.html': 'slides', 'project-map/index.html': 'map', 'evolution/index.html': 'build', 'ledger/index.html': 'ledger', 'proof/index.html': 'proof', 'developers/index.html': 'developers', 'builder-feedback/index.html': 'feedback' }
+const keys = { 'notes/index.html': 'notes', 'index.html': 'home', 'progress/index.html': 'progress', 'talk/index.html': 'talk', 'slides/index.html': 'slides', 'deck/index.html': 'deck', 'project-map/index.html': 'map', 'evolution/index.html': 'build', 'ledger/index.html': 'ledger', 'proof/index.html': 'proof', 'developers/index.html': 'developers', 'builder-feedback/index.html': 'feedback' }
 const PAGES = readdirSync(siteRoot, { recursive: true }).filter(file => file.endsWith('.html') && !file.startsWith('demo/')).map(file => ({ file, key: keys[file] ?? 'none' })).concat([{ file: '../demo/index.html', key: 'demo' }])
 
 // Six pages plus GitHub and "Try it live" (S10); the brand mark is the way home. Secondary pages live in the footer.
@@ -24,7 +24,7 @@ const MORE = [
   ['ledger', 'ledger/', 'Ledger'], ['build', 'evolution/#archive', 'Archive'],
 ]
 // Presentation and app pages fill the viewport; they keep the header but get no footer.
-const NO_FOOTER = new Set(['demo', 'slides', 'notes'])
+const NO_FOOTER = new Set(['demo', 'slides', 'notes', 'deck'])
 const ENVIRONMENT = 'XRPL Testnet demo'
 const START = '<!-- site-header:start -->'
 const END = '<!-- site-header:end -->'

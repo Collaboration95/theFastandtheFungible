@@ -185,6 +185,8 @@ try {
   } else {
     renameSync(tmp, pdfPath)
     console.log(`PDF → ${pdfPath} (${count} slides)`)
+    // The browser copy at /deck/ follows every successful export.
+    execFileSync(process.execPath, [join(here, 'web.mjs')], { cwd: root, stdio: 'inherit' })
   }
 } finally {
   await browser.close()
