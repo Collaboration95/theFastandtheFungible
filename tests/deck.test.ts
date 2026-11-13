@@ -48,7 +48,7 @@ describe('finals deck', () => {
   })
 
   it('links the reach slide to unchanged release evidence without repeating the terminal caveats', () => {
-    const reach = slideTitled('Connect your agent by URL')
+    const reach = slideTitled('Any agent can pay its way in, by URL')
     expect(reach.textContent).toContain('docs/submission/evidence/v1.1.1/try-output.txt')
     expect(reach.textContent).toContain(fact('try_line'))
     expect(reach.textContent).toContain('fixture models')
@@ -74,8 +74,8 @@ describe('finals deck', () => {
     expect(titles.indexOf('Proof at scale')).toBeLessThan(titles.indexOf('Live usage, measured cost, auditable purchases'))
     const proof = slideTitled('Proof at scale').textContent ?? ''
     for (const key of ['proof_purchases', 'proof_states', 'proof_schedules', 'proof_attacks', 'proof_p50_s']) expect(proof, key).toContain(fact(key))
-    expect(slideTitled('Real sources, and reports signed to a ledger').textContent).toContain(fact('content_passages'))
-    expect(slideTitled('Open to anyone, with a regulated mode').textContent).toContain(fact('publish_live_s'))
+    expect(slideTitled('Free sources first. The paywall only when it’s worth it.').textContent).toContain(fact('content_passages'))
+    expect(slideTitled('Anyone can publish behind the paywall').textContent).toContain(fact('publish_live_s'))
     expect(slideTitled('RLUSD cannot be escrowed today').textContent).toContain('tecNO_PERMISSION')
   })
 
