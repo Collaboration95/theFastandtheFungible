@@ -34,7 +34,7 @@ describe('explainer destinations and provenance', () => {
       // The narrow-screen menu repeats the same links; nothing scrolls sideways or clips.
       expect([...doc.querySelectorAll('.ra-hdr-menu a')].map(a => a.textContent), file).toEqual([...nav, 'GitHub'])
       const footer = doc.querySelector('footer.ra-ftr')
-      if (/slides|notes|demo/.test(file)) { expect(footer, file).toBeNull(); continue }
+      if (/slides|notes|demo|deck\//.test(file)) { expect(footer, file).toBeNull(); continue }
       if (file === 'site/index.html') expect(footer?.querySelector('.ra-ftr-env'), file).toBeNull()
       else expect(footer?.querySelector('.ra-ftr-env')?.textContent, file).toBe('XRPL Testnet demo')
       expect([...footer!.querySelectorAll('a')].map(a => a.textContent), file).toEqual(['Ledger', 'Archive', 'README', 'Releases'])
