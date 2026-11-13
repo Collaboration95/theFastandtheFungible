@@ -120,9 +120,9 @@ Model cost is separate from article prices and ledger fees.
 
 ## Progress and builder feedback
 
-<!--f:prs-->339<!--/f--> pull requests merged since <!--f:since-->21 Sep<!--/f-->;
-<!--f:releases-->15<!--/f--> releases, counted at <!--f:sha-->82bac66e<!--/f--> on
-<!--f:as_of-->12 Nov 2026<!--/f-->.
+<!--f:prs-->347<!--/f--> pull requests merged since <!--f:since-->21 Sep<!--/f-->;
+<!--f:releases-->15<!--/f--> releases, counted at <!--f:sha-->484856c2<!--/f--> on
+<!--f:as_of-->13 Nov 2026<!--/f-->.
 
 **RLUSD cannot be escrowed today.** Ripple’s official RLUSD issuers have escrow locking switched off on both networks, so we show the ledger’s verdict before signing. An outer Batch also reports success when its inner transactions roll back. Five more upstream items with hashes and three patches are ready to file. [Bundle](docs/feedback/upstream/r3/README.md).
 
