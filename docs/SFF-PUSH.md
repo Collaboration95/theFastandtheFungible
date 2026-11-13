@@ -10,6 +10,7 @@ something significant: a feature, a metric move, a finished deliverable. Don't
 add an entry for every small fix. One line per item, newest day first; link the
 PR or issue.
 
+- 13 Nov: Submission fact markers and the 14-page deck PDF now use the pinned main snapshot at `484856c2`: 347 merged PRs since 21 Sep; measured evidence is unchanged.
 - 12 Nov: Judge copy now leads with real content, 1,000 independently verified purchases, the protocol proofs, reach by URL, open publishing, holdback refunds and the RLUSD escrow finding; limits are stated once and the deck PDF is regenerated. Items that depend on the next hosted deploy carry a pending marker in the source.
 - 13 Nov: Judges’ corner, stage check and future video captures use a freshly verified hosted ledger-report purchase; exact payment is labelled and bound to its payer, recipient, amount and invoice. Historical escrow exports remain intact.
 
