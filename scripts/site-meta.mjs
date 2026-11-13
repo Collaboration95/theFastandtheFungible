@@ -19,7 +19,7 @@ const descriptions = {
   'builder-feedback/index.html': 'Read recorded unsigned RLUSD escrow refusals and check the issuers’ current AccountRoot permission, read-only.',
   'evolution/index.html': 'The September–October build archive. For the current finals story, follow Progress since SingHacks.',
   'project-map/index.html': 'Explore the architecture from source discovery through budget policy, payment and verified citations.',
-  'deck/index.html': 'The SingHacks finals deck for SFF 2026: what ResearchAgent does, what changed since SingHacks, and how to check it yourself.',
+  'deck/index.html': 'The ResearchAgent finals deck: AI agents that pay for paywalled articles per piece, on XRPL Testnet, and prove each purchase on the ledger.',
   'slides/index.html': 'Archived October AI Tinkerers presentation: research, evidence, spending policy and payment.',
   'notes/index.html': 'Speaker notes for the archived October ResearchAgent talk.',
   'reports/airwallex-before-after/index.html': 'Archived banking concept: one account with explicit spending limits.',
