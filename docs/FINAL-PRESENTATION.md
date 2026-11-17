@@ -175,55 +175,30 @@ real value), team-authored writers, simulated settlement for the 31 → 48 resul
 | G13 | No Python server: one self-contained index.html that opens by double-click | step A |
 | G14 | Open the deck for the owner when done | after step B |
 
-## Script · 3:00 (draft 1, about 430 spoken words)
+## Script · 3:00 (short, about 180 words)
 
-About 150 words a minute. Lines in *italics* are the first to cut if you run long.
-Never type a question during the 3 minutes: the MAS run is prepared at about 10:50
-in the presenting browser and shown finished.
+You can't memorise 450 words, and you don't need to. Say one short line per beat;
+the slides and the live app carry the rest. Pauses are fine: the demo fills them.
 
-**Intro → Enter (0:00–0:05).** Let the logo land. "We're The Fast and the Fungible."
+**Cue card:** Paywall → Ask → Free → Buy → Key → Check → Before/after → One URL → Checked → Next
 
-**Slide 1 · the frame (0:05–0:20).**
-"Agents do the research now. But the best research is paywalled. Agents hit the
-paywall and settle for what's free. Writers can't sell to agents, so their best
-work goes unread. ResearchAgent fixes both: agents buy the article they need,
-and writers get paid."
+| Beat | On screen | Say (one line) |
+|---|---|---|
+| Intro | Empty slide → press → logo | "We're The Fast and the Fungible." |
+| Paywall | Slide 1 | "Agents do the research now. But the best research is paywalled. Agents settle for what's free; writers can't sell to agents. ResearchAgent fixes both." |
+| Ask | Live app, the finished MAS run | "One question about MAS stablecoin rules, one Singapore dollar. Fixed rules decide what to buy; the AI can't spend." |
+| Free | Sources | "It reads free sources first and finds the gap." |
+| Buy | The bought note, S$0.40 | "Then it buys one article. Forty cents." |
+| Key | Payment steps | "The key that unlocks the article is the key that pays the writer. No delivery, no payment." |
+| Check | Press "Check the key yourself" | "And you can check it yourself, on the public ledger." |
+| Before/after | Slide 3 | "At SingHacks: one web app, sample sources, a person approving every purchase. Now: live on the web, a Mac app, and inside Claude, Cursor and VS Code, paying on XRPL Testnet." |
+| One URL | Slide 5 | "Any agent connects with one URL. Any writer sells with one package." |
+| Checked | Slide 6 | "A thousand purchases, every one re-checked on the ledger. Zero errors, zero double charges, zero breaches." |
+| Next | Slide 7 | "Next: real money with a licensed partner, and outside writers. Scan to check it out. Thank you." |
 
-**Live app · the prepared MAS run (0:20–1:40).**
-- *Ask.* "Here's a question someone at this festival might ask: what does MAS
-  require of stablecoin issuers, and how fast must they redeem at par? I gave it
-  one Singapore dollar and confirmed once. From here, fixed rules decide what to
-  buy. The AI can't spend."
-- *Free first.* "It checks free sources first, and finds the gap."
-- *Buy the gap.* "So it buys one article. Forty cents. Only the one it needs."
-- *Key reveal.* "The money sits in an escrow on the XRP Ledger, locked to the
-  article's key. The writer publishes the key to get paid, and that same key
-  unlocks the article. No delivery, no payment."
-- *Check it.* "You don't have to trust us. Check the key yourself: your browser
-  reads the public ledger and confirms the key matches the lock. Its answer: par
-  within five business days, with the article it bought in its sources."
-
-**Slide 3 · what we built since SingHacks (1:40–2:05).**
-"At SingHacks this was one web app with sample sources. A person approved every
-purchase, and payments were simulated. Now it runs live on the web, as a Mac app,
-and inside Claude, Cursor or VS Code over MCP. It reads twelve thousand real documentation passages plus paid notes. Fixed
-rules buy inside your budget. And it pays on XRPL Testnet, with an escrow the
-article's key releases."
-
-**Slide 5 · any agent, by URL (2:05–2:20).**
-"Any agent can use it: paste one URL into Claude, Cursor or VS Code. And any
-writer can sell: add our package to a paid endpoint, and agents can buy."
-
-**Slide 6 · checked, not claimed (2:20–2:45).**
-"We tested it like money. A thousand Testnet purchases, every one re-checked on
-the ledger. *Two hundred and ten thousand payment states checked, a million
-simulated crashes and retries,* thirty-four attacks: zero errors, zero double
-charges, zero breaches. And paid notes added seventeen correct answers out of a
-hundred."
-
-**Slide 7 · what's next (2:45–3:00).**
-"Next: real money with a licensed payments partner, outside writers selling to
-agents, and stablecoin settlement. Scan this and check it out. Thank you."
+Timing guide: paywall by 0:20, demo done by 1:40, before/after by 2:05, close by 3:00.
+If you run long, drop the "Free" line and shorten "Checked" to "A thousand purchases, zero errors."
+Keyboard: 1–7 jump to slides, 0 returns to the empty intro, the appendix opens with its tile keys.
 
 ### Questions to have one line ready for
 
