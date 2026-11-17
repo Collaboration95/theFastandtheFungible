@@ -1,9 +1,10 @@
 <!-- 2 · The demo's map, shown just before switching to the live app (and the fallback if the network dies).
      Left: the five beats. Right: the golden MAS run rebuilt as the app (values: a recorded golden run).
      Each beat sits on the same row as the part of the app it points at; pins 1–5 read top to bottom.
-     No in-slide steps: a click or any key goes to the next slide.
+     No in-slide steps: a click or → goes to the next slide.
      Arrival (deck.js .play): the three payment states tint grey → paid in order; the Unlocked shackle lifts. -->
 <section class="slide" id="s2">
+  <div class="sky" aria-hidden="true"><i class="sky-cu"></i><i class="sky-st"></i></div>
   <h2>One question, start to finish.</h2>
 
   <div class="map">
@@ -56,7 +57,7 @@
 
 <style>
 /* the sun has just set: mauve above, a rose glow low behind the app */
-#s2{--scene:url("../scenes/s2.svg");
+#s2{--scene:url("../scenes/s2.svg");--sky-haze:url("../scenes/s2-haze.svg");--clouds-cu:url("../scenes/s2-cu.svg");--clouds-st:url("../scenes/s2-st.svg");
   background:radial-gradient(1150px 600px at 86% 106%,rgba(246,160,128,.6),rgba(214,120,130,.24) 45%,rgba(214,120,130,0) 72%),linear-gradient(180deg,var(--s2-z),var(--s2-m) 40%,var(--s2-l) 75%,var(--s2-h))}
 /* the app's own palette (cream page, white cards, warm hairlines), so the shot matches what the judges see next */
 #s2{--a-bg:#F8F6F1;--a-line:#E4DFD4;--a-ink:#1C1B18;--a-ink-2:#6A655B;--a-ok:#2E6B4B;--a-tab:#EEEAE1}

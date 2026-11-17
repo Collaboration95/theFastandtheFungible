@@ -3,7 +3,9 @@
    Contract (SYSTEM.md): the presenter only ever moves between slides; no pitch slide waits for a key or click.
      →  Space  PgDn  Enter  ↓   next slide (a slide's next() hook may consume the press; only the intro does)
      ←  PgUp  Backspace  ↑      previous slide
-     Home / End · #N in URL     first / last slide · deep link by slide number (#0 intro … #8 appendix)
+     Home / End · #N in URL     first / last slide · deep link by slide number (#0 intro … #8 appendix, #8.3 a card)
+     1 … 7 · 8 · 0              jump to that slide · the appendix · the intro, empty again (the next press replays the
+                                logo reveal); on the appendix the digits, − and = open its cards instead
      f                          fullscreen
      click on the slide         next (as →); the appendix (#s8) handles its own keys and clicks
      nav pill (below the stage, never on a slide or in print): ← N / total →
@@ -14,7 +16,9 @@
    Arrival motion: on a forward arrival (not print, not reduced motion) the slide gets .play, and base.css's
    primitives ([data-enter], .pop, .run, .bump, .shake, .draw, .stamp, .sweep) run their from-only keyframes,
    so the resting CSS is always the final state. Going backwards, print and reduced motion never get .play.
-   Deck.seq(id, [[ms, fn], …]) runs timed beats after arrival (slide 4); leaving cancels them and rest() settles. */
+   Deck.seq(id, [[ms, fn], …]) runs timed beats after arrival (slide 4); leaving cancels them and rest() settles.
+   Drift (base.css .sky, .scene-town): every sky-drift animation runs on one clock, startTime 0 = page load, so clouds,
+   streaks and the town continue across slide changes at a constant speed; navigation never touches them. */
 (() => {
   const P = new URLSearchParams(location.search)
   const PRINT = P.has('print') || P.has('capture')
@@ -133,6 +137,14 @@
     h?.rest?.(document.getElementById(id))
   }
 
+  /* ---------- drift: one clock for the clouds, the streaks and the town ---------- */
+  // Slides are only visibility-hidden, so their drift keeps running; pinning every drift to document time 0 makes all
+  // copies agree and survive anything that might restart a CSS animation. Never eased, never paused, never re-timed.
+  const syncDrift = root => {
+    if (REDUCE || PRINT || !root.getAnimations) return
+    for (const a of root.getAnimations({ subtree: true })) if (a.animationName === 'sky-drift' && a.startTime !== 0) a.startTime = 0
+  }
+
   /* ---------- navigation ---------- */
   const numOf = el => +(el.id.match(/^s(\d+)$/)?.[1] ?? NaN)
   function go(i) {
@@ -144,6 +156,10 @@
     cur = i
     const el = slides[cur]
     el.classList.add('active')
+    syncDrift(el)
+    const n = numOf(el)
+    // the hash first, and only if it names another slide, so an enter hook can read and refine it (#8.3: a card)
+    if (parseInt(location.hash.slice(1), 10) !== n) try { history.replaceState(null, '', location.search + '#' + (Number.isFinite(n) ? n : cur)) } catch { /* storage unavailable */ }   // some browsers refuse on file://
     if (!REDUCE) replay(el, 'enter')
     // arrival motion only going forward (or on first load); backwards arrives in the final state
     const play = !REDUCE && !PRINT && dir > 0
@@ -151,8 +167,6 @@
     hooks[el.id]?.enter?.(el, { ...ctx(), dir, from: prev ? numOf(prev) : null, play })
     if (!REDUCE) el.querySelectorAll('.mk').forEach(m => replay(m, 'draw'))
     if (pos) pos.textContent = `${cur + 1} / ${slides.length}`
-    const n = numOf(el)
-    try { history.replaceState(null, '', location.search + '#' + (Number.isFinite(n) ? n : cur)) } catch { /* storage unavailable */ }   // some browsers refuse on file://
   }
   const fromHash = () => {
     const n = parseInt(location.hash.slice(1), 10)
@@ -170,7 +184,15 @@
     if (['ArrowLeft', 'PageUp', 'Backspace', 'ArrowUp'].includes(k)) { e.preventDefault(); go(cur - 1); return }
     if (k === 'Home') { e.preventDefault(); go(0); return }
     if (k === 'End') { e.preventDefault(); go(slides.length - 1); return }
-    if (k === 'f' || k === 'F') { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.() }
+    if (k === 'f' || k === 'F') { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.(); return }
+    // digits jump (the appendix catches its own digits first, in the capture phase, while it shows)
+    if (/^[0-9]$/.test(k)) {
+      const j = slides.findIndex(s => numOf(s) === +k)
+      if (j < 0) return
+      e.preventDefault()
+      go(j)
+      if (j === 0) rest(slides[0].id)   // 0: the intro empty again, so the next press replays the logo reveal
+    }
   }
 
   /* ---------- final state (print, ?print=1, Cmd+P) ---------- */
@@ -232,6 +254,7 @@
       go(fromHash())
       addEventListener('hashchange', () => go(fromHash()))
       addEventListener('keydown', onKey)
+      syncDrift(document)
       let idle
       addEventListener('mousemove', () => { document.body.classList.remove('idle'); clearTimeout(idle); idle = setTimeout(() => document.body.classList.add('idle'), 2000) })
     }

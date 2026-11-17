@@ -559,8 +559,11 @@
   let open = -1, hi = -1
   const tiles = [...grid.children]
   function setHi(i) { hi = i; tiles.forEach((t, k) => t.classList.toggle('hi', k === i)) }
-  function show(i) { open = i; setHi(i); ov.innerHTML = pageOf(CARDS[i], i, false); ov.hidden = false; fixQr(ov); animate(ov) }
-  function close() { gen++; if (open < 0) return; open = -1; ov.hidden = true; ov.innerHTML = ''; ov.classList.remove('go') }
+  // the URL follows the open card: #8.1 … #8.12 (card N is the Nth key: 1 … 9, 0, −, =); #8 when none is open
+  const setHash = h => { try { history.replaceState(null, '', location.search + h) } catch { /* refused on some file:// */ } }
+  const cardOfHash = () => { const m = location.hash.match(/^#8\.(\d+)$/); const i = m ? +m[1] - 1 : -1; return i >= 0 && i < N ? i : -1 }
+  function show(i) { open = i; setHi(i); ov.innerHTML = pageOf(CARDS[i], i, false); ov.hidden = false; fixQr(ov); animate(ov); setHash('#8.' + (i + 1)) }
+  function close() { gen++; if (open < 0) return; open = -1; ov.hidden = true; ov.innerHTML = ''; ov.classList.remove('go'); if (S.classList.contains('active')) setHash('#8') }
 
   // the build inlines images only in the slide's markup, so the QR lives once in the section (#s8qr, hidden) and the
   // pages built at runtime take its data URI (their <img> has no src until then, so nothing is ever requested)
@@ -615,8 +618,10 @@
   }
   if (!Deck.PRINT) addEventListener('afterprint', dropPages)
 
+  addEventListener('hashchange', () => { const i = cardOfHash(); if (S.classList.contains('active') && i >= 0 && i !== open) show(i) })
+
   Deck.on('s8', {
-    enter() { close(); setHi(-1) },
+    enter() { const i = cardOfHash(); close(); setHi(-1); if (i >= 0) show(i) },
     leave() { close(); setHi(-1) },
     final() { close(); setHi(-1); printPages() },
   })

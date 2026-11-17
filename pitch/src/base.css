@@ -76,19 +76,47 @@ body.idle{cursor:none}
 html.print .nav{display:none}
 
 /* ---------- skies and scenes ----------
-   Each slide file sets its sky (background, from the --sN-* tokens) and --scene (its painted scenes/sN.svg). Three painted layers
-   sit under the content (z-index inside the slide's own stacking context):
-     ::before  the scene: clouds, hills, rooftops, stars (one SVG, rasterised once)            z -3
-     .scene-town  an empty hook for a later parallax town layer (slides 3 and 6), between them  z -2
-     ::after   paper grain + a horizontal brush wash in soft-light                               z -1
-   Cards and text paint above all three. Nothing here moves.
+   Each slide file sets its sky (background, from the --sN-* tokens), --scene (its painted scenes/sN.svg) and, where it has
+   clouds, --clouds-cu / --clouds-st (scenes/sN-cu.svg, sN-st.svg). Four painted layers sit under the content (z-index
+   inside the slide's own stacking context):
+     .sky      drifting clouds: <i class="sky-cu"> cumulus heaps, <i class="sky-st"> streaks and their thin lit rims    z -4
+     ::before  the scene: sun, stars, hills, rooftops (one SVG, rasterised once; static)                   z -3
+     .scene-town  the rolling town (slides 3 and 6): far hills, rooftops with lit windows, poles and trees  z -2
+     ::after   paper grain + a horizontal brush wash in soft-light                                         z -1
+   Cards and text paint above all of them and never move.
+   Drift: everything moves right to left at a constant speed, transform only (compositor), on ONE clock: deck.js sets
+   every sky-drift animation's startTime to 0 (page load), so a layer is in the same place whichever slide shows it and a
+   slide change never restarts, speeds up or slows it. Speeds (px/s): streaks 2.5 · cumulus 4 · town far 6 · roofs 14 ·
+   near 24. Each layer is a seamless tile of width --t, moved by exactly --t per period --d = t / speed.
+   Print and reduced motion: no animation, so every layer rests at 0 (the scene as drawn).
+   --sky-haze (scenes/sN-haze.svg, slides 2–6): a static mask that thins the clouds to 10 % behind the white headline, so
+   it stays ≥ 4.5:1 whatever cloud drifts behind it.
    .f-book marks the bookends (intro, slide 1, slide 7): their text and tiles use the --bk-* tokens
    (white by default for the night close; the intro and slide 1 switch them to dark ink on their light sky). */
 .slide{isolation:isolate}
 .slide::before,.slide::after{content:"";position:absolute;inset:0;pointer-events:none}
 .slide::before{z-index:-3;background:var(--scene,none) 0 0/100% 100% no-repeat}
 .slide::after{z-index:-1;background:url("scenes/grain.svg") 0 0/260px 260px,url("scenes/wash.svg") 0 0/100% 100% no-repeat;mix-blend-mode:soft-light;opacity:.5}
-.scene-town{position:absolute;left:0;right:0;bottom:0;height:var(--town-h,320px);z-index:-2;pointer-events:none;overflow:hidden}
+@keyframes sky-drift{to{transform:translateX(calc(-1 * var(--t)))}}
+.sky{position:absolute;inset:0;z-index:-4;pointer-events:none;overflow:hidden;contain:strict;-webkit-mask:var(--sky-haze,none) 0 0/100% 100% no-repeat;mask:var(--sky-haze,none) 0 0/100% 100% no-repeat}
+.sky i{position:absolute;left:0;top:0;width:calc(2 * var(--t));height:1080px;--t:1920px;background:var(--img) 0 0/1920px 1080px repeat-x;
+  will-change:transform;animation:sky-drift var(--d) linear infinite}
+.sky .sky-cu{--img:var(--clouds-cu,none);--d:480s}
+.sky .sky-st{--img:var(--clouds-st,none);--d:768s}
+/* the town: five inline <svg> strips per slide, each drawing a scenes/town.svg tile (gen_town.py) at −T, 0, T, 2T, coloured
+   from the slide's --tw-* colours (tiles inherit fill; strokes are currentColor; the far hills take a per-slide gradient) */
+.scene-town{position:absolute;left:0;right:0;bottom:0;height:260px;z-index:-2;pointer-events:none;overflow:hidden;contain:strict}
+.scene-town svg[class]{position:absolute;left:0;top:0;height:260px;width:calc(var(--t) + 1940px);overflow:hidden;will-change:transform;animation:sky-drift var(--d) linear infinite}
+.scene-town .tw-far{--t:2880px;--d:480s;opacity:var(--tw-far-op,1)}
+.scene-town .tw-roof,.scene-town .tw-rim,.scene-town .tw-win{--t:3360px;--d:240s}
+.scene-town .tw-roof{fill:var(--tw-mid)}
+.scene-town .tw-rim{color:var(--tw-rim);opacity:.85}
+.scene-town .tw-win{fill:var(--tw-win);opacity:var(--tw-win-op,1)}
+.scene-town .tw-near{--t:2560px;--d:106.667s;fill:var(--tw-near);color:var(--tw-near)}
+/* print and ?print=1: every layer at rest, and no CSS masks (Ghostscript drops their soft-mask groups) */
+html.print :is(.sky i,.scene-town svg[class]){animation:none;will-change:auto}
+html.print .sky{-webkit-mask:none;mask:none}
+@media print{.sky{-webkit-mask:none!important;mask:none!important}}
 :root{--bk-ink:#fff;--bk-ink-2:rgba(255,255,255,.86);--bk-line:rgba(255,255,255,.2);--bk-mk:var(--marker);--bk-brand:#fff;
   --bk-tile:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,.07));--bk-tile-line:rgba(255,255,255,.24);--bk-tile-ink:#fff}
 .f-book{isolation:isolate;color:var(--bk-ink)}

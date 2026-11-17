@@ -2,10 +2,11 @@
      (live web app, the macOS app (DMG, runs the engine locally; unsigned by default, so never "signed" or "App Store"),
      MCP for Claude, Cursor and VS Code: desktop/README.md, release v1.1.1); the chips pop in after the first strike.
      Then (a translucent panel, each line struck through) → now (a white card).
-     No in-slide steps: all four pairs show at once; a click or any key goes to the next slide.
+     No in-slide steps: all four pairs show at once; a click or → goes to the next slide.
      Arrival (deck.js .play): the four old lines are struck top to bottom, each arrow nudges forward as its strike
      lands, and the Payment row's key turns paid-green last. -->
 <section class="slide" id="s3">
+  <div class="sky" aria-hidden="true"><i class="sky-cu"></i><i class="sky-st"></i></div>
   <h2>What we built since SingHacks.</h2>
 
   <div class="cmp">
@@ -38,12 +39,21 @@
     <div class="a" data-i="4" style="grid-row:4"><span class="tile"><svg class="i"><use href="#i-key"/></svg></span><span class="w">XRPL Testnet escrow: the key that unlocks the article pays the writer</span></div>
   </div>
 
-  <div class="scene-town" aria-hidden="true"></div>
+  <!-- the rolling town: five strips, each a scenes/town.svg tile (gen_town.py) at x = −T, 0, T, 2T, and the sprite itself (slide 6 uses it too) -->
+  <div class="scene-town" aria-hidden="true">
+    <img data-inline src="../scenes/town.svg">
+    <svg class="tw-far" width="4820" height="260"><defs><linearGradient id="tw-g3" gradientUnits="userSpaceOnUse" x1="0" y1="112" x2="0" y2="178"><stop offset="0" style="stop-color:var(--tw-far-crest)"/><stop offset="1" style="stop-color:var(--tw-far)"/></linearGradient></defs><g filter="url(#tw-b)" fill="url(#tw-g3)"><use href="#tw-far" x="-2880"/><use href="#tw-far"/><use href="#tw-far" x="2880"/><use href="#tw-far" x="5760"/></g></svg>
+    <svg class="tw-roof" width="5300" height="260"><g filter="url(#tw-b)"><use href="#tw-roof" x="-3360"/><use href="#tw-roof"/><use href="#tw-roof" x="3360"/><use href="#tw-roof" x="6720"/></g></svg>
+    <svg class="tw-rim" width="5300" height="260"><g filter="url(#tw-b)"><use href="#tw-rim" x="-3360"/><use href="#tw-rim"/><use href="#tw-rim" x="3360"/><use href="#tw-rim" x="6720"/></g></svg>
+    <svg class="tw-win" width="5300" height="260"><g filter="url(#tw-b)"><use href="#tw-win" x="-3360"/><use href="#tw-win"/><use href="#tw-win" x="3360"/><use href="#tw-win" x="6720"/></g></svg>
+    <svg class="tw-near" width="4500" height="260"><g filter="url(#tw-b)"><use href="#tw-near" x="-2560"/><use href="#tw-near"/><use href="#tw-near" x="2560"/><use href="#tw-near" x="5120"/></g></svg>
+  </div>
 </section>
 
 <style>
-/* afterglow: rose fading behind the "now" card, the first rooftops along the bottom (.scene-town: the hook for a later moving town) */
-#s3{--scene:url("../scenes/s3.svg");
+/* afterglow: rose fading behind the "now" card, the first rooftops along the bottom (.scene-town: the rolling town, colours from --tw-*) */
+#s3{--scene:url("../scenes/s3.svg");--sky-haze:url("../scenes/s3-haze.svg");
+  --tw-far:#4D3C77;--tw-far-crest:#86608E;--tw-mid:#2A2152;--tw-rim:#E59A8C;--tw-win:#FFC978;--tw-near:#17122F;--clouds-cu:url("../scenes/s3-cu.svg");--clouds-st:url("../scenes/s3-st.svg");
   background:radial-gradient(1300px 420px at 74% 104%,rgba(238,150,128,.5),rgba(200,110,130,.18) 50%,rgba(200,110,130,0) 75%),linear-gradient(180deg,var(--s3-z),var(--s3-m) 40%,var(--s3-l) 72%,var(--s3-h))}
 #s3 .cmp{position:absolute;left:var(--pad-x);right:var(--pad-x);top:280px;display:grid;grid-template-columns:200px 600px 112px 1fr;grid-template-rows:repeat(4,172px)}
 
