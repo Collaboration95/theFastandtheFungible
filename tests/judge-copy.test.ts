@@ -43,13 +43,12 @@ describe('judge-facing presentation contract', () => {
   })
 
   it('states each delivery/traction limit once in each limits home and excludes it from the narrative', () => {
-    const readme = read('README.md')
+    // The README is the newcomer page (18 Nov): its limits section moved out; the deck and Q&A stay the limits homes.
     const deck = read('docs/submission/deck/index.html')
     const qa = read('docs/submission/qa-prep.md')
     const phrases = [/No outside customers, pilots or revenue/gi, /Signed submission can expose the key before validation/gi, /the key-release payment stays paid/gi]
-    for (const text of [readme, deck, qa].map(t => t.replace(/\s+/g, ' '))) for (const phrase of phrases) expect(text.match(phrase)).toHaveLength(1)
+    for (const text of [deck, qa].map(t => t.replace(/\s+/g, ' '))) for (const phrase of phrases) expect(text.match(phrase)).toHaveLength(1)
     for (const phrase of phrases) {
-      expect(readme.split('## Status and limits')[0]).not.toMatch(phrase)
       expect(deck.slice(0, deck.lastIndexOf('<section class="slide"'))).not.toMatch(phrase)
       for (const file of ['docs/submission/short-description.md', 'docs/submission/pitch-2min.md', 'docs/submission/video/voiceover.txt']) expect(read(file), file).not.toMatch(phrase)
     }
@@ -65,7 +64,7 @@ describe('judge-facing presentation contract', () => {
     expect(facts.live_p90_s.value).toBe((stats.timing.p90Ms / 1000).toFixed(3))
     expect(facts.live_audits.value).toBe(String(stats.audit.checked))
     expect(facts.live_audit_unavailable.value).toBe(String(stats.audit.unavailable))
-    for (const file of ['README.md', 'docs/submission/deck/index.html']) {
+    for (const file of ['docs/submission/deck/index.html']) {
       const text = read(file)
       for (const key of ['live_questions', 'live_purchases', 'live_median_s', 'live_p90_s', 'live_model_usd', 'live_violations', 'live_audits', 'live_asof', 'live_audit_unavailable']) expect(text, `${file} ${key}`).toContain(`<!--f:${key}-->`)
       expect(text).toMatch(/team test runs included/)

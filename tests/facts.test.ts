@@ -78,7 +78,6 @@ describe('facts: one source for every number a judge reads', () => {
     const readme = strip(read('README.md'))
     expect(readme).toContain(data.links.hosted)
     expect(readme).toContain('13–19 Nov 2026')
-    expect(readme).toContain(data.facts.feedback_line.value)
     for (const file of ['README.md', 'docs/install.md', 'docs/submission/short-description.md', 'docs/submission/README.md']) {
       for (const url of read(file).match(/https:\/\/ra-front-[\w.-]+\.run\.app/g) ?? []) expect(url, file).toBe(data.links.hosted)
     }

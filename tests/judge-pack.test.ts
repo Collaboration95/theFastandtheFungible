@@ -138,7 +138,7 @@ describe('judge pack: one true story', () => {
   })
 
   it('keeps identity, token scope and recorded refusals in the limits homes', () => {
-    for (const file of ['README.md', 'docs/submission/qa-prep.md', 'docs/submission/deck/index.html']) {
+    for (const file of ['docs/submission/qa-prep.md', 'docs/submission/deck/index.html']) {
       const text = read(file)
       expect(text, file).toMatch(/accepted operator-issued/)
       expect(text, file).toMatch(/(?:operator-issued|Testnet)\s+Permissioned\s+Domain/)
@@ -149,7 +149,7 @@ describe('judge pack: one true story', () => {
   })
 
   it('names the first buyer and places unvalidated demand in the limits homes', () => {
-    for (const file of ['README.md', 'docs/submission/qa-prep.md', 'docs/submission/deck/index.html']) {
+    for (const file of ['docs/submission/qa-prep.md', 'docs/submission/deck/index.html']) {
       const text = read(file).replace(/\s+/g, ' ')
       expect(text, file).toContain('XRPL/x402 integrators')
       expect(text, file).toContain('coding agents')
@@ -185,7 +185,7 @@ describe('judge pack: one true story', () => {
     expect(source.evidence[2].text).toMatch(/validated transaction releases the payment/)
     expect(read('docs/submission/qa-prep.md')).toMatch(/65\.8 s/)
     expect(read('docs/submission/qa-prep.md')).toContain('unmeasured')
-    for (const file of ['README.md', 'docs/submission/deck/index.html']) expect(read(file), file).toContain('live_model_usd')
+    expect(read('docs/submission/deck/index.html')).toContain('live_model_usd')
   })
 
   it('says who pays which part of the fee: the buyer locks (12), the writer reveals (423), rippled needs 360', () => {
