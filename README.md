@@ -2,7 +2,7 @@
 <h3 align="center">Paid on delivery. Proven on the ledger.</h3>
 
 <p align="center"><a href="pitch/ResearchAgent-finals-pitch.pdf"><img src="docs/media/pitch-hook.png" width="900" alt="Agents do the research now. The best research is paywalled."></a></p>
-<p align="center"><sub>From the finals pitch: <a href="pitch/index.html">slides</a> · <a href="pitch/ResearchAgent-finals-pitch.pdf">PDF</a>.</sub></p>
+<p align="center"><sub>From the finals pitch: <a href="https://collaboration95.github.io/theFastandtheFungible/slides/">slides</a> · <a href="pitch/ResearchAgent-finals-pitch.pdf">PDF</a>.</sub></p>
 
 **Agents do the research now. The best research is paywalled.**
 Agents hit the paywall and settle for what’s free. Writers can’t sell to agents, so their best work goes unread.
