@@ -1,0 +1,372 @@
+<!-- 8 · Appendix, for Q&A only (after the pitch's last slide). Quiet deep-violet field, an index of 12 tiles named by what a
+     judge would ask. A key (1–9, 0, −, =) or a click opens that card as a full-slide overlay on this slide; ↓/↑ moves a
+     highlight and Enter opens it. In a card: Esc, Backspace, → / ←, Space, Enter or "← Appendix" return to the index
+     (they never leave the slide while a card is open); a number or ↓/↑ switches card.
+     Print / ?print=1: the index, then one page per card (sections s801…s812 added after this one).
+     Every fact is from the appendix notes, with docs/FINAL-PRESENTATION.md's one-line answers winning. -->
+<section class="slide" id="s8" data-click>
+  <div class="top">
+    <h2>Appendix</h2>
+    <div class="hint"><span class="kc">1</span>–<span class="kc">=</span> open <span class="sep"></span> <span class="kc w">Esc</span> back</div>
+  </div>
+  <div class="grid" id="s8grid"></div>
+  <div class="ov" id="s8ov" hidden></div>
+  <img id="s8qr" hidden alt="" src="../assets/qr-try.svg">
+</section>
+
+<style>
+/* the field: the deep violet end of the Dusk ramp, quieter than the pitch slides; shared by the print pages (.s8p) */
+#s8,.s8p:not(#s8){background:var(--light-g),linear-gradient(150deg in oklch,var(--s8-a),var(--s8-b));color:#fff}
+#s8{display:flex;flex-direction:column}
+#s8 .top{display:flex;align-items:flex-end;justify-content:space-between}
+#s8 .top h2{font-size:var(--t-h2);letter-spacing:-.045em;line-height:1}
+#s8 .hint{display:flex;align-items:center;gap:12px;font:600 28px/1 var(--f);color:rgba(255,255,255,.62);padding-bottom:10px}
+#s8 .hint .sep{width:18px}
+
+/* keycap: the key that opens a card */
+#s8 .kc,.s8p:not(#s8) .kc{display:inline-grid;place-items:center;min-width:48px;height:48px;padding:0 10px;border-radius:12px;font:800 28px/1 var(--f);
+  font-variant-numeric:tabular-nums;color:var(--ink);background:linear-gradient(180deg,#fff,#EEF0F5);box-shadow:0 0 0 1px #D6DAE5 inset,0 2px 0 #C9CEDB}
+#s8 .hint .kc{min-width:44px;height:44px;font-size:26px;color:#fff;background:rgba(255,255,255,.1);box-shadow:0 0 0 1px rgba(255,255,255,.22) inset,0 2px 0 rgba(255,255,255,.12)}
+#s8 .hint .kc.w{font-size:22px;padding:0 12px}
+
+/* the index: 4 × 3 tiles */
+#s8 .grid{flex:1;margin-top:52px;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);gap:24px}
+#s8 .t8{all:unset;box-sizing:border-box;cursor:pointer;position:relative;display:flex;flex-direction:column;justify-content:space-between;padding:28px 32px 30px;
+  border-radius:var(--r-card);background:linear-gradient(180deg,#fff 0%,#FCFCFE 100%);color:var(--ink);box-shadow:var(--sh-card)}
+#s8 .t8:hover{box-shadow:0 0 0 3px rgba(255,255,255,.5),var(--sh-card)}
+#s8 .t8.hi{box-shadow:0 0 0 6px var(--warm-1),var(--sh-card)}
+#s8 .t8 .hd{display:flex;align-items:center;justify-content:space-between}
+#s8 .t8 .hd svg.i{font-size:34px;color:var(--ink-3);stroke-width:1.75}
+#s8 .t8 .n{font:800 68px/.95 var(--f);letter-spacing:-.05em;font-variant-numeric:tabular-nums}
+#s8 .t8 .c{margin-top:8px;font:700 32px/1.12 var(--f);letter-spacing:-.02em;color:var(--ink-2)}
+#s8 .t8 .q{font:800 42px/1.06 var(--f);letter-spacing:-.035em;text-wrap:balance}
+#s8 .t8 .q small{display:block;margin-top:8px;font:700 30px/1.1 var(--f);letter-spacing:-.02em;color:var(--ink-2)}
+
+/* the card overlay: covers the index on the same slide, same field */
+#s8 .ov{position:absolute;inset:0;z-index:5;padding:var(--pad-y) var(--pad-x);background:inherit;display:flex}
+#s8 .ov[hidden]{display:none}
+
+/* ---------- a card page: the overlay (#s8 .ov) and each print page (.s8p) ---------- */
+:is(#s8,.s8p:not(#s8)) .pg{flex:1;display:flex;flex-direction:column;min-height:0;height:100%}
+:is(#s8,.s8p:not(#s8)) .pg-top{display:flex;align-items:center;gap:28px}
+:is(#s8,.s8p:not(#s8)) .pg-top h2{flex:1;font:800 68px/1.02 var(--f);letter-spacing:-.045em;text-wrap:balance}
+:is(#s8,.s8p:not(#s8)) .pg-top h2 .label{font-size:28px;font-weight:600;letter-spacing:0;color:rgba(255,255,255,.75);white-space:nowrap;vertical-align:.5em;margin-left:10px}
+:is(#s8,.s8p:not(#s8)) .pg-top .kc{min-width:64px;height:64px;font-size:34px;border-radius:15px}
+:is(#s8,.s8p:not(#s8)) .pg-back{all:unset;cursor:pointer;flex:none;display:flex;align-items:center;gap:14px;height:64px;padding:0 12px 0 22px;border-radius:999px;
+  font:700 28px/1 var(--f);color:#fff;background:rgba(255,255,255,.1);box-shadow:0 0 0 1px rgba(255,255,255,.22) inset}
+:is(#s8,.s8p:not(#s8)) .pg-back .ar{font-size:34px;line-height:1}
+:is(#s8,.s8p:not(#s8)) .pg-back:hover{background:rgba(255,255,255,.16)}
+:is(#s8,.s8p:not(#s8)) .pg-back .kc{min-width:0;height:44px;font-size:22px;padding:0 12px;color:#fff;background:rgba(255,255,255,.12);box-shadow:0 0 0 1px rgba(255,255,255,.22) inset}
+:is(#s8,.s8p:not(#s8)) .pg-tag{flex:none;display:flex;align-items:center;gap:14px;font:700 28px/1 var(--f);color:rgba(255,255,255,.62)}
+
+:is(#s8,.s8p:not(#s8)) .pg-body{flex:1;min-height:0;margin-top:40px;display:flex;flex-direction:column}
+:is(#s8,.s8p:not(#s8)) .cols{flex:1;min-height:0;display:grid;grid-template-columns:1.06fr 1fr 1fr;gap:24px}
+:is(#s8,.s8p:not(#s8)) .box{position:relative;background:linear-gradient(180deg,#fff 0%,#FCFCFE 100%);color:var(--ink);border-radius:var(--r-card);box-shadow:var(--sh-card);padding:34px 36px;overflow:hidden}
+:is(#s8,.s8p:not(#s8)) .box h4{margin:0 0 18px;display:flex;align-items:center;gap:14px;font:800 32px/1 var(--f);letter-spacing:-.025em}
+:is(#s8,.s8p:not(#s8)) .box h4 svg.i{font-size:34px;stroke-width:2}
+:is(#s8,.s8p:not(#s8)) .box.m h4 svg.i{color:var(--ink-2)}
+:is(#s8,.s8p:not(#s8)) .box.k h4 svg.i{color:var(--paid)}
+:is(#s8,.s8p:not(#s8)) .box.l h4{color:var(--wall-ink)}
+:is(#s8,.s8p:not(#s8)) .box p{font:500 30px/1.32 var(--f);letter-spacing:-.012em;text-wrap:pretty}
+:is(#s8,.s8p:not(#s8)) .box p+p{margin-top:14px}
+:is(#s8,.s8p:not(#s8)) .box.q p{font-size:33px;line-height:1.28;font-weight:600}
+:is(#s8,.s8p:not(#s8)) .box .nc{color:var(--wall-ink);font-weight:600}
+:is(#s8,.s8p:not(#s8)) .box b{font-weight:750}
+:is(#s8,.s8p:not(#s8)) code{font:500 .9em/1 var(--m);letter-spacing:-.02em}
+
+/* source strip, on the field */
+:is(#s8,.s8p:not(#s8)) .src{margin-top:30px;display:grid;grid-template-columns:132px 1fr;column-gap:20px;row-gap:10px;align-items:baseline}
+:is(#s8,.s8p:not(#s8)) .src dt{font:700 28px/1.2 var(--f);color:rgba(255,255,255,.62)}
+:is(#s8,.s8p:not(#s8)) .src dd{margin:0;font:500 28px/1.2 var(--m);letter-spacing:-.025em;color:#fff;overflow-wrap:anywhere}
+:is(#s8,.s8p:not(#s8)) .src dd.u{margin-top:-4px;font-size:22px;color:rgba(255,255,255,.62)}
+:is(#s8,.s8p:not(#s8)) .src dd .note{font:500 26px/1.2 var(--f);letter-spacing:0;color:rgba(255,255,255,.62)}
+
+/* architecture: six boxes, top row → , down at the gap, bottom row ← */
+:is(#s8,.s8p:not(#s8)) .arch{display:grid;grid-template-columns:1fr 92px 1fr 92px 1fr;grid-template-rows:auto 68px auto}
+:is(#s8,.s8p:not(#s8)) .arch>:nth-child(-n+5){grid-row:1}
+:is(#s8,.s8p:not(#s8)) .arch>:nth-child(n+7){grid-row:3}
+:is(#s8,.s8p:not(#s8)) .ab{background:linear-gradient(180deg,#fff 0%,#FCFCFE 100%);color:var(--ink);border-radius:var(--r-row);box-shadow:var(--sh-card);padding:24px 30px 26px}
+:is(#s8,.s8p:not(#s8)) .ab.pol{box-shadow:0 0 0 4px var(--paid),var(--sh-card)}
+:is(#s8,.s8p:not(#s8)) .ab h5{margin:0;display:flex;align-items:center;gap:14px;font:800 36px/1.05 var(--f);letter-spacing:-.03em}
+:is(#s8,.s8p:not(#s8)) .ab h5 i{flex:none;font:800 24px/40px var(--f);font-style:normal;width:40px;height:40px;text-align:center;border-radius:50%;color:#fff;background:var(--ink)}
+:is(#s8,.s8p:not(#s8)) .ab.pol h5 i{background:var(--paid)}
+:is(#s8,.s8p:not(#s8)) .ab p{margin-top:12px;font:500 28px/1.25 var(--f);letter-spacing:-.012em;color:var(--ink-2);text-wrap:pretty}
+:is(#s8,.s8p:not(#s8)) .ac{align-self:center;justify-self:stretch;margin:0 14px;color:rgba(255,255,255,.6)}
+:is(#s8,.s8p:not(#s8)) .ac .conn{display:block;color:inherit;opacity:1;min-width:0}
+:is(#s8,.s8p:not(#s8)) .ac.back .conn{transform:scaleX(-1)}
+:is(#s8,.s8p:not(#s8)) .down{grid-column:5;grid-row:2;position:relative;display:flex;align-items:center;justify-content:center;gap:18px;color:rgba(255,255,255,.6)}
+:is(#s8,.s8p:not(#s8)) .down::before{content:"";width:2px;height:64px;background:currentColor}
+:is(#s8,.s8p:not(#s8)) .down::after{content:"";position:absolute;left:calc(50% - 6.5px);top:calc(50% + 21px);width:11px;height:11px;border:solid currentColor;border-width:0 2px 2px 0;transform:rotate(45deg)}
+:is(#s8,.s8p:not(#s8)) .down span{position:absolute;left:calc(50% + 22px);font:700 28px/1 var(--f);color:rgba(255,255,255,.75);white-space:nowrap}
+:is(#s8,.s8p:not(#s8)) .arch-l{margin-top:auto;padding-top:26px}
+:is(#s8,.s8p:not(#s8)) .arch-l .box{display:flex;align-items:baseline;gap:28px;padding:24px 36px 26px}
+:is(#s8,.s8p:not(#s8)) .arch-l .box h4{flex:none;margin:0;transform:translateY(4px)}
+
+/* five hard gates */
+:is(#s8,.s8p:not(#s8)) .gates-g{flex:1;min-height:0;display:grid;grid-template-columns:2.3fr 1fr;gap:24px}
+:is(#s8,.s8p:not(#s8)) .gates{padding:4px 40px;display:grid;grid-template-rows:repeat(5,1fr)}
+:is(#s8,.s8p:not(#s8)) .gate{display:grid;grid-template-columns:52px 1fr;column-gap:24px;align-content:center;padding:8px 0}
+:is(#s8,.s8p:not(#s8)) .gate+.gate{border-top:1px solid var(--line)}
+:is(#s8,.s8p:not(#s8)) .gate i{grid-row:span 2;font:800 26px/48px var(--f);font-style:normal;width:48px;height:48px;text-align:center;border-radius:50%;color:#fff;background:var(--paid)}
+:is(#s8,.s8p:not(#s8)) .gate b{font:800 33px/1.1 var(--f);letter-spacing:-.025em}
+:is(#s8,.s8p:not(#s8)) .gate span{margin-top:4px;font:500 28px/1.24 var(--f);color:var(--ink-2);letter-spacing:-.01em}
+:is(#s8,.s8p:not(#s8)) .stack{display:grid;grid-template-rows:auto 1fr;gap:24px;min-height:0}
+
+/* links */
+:is(#s8,.s8p:not(#s8)) .links-g{flex:1;min-height:0;display:grid;grid-template-columns:1fr 440px;grid-template-rows:auto auto;gap:24px;align-content:start}
+:is(#s8,.s8p:not(#s8)) .lk{padding:8px 40px}
+:is(#s8,.s8p:not(#s8)) .lk .r{padding:18px 0}
+:is(#s8,.s8p:not(#s8)) .lk .r+.r{border-top:1px solid var(--line)}
+:is(#s8,.s8p:not(#s8)) .lk b{display:block;font:750 29px/1.2 var(--f);letter-spacing:-.015em}
+:is(#s8,.s8p:not(#s8)) .lk b small{font:500 28px/1.2 var(--f);color:var(--ink-2);margin-left:14px}
+:is(#s8,.s8p:not(#s8)) .lk code{display:block;margin-top:6px;font:500 28px/1.25 var(--m);letter-spacing:-.025em;color:var(--ink)}
+:is(#s8,.s8p:not(#s8)) .lk.repo{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;column-gap:48px;padding:8px 40px}
+:is(#s8,.s8p:not(#s8)) .lk.repo .r{display:grid;grid-template-columns:196px 1fr;column-gap:16px;align-items:baseline;border-top:1px solid var(--line)}
+:is(#s8,.s8p:not(#s8)) .lk.repo .r.full{grid-column:1/-1;border-top:0}
+:is(#s8,.s8p:not(#s8)) .lk.repo code{margin:0}
+:is(#s8,.s8p:not(#s8)) .lk .rel{font:600 28px/1 var(--f);letter-spacing:-.01em;color:var(--ink-2)}
+:is(#s8,.s8p:not(#s8)) .qr{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px}
+:is(#s8,.s8p:not(#s8)) .qr img{display:block;width:300px;height:300px;image-rendering:pixelated}
+:is(#s8,.s8p:not(#s8)) .qr b{margin-top:18px;font:800 40px/1 var(--f);letter-spacing:-.035em}
+</style>
+
+<script>
+{
+  const S = document.getElementById('s8'), grid = document.getElementById('s8grid'), ov = document.getElementById('s8ov')
+  const GH = 'https://github.com/Collaboration95/theFastandtheFungible/blob/main/'
+  const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=']
+  const CAP = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '−', '=']
+  const ico = id => `<svg class="i"><use href="#i-${id}"/></svg>`
+  const svgI = d => `<svg class="i" viewBox="0 0 24 24">${d}</svg>`
+  const I_STATES = svgI('<circle cx="5.5" cy="6" r="2.5"/><circle cx="18.5" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 6h8M7 8.2l3.8 7.6M17 8.2l-3.8 7.6"/>')
+  const I_RETRY = svgI('<path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M19.5 3.5v4h-4"/>')
+  const I_SHIELD = svgI('<path d="M12 3 19.5 6v5.5c0 4.6-3.2 8-7.5 9.5-4.3-1.5-7.5-4.9-7.5-9.5V6z"/>')
+  const I_LIFT = svgI('<path d="M4 18l5.5-5.5 4 4L20 10"/><path d="M15 10h5v5"/>')
+  const I_ARCH = svgI('<rect x="3" y="4" width="7" height="5" rx="1.2"/><rect x="14" y="4" width="7" height="5" rx="1.2"/><rect x="14" y="15" width="7" height="5" rx="1.2"/><rect x="3" y="15" width="7" height="5" rx="1.2"/><path d="M10 6.5h4M17.5 9v6M14 17.5h-4"/>')
+  const I_LIMIT = svgI('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v5.5M12 16.4v.1"/>')
+  const I_Q = svgI('<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.5a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.6M12 16.6v.1"/>')
+
+  /* Every line is from the appendix notes (FINAL-PRESENTATION.md's one-line answers win where they differ). */
+  const CARDS = [
+    { tile: { n: '1,000', c: 'purchases re-checked', i: ico('ledger') },
+      title: '1,000 Testnet purchases, each re-checked',
+      means: ['A script bought one team-written note 1,000 times on XRPL Testnet, each time locking money in escrow and releasing it with the article key.',
+        'A second, independent script re-read every transaction from a public node: all 1,000 are real, match the receipts, and none is missing or doubled.'],
+      checked: ['The verifier imports no product code. For each purchase it checks validated <code>tesSUCCESS</code>, sha256(key) against the lock, amount, destination and sequence, then scans the 8 payer accounts’ full history for missing or duplicate creates.',
+        '<b>1,000 of 1,000 verified, 0 mismatches.</b> Median 20.3 s a purchase, p90 22.6 s.'],
+      limits: ['Testnet, no real value. Scripted repeats of one team note by fresh accounts: no model, not 1,000 customers. It proves the payment path at volume, not demand.',
+        '20.3 s is the purchase alone; the full demo answer took 78.6 s. Timings are local observations.'],
+      src: 'docs/evidence/proof/TESTNET-1000.md · testnet-1000-verify.json', url: 'docs/evidence/proof/TESTNET-1000.md', rerun: 'npm run proof:testnet-verify', note: 'needs the public Testnet node' },
+
+    { tile: { n: '210,480', c: 'payment states', i: I_STATES },
+      title: '210,480 payment states checked',
+      means: ['A small model of the purchase protocol: 3 purchase intents, 2 crashes, 2 retried deliveries, with and without expiry. A program visited every reachable state and checked the five hard gates in each. No violation.',
+        'When we planted 7 bugs, it caught all 7, each with a step-by-step counterexample.'],
+      checked: ['A bounded breadth-first model checker over an abstract ledger, in four configurations (key-reveal and conditional escrow; budgets of 1 and 2):',
+        '29,040 + 30,480 + 72,240 + 78,720 = <b>210,480 states, 0 violations.</b> The 7 planted bugs are listed in <code>model-summary.json</code>.'],
+      limits: ['An abstract model, not Testnet. It does not prove the real code matches the model.',
+        'Not covered: ledger consensus, malicious writers beyond the model, disk corruption, fees, liveness. The count sums separate configurations.'],
+      src: 'docs/evidence/proof/model-summary.json · PROOF-REPORT.md', url: 'docs/evidence/proof/PROOF-REPORT.md', rerun: 'npm run proof:model', note: 'about 1.7 s' },
+
+    { tile: { n: '1,000,000', c: 'crashes and retries', i: I_RETRY },
+      title: '1,000,000 simulated crashes and retries',
+      means: ['We ran the real purchase code a million times against a fake ledger, each time injecting one fault: a crash between two database writes, a duplicate request, a delayed or invalid ledger answer. Then it restarted and retried.',
+        'One charge per intent, and the other four gates, held every time: <b>0 double charges.</b>'],
+      checked: ['A deterministic seeded simulator (seed 279, 4 workers, 728.5 s) driving the real <code>PurchaseManager</code> and <code>Store</code> with in-memory SQLite and a synthetic ledger.',
+        '<b>0 violations</b> of gates G1–G5.'],
+      limits: ['Simulated ledger; logical, not OS-level, crashes. A finite fault matrix repeated with different seeds: not a million unique paths, and not a million Testnet transactions.',
+        'The run found and fixed one real recovery bug (<code>CLAIM_FAILED</code> after a crash; no gate violation).'],
+      src: 'docs/evidence/proof/sim-summary.json · PROOF-REPORT.md', url: 'docs/evidence/proof/sim-summary.json', rerun: 'npm run proof:sim -- --runs 1000000 --seed 279 --workers 4', note: 'about 12 min' },
+
+    { tile: { n: '34', c: 'attacks', i: I_SHIELD },
+      title: '34 attacks on our test stack, 0 breaches',
+      means: ['We attacked the running purchase server like a hostile website, writer or prompt: hidden “buy everything” text in an article, forged purchase calls, altered prices and payees, replayed payments, ten parallel tabs on one intent, spoofed resource IDs, fake ledger keys, a writer who never finishes.',
+        'Each attack aims at one gate. All 34 were stopped.'],
+      checked: ['A Vitest suite starts the real publisher and API on loopback ports, with a fixture planner and a fake ledger for the escrow cases.',
+        'The attack table is in <code>PROOF-REPORT.md</code>.'],
+      limits: ['Our local test stack, not the hosted deployment. Fixture models don’t show live-model prompt-injection resistance: what is tested is the zero-budget policy boundary.',
+        'Escrow attacks use a fake ledger. 34 is our own list, not a third-party audit.'],
+      src: 'tests/proof/redteam/stack.test.ts · PROOF-REPORT.md', url: 'docs/evidence/proof/PROOF-REPORT.md', rerun: 'npm run proof:redteam' },
+
+    { tile: { n: '+17', c: 'correct answers', i: I_LIFT },
+      title: '+17 correct answers: 31 → 48 of 100', label: '(simulated payments)',
+      means: ['On 100 XRPL and x402 protocol questions, free documentation alone answered 31 correctly. Letting the agent buy paid team-written notes (S$2 budget a question) answered 48.',
+        'The paid arm bought on 43 of the 100 runs, S$20.40 in all. The point is the lift from buying the right article on a hard set.'],
+      checked: ['Paired runs, the same questions in both arms: live DeepSeek planning and writing, rule-based buying. Fact-needle scoring: the answer and an accessible cited passage must both contain the fact. Live-model answers only.',
+        '0 gate violations; all 463 free and 503 paid citations valid.'],
+      limits: ['A development set, not held-out: 60 of the 100 questions were used in earlier rounds. It ran offline to measure answer quality, so payments were simulated (no XRPL transactions). The notes were written by the team.',
+        '<span class="nc">Not claimed: held-out accuracy.</span>'],
+      src: 'docs/evidence/models/EVALUATION.md · r3-real-paired/results.json', url: 'docs/evidence/models/EVALUATION.md', rerun: 'npm run eval:r3', note: 'needs a DeepSeek key, about US$1; steps in EVALUATION.md' },
+
+    { tile: { q: 'Architecture', i: I_ARCH }, kind: 'arch', title: 'Architecture',
+      limits: ['Hosted buying is fixed rules after one confirmation (labelled “fixture”); a fitted decision model did no better and was removed. <code>escrow-v1</code> is our own scheme, not stock x402 <code>exact</code>; its upstream draft is not filed.'],
+      src: 'docs/key-reveal-escrow.md · server/escrow.ts · docs/COMPLIANCE.md', url: 'docs/key-reveal-escrow.md' },
+
+    { tile: { q: 'Five hard gates', i: ico('lock') }, kind: 'gates', title: 'Five hard gates',
+      checked: ['All five checked in every one of 210,480 model states <b>(2)</b>, held in all 1,000,000 simulated schedules <b>(3)</b>, and each of the 34 attacks aims at one of them <b>(4)</b>.'],
+      limits: ['An abstract model, a fake ledger and a local stack, all our own: not a third-party audit.'],
+      src: 'README.md (Hard guarantees) · docs/COMPLIANCE.md (gate table)', url: 'README.md#hard-guarantees' },
+
+    { tile: { q: 'Why XRPL and x402?', i: ico('wall') }, q: true, title: 'Why XRPL and x402?',
+      means: ['XRPL has native escrow with a crypto-condition (PREIMAGE-SHA-256), so “publish the key” is the release condition, with no smart contract.',
+        'With x402, a paywalled URL answers HTTP 402 with machine-readable terms, so an agent can pay with no account or API key. XRPL Testnet is an officially listed x402 network.'],
+      checked: ['Network fees from a Testnet probe: 12 drops to lock, 423 to reveal, 0.000435 XRP a purchase.',
+        'The same escrow ran the 1,000 verified Testnet purchases <b>(1)</b>: median 20.3 s each.'],
+      limits: ['x402 carries the payment; the key-reveal escrow (<code>escrow-v1</code>) is our own scheme, documented and drafted for upstream, not yet filed.',
+        '<span class="nc">Not claimed: ledger-close times or throughput.</span>'],
+      src: 'docs/key-reveal-escrow.md · docs/x402-xrpl.md · docs/FINAL-PUSH.md (D7)', url: 'docs/key-reveal-escrow.md' },
+
+    { tile: { q: 'What if the writer never delivers?', i: ico('key') }, q: true, title: 'What if the writer never delivers?',
+      means: ['No key, no payment. Collecting the money publishes the key, and the key is what unlocks the article.',
+        'If the writer never publishes it, the money stays locked until <code>CancelAfter</code> (about 120 s out); then the buyer’s policy submits <code>EscrowCancel</code> and the principal returns.'],
+      checked: ['No-show cancel measured at 132 s on Testnet. The attack suite includes a writer who never finishes <b>(4)</b>.',
+        'Opt-in 20% holdback: 17 Testnet purchases, 11 released, 6 refunded (fixture articles with forced failures).'],
+      limits: ['The buyer still pays 24 drops of fees. The deadline alone moves nothing: policy submits the cancel.',
+        'A key match proves delivery, not quality; only the holdback is refundable without the writer. <span class="nc">Not claimed: refund if the article is bad.</span>'],
+      src: 'docs/key-reveal-escrow.md · docs/evidence/money/HOLDBACK.md', url: 'docs/key-reveal-escrow.md' },
+
+    { tile: { q: 'Is this real money?', s: 'Mainnet path', i: ico('bank') }, q: true, title: 'Is this real money? The Mainnet path',
+      means: ['No. XRPL Testnet: a real ledger, no real value.',
+        'Mainnet needs a licensed payments partner; that is the next step.'],
+      checked: ['Mainnet is blocked in code (Testnet hosts only).',
+        'RLUSD can’t be used in escrow yet: its issuers have escrow locking off today. We checked on Testnet and Mainnet.'],
+      limits: ['No licence or legal opinion. Open: MAS PSA/DPT analysis, custody (hire flow is receive-and-forward), sanctions screening, Travel Rule. Research purchases pay from the operator’s own wallet (our interpretation, for counsel).',
+        '<span class="nc">Not claimed: real money, Mainnet, regulatory clearance, RLUSD escrow.</span>'],
+      src: 'docs/COMPLIANCE.md', url: 'docs/COMPLIANCE.md' },
+
+    { tile: { q: 'Who are the writers?', i: ico('people') }, q: true, title: 'Who are the writers?',
+      means: ['Today, our own team-authored notes plus 12,104 public documentation passages.',
+        'Anyone can publish a note from a phone, with an operator approving each one; no outside writer has published yet.'],
+      checked: ['12,104 = 8,756 passages from the XRPL dev portal + 3,348 from coinbase/x402, pinned to commit SHAs.',
+        'Writers set the price per article; policy buys within the budget and the S$1 per-source cap. 3 accepted writers hold operator-issued XRPL Credentials (Testnet).'],
+      limits: ['“Verified” is identity display, not KYC, quality or payment permission.',
+        '<span class="nc">Not claimed: outside writers or customers, validated demand.</span>'],
+      src: 'data/corpus/public-docs/manifest.json · docs/writer-verification.md', url: 'docs/writer-verification.md' },
+
+    { tile: { q: 'Links', i: ico('link') }, kind: 'links', title: 'Links' },
+  ]
+  const N = CARDS.length
+
+  /* ---------- the index ---------- */
+  grid.innerHTML = CARDS.map((c, i) => {
+    const t = c.tile
+    const body = t.n ? `<div><div class="n">${t.n}</div><div class="c">${t.c}</div></div>` : `<div class="q">${t.q}${t.s ? `<small>${t.s}</small>` : ''}</div>`
+    return `<button type="button" class="t8" data-i="${i}" aria-label="${(t.n ? t.n + ' ' + t.c : t.q)} (key ${CAP[i]})"><div class="hd"><span class="kc">${CAP[i]}</span>${t.i}</div>${body}</button>`
+  }).join('')
+
+  /* ---------- one card page ---------- */
+  const nb = t => t.replace(/(\d) (s|min)\b/g, '$1\u00a0$2')   // keep a number with its unit
+  const paras = a => (a || []).map(nb).map(p => p.startsWith('<span class="nc">') ? `<p class="nc">${p.slice(17, -7)}</p>` : `<p>${p}</p>`).join('')
+  const src = c => `<dl class="src"><dt>Source</dt><dd>${c.src}</dd><dt></dt><dd class="u">${GH}${c.url}</dd>${c.rerun ? `<dt>Re-run</dt><dd>${c.rerun}${c.note ? ` <span class="note">(${c.note})</span>` : ''}</dd>` : ''}</dl>`
+  const box = (cls, icon, head, a) => `<div class="box ${cls}"><h4>${icon}${head}</h4>${paras(a)}</div>`
+  const A = (n, t, p, cls = '') => `<div class="ab ${cls}"><h5><i>${n}</i>${t}</h5><p>${nb(p)}</p></div>`
+  const conn = back => `<div class="ac${back ? ' back' : ''}"><i class="conn"></i></div>`
+  function bodyOf(c) {
+    if (c.kind === 'arch') return `
+      <div class="arch">
+        ${A(1, 'Question + budget', 'Confirmed once on the 5 s plan sheet. Up to S$5 a prompt, S$1 a source.')}${conn()}
+        ${A(2, 'Planner · DeepSeek', 'Clarifies, plans and writes. It does not decide purchases.')}${conn()}
+        ${A(3, 'Free search', '12,104 documentation passages, local hybrid search. Free evidence first.')}
+        <div class="down"><span>gap found</span></div>
+        ${A(6, 'Answer + receipts', 'Citations checked against granted passages. Verify in the browser, TypeScript or Python (224 shared vectors).')}${conn(true)}
+        ${A(5, 'XRPL Testnet escrow', 'HTTP 402 with <code>escrow-v1</code> terms. Locked to sha256(key); the writer’s EscrowFinish publishes the key.')}${conn(true)}
+        ${A(4, 'Policy code', 'Buys within the budget, reserved atomically. The model has no purchase tool and cannot spend.', 'pol')}
+      </div>
+      <div class="arch-l">${box('l', I_LIMIT, 'Limits', c.limits)}</div>${src(c)}`
+    if (c.kind === 'gates') {
+      const G = [['No premium bytes before a grant', 'Paid text stays unreadable until the ledger validates the writer’s key reveal and proofs pass; ciphertext may arrive earlier, encrypted and quarantined.'],
+        ['The budget is the only spending authority', 'Only policy code spends. The model cannot buy, raise a budget or pick a payee.'],
+        ['One charge per intent', 'A crash, retry or duplicate delivery reuses the same signed transaction.'],
+        ['Real citations', 'Answers cite only delivered, hash-checked passages or free sources; invented or ungranted citations are rejected.'],
+        ['Anything simulated or substituted is labelled', 'Fixture, simulated and Testnet artifacts carry labels; none is shown as real.']]
+      return `<div class="gates-g"><div class="box gates">${G.map(([b, s], i) => `<div class="gate"><i>${i + 1}</i><b>${b}</b><span>${s}</span></div>`).join('')}</div>
+        <div class="stack">${box('k', ico('check'), 'How we checked', c.checked)}${box('l', I_LIMIT, 'Limits', c.limits)}</div></div>${src(c)}`
+    }
+    if (c.kind === 'links') {
+      const web = [['Try it', 'the QR code', 'collaboration95.github.io/theFastandtheFungible/try/'],
+        ['Live sandbox', 'XRPL Testnet, hosted 13–19 Nov', 'ra-front-651013803640.asia-southeast1.run.app'],
+        ['Replay', 'no backend', 'collaboration95.github.io/theFastandtheFungible/demo/'],
+        ['Ledger page', '61 Testnet transactions, re-checked in the browser', 'collaboration95.github.io/theFastandtheFungible/ledger/']]
+      const repo = [['Proof report', 'docs/evidence/proof/PROOF-REPORT.md'], ['Testnet run', 'docs/evidence/proof/TESTNET-1000.md'],
+        ['Escrow', 'docs/key-reveal-escrow.md'], ['Compliance', 'docs/COMPLIANCE.md'],
+        ['Evaluation', 'docs/evidence/models/EVALUATION.md'], ['Q&amp;A', 'docs/submission/qa-prep.md']]
+      return `<div class="links-g">
+        <div class="box lk">${web.map(([b, s, u]) => `<div class="r"><b>${b}<small>${s}</small></b><code>${u}</code></div>`).join('')}</div>
+        <div class="box qr"><img alt="QR code to the ResearchAgent try page"><b>Try it</b></div>
+        <div class="box lk repo"><div class="r full"><b>Repo</b><code>github.com/Collaboration95/theFastandtheFungible <span class="rel">· release v1.1.1</span></code></div>${repo.map(([b, u]) => `<div class="r"><b>${b}</b><code>${u}</code></div>`).join('')}</div>
+      </div>`
+    }
+    return `<div class="cols">${box(c.q ? 'm q' : 'm', c.q ? I_Q : ico('doc'), c.q ? 'The answer' : 'What it means', c.means)}${box('k', ico('check'), 'How we checked', c.checked)}${box('l', I_LIMIT, 'Limits', c.limits)}</div>${src(c)}`
+  }
+  const pageOf = (c, i, print) => `<div class="pg">
+    <div class="pg-top">${print ? `<span class="pg-tag">Appendix</span>` : `<button type="button" class="pg-back" data-close aria-label="Back to the appendix"><span class="ar">←</span><span class="kc">Esc</span></button>`}
+      <h2>${c.title}${c.label ? `<span class="label">${c.label}</span>` : ''}</h2><span class="kc">${CAP[i]}</span></div>
+    <div class="pg-body">${bodyOf(c)}</div></div>`
+
+  /* ---------- state: which card is open, which tile is highlighted ---------- */
+  let open = -1, hi = -1
+  const tiles = [...grid.children]
+  function setHi(i) { hi = i; tiles.forEach((t, k) => t.classList.toggle('hi', k === i)) }
+  function show(i) { open = i; setHi(i); ov.innerHTML = pageOf(CARDS[i], i, false); ov.hidden = false }
+  function close() { if (open < 0) return; open = -1; ov.hidden = true; ov.innerHTML = '' }
+
+  // the build inlines images only in the slide's markup, so the QR lives once in the section (#s8qr, hidden) and the
+  // pages built at runtime take its data URI (their <img> has no src until then, so nothing is ever requested)
+  const QR = document.getElementById('s8qr')?.getAttribute('src')
+  const fixQr = root => QR && root.querySelectorAll('.qr img').forEach(img => img.setAttribute('src', QR))
+
+  /* Keys run in the capture phase, before deck.js, and only while this slide is showing. A card open: every
+     navigation key closes it first, so → / Space never jump past the appendix. */
+  const isKey = k => KEYS.indexOf(k === '_' ? '-' : k === '+' ? '=' : k)
+  addEventListener('keydown', e => {
+    if (!S.classList.contains('active') || e.metaKey || e.ctrlKey || e.altKey) return
+    const k = e.key, n = isKey(k)
+    const eat = () => { e.preventDefault(); e.stopImmediatePropagation() }
+    if (open >= 0) {
+      if (n >= 0) { eat(); show(n); fixQr(ov) }
+      else if (k === 'ArrowDown') { eat(); show((open + 1) % N); fixQr(ov) }
+      else if (k === 'ArrowUp') { eat(); show((open + N - 1) % N); fixQr(ov) }
+      else if (['Escape', 'Backspace', 'ArrowRight', 'ArrowLeft', ' ', 'Enter', 'PageDown', 'PageUp'].includes(k)) { eat(); close() }
+      else if (k === 'Home' || k === 'End') close()
+      return
+    }
+    if (n >= 0) { eat(); show(n); fixQr(ov) }
+    else if (k === 'ArrowDown') { eat(); setHi(hi < 0 ? 0 : (hi + 1) % N) }
+    else if (k === 'ArrowUp') { eat(); setHi(hi < 0 ? N - 1 : (hi + N - 1) % N) }
+    else if (k === 'Enter' && hi >= 0) { eat(); show(hi); fixQr(ov) }
+    else if (k === 'Escape' && hi >= 0) { eat(); setHi(-1) }
+  }, true)
+
+  // clicks here are the appendix's own: never the deck's click-to-advance
+  S.addEventListener('click', e => {
+    e.stopPropagation()
+    if (e.button !== 0) return
+    if (e.target.closest('[data-close]')) { close(); return }
+    const t = e.target.closest('.t8')
+    if (t) { show(+t.dataset.i); fixQr(ov) }
+  })
+  S.addEventListener('mousedown', e => { if (e.target.closest('button')) e.preventDefault() })   // keep focus off, so Space/Enter stay ours
+
+  /* Print: the index, then one page per card, as extra slides right after this one (s801 … s812). */
+  const dropPages = () => document.querySelectorAll('section.s8p').forEach(s => s.remove())
+  function printPages() {
+    dropPages()
+    let at = S
+    CARDS.forEach((c, i) => {
+      const s = document.createElement('section')
+      s.className = 'slide s8p'
+      s.id = 's8' + String(i + 1).padStart(2, '0')
+      s.innerHTML = pageOf(c, i, true)
+      fixQr(s)
+      at.after(s); at = s
+    })
+  }
+  if (!Deck.PRINT) addEventListener('afterprint', dropPages)
+
+  Deck.on('s8', {
+    enter() { close(); setHi(-1) },
+    leave() { close(); setHi(-1) },
+    final() { close(); setHi(-1); printPages() },
+  })
+}
+</script>

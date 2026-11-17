@@ -1,0 +1,175 @@
+/* ResearchAgent finals deck · shared tokens and components.
+   Slide files (src/slides/NN-*.html) own everything under their #sN id; this file owns the rest.
+   See SYSTEM.md. url() paths are relative to this file and inlined by scripts/pitch-build.mjs. */
+
+@font-face{font-family:Geist;src:url("assets/fonts/geist-latin-wght-normal.woff2") format("woff2");font-weight:100 900;font-display:block}
+@font-face{font-family:"Geist Mono";src:url("assets/fonts/geist-mono-latin-wght-normal.woff2") format("woff2");font-weight:100 900;font-display:block}
+
+:root{
+  /* fields: the Dusk-to-day ramp. One field per slide, lightness rising with the story:
+     dusk violet → indigo → blue → azure/teal → green → a daylight close back to blue. Each slide file sets
+     #sN{background:var(--light),linear-gradient(150deg in oklch,var(--sN-a),var(--sN-b))}; white text ≥ 4.5:1 on every stop. */
+  --s0-a:#27145C; --s0-b:#2B1A6D;   /* intro: dusk */
+  --s1-a:#2B1A6D; --s1-b:#2F1E76;   /* problem: violet night, warm horizon */
+  --s2-a:#2F1E76; --s2-b:#2A268B;   /* demo */
+  --s3-a:#2A268B; --s3-b:#2532A3;   /* since SingHacks */
+  --s4-a:#2532A3; --s4-b:#213CBB;   /* payment */
+  --s5-a:#2A3AA6; --s5-m:#0A5C95; --s5-b:#037569;   /* reach: sapphire → ocean → sea teal, bridging into the green */
+  --s6-a:#00836D; --s6-b:#0B8762;   /* proof: green */
+  --s7-a:#04764C; --s7-b:#0465AF;   /* day: green back to blue under the QR */
+  --s8-a:#1E1250; --s8-b:#120B36;   /* appendix: the deep end of the ramp, after the close */
+  --light:radial-gradient(1200px 900px at 92% -10%,rgba(255,255,255,.10),transparent 60%);
+  --light-g:radial-gradient(1200px 900px at 92% -10%,rgba(255,255,255,.06),transparent 60%);
+  --warm-1:#F5622A;                     /* the brand orange: accents only (the appendix highlight) */
+  --blue-1:#2244D2;                     /* accent on white cards (pins, tiles, the link dot) */
+  --green-1:#0B8762;
+
+  /* ink and surfaces (on white cards) */
+  --ink:#0D1330;        /* primary text */
+  --ink-2:#4F5779;      /* secondary text */
+  --ink-3:#8A91AD;      /* tertiary: arrows, connectors */
+  --line:#E5E8F1;       /* hairline on white */
+  --soft:#F4F5F9;       /* sunken surface on white */
+
+  /* on a field */
+  --on:#fff;
+  --on-2:rgba(255,255,255,.8);
+  --on-line:rgba(255,255,255,.22);
+
+  /* meaning */
+  --paid:#0C8F5F;  --paid-bg:#E6F4ED;  --paid-ink:#065B3C;
+  --wall:#E2531A;  --wall-bg:#FFF0E8;  --wall-ink:#B23C0C;
+  --marker:#F5622A;     /* the hand-drawn loop (slides 1 and 4): the paywall's orange */
+
+  /* type */
+  --f:Geist,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --m:"Geist Mono",ui-monospace,Menlo,monospace;
+  --t-display:122px;  --t-h2:92px;  --t-h3:52px;  --t-body:38px;  --t-small:28px;  --t-label:22px;
+
+  /* shape */
+  --r-card:28px;  --r-row:20px;  --r-tile:16px;  --r-pill:999px;
+  --sh-card:0 1px 0 rgba(255,255,255,.9) inset,0 1px 2px rgba(8,14,44,.06),0 28px 56px -28px rgba(8,14,44,.42);
+  --sh-lift:0 10px 24px -10px rgba(8,14,44,.4);
+
+  /* spacing: 8 px grid; the slide frame */
+  --pad-x:100px;  --pad-y:88px;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#070B22;overflow:hidden}
+body{font-family:var(--f);color:var(--on);-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-feature-settings:"ss01" 0}
+body.idle{cursor:none}
+
+/* ---------- stage ---------- */
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:50% 50%}
+.slide{position:absolute;inset:0;width:1920px;height:1080px;overflow:hidden;visibility:hidden;padding:var(--pad-y) var(--pad-x)}
+.slide.active{visibility:visible}
+
+/* nav pill: in the page band under the stage (deck.js reserves it), never on a slide, never printed */
+.nav{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:10;display:flex;align-items:center;gap:2px;height:36px;padding:0 4px;border-radius:999px;
+  background:rgba(255,255,255,.1);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:0 0 0 1px rgba(255,255,255,.14) inset;
+  font:500 14px/1 var(--f);color:rgba(255,255,255,.72);font-variant-numeric:tabular-nums;user-select:none}
+.nav button{all:unset;cursor:pointer;width:32px;height:28px;border-radius:999px;display:grid;place-items:center;font-size:15px;color:rgba(255,255,255,.72)}
+.nav button:hover{background:rgba(255,255,255,.12);color:#fff}
+.nav .pos{min-width:52px;text-align:center;letter-spacing:.02em}
+html.print .nav{display:none}
+
+/* ---------- fields ----------
+   Backgrounds live in each slide file (#sN, from the --sN-a/--sN-b ramp above). Every field is dark enough for white text.
+   .f-book marks the bookends (intro, slide 1, slide 7): their text and tiles use the --bk-* tokens. */
+:root{--bk-ink:#fff;--bk-ink-2:rgba(255,255,255,.82);--bk-line:rgba(255,255,255,.2);--bk-mk:var(--marker);--bk-brand:#fff;
+  --bk-tile:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,.07));--bk-tile-line:rgba(255,255,255,.22);--bk-tile-ink:#fff}
+.f-book{isolation:isolate;color:var(--bk-ink)}
+
+/* ---------- type ---------- */
+h1,h2,h3{margin:0;font-weight:800;line-height:1.04}
+h1,.display{font-size:var(--t-display);letter-spacing:-.05em;line-height:1}
+h2{font-size:var(--t-h2);letter-spacing:-.045em}
+h3{font-size:var(--t-h3);letter-spacing:-.03em;line-height:1.08}
+p{margin:0;text-wrap:balance}
+.mono{font-family:var(--m);letter-spacing:-.01em}
+.num{font-weight:800;letter-spacing:-.05em;font-variant-numeric:tabular-nums;line-height:.9}
+/* the quiet label: only two in the deck ("XRPL Testnet" ≥ 22 px, "(simulated payments)" ≥ 24 px) */
+.label{font:500 var(--t-label)/1.3 var(--f);color:var(--on-2);letter-spacing:0}
+.card .label{color:var(--ink-2)}
+
+/* ---------- components ---------- */
+/* card: the white surface every slide builds on */
+.card{position:relative;background:linear-gradient(180deg,#fff 0%,#FCFCFE 100%);color:var(--ink);border-radius:var(--r-card);box-shadow:var(--sh-card)}
+/* ghost: a translucent panel on a field (the "before" side of a contrast) */
+.ghost{background:rgba(255,255,255,.08);box-shadow:0 0 0 1px var(--on-line) inset;border-radius:var(--r-row);color:var(--on-2)}
+
+/* row: one line of a card, hairline between rows */
+.rows>.row+.row{border-top:1px solid var(--line)}
+
+/* tile: an icon on a small raised square */
+.tile{flex:none;width:64px;height:64px;border-radius:var(--r-tile);display:grid;place-items:center;font-size:32px;color:var(--ink);
+  background:linear-gradient(180deg,#fff,#F1F3F8);box-shadow:0 0 0 1px var(--line) inset,0 1px 2px rgba(8,14,44,.06)}
+
+/* pill: small, hairline, never shouting */
+.pill{display:inline-flex;align-items:center;gap:10px;white-space:nowrap;font:600 26px/1 var(--f);letter-spacing:-.01em;padding:11px 18px 11px 14px;border-radius:var(--r-pill);
+  color:var(--ink);background:linear-gradient(180deg,#fff,#F5F6FA);box-shadow:0 0 0 1px var(--line) inset}
+.pill svg.i{font-size:24px}
+.pill.wall{color:var(--wall-ink);background:linear-gradient(180deg,#FFF5EF,var(--wall-bg));box-shadow:0 0 0 1px rgba(226,83,26,.22) inset}
+.pill.paid{color:var(--paid-ink);background:linear-gradient(180deg,#F2FAF6,var(--paid-bg));box-shadow:0 0 0 1px rgba(12,143,95,.2) inset}
+.pill.on-field{color:#fff;background:rgba(255,255,255,.12);box-shadow:0 0 0 1px var(--on-line) inset}
+
+/* icons: 24-unit grid, 2 px stroke, from the sprite in src/icons.svg */
+svg.i{width:1em;height:1em;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.okdot{flex:none;width:44px;height:44px;border-radius:50%;background:var(--paid);color:#fff;display:grid;place-items:center;font-size:26px;box-shadow:0 0 0 4px rgba(12,143,95,.12)}
+
+/* arrow connector: a hairline that ends in a small chevron; flexes to fill its grid cell */
+.conn{position:relative;height:2px;min-width:48px;background:currentColor;color:var(--ink-3);opacity:.55}
+.conn::after{content:"";position:absolute;right:0;top:50%;width:11px;height:11px;border:solid currentColor;border-width:2px 2px 0 0;transform:translate(1px,-50%) rotate(45deg)}
+
+/* marker: the deck's one emphasis device, a hand-drawn loop that deck.js fits around one phrase.
+   <span class="mk">words</span> · colour: --mk-c · used on slide 1 ("paywalled.") and slide 4 ("pays the writer.") only.
+   deck.js keeps the loop ≥ 20 px from every glyph, sets the span's margins so it clears its neighbours, and draws it on. */
+.mk{position:relative;display:inline-block;white-space:nowrap;--mk-c:var(--marker)}
+.mk>svg{position:absolute;overflow:visible;pointer-events:none;z-index:2}
+.mk path{fill:none;stroke:var(--mk-c);stroke-linecap:round;stroke-linejoin:round}
+.mk.draw path{stroke-dasharray:var(--len);animation:mk-draw .5s cubic-bezier(.55,.05,.35,1) .25s both}
+@keyframes mk-draw{from{stroke-dashoffset:var(--len)}to{stroke-dashoffset:0}}
+
+/* ---------- arrival motion ----------
+   deck.js adds .play to a slide on a forward arrival only (never backwards, in print or under reduced motion).
+   Every keyframe below is from-only (or returns to rest), so the resting CSS is the final state and a slide
+   without .play is simply finished. Delays come from --t (seconds after arrival).
+     [data-enter]  fade up        .pop    spring in (.6 → 1, origin --o)   .stamp  1.25 → 1 with opacity
+     .run          slide in from --dist to the left (easing in: it arrives fast)
+     .bump         knocked back: rests at its own transform; overshoots to --back px and --tilt
+     .shake        damped x shake of --a px      .draw   SVG stroke on (path.draw gets --len) or scaleX 0 → 1
+     .sweep        clip-path reveal top → bottom in --n steps over --d seconds */
+:root{--ease:cubic-bezier(.2,.7,.2,1);--spring:cubic-bezier(.3,1.5,.5,1)}
+.slide.play [data-enter]{animation:enter .35s var(--ease) calc(var(--t,0)*1s) backwards}
+.slide.play .pop{transform-origin:var(--o,50% 50%);animation:pop .24s var(--spring) calc(var(--t,0)*1s) backwards}
+.slide.play .stamp{animation:stamp .2s var(--ease) calc(var(--t,0)*1s) backwards}
+.slide.play .run{animation:run var(--d,.4s) cubic-bezier(.5,0,.9,.6) calc(var(--t,0)*1s) backwards}
+.slide.play .bump{animation:bump var(--d,.26s) linear calc(var(--t,0)*1s) backwards}
+.slide.play .shake{animation:shake .18s linear calc(var(--t,0)*1s) backwards}
+.slide.play .draw:not(.mk):not(path):not(line){transform-origin:var(--o,0 50%);animation:draw-x var(--d,.2s) var(--ease) calc(var(--t,0)*1s) backwards}
+.slide.play :is(path,line).draw{stroke-dasharray:var(--len);animation:draw-s var(--d,.45s) var(--ease) calc(var(--t,0)*1s) backwards}
+.slide.play .sweep{animation:sweep var(--d,.7s) steps(var(--n,20),end) calc(var(--t,0)*1s) backwards}
+@keyframes enter{from{opacity:0;transform:translateY(14px)}}
+@keyframes pop{from{opacity:0;transform:scale(.6)}}
+@keyframes stamp{from{opacity:0;transform:scale(1.25)}}
+@keyframes run{from{transform:translateX(calc(var(--dist,120px)*-1))}}
+@keyframes bump{from{transform:none;animation-timing-function:cubic-bezier(.2,.8,.3,1)}38%{transform:translateX(calc(var(--back,26px)*-1)) rotate(var(--tilt,-8deg));animation-timing-function:cubic-bezier(.4,0,.3,1)}}
+@keyframes shake{from{transform:none}20%{transform:translateX(var(--a,5px))}45%{transform:translateX(calc(var(--a,5px)*-.6))}72%{transform:translateX(calc(var(--a,5px)*.4))}to{transform:none}}
+@keyframes draw-x{from{transform:scaleX(0)}}
+@keyframes draw-s{from{stroke-dashoffset:var(--from,var(--len))}}
+@keyframes sweep{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0 0 0 0)}}
+
+/* ---------- print and ?print=1: every slide in its final state, one per page ---------- */
+@page{size:1920px 1080px;margin:0}
+html.print,html.print body{height:auto;overflow:visible;background:#fff}
+html.print #stage{position:static;transform:none!important;width:1920px;height:auto}
+html.print .slide{position:relative;visibility:visible;break-after:page;page-break-after:always}
+@media print{
+  .nav{display:none!important}
+  html,body{height:auto;overflow:visible;background:#fff}
+  #stage{position:static;transform:none!important;width:1920px;height:auto}
+  .slide{position:relative;visibility:visible;break-after:page;page-break-after:always}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact;animation:none!important;transition:none!important}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

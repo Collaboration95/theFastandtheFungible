@@ -1,0 +1,156 @@
+<!-- 2 · The demo's map, shown just before switching to the live app (and the fallback if the network dies).
+     Left: the five beats. Right: the golden MAS run rebuilt as the app (values: a recorded golden run).
+     Each beat sits on the same row as the part of the app it points at; pins 1–5 read top to bottom.
+     ↓/↑ or 1–5 spotlight one beat and its part of the app (click a beat too); 0 or Esc shows all.
+     Arrival (deck.js .play): the three payment states tint grey → paid in order; the Unlocked shackle lifts. -->
+<section class="slide" id="s2">
+  <h2>One question, start to finish.</h2>
+
+  <div class="map">
+    <div class="beat" data-i="1" style="grid-row:2"><span class="t">Ask with a budget</span><i class="lead"></i></div>
+    <div class="beat" data-i="2" style="grid-row:3"><span class="t">Free sources first</span><i class="lead"></i></div>
+    <div class="beat" data-i="3" style="grid-row:4"><span class="t">Buys the one missing article <span class="pill on-field">S$0.40</span></span><i class="lead"></i></div>
+    <div class="beat" data-i="4" style="grid-row:5"><span class="t">The key unlocks it and pays the writer</span><i class="lead"></i></div>
+    <div class="beat" data-i="5" style="grid-row:6"><span class="t">Check the key yourself</span><i class="lead"></i></div>
+
+    <div class="app" role="img" aria-label="The MAS stablecoin run in the app: question and budget, free sources, one article bought for S$0.40, the payment steps, and the key check">
+      <div class="bar">
+        <span class="logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H4v16h5M15 4h5v16h-5M9 15l6-6"/></svg></span><b>ResearchAgent</b>
+        <span class="tab on">Run</span><span class="tab">Writers</span>
+        <span class="net"><i></i><span class="label">XRPL Testnet</span></span>
+      </div>
+
+      <div class="sec" data-i="1">
+        <span class="pin">1</span>
+        <div class="q" data-g="question"></div>
+        <div class="meta"><span class="chip">Budget <b data-g="budget"></b></span><span>Paid for 1 article</span></div>
+      </div>
+
+      <div class="sec" data-i="2">
+        <span class="pin">2</span>
+        <div class="box src"><svg class="i"><use href="#i-search"/></svg><span data-g="sources"></span><u>View all</u></div>
+      </div>
+
+      <div class="pay">
+        <div class="sec hd" data-i="3">
+          <span class="pin">3</span>
+          <svg class="i ok"><use href="#i-check"/></svg>
+          <div class="tx"><div class="h"><span data-g="note"></span></div><div class="d"><span data-g="writer"></span><span class="tag">Team-authored</span></div></div>
+          <span class="price" data-g="price"></span>
+        </div>
+        <div class="sec steps" data-i="4">
+          <span class="pin">4</span>
+          <div class="st"><b><svg class="i"><use href="#i-lock"/></svg>Locked</b><span>Escrow created</span><u class="mono">EscrowCreate</u></div>
+          <div class="st"><b><svg class="i"><use href="#i-key"/></svg>Key published</b><span>The writer is paid</span><u class="mono">EscrowFinish</u></div>
+          <div class="st"><b><svg class="i" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9.5" rx="2"/><path class="shk" d="M8.5 11V8a3.5 3.5 0 0 1 6.8-1.2"/></svg>Unlocked</b><span>Article delivered</span></div>
+        </div>
+        <div class="sec chk" data-i="5">
+          <span class="pin">5</span>
+          <span class="btn"><svg class="i"><use href="#i-lock"/></svg>Check the key yourself</span>
+          <span class="eq mono">sha256(key) = lock</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+#s2{background:var(--light),linear-gradient(150deg in oklch,var(--s2-a),var(--s2-b))}
+/* the app's own palette (cream page, white cards, warm hairlines), so the shot matches what the judges see next */
+#s2{--a-bg:#F8F6F1;--a-line:#E4DFD4;--a-ink:#1C1B18;--a-ink-2:#6A655B;--a-ok:#2E6B4B;--a-tab:#EEEAE1}
+#s2 h2{letter-spacing:-.045em}
+
+/* one grid for beats and app: row 1 is the app bar, rows 2–6 are the five beats */
+#s2 .map{position:absolute;left:var(--pad-x);right:var(--pad-x);top:236px;display:grid;grid-template-columns:600px 1fr;grid-template-rows:auto repeat(5,auto)}
+
+/* beats: words → hairline → the pin on the app's edge */
+#s2 .beat{grid-column:1;display:flex;align-items:center;gap:26px;padding-right:30px;cursor:pointer;transition:opacity .2s}
+#s2 .beat .t{flex:none;width:450px;font:700 40px/1.12 var(--f);letter-spacing:-.03em;color:#fff;text-wrap:balance}
+#s2 .beat .pill{font-size:28px;padding:8px 16px;vertical-align:4px;margin-left:4px}
+#s2 .lead{flex:1;min-width:40px;height:2px;background:linear-gradient(90deg,rgba(255,255,255,.08),rgba(255,255,255,.4))}
+
+/* the app */
+#s2 .app{grid-column:2;grid-row:1/7;display:grid;grid-template-rows:subgrid;background:var(--a-bg);color:var(--a-ink);border-radius:22px;
+  box-shadow:0 0 0 1px rgba(255,255,255,.08),0 2px 4px rgba(0,0,0,.2),0 40px 80px -30px rgba(0,0,0,.65);padding-bottom:30px}
+#s2 .bar{display:flex;align-items:center;gap:14px;height:76px;padding:0 26px 0 30px;background:#fff;border-bottom:1px solid var(--a-line);border-radius:22px 22px 0 0;font:650 28px/1 var(--f);letter-spacing:-.02em}
+#s2 .bar .logo{flex:none;width:40px;height:40px;border-radius:10px;background:#fff;border:1px solid #DADDE6;box-shadow:0 2px 5px -2px rgba(13,19,48,.25);display:grid;place-items:center}
+#s2 .bar .logo svg{width:28px;height:28px;fill:none;stroke:#24211E;stroke-width:1.9;stroke-linecap:square}
+#s2 .bar b{font-weight:650;margin-right:18px}
+#s2 .tab{font:550 24px/1 var(--f);padding:12px 18px;border-radius:10px;color:var(--a-ink)}
+#s2 .tab.on{background:var(--a-tab)}
+#s2 .net{margin-left:auto;display:flex;align-items:center;gap:10px;padding:10px 18px;border:1px solid var(--a-line);border-radius:999px}
+#s2 .net i{width:10px;height:10px;border-radius:50%;background:var(--a-ok)}
+#s2 .net .label{color:var(--a-ink);font-weight:550}
+
+#s2 .sec{position:relative;align-self:center;margin:0 44px}
+#s2 .sec>*{transition:opacity .2s}
+#s2 .pin{position:absolute;left:-70px;top:50%;margin-top:-26px;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;
+  font:800 26px/1 var(--f);color:#fff;background:var(--blue-1);box-shadow:0 0 0 3px #fff,0 6px 14px rgba(5,10,40,.35);z-index:2}
+
+#s2 .sec[data-i="1"]{padding:30px 0 18px}
+#s2 .q{font:650 34px/1.2 var(--f);letter-spacing:-.025em;text-wrap:balance;max-width:900px}
+#s2 .meta{display:flex;align-items:center;gap:18px;margin-top:16px;font:500 26px/1 var(--f);color:var(--a-ink-2)}
+#s2 .chip{padding:10px 16px;border-radius:10px;background:#fff;box-shadow:0 0 0 1px var(--a-line) inset;color:var(--a-ink)}
+#s2 .chip b{font-weight:700}
+
+#s2 .sec[data-i="2"]{padding:12px 0 22px}
+#s2 .box{background:#fff;border:1px solid var(--a-line);border-radius:16px}
+#s2 .src{display:flex;align-items:center;gap:16px;padding:20px 26px;font:500 28px/1 var(--f);color:var(--a-ink)}
+#s2 .src svg{font-size:28px;color:var(--a-ink-2)}
+#s2 .src u{margin-left:auto;font-size:24px;text-underline-offset:5px}
+
+/* the payment card: one white card holding beats 3–5 */
+#s2 .pay{grid-row:4/7;display:grid;grid-template-rows:subgrid;margin:0 44px;background:#fff;border:1px solid var(--a-line);border-radius:16px}
+#s2 .pay .sec{margin:0 28px}
+#s2 .pay .pin{left:-98px}
+#s2 .hd{display:flex;align-items:center;gap:18px;padding:24px 0 20px;border-bottom:1px solid var(--a-line)}
+#s2 .hd .ok{font-size:32px;color:var(--a-ink)}
+#s2 .hd .tx{flex:1;min-width:0}
+#s2 .hd .h{font:650 29px/1.2 var(--f);letter-spacing:-.02em}
+#s2 .hd .d{display:flex;align-items:center;gap:14px;margin-top:10px;font:500 24px/1 var(--f);color:var(--a-ink-2)}
+#s2 .tag{padding:6px 12px;border:1px solid #CFC8BA;border-radius:8px;color:var(--a-ink);font-size:22px}
+#s2 .price{font:750 38px/1 var(--f);letter-spacing:-.03em}
+
+#s2 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;padding:22px 0 10px}
+#s2 .st b{display:flex;align-items:center;gap:12px;font:650 28px/1 var(--f);letter-spacing:-.02em}
+#s2 .st b svg{font-size:28px;color:var(--a-ok)}
+#s2 .st span{display:block;margin:10px 0 0 40px;font:500 24px/1.2 var(--f);color:var(--a-ink-2)}
+#s2 .st u{display:inline-block;margin:10px 0 0 40px;font-size:22px;font-weight:500;text-underline-offset:5px}
+
+#s2 .chk{display:flex;align-items:center;gap:24px;padding:12px 0 24px}
+#s2 .btn{display:flex;align-items:center;gap:12px;padding:16px 22px;border:1.5px solid var(--a-ink);border-radius:12px;font:650 27px/1 var(--f);letter-spacing:-.015em}
+#s2 .btn svg{font-size:26px}
+#s2 .eq{font-size:26px;font-weight:600;color:var(--a-ink-2)}
+
+/* arrival: Locked → Key published → Unlocked tint grey → paid in order; the open shackle lifts as it lands */
+#s2 .st:nth-child(3){--i:1}
+#s2 .st:nth-child(4){--i:2}
+#s2.play .st b svg{animation:s2-tint .2s var(--ease) calc(.3s + var(--i,0)*.25s) backwards}
+#s2.play .st .shk{animation:s2-lift .3s var(--spring) .8s backwards}
+@keyframes s2-tint{from{color:var(--ink-3)}}
+@keyframes s2-lift{from{translate:0 3.5px}}
+
+/* spotlight one beat */
+#s2 .map.focus .beat:not(.on),#s2 .map.focus .sec:not(.on)>:not(.pin){opacity:.28}
+#s2 .map.focus .sec:not(.on) .pin{background:#fff;color:var(--ink-3);box-shadow:0 0 0 3px rgba(255,255,255,.5)}
+#s2 .map.focus .beat.on .lead{background:linear-gradient(90deg,rgba(255,255,255,.2),#fff)}
+</style>
+
+<script>
+/* values from the golden run (recorded golden run) */
+const GOLDEN = {
+  question: 'What does the MAS stablecoin framework require, and how quickly must an issuer redeem at par?',
+  budget: 'S$1.00',
+  price: 'S$0.40',
+  sources: '28 sources · 17 read · 1 bought',
+  writer: 'ResearchAgent builders',
+  note: 'What the MAS stablecoin framework requires of issuers',
+}
+const s2 = document.getElementById('s2')
+s2.querySelectorAll('[data-g]').forEach(el => { el.textContent = GOLDEN[el.dataset.g] })
+
+const map = s2.querySelector('.map'), parts = [...map.querySelectorAll('.beat,.sec')]
+const spot = n => { parts.forEach(p => p.classList.toggle('on', +p.dataset.i === n)); map.classList.toggle('focus', n > 0) }
+map.querySelectorAll('.beat').forEach(b => (b.dataset.click = '', b).addEventListener('click', () => Deck.step('s2', Deck.stepOf('s2') === +b.dataset.i ? 0 : +b.dataset.i)))
+Deck.on('s2', { steps: 5, set: n => spot(n) })
+</script>

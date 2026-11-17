@@ -1,0 +1,91 @@
+<!-- 6 · Proof at scale. Arrival: the grid is revealed top to bottom in 25 steps (one per row), then the zeros and +17 stamp in.
+      Hero: 1,000 Testnet purchases as a 1,000-cell grid. Right: what we threw at it → the result column.
+     Step (↓): 1 replays the re-check, every cell turning green as its purchase is re-read from the ledger; 0 is the final state. -->
+<section class="slide" id="s6">
+  <h2>Checked, not claimed.</h2>
+
+  <div class="g">
+    <div class="card hero">
+      <div class="n">1,000</div>
+      <div class="what">Testnet purchases,<br>each re-read from a public node</div>
+      <svg class="cells sweep" id="s6cells" style="--t:.2;--d:.7s;--n:25" viewBox="0 0 584 300" aria-hidden="true"></svg>
+      <div class="med"><svg class="i"><use href="#i-check"/></svg>median 20.3 s each</div>
+    </div>
+
+    <div class="card proofs rows">
+      <div class="row">
+        <span class="tile"><svg class="i" viewBox="0 0 24 24"><circle cx="5.5" cy="6" r="2.5"/><circle cx="18.5" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 6h8M7 8.2l3.8 7.6M17 8.2l-3.8 7.6"/></svg></span>
+        <div class="st"><div class="v">210,480</div><div class="w">possible payment states checked</div><div class="sub"><svg class="i"><use href="#i-check"/></svg>caught all 7 bugs we planted</div></div>
+        <div class="out"><b class="stamp" style="--t:.6">0</b><span>errors</span></div>
+      </div>
+      <div class="row">
+        <span class="tile"><svg class="i" viewBox="0 0 24 24"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M19.5 3.5v4h-4"/></svg></span>
+        <div class="st"><div class="v">1,000,000</div><div class="w">simulated crashes and retries</div></div>
+        <div class="out"><b class="stamp" style="--t:.75">0</b><span>double charges</span></div>
+      </div>
+      <div class="row">
+        <span class="tile"><svg class="i" viewBox="0 0 24 24"><path d="M12 3 19.5 6v5.5c0 4.6-3.2 8-7.5 9.5-4.3-1.5-7.5-4.9-7.5-9.5V6z"/></svg></span>
+        <div class="st"><div class="v">34</div><div class="w">attacks on our test stack</div></div>
+        <div class="out"><b class="stamp" style="--t:.9">0</b><span>breaches</span></div>
+      </div>
+      <div class="row lift">
+        <span class="tile"><svg class="i"><use href="#i-doc"/></svg></span>
+        <div class="st"><div class="v">31 → 48 <small>of 100</small></div><div class="w">correct answers with paid notes <span class="label">(simulated payments)</span></div></div>
+        <div class="out"><b class="stamp" style="--t:1.1">+17</b><span>correct</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+#s6{background:var(--light-g),linear-gradient(150deg in oklch,var(--s6-a),var(--s6-b) 50%,var(--s7-a))}
+#s6{display:flex;flex-direction:column}
+#s6 .g{flex:1;display:grid;grid-template-columns:640px 1fr;gap:28px;margin-top:64px}
+
+/* hero: 1,000 purchases, one cell each */
+#s6 .hero{overflow:hidden;padding:44px 48px 40px;display:flex;flex-direction:column}
+#s6 .hero .n{position:relative;font:800 200px/.82 var(--f);letter-spacing:-.06em;font-variant-numeric:tabular-nums;margin-left:-6px}
+#s6 .hero .what{position:relative;font:700 34px/1.2 var(--f);letter-spacing:-.02em;margin-top:30px}
+#s6 .cells{display:block;width:544px;height:280px;margin-top:auto}
+#s6 .cells rect{fill:var(--paid)}
+#s6 .med{margin-top:22px;display:flex;align-items:center;gap:12px;font:700 28px/1 var(--f);letter-spacing:-.01em;color:var(--ink-2)}
+#s6 .med svg{font-size:26px;color:var(--paid)}
+
+/* proofs: what we threw at it → the result column */
+#s6 .proofs{overflow:hidden;display:grid;grid-template-rows:repeat(4,1fr)}
+#s6 .proofs::before{content:"";position:absolute;top:0;right:0;bottom:0;width:250px;background:linear-gradient(180deg,#F1FAF5,var(--paid-bg));box-shadow:1px 0 0 rgba(12,143,95,.14) inset}
+#s6 .row{position:relative;display:grid;grid-template-columns:64px 1fr 250px;align-items:center;column-gap:30px;padding-left:40px}
+#s6 .tile svg.i{stroke-width:1.75;font-size:34px}
+#s6 .v{font:800 64px/1 var(--f);letter-spacing:-.045em;font-variant-numeric:tabular-nums}
+#s6 .v small{font-size:34px;letter-spacing:-.02em;color:var(--ink-2);font-weight:700}
+#s6 .w{margin-top:10px;font:600 30px/1.2 var(--f);letter-spacing:-.015em;color:var(--ink-2)}
+#s6 .w .label{font-weight:500;font-size:24px;white-space:nowrap}
+#s6 .sub{margin-top:10px;display:flex;align-items:center;gap:10px;font:700 28px/1 var(--f);letter-spacing:-.01em;color:var(--paid-ink)}
+#s6 .sub svg{font-size:26px;color:var(--paid)}
+#s6 .out{grid-column:3;display:flex;flex-direction:column;align-items:center;text-align:center}
+#s6 .out b{font:800 96px/.9 var(--f);letter-spacing:-.05em;color:var(--paid);font-variant-numeric:tabular-nums}
+#s6 .out span{margin-top:8px;font:700 28px/1.1 var(--f);letter-spacing:-.01em;color:var(--paid-ink)}
+</style>
+
+<script>
+{
+  /* 1,000 cells: 40 × 25 */
+  const svg = document.getElementById('s6cells'), NS = 'http://www.w3.org/2000/svg', C = 40, R = 25, pw = 584 / C, ph = 300 / R
+  for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) {
+    const e = document.createElementNS(NS, 'rect')
+    e.setAttribute('x', (c * pw).toFixed(2)); e.setAttribute('y', (r * ph).toFixed(2))
+    e.setAttribute('width', (pw - 3.4).toFixed(2)); e.setAttribute('height', (ph - 3.4).toFixed(2)); e.setAttribute('rx', 2)
+    svg.appendChild(e)
+  }
+  /* ↓ replays the re-check: each cell goes from unchecked grey to green in reading order, 0.77 s in all */
+  const cells = [...svg.children]
+  Deck.on('s6', {
+    steps: 1,
+    set(n, { animate }) {
+      cells.forEach(c => c.getAnimations().forEach(a => a.cancel()))
+      if (n !== 1 || !animate) return
+      cells.forEach((c, i) => c.animate([{ fill: '#DDE2EC' }, { fill: '#0C8F5F' }], { duration: 120, delay: i * .65, fill: 'backwards', easing: 'linear' }))
+    },
+  })
+}
+</script>

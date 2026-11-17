@@ -1,0 +1,104 @@
+<!-- 3 · What we built since SingHacks: only the before → after contrast, four pairs.
+     Then (a translucent panel, each line struck through) → now (a white card).
+     ↓/↑ or 1–4 step through the pairs: the old line is struck again and its replacement lights up
+     (click a row too); 0 or Esc shows all four, which is also the arrival and print state.
+     Arrival (deck.js .play): the four old lines are struck top to bottom, each arrow nudges forward as its strike
+     lands, and the Payment row's key turns paid-green last. -->
+<section class="slide" id="s3">
+  <h2>What we built since SingHacks.</h2>
+
+  <div class="cmp">
+    <div class="then ghost" aria-hidden="true"></div>
+    <div class="now card" aria-hidden="true"></div>
+
+    <div class="k" data-i="1" style="grid-row:1">Access</div>
+    <div class="b" data-i="1" style="grid-row:1"><span class="x">One web app</span></div>
+    <div class="ar" data-i="1" style="grid-row:1"><i class="conn"></i></div>
+    <div class="a" data-i="1" style="grid-row:1"><span class="tile"><svg class="i"><use href="#i-link"/></svg></span><span class="w">Live. Any agent connects by URL.</span></div>
+
+    <div class="k" data-i="2" style="grid-row:2">Sources</div>
+    <div class="b" data-i="2" style="grid-row:2"><span class="x">Sample sources</span></div>
+    <div class="ar" data-i="2" style="grid-row:2"><i class="conn"></i></div>
+    <div class="a" data-i="2" style="grid-row:2"><span class="tile"><svg class="i"><use href="#i-doc"/></svg></span><span class="w"><b class="num">12,104</b> real documentation passages + paid notes</span></div>
+
+    <div class="k" data-i="3" style="grid-row:3">Buying</div>
+    <div class="b" data-i="3" style="grid-row:3"><span class="x">A person approved every purchase</span></div>
+    <div class="ar" data-i="3" style="grid-row:3"><i class="conn"></i></div>
+    <div class="a" data-i="3" style="grid-row:3"><span class="tile"><svg class="i"><use href="#i-wallet"/></svg></span><span class="w">Fixed rules buy inside your budget. The AI can’t spend.</span></div>
+
+    <div class="k" data-i="4" style="grid-row:4">Payment</div>
+    <div class="b" data-i="4" style="grid-row:4"><span class="x">Simulated payments</span></div>
+    <div class="ar" data-i="4" style="grid-row:4"><i class="conn"></i></div>
+    <div class="a" data-i="4" style="grid-row:4"><span class="tile"><svg class="i"><use href="#i-key"/></svg></span><span class="w">XRPL Testnet escrow: the key that unlocks the article pays the writer</span></div>
+  </div>
+
+</section>
+
+<style>
+#s3{background:var(--light),linear-gradient(150deg in oklch,var(--s3-a),var(--s3-b))}
+#s3 .cmp{position:absolute;left:var(--pad-x);right:var(--pad-x);top:280px;display:grid;grid-template-columns:200px 600px 112px 1fr;grid-template-rows:repeat(4,172px)}
+
+/* the two panels sit behind their rows */
+#s3 .then{grid-column:2;grid-row:1/5;border-radius:var(--r-card);background:rgba(255,255,255,.06)}
+#s3 .now{grid-column:4;grid-row:1/5}
+
+/* row key: plain words on the field, like slide 1’s "Agents" / "Writers" */
+#s3 .k{grid-column:1;align-self:center;font:750 40px/1 var(--f);letter-spacing:-.035em;color:#fff}
+
+/* then: faded and struck through */
+#s3 .b{grid-column:2;display:flex;align-items:center;padding:0 40px;font:550 34px/1.25 var(--f);letter-spacing:-.02em;color:rgba(255,255,255,.8)}
+#s3 .x{white-space:nowrap;background:linear-gradient(rgba(255,255,255,.62),rgba(255,255,255,.62)) 0 56%/100% 2px no-repeat;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+
+/* the arrow between the two */
+#s3 .ar{grid-column:3;display:flex;align-items:center;padding:0 18px}
+#s3 .ar .conn{flex:1;color:#fff;opacity:.6;height:3px}
+#s3 .ar .conn::after{width:16px;height:16px;border-width:3px 3px 0 0}
+
+/* now: the white card's rows */
+#s3 .a{grid-column:4;position:relative;display:flex;align-items:center;gap:28px;padding:0 44px 0 40px;font:700 38px/1.18 var(--f);letter-spacing:-.025em;color:var(--ink)}
+#s3 .a .w{text-wrap:balance;max-width:680px}
+#s3 .a[data-i="1"] .w{max-width:500px}
+#s3 .a .num{font-size:1.05em;letter-spacing:-.04em;line-height:1}
+#s3 .a .tile{color:var(--blue-1)}
+#s3 .b[data-i="2"],#s3 .b[data-i="3"],#s3 .b[data-i="4"]{box-shadow:0 -1px 0 rgba(255,255,255,.14)}
+#s3 .a[data-i="2"]::before,#s3 .a[data-i="3"]::before,#s3 .a[data-i="4"]::before{content:"";position:absolute;left:40px;right:40px;top:0;height:1px;background:var(--line)}
+
+/* the key tile of the Payment row is paid: the escrow pays the writer */
+#s3 .a[data-i="4"] .tile{color:var(--paid);background:var(--paid-bg);box-shadow:0 0 0 1px rgba(12,143,95,.22) inset}
+
+/* arrival: strike the before, top to bottom (--i is the row), nudge each arrow as its strike lands, pay the key last */
+#s3 [data-i="2"]{--i:1}
+#s3 [data-i="3"]{--i:2}
+#s3 [data-i="4"]{--i:3}
+#s3.play .x{animation:s3-strike-in .35s cubic-bezier(.6,0,.3,1) calc(.25s + var(--i,0)*90ms) backwards}
+#s3.play .ar .conn{animation:s3-nudge .2s cubic-bezier(.3,0,.3,1) calc(.6s + var(--i,0)*90ms)}
+#s3.play .a[data-i="4"] .tile{animation:s3-pay .25s var(--ease) 1s backwards}
+@keyframes s3-strike-in{from{background-size:0 2px}to{background-size:100% 2px}}
+@keyframes s3-nudge{50%{translate:10px 0}}
+@keyframes s3-pay{from{color:var(--blue-1);background-color:#F4F5F9;box-shadow:0 0 0 1px var(--line) inset}}
+
+/* stepping: one pair in focus, the rest recede */
+#s3 .cmp>[data-i]{transition:opacity .2s;cursor:pointer}
+#s3 .cmp.focus>[data-i]:not(.on){opacity:.3}
+#s3 .cmp.focus .ar.on .conn{opacity:1}
+#s3 .x.redraw{animation:s3-strike .45s cubic-bezier(.6,0,.3,1) both}
+#s3 .a.on.lit{animation:s3-lit .7s ease-out .3s both}
+@keyframes s3-strike{from{background-size:0 2px}to{background-size:100% 2px}}
+@keyframes s3-lit{from{transform:translateX(-14px);opacity:.3}to{transform:none;opacity:1}}
+</style>
+
+<script>
+const cmp = document.querySelector('#s3 .cmp'), cells = [...cmp.querySelectorAll('[data-i]')]
+const replay = (el, cls) => { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls) }
+function pair(n, { animate } = {}) {
+  cells.forEach(c => c.classList.toggle('on', +c.dataset.i === n))
+  cmp.classList.toggle('focus', n > 0)
+  cmp.querySelectorAll('.redraw,.lit').forEach(e => e.classList.remove('redraw', 'lit'))
+  if (n > 0 && animate) {
+    replay(cmp.querySelector(`.b[data-i="${n}"] .x`), 'redraw')
+    replay(cmp.querySelector(`.a[data-i="${n}"]`), 'lit')
+  }
+}
+cells.forEach(c => (c.dataset.click = '', c).addEventListener('click', () => Deck.step('s3', Deck.stepOf('s3') === +c.dataset.i ? 0 : +c.dataset.i)))
+Deck.on('s3', { steps: 4, set: (n, ctx) => pair(n, ctx) })
+</script>
