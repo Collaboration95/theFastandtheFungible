@@ -20,7 +20,7 @@ const descriptions = {
   'evolution/index.html': 'The September–October build archive. For the current finals story, follow Progress since SingHacks.',
   'project-map/index.html': 'Explore the architecture from source discovery through budget policy, payment and verified citations.',
   'deck/index.html': 'The ResearchAgent finals deck: AI agents that pay for paywalled articles per piece, on XRPL Testnet, and prove each purchase on the ledger.',
-  'slides/index.html': 'Archived October AI Tinkerers presentation: research, evidence, spending policy and payment.',
+  'slides/october/index.html': 'Archived October AI Tinkerers presentation: research, evidence, spending policy and payment.',
   'notes/index.html': 'Speaker notes for the archived October ResearchAgent talk.',
   'reports/airwallex-before-after/index.html': 'Archived banking concept: one account with explicit spending limits.',
   'reports/kit-11-evaluation/index.html': 'Archived evaluation of the Kit 11 banking proposal and its implementation boundaries.',

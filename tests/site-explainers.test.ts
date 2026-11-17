@@ -65,7 +65,7 @@ describe('explainer destinations and provenance', () => {
     expect(home.querySelector('header')?.textContent).toContain('XRPL Testnet demo · 13–19 Nov 2026')
     expect(home.querySelector('.card[href="project-map/"]')).toBeNull()
     const archive = new JSDOM(read('site/evolution/index.html')).window.document
-    for (const href of ['../project-map/', '../slides/']) expect(archive.querySelector(`#archive a[href="${href}"]`)).not.toBeNull()
+    for (const href of ['../project-map/', '../slides/october/']) expect(archive.querySelector(`#archive a[href="${href}"]`)).not.toBeNull()
     expect(home.body.textContent).not.toMatch(/\b7 Nov(ember)? 2026\b|the 7 November/)
     // One link row in the hero (S10); the AI Tinkerers card carries no keyboard shortcuts (S25).
     expect(home.querySelector('main > p a[href="developers/"]')).toBeNull()
