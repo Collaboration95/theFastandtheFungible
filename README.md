@@ -1,13 +1,17 @@
-ResearchAgent is a search engine for agent-readable expertise, with a wallet. **The Fast and the Fungible** is our team and repository name.
-
 <p align="center"><img src="design/brand/lockup.svg" alt="ResearchAgent" height="48"></p>
 <h3 align="center">Paid on delivery. Proven on the ledger.</h3>
 
-Ask a question and set a budget. ResearchAgent searches free sources, the real XRPL and x402 documentation cited by URL,
-then policy rules decide which missing evidence to buy. The key that unlocks the article
-is the same key that releases the writer’s payment. Your browser checks the match.
+<p align="center"><a href="pitch/ResearchAgent-finals-pitch.pdf"><img src="docs/media/pitch-hook.png" width="900" alt="Agents do the research now. The best research is paywalled."></a></p>
+<p align="center"><sub>From the finals pitch: <a href="https://collaboration95.github.io/theFastandtheFungible/slides/">slides</a> · <a href="pitch/ResearchAgent-finals-pitch.pdf">PDF</a>.</sub></p>
 
-**XRPL Testnet demo · 13–19 Nov 2026.**
+**Agents do the research now. The best research is paywalled.**
+Agents hit the paywall and settle for what’s free. Writers can’t sell to agents, so their best work goes unread.
+**ResearchAgent: agents buy the article they need, writers get paid.**
+
+ResearchAgent is a neutral search engine for agent-readable expertise, with a wallet. Writers publish; your agent searches free sources first,
+then buys only the missing article, within the budget you set. The article’s key is the same key that releases the writer’s payment on the XRP Ledger.
+
+**XRPL Testnet demo · 13–19 Nov 2026.** Test XRP only; mainnet signing is disabled.
 
 [Try the demo](https://collaboration95.github.io/theFastandtheFungible/try/) ·
 [Verify a recorded run](https://ra-front-651013803640.asia-southeast1.run.app) ·
@@ -18,7 +22,7 @@ is the same key that releases the writer’s payment. Your browser checks the ma
 |---|---|---|---|
 | **<!--f:proof_purchases-->1,000<!--/f-->** real, each re-read from a public node | **<!--f:proof_schedules-->1,000,000<!--/f-->** simulated, no violation | **<!--f:proof_states-->210,480<!--/f-->**, no violation | **<!--f:proof_attacks-->34<!--/f-->**, no breach |
 
-Paid notes help: correct answers on <!--f:eval_questions-->100<!--/f--> XRPL and x402 questions rose from <!--f:eval_free_correct-->31<!--/f--> (free docs) to <!--f:eval_paid_correct-->48<!--/f-->. [Evaluation](docs/evidence/models/EVALUATION.md).
+Paid notes help: correct answers on <!--f:eval_questions-->100<!--/f--> XRPL and x402 questions rose from <!--f:eval_free_correct-->31<!--/f--> (free docs) to <!--f:eval_paid_correct-->48<!--/f--> (a development diagnostic with simulated settlement). [Evaluation](docs/evidence/models/EVALUATION.md).
 
 <p align="center"><img src="docs/assets/payment-stepper.gif" width="712" alt="A recorded payment locks in escrow; the writer publishes its key and the article unlocks."></p>
 <p align="center"><sub><a href="https://collaboration95.github.io/theFastandtheFungible/demo/">Recorded replay</a>, sample writers: locked → key published → article unlocked (waiting shortened).</sub></p>
@@ -110,47 +114,7 @@ It bought one S$0.40 article in <!--f:featured_seconds-->31.1<!--/f--> s Start�
 Separately written TypeScript and Python verifiers check exported receipts and agree on <!--f:vectors-->224<!--/f--> conformance cases.
 [Receipt format](docs/receipt-spec.md) · [Public ledger page](https://collaboration95.github.io/theFastandtheFungible/ledger/).
 
-## Hosted usage so far
+[Docs](docs/README.md) · [Numbers](docs/numbers.md) · [Pitch deck (PDF)](pitch/ResearchAgent-finals-pitch.pdf) ·
+[Builder feedback](docs/BUILDER-FEEDBACK.md) · [MIT license](LICENSE)
 
-Hosted demo since 11 Nov, team test runs included, as of <!--f:live_asof-->12 Nov 2026, 12:24 SGT<!--/f-->:
-<!--f:live_questions-->62<!--/f--> questions, <!--f:live_purchases-->74<!--/f--> settled purchases; median <!--f:live_median_s-->22.316<!--/f--> s and p90 <!--f:live_p90_s-->61.061<!--/f--> s across <!--f:live_timing_n-->49<!--/f--> timed runs; median model cost US$<!--f:live_model_usd-->0.0020035<!--/f--> per question; <!--f:live_violations-->0<!--/f--> recorded gate violations across <!--f:live_audits-->50<!--/f--> audited runs (<!--f:live_audit_unavailable-->12<!--/f--> audits unavailable).
-[Snapshot and definitions](docs/submission/evidence/hosted-stats-nov12/README.md) ·
-[Live scoreboard](https://ra-front-651013803640.asia-southeast1.run.app/api/demo/stats).
-Model cost is separate from article prices and ledger fees.
-
-## Progress and builder feedback
-
-<!--f:prs-->347<!--/f--> pull requests merged since <!--f:since-->21 Sep<!--/f-->;
-<!--f:releases-->15<!--/f--> releases, counted at <!--f:sha-->484856c2<!--/f--> on
-<!--f:as_of-->13 Nov 2026<!--/f-->.
-
-**RLUSD cannot be escrowed today.** Ripple’s official RLUSD issuers have escrow locking switched off on both networks, so we show the ledger’s verdict before signing. An outer Batch also reports success when its inner transactions roll back. Five more upstream items with hashes and three patches are ready to file. [Bundle](docs/feedback/upstream/r3/README.md).
-
-<!--f:feedback_line-->7 ranked findings with runnable repros · 35 numbered findings (B01–B35) · 15 submissions on 4–5 Sep · 8 upstream drafts, 0 filed<!--/f-->.
-
-[Progress since SingHacks](https://collaboration95.github.io/theFastandtheFungible/progress/) ·
-[Reproducible builder feedback](docs/BUILDER-FEEDBACK.md).
-
-## Status and limits
-
-- **Environment and assets.** This is a development network; mainnet signing is disabled.
-  The live demo pays in XRP. The CLI’s TEST-SGD is an unbacked stand-in for RLUSD: unsigned
-  RLUSD escrow probes returned `tecNO_PERMISSION` on both networks; the TEST-SGD control succeeded.
-  [Recorded verdicts](docs/evidence/dry-run-nov12/README.md).
-- **Market.** No outside customers, pilots or revenue yet. The <!--f:proof_purchases-->1,000<!--/f--> purchases above are
-  scripted repeats of one team-authored note by fresh accounts. Demand among
-  XRPL/x402 integrators using coding agents is not yet validated.
-- **Delivery and refunds.** Signed submission can expose the key before validation;
-  escrow stays claimable until CancelAfter. A key match proves reveal, not quality.
-  With holdback on, only the holdback share is refundable without the writer; the key-release payment stays paid.
-  No-show recovery requires a validated EscrowCancel after the deadline.
-- **Answer quality.** That evaluation is a development diagnostic with simulated settlement.
-- **Identity.** Three accepted operator-issued Credentials and an operator-issued
-  Permissioned Domain support identity display only, not KYC, quality or payment permission.
-- **Operations.** One shared payer, visitor caps and labelled per-run model fallbacks.
-  Cold installs depend on npm and faucet latency ([timings](docs/submission/qa-prep.md)).
-  Packages are on GitHub Releases; registry publication and Mac signing remain pending.
-  The OFAC screen is one dated list, not a clearance; a regulated launch needs custody, KYB and licensing.
-
-[Docs](docs/README.md) · [Numbers](docs/numbers.md) · [Deck (PDF)](docs/submission/ResearchAgent-SFF-deck.pdf) ·
-[Q&A](docs/submission/qa-prep.md) · [Contributing](.github/CONTRIBUTING.md) · [Security](.github/SECURITY.md) · [MIT license](LICENSE)
+**The Fast and the Fungible** is our team and repository name.

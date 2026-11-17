@@ -27,7 +27,6 @@ describe('builder feedback document', () => {
     expect(doc).toContain('35 numbered log items (B01–B35)')
     expect(doc).toContain('8 upstream issue drafts, **0 filed**')
     expect(doc).toContain('"35 numbered findings (B01–B35)"')
-    expect(readFileSync('README.md', 'utf8')).toContain('35 numbered findings (B01–B35)')
     expect(drafts).toHaveLength(8)
   })
 

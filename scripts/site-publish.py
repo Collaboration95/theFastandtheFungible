@@ -8,6 +8,15 @@ import tempfile
 
 root = pathlib.Path(__file__).resolve().parent.parent
 
+# Standalone finals pitch deck, built into pitch/ by scripts/pitch-build.mjs and served at /slides/.
+# The October AIT talk deck lives at slides/october/ in site/.
+EXTRA = {
+    'slides/index.html': 'pitch/index.html',
+    'slides/ResearchAgent-finals-pitch.pdf': 'pitch/ResearchAgent-finals-pitch.pdf',
+}
+# gh-pages' manifest already records the October deck's digest for slides/index.html, so
+# replacing it with the finals deck passes the conflict check (it only fails if gh-pages was hand-edited).
+
 def git(*args, cwd=root, check=True):
     return subprocess.run(['git', *args], cwd=cwd, check=check, stdout=subprocess.PIPE).stdout
 
@@ -36,14 +45,21 @@ def push_with_retry(work, attempts=3):
 
 
 def main():
-    if git('status', '--porcelain', '--', 'site'):
-        raise SystemExit('site/ has uncommitted changes; commit them first')
+    if git('status', '--porcelain', '--', 'site', 'pitch'):
+        raise SystemExit('site/ or pitch/ has uncommitted changes; commit them first')
     # A pinned install or verify link that 404s breaks a judge's first command: stop before publishing it.
     if subprocess.run(['node', 'scripts/check-release-urls.mjs'], cwd=root).returncode:
         raise SystemExit('Site publish stopped: a pinned release link does not resolve (listed above). Publish the release or re-pin the links.')
     subprocess.run(['npm', 'run', 'build:demo'], cwd=root, check=True)
     git('fetch', 'origin', 'gh-pages')
-    files = [p for p in (root / 'site').rglob('*') if p.is_file() and p.relative_to(root / 'site').as_posix() not in ('SOURCE.md', 'evolution/data.js')]
+    files = [(p.relative_to(root / 'site').as_posix(), p) for p in (root / 'site').rglob('*') if p.is_file() and p.relative_to(root / 'site').as_posix() not in ('SOURCE.md', 'evolution/data.js')]
+    files += [(rel, root / src) for rel, src in EXTRA.items()]
+    clash = [rel for rel, _ in files if sum(r == rel for r, _ in files) > 1]
+    if clash:
+        raise SystemExit(f'Site publish stopped: {sorted(set(clash))} is produced by both site/ and EXTRA')
+    missing = [str(src) for _, src in files if not src.is_file()]
+    if missing:
+        raise SystemExit(f'Site publish stopped: missing source files {missing}; build the pitch deck first (node scripts/pitch-build.mjs)')
     with tempfile.TemporaryDirectory(prefix='site-publish-') as temp:
         work = pathlib.Path(temp) / 'pages'
         git('worktree', 'add', '--detach', str(work), 'origin/gh-pages')
@@ -51,8 +67,7 @@ def main():
             manifest = work / '.site-publish.json'
             old = json.loads(manifest.read_text()) if manifest.exists() else {}
             new = {}
-            for src in files:
-                rel = src.relative_to(root / 'site').as_posix()
+            for rel, src in files:
                 dst = work / rel
                 desired = src.read_bytes()
                 if dst.exists() and dst.read_bytes() != desired:
@@ -64,8 +79,8 @@ def main():
                     if digest(dst.read_bytes()) != expected:
                         raise SystemExit(f'Conflict: {rel} changed on gh-pages; reconcile before publishing')
                 new[rel] = digest(desired)
-            for src in files:
-                dst = work / src.relative_to(root / 'site')
+            for rel, src in files:
+                dst = work / rel
                 dst.parent.mkdir(parents=True, exist_ok=True)
                 dst.write_bytes(src.read_bytes())
             manifest.write_text(json.dumps(new, indent=2, sort_keys=True) + '\n')

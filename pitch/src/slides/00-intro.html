@@ -1,0 +1,95 @@
+<!-- 0 · Intro: an empty bookend sky (late afternoon, dark ink). The first → / Space / PgDn / Enter plays the reveal on this slide.
+     The next press goes to slide 1 (↓ and a click count as →). ← from slide 1 shows the finished logo;
+     Home or #0 shows the empty field, ready to play. Reduced motion and print show the final lockup.
+     The reveal is a straight port of the launch-clip engine's "title" beat (motion/lib/engine.js, brand part only):
+     the white tile springs in, the mark draws itself, then "ResearchAgent" slides out from behind the tile.
+     Same easings, spring and timings; t = 0 is the tile's start (the engine's tm.ti). -->
+<section class="slide f-book" id="s0" aria-label="ResearchAgent">
+  <div class="sky" aria-hidden="true"><i class="sky-cu"></i><i class="sky-st"></i></div>
+  <div class="row" role="img" aria-label="ResearchAgent">
+    <div class="brand">
+      <div class="bt"><svg viewBox="0 0 24 24" aria-hidden="true">
+        <path pathLength="1" d="M4 12V4h5"/><path pathLength="1" d="M4 12v8h5"/><path pathLength="1" d="M20 12V4h-5"/><path pathLength="1" d="M20 12v8h-5"/><path pathLength="1" d="M9 15l6-6"/>
+      </svg></div>
+      <span class="nameclip"><span>ResearchAgent</span></span>
+    </div>
+  </div>
+</section>
+
+<style>
+/* late afternoon: pale haze, a low sun behind the hills; dark ink on the light sky */
+#s0{--scene:url("../scenes/s0.svg");--clouds-cu:url("../scenes/s0-cu.svg");--clouds-st:url("../scenes/s0-st.svg");--bk-ink:var(--ink);--bk-ink-2:#2C3150;--bk-line:rgba(60,30,50,.14);--bk-brand:var(--ink);
+  background:radial-gradient(900px 420px at 72% 76%,rgba(255,244,214,.95),rgba(255,236,200,0) 70%),linear-gradient(180deg,var(--s0-z),var(--s0-m) 52%,var(--s0-l) 76%,var(--s0-h))}
+#s0{--fs:170px;--ink0:#24211E;--name0:var(--bk-brand);padding:0}
+/* .tline: one centred row, height 1.3 × font size */
+#s0 .row{position:absolute;left:0;right:0;top:50%;height:calc(var(--fs) * 1.3);margin-top:calc(var(--fs) * -.65);display:flex;justify-content:center;align-items:center;
+  white-space:nowrap;font-family:Geist,system-ui,sans-serif;font-size:var(--fs);font-weight:640;letter-spacing:-.035em;line-height:normal;color:var(--name0);
+  -webkit-font-smoothing:antialiased;font-optical-sizing:auto}
+#s0 .brand{display:flex;align-items:center}
+#s0 .bt{flex:none;position:relative;box-sizing:border-box;width:1.12em;height:1.12em;border-radius:.24em;background:#fff;border:.022em solid var(--tile-edge,#fff);
+  box-shadow:0 .14em .34em -.12em rgba(13,19,48,.3),0 .02em .05em rgba(13,19,48,.08);display:grid;place-items:center}
+#s0 .bt svg{width:78%;height:78%;overflow:visible}
+#s0 .bt path{fill:none;stroke:var(--ink0);stroke-width:1.9;stroke-linecap:square;stroke-linejoin:miter;stroke-dasharray:1 1}
+#s0 .nameclip{overflow:hidden;display:inline-block;padding:.08em 0 .14em;margin:-.08em 0 -.14em}
+#s0 .nameclip span{display:inline-block;padding-left:.26em}
+/* empty until played (the script poses every frame; this is the pre-script state) */
+#s0 .bt{opacity:0}
+#s0 .nameclip{width:0}
+</style>
+
+<script>
+const el = document.getElementById('s0')
+const brand = el.querySelector('.brand'), tile = el.querySelector('.bt'), clip = el.querySelector('.nameclip'), name = clip.firstElementChild
+const paths = [...el.querySelectorAll('.bt path')]
+
+// engine.js helpers, verbatim
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x))
+const P = (t, t0, d) => clamp((t - t0) / d)
+const E = {
+  expoOut: p => p >= 1 ? 1 : 1 - Math.pow(2, -10 * p),
+  expoInOut: p => p <= 0 ? 0 : p >= 1 ? 1 : p < .5 ? Math.pow(2, 20 * p - 10) / 2 : (2 - Math.pow(2, -20 * p + 10)) / 2,
+  cubicInOut: p => p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2,
+}
+const spring = (s, k = 210, c = 21) => {
+  if (s <= 0) return 0
+  const w0 = Math.sqrt(k), z = c / (2 * w0), wd = w0 * Math.sqrt(1 - z * z)
+  return 1 - Math.exp(-z * w0 * s) * (Math.cos(wd * s) + (z * w0 / wd) * Math.sin(wd * s))
+}
+const draw = (p, v) => { p.style.strokeDashoffset = 1 - v; p.style.opacity = v > 0.015 ? 1 : 0 }
+
+// the engine scales the whole row; the brand is centred in it, so scaling the brand is identical and stays inside the frame
+// title beat timings relative to the tile (engine: at, ti = at + .28, nm = at + .74, exit = at + 1.7)
+const AT = -0.28, TI = 0, NM = 0.46, PUSH = 1.7 + 0.3, END = 2.2
+let nameW = 0
+const pose = t => {
+  const s = spring(t - TI)
+  tile.style.opacity = P(t, TI, 0.16)
+  tile.style.transform = `scale(${0.55 + 0.45 * s}) rotate(${(1 - s) * -8}deg)`
+  for (let i = 0; i < 4; i++) draw(paths[i], E.cubicInOut(P(t, TI + 0.06, 0.42)))
+  draw(paths[4], E.expoOut(P(t, TI + 0.42, 0.32)))
+  const pn = E.expoInOut(P(t, NM, 0.7))
+  clip.style.width = pn >= 1 ? 'auto' : (pn * nameW) + 'px'
+  name.style.transform = pn >= 1 ? 'none' : `translateX(${-(1 - pn) * 0.45 * nameW}px)`
+  name.style.opacity = Math.pow(pn, 0.6)
+  brand.style.transform = `scale(${1 + 0.018 * E.cubicInOut(P(t, AT, PUSH))})`
+}
+
+let raf = 0, played = false
+const show = mode => {
+  cancelAnimationFrame(raf)
+  played = mode !== 'empty'
+  if (mode !== 'play') return pose(mode === 'done' ? END : -1)
+  nameW = name.offsetWidth          // the clip's full content width (engine: clip.scrollWidth)
+  const t0 = performance.now()
+  const tick = () => { const t = (performance.now() - t0) / 1000; pose(t); if (t < END) raf = requestAnimationFrame(tick) }
+  pose(0); raf = requestAnimationFrame(tick)
+}
+pose(-1)
+Deck.on('s0', {
+  steps: 1,
+  set: (n, ctx) => show(n ? (ctx.animate ? 'play' : 'done') : 'empty'),
+  enter: (_, ctx) => { if (ctx.from === 1) show('done') },   // ← from slide 1: keep the logo up
+  next: () => { if (!played) { Deck.step('s0', 1); return true } },
+  final: () => show('done'),
+})
+</script>

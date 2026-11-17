@@ -2,7 +2,7 @@
 
 Each alternative below includes its own environment label; paste one complete variant.
 Writer provenance: the paid tier is ledger-analytics reports plus notes from two team-authored writers; the free tier is the XRPL and x402 documentation.
-[Status and limits](../../README.md#status-and-limits) · [Prepared answers](qa-prep.md).
+[Prepared answers](qa-prep.md), including status and limits.
 
 ## ~50 words
 

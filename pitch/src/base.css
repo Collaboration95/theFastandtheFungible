@@ -1,0 +1,215 @@
+/* ResearchAgent finals deck · shared tokens and components.
+   Slide files (src/slides/NN-*.html) own everything under their #sN id; this file owns the rest.
+   See SYSTEM.md. url() paths are relative to this file and inlined by scripts/pitch-build.mjs. */
+
+@font-face{font-family:Geist;src:url("assets/fonts/geist-latin-wght-normal.woff2") format("woff2");font-weight:100 900;font-display:block}
+@font-face{font-family:"Geist Mono";src:url("assets/fonts/geist-mono-latin-wght-normal.woff2") format("woff2");font-weight:100 900;font-display:block}
+
+:root{
+  /* skies: "Saturday evening", golden hour into night. Each slide's sky is a vertical gradient
+     #sN{background:<its glow>,linear-gradient(180deg,var(--sN-z),var(--sN-m) …,var(--sN-l) …,var(--sN-h))}
+     (zenith → mid → low → horizon) under its painted scene (src/scenes/sN.svg, --scene) and the paper grain.
+     The evening deepens one step a slide: each zenith sits near the previous slide's mid sky. 0–1 carry dark ink,
+     2–8 white text; every line on a sky is ≥ 4.5:1 measured on the render. */
+  --s0-z:#EAE0EB; --s0-m:#F8E0CB; --s0-l:#F7CDA7; --s0-h:#F2B893;   /* late afternoon: pale haze, apricot horizon */
+  --s1-z:#D8C3D8; --s1-m:#EBC6BA; --s1-l:#EFB196; --s1-h:#DDA196;   /* golden hour: lilac, apricot, rose */
+  --s2-z:#504383; --s2-m:#5E4C8B; --s2-l:#68518E; --s2-h:#745690;   /* sun just set: mauve, rose low */
+  --s3-z:#4F4586; --s3-m:#544788; --s3-l:#5C4B8A; --s3-h:#6B528E;   /* afterglow over the first rooftops */
+  --s4-z:#463F82; --s4-m:#4C4387; --s4-l:#6A5294; --s4-h:#7C5A94;   /* dusk: lavender band behind the card */
+  --s5-z:#3B3B7E; --s5-m:#404186; --s5-l:#4A4889; --s5-h:#62538E;   /* early blue hour: periwinkle, a rose seam */
+  --s6-z:#2C3270; --s6-m:#2E3B76; --s6-l:#2C4F77; --s6-h:#2F6475;   /* blue hour: a sea-green band, the paid colour's echo */
+  --s7-z:#161A3E; --s7-m:#1B2049; --s7-l:#232859; --s7-h:#33306C;   /* night settles: the close */
+  --s8-z:#0F1230; --s8-m:#151940; --s8-l:#1C1F4C; --s8-h:#1C1F4C;   /* appendix: late night, quiet */
+  --land:#2B2253;  --night-land:#0E1130;  --star:#FFF6DE;  --window:#F6C987;   /* as painted in the scenes */
+  --warm-1:#F5622A;                     /* the brand orange: accents only (the appendix highlight) */
+  --blue-1:#2244D2;                     /* accent on white cards (pins, tiles, the link dot) */
+  --green-1:#0B8762;
+
+  /* ink and surfaces (on white cards) */
+  --ink:#0D1330;        /* primary text */
+  --ink-2:#4F5779;      /* secondary text */
+  --ink-3:#8A91AD;      /* tertiary: arrows, connectors */
+  --line:#E5E8F1;       /* hairline on white */
+  --soft:#F4F5F9;       /* sunken surface on white */
+
+  /* on a field */
+  --on:#fff;
+  --on-2:rgba(255,255,255,.88);
+  --on-line:rgba(255,255,255,.26);
+
+  /* meaning */
+  --paid:#0C8F5F;  --paid-bg:#E6F4ED;  --paid-ink:#065B3C;
+  --wall:#E2531A;  --wall-bg:#FFF0E8;  --wall-ink:#B23C0C;
+  --marker:#F5622A;     /* the hand-drawn loop (slides 1 and 4): the paywall's orange */
+
+  /* type */
+  --f:Geist,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --m:"Geist Mono",ui-monospace,Menlo,monospace;
+  --t-display:122px;  --t-h2:92px;  --t-h3:52px;  --t-body:38px;  --t-small:28px;  --t-label:22px;
+
+  /* shape */
+  --r-card:28px;  --r-row:20px;  --r-tile:16px;  --r-pill:999px;
+  --sh-card:0 1px 0 rgba(255,255,255,.9) inset,0 1px 2px rgba(40,20,60,.06),0 28px 56px -28px rgba(40,22,70,.5);   /* violet-tinted, as if lit from a low sun */
+  --sh-lift:0 10px 24px -10px rgba(8,14,44,.4);
+
+  /* spacing: 8 px grid; the slide frame */
+  --pad-x:100px;  --pad-y:88px;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#070B22;overflow:hidden}
+body{font-family:var(--f);color:var(--on);-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;font-feature-settings:"ss01" 0}
+body.idle{cursor:none}
+
+/* ---------- stage ---------- */
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:50% 50%}
+.slide{position:absolute;inset:0;width:1920px;height:1080px;overflow:hidden;visibility:hidden;padding:var(--pad-y) var(--pad-x)}
+.slide.active{visibility:visible}
+
+/* nav pill: in the page band under the stage (deck.js reserves it), never on a slide, never printed */
+.nav{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:10;display:flex;align-items:center;gap:2px;height:36px;padding:0 4px;border-radius:999px;
+  background:rgba(255,255,255,.1);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:0 0 0 1px rgba(255,255,255,.14) inset;
+  font:500 14px/1 var(--f);color:rgba(255,255,255,.72);font-variant-numeric:tabular-nums;user-select:none}
+.nav button{all:unset;cursor:pointer;width:32px;height:28px;border-radius:999px;display:grid;place-items:center;font-size:15px;color:rgba(255,255,255,.72)}
+.nav button:hover{background:rgba(255,255,255,.12);color:#fff}
+.nav .pos{min-width:52px;text-align:center;letter-spacing:.02em}
+html.print .nav{display:none}
+
+/* ---------- skies and scenes ----------
+   Each slide file sets its sky (background, from the --sN-* tokens), --scene (its painted scenes/sN.svg) and, where it has
+   clouds, --clouds-cu / --clouds-st (scenes/sN-cu.svg, sN-st.svg). Four painted layers sit under the content (z-index
+   inside the slide's own stacking context):
+     .sky      drifting clouds: <i class="sky-cu"> cumulus heaps, <i class="sky-st"> streaks and their thin lit rims    z -4
+     ::before  the scene: sun, stars, hills, rooftops (one SVG, rasterised once; static)                   z -3
+     .scene-town  the rolling town (slides 3 and 6): far hills, rooftops with lit windows, poles and trees  z -2
+     ::after   paper grain + a horizontal brush wash in soft-light                                         z -1
+   Cards and text paint above all of them and never move.
+   Drift: everything moves right to left at a constant speed, transform only (compositor), on ONE clock: deck.js sets
+   every sky-drift animation's startTime to 0 (page load), so a layer is in the same place whichever slide shows it and a
+   slide change never restarts, speeds up or slows it. Speeds (px/s): streaks 2.5 · cumulus 4 · town far 6 · roofs 14 ·
+   near 24. Each layer is a seamless tile of width --t, moved by exactly --t per period --d = t / speed.
+   Print and reduced motion: no animation, so every layer rests at 0 (the scene as drawn).
+   --sky-haze (scenes/sN-haze.svg, slides 2–6): a static mask that thins the clouds to 10 % behind the white headline, so
+   it stays ≥ 4.5:1 whatever cloud drifts behind it.
+   .f-book marks the bookends (intro, slide 1, slide 7): their text and tiles use the --bk-* tokens
+   (white by default for the night close; the intro and slide 1 switch them to dark ink on their light sky). */
+.slide{isolation:isolate}
+.slide::before,.slide::after{content:"";position:absolute;inset:0;pointer-events:none}
+.slide::before{z-index:-3;background:var(--scene,none) 0 0/100% 100% no-repeat}
+.slide::after{z-index:-1;background:url("scenes/grain.svg") 0 0/260px 260px,url("scenes/wash.svg") 0 0/100% 100% no-repeat;mix-blend-mode:soft-light;opacity:.5}
+@keyframes sky-drift{to{transform:translateX(calc(-1 * var(--t)))}}
+.sky{position:absolute;inset:0;z-index:-4;pointer-events:none;overflow:hidden;contain:strict;-webkit-mask:var(--sky-haze,none) 0 0/100% 100% no-repeat;mask:var(--sky-haze,none) 0 0/100% 100% no-repeat}
+.sky i{position:absolute;left:0;top:0;width:calc(2 * var(--t));height:1080px;--t:1920px;background:var(--img) 0 0/1920px 1080px repeat-x;
+  will-change:transform;animation:sky-drift var(--d) linear infinite}
+.sky .sky-cu{--img:var(--clouds-cu,none);--d:480s}
+.sky .sky-st{--img:var(--clouds-st,none);--d:768s}
+/* the town: five inline <svg> strips per slide, each drawing a scenes/town.svg tile (gen_town.py) at −T, 0, T, 2T, coloured
+   from the slide's --tw-* colours (tiles inherit fill; strokes are currentColor; the far hills take a per-slide gradient) */
+.scene-town{position:absolute;left:0;right:0;bottom:0;height:260px;z-index:-2;pointer-events:none;overflow:hidden;contain:strict}
+.scene-town svg[class]{position:absolute;left:0;top:0;height:260px;width:calc(var(--t) + 1940px);overflow:hidden;will-change:transform;animation:sky-drift var(--d) linear infinite}
+.scene-town .tw-far{--t:2880px;--d:480s;opacity:var(--tw-far-op,1)}
+.scene-town .tw-roof,.scene-town .tw-rim,.scene-town .tw-win{--t:3360px;--d:240s}
+.scene-town .tw-roof{fill:var(--tw-mid)}
+.scene-town .tw-rim{color:var(--tw-rim);opacity:.85}
+.scene-town .tw-win{fill:var(--tw-win);opacity:var(--tw-win-op,1)}
+.scene-town .tw-near{--t:2560px;--d:106.667s;fill:var(--tw-near);color:var(--tw-near)}
+/* print and ?print=1: every layer at rest, and no CSS masks (Ghostscript drops their soft-mask groups) */
+html.print :is(.sky i,.scene-town svg[class]){animation:none;will-change:auto}
+html.print .sky{-webkit-mask:none;mask:none}
+@media print{.sky{-webkit-mask:none!important;mask:none!important}}
+:root{--bk-ink:#fff;--bk-ink-2:rgba(255,255,255,.86);--bk-line:rgba(255,255,255,.2);--bk-mk:var(--marker);--bk-brand:#fff;
+  --bk-tile:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,.07));--bk-tile-line:rgba(255,255,255,.24);--bk-tile-ink:#fff}
+.f-book{isolation:isolate;color:var(--bk-ink)}
+
+/* ---------- type ---------- */
+h1,h2,h3{margin:0;font-weight:800;line-height:1.04}
+h1,.display{font-size:var(--t-display);letter-spacing:-.05em;line-height:1}
+h2{font-size:var(--t-h2);letter-spacing:-.045em}
+h3{font-size:var(--t-h3);letter-spacing:-.03em;line-height:1.08}
+p{margin:0;text-wrap:balance}
+.mono{font-family:var(--m);letter-spacing:-.01em}
+.num{font-weight:800;letter-spacing:-.05em;font-variant-numeric:tabular-nums;line-height:.9}
+/* the quiet label: only two in the deck ("XRPL Testnet" ≥ 22 px, "(simulated payments)" ≥ 24 px) */
+.label{font:500 var(--t-label)/1.3 var(--f);color:var(--on-2);letter-spacing:0}
+.card .label{color:var(--ink-2)}
+
+/* ---------- components ---------- */
+/* card: the white surface every slide builds on */
+.card{position:relative;background:linear-gradient(180deg,#fff 0%,#FCFCFE 100%);color:var(--ink);border-radius:var(--r-card);box-shadow:var(--sh-card)}
+/* ghost: a translucent panel on a field (the "before" side of a contrast) */
+.ghost{background:rgba(255,255,255,.08);box-shadow:0 0 0 1px var(--on-line) inset;border-radius:var(--r-row);color:var(--on-2)}
+
+/* row: one line of a card, hairline between rows */
+.rows>.row+.row{border-top:1px solid var(--line)}
+
+/* tile: an icon on a small raised square */
+.tile{flex:none;width:64px;height:64px;border-radius:var(--r-tile);display:grid;place-items:center;font-size:32px;color:var(--ink);
+  background:linear-gradient(180deg,#fff,#F1F3F8);box-shadow:0 0 0 1px var(--line) inset,0 1px 2px rgba(8,14,44,.06)}
+
+/* pill: small, hairline, never shouting */
+.pill{display:inline-flex;align-items:center;gap:10px;white-space:nowrap;font:600 26px/1 var(--f);letter-spacing:-.01em;padding:11px 18px 11px 14px;border-radius:var(--r-pill);
+  color:var(--ink);background:linear-gradient(180deg,#fff,#F5F6FA);box-shadow:0 0 0 1px var(--line) inset}
+.pill svg.i{font-size:24px}
+.pill.wall{color:var(--wall-ink);background:linear-gradient(180deg,#FFF5EF,var(--wall-bg));box-shadow:0 0 0 1px rgba(226,83,26,.22) inset}
+.pill.paid{color:var(--paid-ink);background:linear-gradient(180deg,#F2FAF6,var(--paid-bg));box-shadow:0 0 0 1px rgba(12,143,95,.2) inset}
+.pill.on-field{color:#fff;background:rgba(255,255,255,.12);box-shadow:0 0 0 1px var(--on-line) inset}
+
+/* icons: 24-unit grid, 2 px stroke, from the sprite in src/icons.svg */
+svg.i{width:1em;height:1em;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.okdot{flex:none;width:44px;height:44px;border-radius:50%;background:var(--paid);color:#fff;display:grid;place-items:center;font-size:26px;box-shadow:0 0 0 4px rgba(12,143,95,.12)}
+
+/* arrow connector: a hairline that ends in a small chevron; flexes to fill its grid cell */
+.conn{position:relative;height:2px;min-width:48px;background:currentColor;color:var(--ink-3);opacity:.55}
+.conn::after{content:"";position:absolute;right:0;top:50%;width:11px;height:11px;border:solid currentColor;border-width:2px 2px 0 0;transform:translate(1px,-50%) rotate(45deg)}
+
+/* marker: the deck's one emphasis device, a hand-drawn loop that deck.js fits around one phrase.
+   <span class="mk">words</span> · colour: --mk-c · used on slide 1 ("paywalled.") and slide 4 ("pays the writer.") only.
+   deck.js keeps the loop ≥ 20 px from every glyph, sets the span's margins so it clears its neighbours, and draws it on. */
+.mk{position:relative;display:inline-block;white-space:nowrap;--mk-c:var(--marker)}
+.mk>svg{position:absolute;overflow:visible;pointer-events:none;z-index:2}
+.mk path{fill:none;stroke:var(--mk-c);stroke-linecap:round;stroke-linejoin:round}
+.mk.draw path{stroke-dasharray:var(--len);animation:mk-draw .5s cubic-bezier(.55,.05,.35,1) .25s both}
+@keyframes mk-draw{from{stroke-dashoffset:var(--len)}to{stroke-dashoffset:0}}
+
+/* ---------- arrival motion ----------
+   deck.js adds .play to a slide on a forward arrival only (never backwards, in print or under reduced motion).
+   Every keyframe below is from-only (or returns to rest), so the resting CSS is the final state and a slide
+   without .play is simply finished. Delays come from --t (seconds after arrival).
+     [data-enter]  fade up        .pop    spring in (.6 → 1, origin --o)   .stamp  1.25 → 1 with opacity
+     .run          slide in from --dist to the left (easing in: it arrives fast)
+     .bump         knocked back: rests at its own transform; overshoots to --back px and --tilt
+     .shake        damped x shake of --a px      .draw   SVG stroke on (path.draw gets --len) or scaleX 0 → 1
+     .sweep        clip-path reveal top → bottom in --n steps over --d seconds */
+:root{--ease:cubic-bezier(.2,.7,.2,1);--spring:cubic-bezier(.3,1.5,.5,1)}
+.slide.play [data-enter]{animation:enter .35s var(--ease) calc(var(--t,0)*1s) backwards}
+.slide.play .pop{transform-origin:var(--o,50% 50%);animation:pop .24s var(--spring) calc(var(--t,0)*1s) backwards}
+.slide.play .stamp{animation:stamp .2s var(--ease) calc(var(--t,0)*1s) backwards}
+.slide.play .run{animation:run var(--d,.4s) cubic-bezier(.5,0,.9,.6) calc(var(--t,0)*1s) backwards}
+.slide.play .bump{animation:bump var(--d,.26s) linear calc(var(--t,0)*1s) backwards}
+.slide.play .shake{animation:shake .18s linear calc(var(--t,0)*1s) backwards}
+.slide.play .draw:not(.mk):not(path):not(line){transform-origin:var(--o,0 50%);animation:draw-x var(--d,.2s) var(--ease) calc(var(--t,0)*1s) backwards}
+.slide.play :is(path,line).draw{stroke-dasharray:var(--len);animation:draw-s var(--d,.45s) var(--ease) calc(var(--t,0)*1s) backwards}
+.slide.play .sweep{animation:sweep var(--d,.7s) steps(var(--n,20),end) calc(var(--t,0)*1s) backwards}
+@keyframes enter{from{opacity:0;transform:translateY(14px)}}
+@keyframes pop{from{opacity:0;transform:scale(.6)}}
+@keyframes stamp{from{opacity:0;transform:scale(1.25)}}
+@keyframes run{from{transform:translateX(calc(var(--dist,120px)*-1))}}
+@keyframes bump{from{transform:none;animation-timing-function:cubic-bezier(.2,.8,.3,1)}38%{transform:translateX(calc(var(--back,26px)*-1)) rotate(var(--tilt,-8deg));animation-timing-function:cubic-bezier(.4,0,.3,1)}}
+@keyframes shake{from{transform:none}20%{transform:translateX(var(--a,5px))}45%{transform:translateX(calc(var(--a,5px)*-.6))}72%{transform:translateX(calc(var(--a,5px)*.4))}to{transform:none}}
+@keyframes draw-x{from{transform:scaleX(0)}}
+@keyframes draw-s{from{stroke-dashoffset:var(--from,var(--len))}}
+@keyframes sweep{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0 0 0 0)}}
+
+/* ---------- print and ?print=1: every slide in its final state, one per page ---------- */
+@page{size:1920px 1080px;margin:0}
+html.print,html.print body{height:auto;overflow:visible;background:#fff}
+html.print #stage{position:static;transform:none!important;width:1920px;height:auto}
+html.print .slide{position:relative;visibility:visible;break-after:page;page-break-after:always}
+@media print{
+  .nav{display:none!important}
+  html,body{height:auto;overflow:visible;background:#fff}
+  #stage{position:static;transform:none!important;width:1920px;height:auto}
+  .slide{position:relative;visibility:visible;break-after:page;page-break-after:always}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact;animation:none!important;transition:none!important}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

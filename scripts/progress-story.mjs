@@ -63,7 +63,7 @@ export const milestones = [
       'The talk deck and speaker notes stay on this site.',
     ],
     image: { path: 'site/evolution/img/stage.jpg', alt: 'The ResearchAgent demo on stage at AI Tinkerers Singapore', caption: 'On stage, 10 October' },
-    proofs: [{ label: 'October build log', site: 'evolution/' }, { label: 'Talk slides', site: 'slides/' }],
+    proofs: [{ label: 'October build log', site: 'evolution/' }, { label: 'Talk slides', site: 'slides/october/' }],
   },
 ]
 

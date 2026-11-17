@@ -1,0 +1,629 @@
+<!-- 8 · Appendix, for Q&A only (after the pitch's last slide). Quiet late-night sky with sparse stars, an index of 12 tiles named by what a
+     judge would ask. A key (1–9, 0, −, =) or a click opens that card as a full-slide overlay on this slide; ↓/↑ moves a
+     highlight and Enter opens it. In a card: Esc, Backspace, → / ←, Space, Enter or "← Appendix" return to the index
+     (they never leave the slide while a card is open); a number or ↓/↑ switches card.
+     Each card is a title, one diagram that draws itself when the card opens (0.6–1.2 s: lines draw, numbers settle, one
+     token flows once), at most three short lines, and the source. Reduced motion and print show the finished diagram.
+     Print / ?print=1: the index, then one page per card (sections s801…s812 added after this one).
+     Every fact is from the appendix notes (pitch/_kit/APPENDIX.md), docs/submission/facts.json and the evidence files named
+     on each card; the per-gate attack counts are PROOF-REPORT.md's attack table. -->
+<section class="slide" id="s8" data-click>
+  <div class="top">
+    <h2>Appendix</h2>
+    <div class="hint"><span class="kc">1</span>–<span class="kc">=</span> open <span class="sep"></span> <span class="kc w">Esc</span> back</div>
+  </div>
+  <div class="grid" id="s8grid"></div>
+  <div class="ov" id="s8ov" hidden></div>
+  <img id="s8qr" hidden alt="" src="../assets/qr-try.svg">
+</section>
+
+<style>
+/* late night: quiet indigo, sparse stars, quieter than the pitch slides; shared by the card overlay and the print pages (.s8p) */
+#s8,.s8p:not(#s8){--scene:url("../scenes/s8.svg");--sky:radial-gradient(1400px 900px at 92% -10%,rgba(140,150,230,.1),rgba(140,150,230,0) 60%),linear-gradient(180deg,var(--s8-z),var(--s8-m) 60%,var(--s8-h));
+  background:var(--sky);color:#fff}
+#s8{display:flex;flex-direction:column}
+#s8 .top{display:flex;align-items:flex-end;justify-content:space-between}
+#s8 .top h2{font-size:var(--t-h2);letter-spacing:-.045em;line-height:1}
+#s8 .hint{display:flex;align-items:center;gap:12px;font:600 28px/1 var(--f);color:rgba(255,255,255,.62);padding-bottom:10px}
+#s8 .hint .sep{width:18px}
+
+/* keycap: the key that opens a card */
+#s8 .kc,.s8p:not(#s8) .kc{display:inline-grid;place-items:center;min-width:48px;height:48px;padding:0 10px;border-radius:12px;font:800 28px/1 var(--f);
+  font-variant-numeric:tabular-nums;color:var(--ink);background:linear-gradient(180deg,#fff,#EEF0F5);box-shadow:0 0 0 1px #D6DAE5 inset,0 2px 0 #C9CEDB}
+#s8 .hint .kc{min-width:44px;height:44px;font-size:26px;color:#fff;background:rgba(255,255,255,.1);box-shadow:0 0 0 1px rgba(255,255,255,.22) inset,0 2px 0 rgba(255,255,255,.12)}
+#s8 .hint .kc.w{font-size:22px;padding:0 12px}
+
+/* the index: 4 × 3 tiles */
+#s8 .grid{flex:1;margin-top:52px;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);gap:24px}
+#s8 .t8{all:unset;box-sizing:border-box;cursor:pointer;position:relative;display:flex;flex-direction:column;justify-content:space-between;padding:28px 32px 30px;
+  border-radius:var(--r-card);background:linear-gradient(180deg,#fff 0%,#FCFCFE 100%);color:var(--ink);box-shadow:var(--sh-card)}
+#s8 .t8:hover{box-shadow:0 0 0 3px rgba(255,255,255,.5),var(--sh-card)}
+#s8 .t8.hi{box-shadow:0 0 0 6px var(--warm-1),var(--sh-card)}
+#s8 .t8 .hd{display:flex;align-items:center;justify-content:space-between}
+#s8 .t8 .hd svg.i{font-size:34px;color:var(--ink-3);stroke-width:1.75}
+#s8 .t8 .n{font:800 68px/.95 var(--f);letter-spacing:-.05em;font-variant-numeric:tabular-nums}
+#s8 .t8 .c{margin-top:8px;font:700 32px/1.12 var(--f);letter-spacing:-.02em;color:var(--ink-2)}
+#s8 .t8 .q{font:800 42px/1.06 var(--f);letter-spacing:-.035em;text-wrap:balance}
+#s8 .t8 .q small{display:block;margin-top:8px;font:700 30px/1.1 var(--f);letter-spacing:-.02em;color:var(--ink-2)}
+
+/* the card overlay: covers the index on the same slide, same field */
+#s8 .ov{position:absolute;inset:0;z-index:5;padding:var(--pad-y) var(--pad-x);background:var(--scene) 0 0/100% 100% no-repeat,var(--sky);display:flex}
+#s8 .ov[hidden]{display:none}
+
+/* ---------- a card page: the overlay (#s8 .ov) and each print page (.s8p) ---------- */
+:is(#s8,.s8p:not(#s8)) .pg{flex:1;display:flex;flex-direction:column;min-height:0;height:100%}
+:is(#s8,.s8p:not(#s8)) .pg-top{display:flex;align-items:center;gap:28px}
+:is(#s8,.s8p:not(#s8)) .pg-top h2{flex:1;font:800 68px/1.02 var(--f);letter-spacing:-.045em;text-wrap:balance}
+:is(#s8,.s8p:not(#s8)) .pg-top h2 .label{font-size:26px;font-weight:600;letter-spacing:0;color:rgba(255,255,255,.75);white-space:nowrap;vertical-align:.55em;margin-left:12px}
+:is(#s8,.s8p:not(#s8)) .pg-top .kc{min-width:64px;height:64px;font-size:34px;border-radius:15px}
+:is(#s8,.s8p:not(#s8)) .pg-back{all:unset;cursor:pointer;flex:none;display:flex;align-items:center;gap:14px;height:64px;padding:0 12px 0 22px;border-radius:999px;
+  font:700 28px/1 var(--f);color:#fff;background:rgba(255,255,255,.1);box-shadow:0 0 0 1px rgba(255,255,255,.22) inset}
+:is(#s8,.s8p:not(#s8)) .pg-back .ar{font-size:34px;line-height:1}
+:is(#s8,.s8p:not(#s8)) .pg-back:hover{background:rgba(255,255,255,.16)}
+:is(#s8,.s8p:not(#s8)) .pg-back .kc{min-width:0;height:44px;font-size:22px;padding:0 12px;color:#fff;background:rgba(255,255,255,.12);box-shadow:0 0 0 1px rgba(255,255,255,.22) inset}
+:is(#s8,.s8p:not(#s8)) .pg-tag{flex:none;display:flex;align-items:center;gap:14px;font:700 28px/1 var(--f);color:rgba(255,255,255,.62)}
+:is(#s8,.s8p:not(#s8)) .pg-body{flex:1;min-height:0;margin-top:36px;display:flex;flex-direction:column}
+:is(#s8,.s8p:not(#s8)) code{font:500 .9em/1 var(--m);letter-spacing:-.02em}
+
+/* the one visual: a white card holding an SVG drawn 1:1 (1720 × 520) */
+:is(#s8,.s8p:not(#s8)) .vis{flex:none;height:520px;position:relative;overflow:hidden;border-radius:var(--r-card);background:linear-gradient(180deg,#fff 0%,#FCFCFE 100%);box-shadow:var(--sh-card)}
+:is(#s8,.s8p:not(#s8)) .vis>svg{display:block;width:100%;height:100%}
+:is(#s8,.s8p:not(#s8)) .vis text{font-family:var(--f);font-size:28px;font-weight:700;letter-spacing:-.02em;fill:var(--ink)}
+:is(#s8,.s8p:not(#s8)) .vis .h{font-size:33px;font-weight:800;letter-spacing:-.03em}
+:is(#s8,.s8p:not(#s8)) .vis .s{font-size:27px;font-weight:550;letter-spacing:-.01em;fill:var(--ink-2)}
+:is(#s8,.s8p:not(#s8)) .vis .xs{font-size:24px;font-weight:600;letter-spacing:-.005em;fill:var(--ink-2)}
+:is(#s8,.s8p:not(#s8)) .vis .mo{font-family:var(--m);font-weight:500;letter-spacing:-.035em}
+:is(#s8,.s8p:not(#s8)) .vis .big{font-size:76px;font-weight:800;letter-spacing:-.05em}
+:is(#s8,.s8p:not(#s8)) .vis .huge{font-size:132px;font-weight:800;letter-spacing:-.06em}
+:is(#s8,.s8p:not(#s8)) .vis .g{fill:var(--paid)}
+:is(#s8,.s8p:not(#s8)) .vis .gk{fill:var(--paid-ink)}
+:is(#s8,.s8p:not(#s8)) .vis .o{fill:var(--wall-ink)}
+:is(#s8,.s8p:not(#s8)) .vis .b{fill:var(--blue-1)}
+:is(#s8,.s8p:not(#s8)) .vis .mute{fill:var(--ink-3)}
+:is(#s8,.s8p:not(#s8)) .vis text.w{fill:#fff}
+:is(#s8,.s8p:not(#s8)) .vis .halo{paint-order:stroke;stroke:#fff;stroke-width:12px;stroke-linejoin:round}
+:is(#s8,.s8p:not(#s8)) .vis .ln{fill:none;stroke:#A9B0C9;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+:is(#s8,.s8p:not(#s8)) .vis .ln.g{stroke:var(--paid)}
+:is(#s8,.s8p:not(#s8)) .vis .ln.o{stroke:var(--wall)}
+:is(#s8,.s8p:not(#s8)) .vis .ln.b{stroke:var(--blue-1)}
+:is(#s8,.s8p:not(#s8)) .vis .ln.k{stroke:var(--ink)}
+:is(#s8,.s8p:not(#s8)) .vis .ln.fat{stroke-width:5}
+:is(#s8,.s8p:not(#s8)) .vis .dash{stroke-dasharray:10 10}
+:is(#s8,.s8p:not(#s8)) .vis .ic{fill:none;stroke:var(--ink);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+:is(#s8,.s8p:not(#s8)) .vis .ic.w{stroke:#fff;stroke-width:2.6}
+:is(#s8,.s8p:not(#s8)) .vis .ic.g{stroke:var(--paid)}
+:is(#s8,.s8p:not(#s8)) .vis .ic.o{stroke:var(--wall)}
+:is(#s8,.s8p:not(#s8)) .vis .ic.mute{stroke:var(--ink-3)}
+:is(#s8,.s8p:not(#s8)) .vis .bx{fill:#fff;stroke:var(--line);stroke-width:2}
+:is(#s8,.s8p:not(#s8)) .vis .sf{fill:var(--soft);stroke:var(--line);stroke-width:2}
+:is(#s8,.s8p:not(#s8)) .vis .ghost{fill:none;stroke:#B9BFD3;stroke-width:2.5;stroke-dasharray:12 10}
+:is(#s8,.s8p:not(#s8)) .vis .pol{fill:var(--paid-bg);stroke:var(--paid);stroke-width:4}
+:is(#s8,.s8p:not(#s8)) .vis .okc,:is(#s8,.s8p:not(#s8)) .vis .gc,:is(#s8,.s8p:not(#s8)) .vis .gbar,:is(#s8,.s8p:not(#s8)) .vis .node,:is(#s8,.s8p:not(#s8)) .vis .cl,:is(#s8,.s8p:not(#s8)) .vis .blk{fill:var(--paid)}
+:is(#s8,.s8p:not(#s8)) .vis .okbg{fill:var(--paid-bg)}
+:is(#s8,.s8p:not(#s8)) .vis .bad{fill:var(--wall)}
+:is(#s8,.s8p:not(#s8)) .vis .badbg{fill:var(--wall-bg);stroke:rgba(226,83,26,.28);stroke-width:1.5}
+:is(#s8,.s8p:not(#s8)) .vis .ink{fill:var(--ink)}
+:is(#s8,.s8p:not(#s8)) .vis .edge{fill:none;stroke:#CDD2E2;stroke-width:1.6}
+:is(#s8,.s8p:not(#s8)) .vis .q0{fill:#ECEEF4}
+:is(#s8,.s8p:not(#s8)) .vis .q1{fill:var(--blue-1)}
+:is(#s8,.s8p:not(#s8)) .vis .q2{fill:var(--warm-1)}
+:is(#s8,.s8p:not(#s8)) .vis .q3{fill:#7D90E6}
+:is(#s8,.s8p:not(#s8)) .vis .nd{fill:#fff;stroke:#C3C9DB;stroke-width:3}
+:is(#s8,.s8p:not(#s8)) .vis .nd.g{fill:var(--paid-bg);stroke:var(--paid)}
+:is(#s8,.s8p:not(#s8)) .vis .nd.o{fill:var(--wall-bg);stroke:var(--wall)}
+:is(#s8,.s8p:not(#s8)) .vis .fp{fill:none;stroke:none}
+:is(#s8,.s8p:not(#s8)) .vis .tok{fill:var(--warm-1);stroke:#fff;stroke-width:3}
+
+/* motion, only when a card opens live (#s8 .ov.go): from-only keyframes, so the resting markup is the final state */
+#s8 .ov.go .vis .d{stroke-dasharray:1 1;animation:a8-d var(--d,.35s) var(--ease) calc(var(--t,0)*1s) backwards}
+#s8 .ov.go .vis .f{animation:a8-f .35s var(--ease) calc(var(--t,0)*1s) backwards}
+#s8 .ov.go .vis .p{transform-box:fill-box;transform-origin:50% 50%;animation:a8-p .32s var(--spring) calc(var(--t,0)*1s) backwards}
+#s8 .ov.go .vis .gx{transform-box:fill-box;transform-origin:0 50%;animation:a8-gx .45s var(--ease) calc(var(--t,0)*1s) backwards}
+#s8 .ov.go .vis .run{animation:a8-run .32s var(--ease) calc(var(--t,0)*1s) backwards}
+#s8 .ov.go .vis .shk{animation:a8-shk .22s linear calc(var(--t,0)*1s)}
+#s8 .ov.go .vis .cl{animation:a8-cl .5s linear calc(var(--t,0)*1s) backwards}
+#s8 .ov.go .vis .blk{animation:a8-blk .45s linear calc(var(--t,0)*1s) backwards}
+#s8 .ov.go .vis .stp{transform-box:fill-box;transform-origin:50% 50%;animation:a8-stp .24s var(--ease) calc(var(--t,0)*1s) backwards}
+@keyframes a8-d{from{stroke-dashoffset:1}}
+@keyframes a8-f{from{opacity:0;translate:0 10px}}
+@keyframes a8-p{from{opacity:0;scale:.4}}
+@keyframes a8-gx{from{scale:0 1}}
+@keyframes a8-run{from{opacity:0;translate:-60px 0}}
+@keyframes a8-shk{20%{translate:6px 0}45%{translate:-4px 0}72%{translate:2px 0}}
+@keyframes a8-cl{from{opacity:0;fill:#C9CFE2}45%{opacity:1;fill:#C9CFE2}}
+@keyframes a8-blk{from{opacity:0;fill:var(--wall)}40%{opacity:1;fill:var(--wall)}}
+@keyframes a8-stp{from{opacity:0;scale:1.3}}
+
+/* the lines under the visual, on the field: one statement, then limits */
+:is(#s8,.s8p:not(#s8)) .lns{margin-top:26px;display:grid;gap:8px;max-width:1700px}
+:is(#s8,.s8p:not(#s8)) .lns p{font:500 27px/1.3 var(--f);letter-spacing:-.01em;color:rgba(255,255,255,.8);text-wrap:pretty}
+:is(#s8,.s8p:not(#s8)) .lns p:first-child:not(.lim){font:650 32px/1.25 var(--f);letter-spacing:-.02em;color:#fff}
+:is(#s8,.s8p:not(#s8)) .lns b{font-weight:750;color:#FFB592}
+
+/* source: small, on the field, pinned to the bottom */
+:is(#s8,.s8p:not(#s8)) .src{margin-top:auto;padding-top:20px;display:grid;grid-template-columns:120px 1fr;column-gap:18px;row-gap:6px;align-items:baseline}
+:is(#s8,.s8p:not(#s8)) .src dt{font:700 24px/1.2 var(--f);color:rgba(255,255,255,.6)}
+:is(#s8,.s8p:not(#s8)) .src dd{margin:0;font:500 24px/1.2 var(--m);letter-spacing:-.025em;color:#fff;overflow-wrap:anywhere}
+:is(#s8,.s8p:not(#s8)) .src dd.u{font-size:20px;color:rgba(255,255,255,.6)}
+
+/* links */
+:is(#s8,.s8p:not(#s8)) .links-g{flex:1;min-height:0;display:grid;grid-template-columns:1fr 440px;grid-template-rows:auto auto;gap:24px;align-content:start}
+:is(#s8,.s8p:not(#s8)) .box{position:relative;background:linear-gradient(180deg,#fff 0%,#FCFCFE 100%);color:var(--ink);border-radius:var(--r-card);box-shadow:var(--sh-card);overflow:hidden}
+:is(#s8,.s8p:not(#s8)) .lk{padding:8px 40px}
+:is(#s8,.s8p:not(#s8)) .lk .r{display:grid;grid-template-columns:56px 1fr;column-gap:20px;align-items:center;padding:18px 0}
+:is(#s8,.s8p:not(#s8)) .lk .r+.r{border-top:1px solid var(--line)}
+:is(#s8,.s8p:not(#s8)) .lk .r>.tile{width:56px;height:56px;border-radius:14px;font-size:28px;color:var(--blue-1)}
+:is(#s8,.s8p:not(#s8)) .lk b{display:block;font:750 29px/1.2 var(--f);letter-spacing:-.015em}
+:is(#s8,.s8p:not(#s8)) .lk b small{font:500 26px/1.2 var(--f);color:var(--ink-2);margin-left:14px}
+:is(#s8,.s8p:not(#s8)) .lk code{display:block;margin-top:6px;font:500 26px/1.25 var(--m);letter-spacing:-.025em;color:var(--ink)}
+:is(#s8,.s8p:not(#s8)) .lk.repo{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;column-gap:48px;padding:8px 40px}
+:is(#s8,.s8p:not(#s8)) .lk.repo .r{display:grid;grid-template-columns:196px 1fr;column-gap:16px;align-items:baseline;border-top:1px solid var(--line)}
+:is(#s8,.s8p:not(#s8)) .lk.repo .r.full{grid-column:1/-1;border-top:0}
+:is(#s8,.s8p:not(#s8)) .lk.repo code{margin:0}
+:is(#s8,.s8p:not(#s8)) .lk .rel{font:600 26px/1 var(--f);letter-spacing:-.01em;color:var(--ink-2)}
+:is(#s8,.s8p:not(#s8)) .qr{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px}
+:is(#s8,.s8p:not(#s8)) .qr img{display:block;width:300px;height:300px;image-rendering:pixelated}
+:is(#s8,.s8p:not(#s8)) .qr b{margin-top:18px;font:800 40px/1 var(--f);letter-spacing:-.035em}
+#s8 .ov.go .links-g>*{animation:a8-f .35s var(--ease) calc(var(--t,0)*1s) backwards}
+</style>
+
+<script>
+{
+  const S = document.getElementById('s8'), grid = document.getElementById('s8grid'), ov = document.getElementById('s8ov')
+  const GH = 'https://github.com/Collaboration95/theFastandtheFungible/blob/main/'
+  const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=']
+  const CAP = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '−', '=']
+  const ico = id => `<svg class="i"><use href="#i-${id}"/></svg>`
+  const svgI = d => `<svg class="i" viewBox="0 0 24 24">${d}</svg>`
+  const I_STATES = svgI('<circle cx="5.5" cy="6" r="2.5"/><circle cx="18.5" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8 6h8M7 8.2l3.8 7.6M17 8.2l-3.8 7.6"/>')
+  const I_RETRY = svgI('<path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M19.5 3.5v4h-4"/>')
+  const I_SHIELD = svgI('<path d="M12 3 19.5 6v5.5c0 4.6-3.2 8-7.5 9.5-4.3-1.5-7.5-4.9-7.5-9.5V6z"/>')
+  const I_LIFT = svgI('<path d="M4 18l5.5-5.5 4 4L20 10"/><path d="M15 10h5v5"/>')
+  const I_ARCH = svgI('<rect x="3" y="4" width="7" height="5" rx="1.2"/><rect x="14" y="4" width="7" height="5" rx="1.2"/><rect x="14" y="15" width="7" height="5" rx="1.2"/><rect x="3" y="15" width="7" height="5" rx="1.2"/><path d="M10 6.5h4M17.5 9v6M14 17.5h-4"/>')
+
+  /* ---------- SVG helpers: every visual is drawn 1:1 in a 1720 × 520 card ---------- */
+  const fmt = n => Math.round(n).toLocaleString('en-US')
+  // the content sits 4 % in from the card's edges (scaled about the centre), so nothing crowds the rounded corners
+  const svg = body => `<svg viewBox="0 0 1720 520" aria-hidden="true"><g transform="translate(860 260) scale(.955) translate(-860 -260)">${body}</g></svg>`
+  const T = t => `style="--t:${(+t).toFixed(2)}"`
+  const tx = (x, y, s, c = '', a = '') => `<text x="${x}" y="${y}"${c ? ` class="${c}"` : ''}${a ? ' ' + a : ''}>${s}</text>`
+  const mid = 'text-anchor="middle"', end = 'text-anchor="end"'
+  const draw = (d, c, t, dur = .35) => `<path d="${d}" pathLength="1" class="ln d ${c}" style="--t:${(+t).toFixed(2)};--d:${dur}s"/>`
+  const tip = (x, y, deg, c, t) => `<path d="M-13 -10L0 0L-13 10" class="ln f ${c}" transform="translate(${x} ${y}) rotate(${deg.toFixed(1)})" ${T(t)}/>`
+  const arrow = (x1, y1, x2, y2, c, t, dur = .3) => draw(`M${x1} ${y1}L${x2} ${y2}`, c, t, dur) + tip(x2, y2, Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI, c, t + dur * .8)
+  const ic = (id, x, y, s, c = '') => `<use href="#i-${id}" x="${x}" y="${y}" width="${s}" height="${s}" class="ic ${c}"/>`
+  const ok = (cx, cy, r, t) => `<g${t === undefined ? '' : ` class="p" ${T(t)}`}><circle cx="${cx}" cy="${cy}" r="${r}" class="okc"/>${ic('check', cx - r * .64, cy - r * .64, r * 1.28, 'w')}</g>`
+  const flow = (d, t, dur, lin = false) => `<path d="${d}" class="fp" data-flow data-t="${t}" data-d="${dur}"${lin ? ' data-lin' : ''}/>`
+  const cnt = t => `data-count data-t="${t}"`
+  const badge = (cx, cy, n, c = 'gc', r = 22) => `<circle cx="${cx}" cy="${cy}" r="${r}" class="${c}"/>${tx(cx, cy + 8, n, 'w', `${mid} style="font-size:${Math.round(r * 1.05)}px;font-weight:800"`)}`
+
+  /* 1 · 1,000 purchases: buyer → ledger (1,000 cells, re-checked green) → independent verifier */
+  function v1() {
+    let rows = ''
+    for (let r = 0; r < 25; r++) {
+      let row = ''
+      for (let c = 0; c < 40; c++) row += `<rect x="${640 + c * 12}" y="${72 + r * 12}" width="9.5" height="9.5" rx="2"/>`
+      rows += `<g class="cl" ${T(.3 + r * .022)}>${row}</g>`
+    }
+    const actor = (x, id, h, s, t) => `<g class="f" ${T(t)}><rect x="${x}" y="140" width="320" height="164" rx="24" class="sf"/>${ic(id, x + 136, 158, 48)}${tx(x + 160, 248, h, 'h', mid)}${tx(x + 160, 284, s, 'xs', mid)}</g>`
+    const chip = (x, y, s, t) => `<g class="p" ${T(t)}><rect x="${x}" y="${y}" width="520" height="50" rx="25" class="okbg"/>${ok(x + 27, y + 25, 15)}${tx(x + 54, y + 34, s, 'gk', 'style="font-size:25px"')}</g>`
+    return svg(`
+      ${tx(880, 50, 'XRPL Testnet', 'h', mid)}
+      ${rows}
+      ${actor(20, 'agent', 'Buyer script', '1,000 purchases', 0)}
+      ${tx(486, 172, 'EscrowCreate', 'xs mo', mid)}${tx(486, 200, 'EscrowFinish', 'xs mo', mid)}
+      ${arrow(352, 222, 620, 222, 'k', .12)}
+      ${tx(1250, 172, 're-read from', 'xs', mid)}${tx(1250, 200, 'a public node', 'xs', mid)}
+      ${arrow(1136, 222, 1362, 222, 'g', .7)}
+      ${actor(1380, 'search', 'Verifier', 'no product code', .75)}
+      ${chip(20, 398, 'validated tesSUCCESS', .9)}${chip(560, 398, 'sha256(key) matches the lock', .96)}
+      ${chip(20, 458, 'amount, destination, sequence', 1.02)}${chip(560, 458, 'none missing or doubled', 1.08)}
+      ${tx(1700, 452, '1,000 / 1,000', 'big g', `${end} ${cnt(.6)}`)}
+      ${tx(1700, 498, 'verified · 0 mismatches', 'gk', end)}`)
+  }
+
+  /* 2 · 210,480 states: a breadth-first fan of states, the four configurations that sum to it, the 7 planted bugs */
+  function v2() {
+    const L = [1, 3, 6, 10, 15, 21, 28, 36], X0 = 70, X1 = 930, CY = 200
+    const P = L.map((n, k) => {
+      const x = X0 + k * (X1 - X0) / (L.length - 1), hh = k ? 18 + k * 21 : 0
+      return Array.from({ length: n }, (_, i) => [x, n > 1 ? CY - hh + i * 2 * hh / (n - 1) + (((i * 7 + k * 3) % 5) - 2) * 2 : CY])
+    })
+    let fan = ''
+    P.forEach((lv, k) => {
+      let e = ''
+      if (k) lv.forEach(([x, y], i) => { const [px, py] = P[k - 1][Math.floor(i * L[k - 1] / L[k])]; e += `M${px} ${py.toFixed(1)}L${x} ${y.toFixed(1)}` })
+      fan += `<g class="f" ${T(.06 + k * .07)}>${k ? `<path d="${e}" class="edge"/>` : ''}<g class="node">${lv.map(([x, y]) => `<circle cx="${x}" cy="${y.toFixed(1)}" r="${k ? 7 : 14}"/>`).join('')}</g></g>`
+    })
+    const C = [['key-reveal', 1, 29040], ['conditional', 1, 30480], ['key-reveal', 2, 72240], ['conditional', 2, 78720]]
+    const bars = C.map(([m, b, n], k) => {
+      const y = 56 + k * 76, w = Math.round(n / 78720 * 410), t = .35 + k * .08
+      return `${tx(1090, y, `${m} escrow · budget ${b}`, 'xs')}<rect x="1090" y="${y + 12}" width="${w}" height="28" rx="6" class="q1 gx" ${T(t)}/>${tx(1090 + w + 14, y + 36, fmt(n), '', cnt(t))}`
+    }).join('')
+    const bugs = Array.from({ length: 7 }, (_, i) => `<g class="p" ${T(.95 + i * .04)}><rect x="${262 + i * 52}" y="464" width="40" height="40" rx="10" class="bad"/>${ic('check', 270 + i * 52, 472, 24, 'w')}</g>`).join('')
+    return svg(`
+      ${fan}
+      ${tx(40, 434, '3 intents · 2 crashes · 2 retried deliveries · before and after expiry', 'xs')}
+      ${tx(40, 494, '7 planted bugs', '')}${bugs}${tx(644, 494, 'all 7 caught', 'o')}
+      ${bars}
+      <path d="M1090 352H1700" class="ln" style="stroke:var(--line);stroke-width:2"/>
+      ${tx(1090, 420, '210,480 states', 'big', `style="font-size:60px" ${cnt(.7)}`)}
+      ${ok(1110, 476, 18, 1.05)}${tx(1140, 486, '0 violations of the five gates', 'gk')}`)
+  }
+
+  /* 3 · 1,000,000 crashes: one schedule (duplicated request → injected fault → restart → retry → one charge) and the fault matrix */
+  function v3() {
+    const bolt = (cx, cy) => `<path d="M${cx + 4} ${cy - 17}L${cx - 9} ${cy + 3}H${cx}L${cx - 4} ${cy + 17}L${cx + 9} ${cy - 3}H${cx}Z" fill="#fff"/>`
+    const N = [[110, 'Request', 'sent twice', '', 0], [470, 'Fault', 'one injected', 'o', .3], [830, 'Restart', 'recreate, reconcile', '', .5], [1190, 'Retry', 'twice', '', .7], [1550, '1 charge', '0 double charges', 'g', .9]]
+    const Y = 112
+    const nodes = N.map(([x, h, s, c, t], i) => `<g class="p" ${T(t)}><circle cx="${x}" cy="${Y}" r="34" class="nd ${c}"/>${
+      i === 1 ? `<circle cx="${x}" cy="${Y}" r="34" class="bad"/>${bolt(x, Y)}` : i === 4 ? ok(x, Y, 34) : i === 0 ? ic('agent', x - 18, Y - 18, 36) : i === 2 ? `<g transform="translate(${x - 18} ${Y - 18}) scale(1.5)"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 3.5v4h-4" class="ic"/></g>` : ic('arrow', x - 18, Y - 18, 36)
+    }</g><g class="f" ${T(t)}>${tx(x, Y + 82, h, c === 'g' ? 'h g' : c === 'o' ? 'h o' : 'h', mid)}${tx(x, Y + 118, s, 'xs', mid)}</g>`).join('')
+    const F = ['reserveIntent', 'claimSubmitting', 'recordSubmission', 'recordSettlement', 'addGrant', 'recordProof', 'before-submit', 'after-submit', 'duplicate-submit', 'ledger-delay', 'validation-failure', 'bad-delivery']
+    const chips = F.map((f, i) => { const x = 20 + (i % 4) * 272, y = 364 + Math.floor(i / 4) * 48; return `<g class="f" ${T(.3 + i * .04)}><rect x="${x}" y="${y}" width="256" height="38" rx="10" class="badbg"/>${tx(x + 14, y + 27, f, 'mo o', 'style="font-size:21px"')}</g>` }).join('')
+    return svg(`
+      ${draw('M144 112H436', '', .05, .25)}
+      <path d="M504 112H796" class="ln o dash f" ${T(.35)}/>
+      ${draw('M864 112H1516', 'g', .55, .35)}
+      ${flow('M110 112H1550', .02, 1)}
+      ${nodes}
+      <path d="M20 304H1700" class="ln" style="stroke:var(--line);stroke-width:2"/>
+      ${tx(20, 346, '12 fault points: one per run, or none', 'xs')}
+      ${chips}
+      ${tx(1290, 410, '×1,000,000', 'big', cnt(.35))}
+      ${tx(1294, 448, 'runs · seed 279 · 4 workers · 728.5 s', 'xs')}
+      ${ok(1312, 488, 18, 1.05)}${tx(1342, 498, '0 violations, G1–G5', 'gk h', 'style="font-size:30px"')}`)
+  }
+
+  /* 4 · 34 attacks: example attacks run into the gates; the 34, grouped by the gate each aims at, all blocked */
+  function v4() {
+    const A = ['“Buy everything” hidden in a title', 'Fake purchase tool call', 'Purchase call posing as the LLM', 'Price or payee altered', 'Payment replayed eight times', 'Ten tabs on one intent', 'Spoofed resource IDs', 'Writer withholds the finish']
+    const atk = A.map((s, i) => { const y = 22 + i * 60; return `<g class="run" ${T(i * .035)}><rect x="20" y="${y}" width="560" height="48" rx="12" class="badbg"/>${tx(42, y + 33, s, 'o', 'style="font-size:24px;font-weight:650"')}</g>${arrow(592, y + 24, 676, y + 24, 'o', .3 + i * .025, .18)}` }).join('')
+    const G = [['G1', 'No paid bytes before a grant', 9], ['G2', 'Budget is the only authority', 17], ['G3', 'One charge per intent', 2], ['G4', 'Only real citations', 2], ['G5', 'Simulated is labelled', 2], ['G1+G3 · G2+G3', '', 2]]
+    const rows = G.map(([g, s, n], k) => {
+      const y = 56 + k * 66, t = .5 + k * .09
+      let cells = ''
+      for (let j = 0; j < n; j++) cells += `<rect x="${1250 + j * 26}" y="${y - 12}" width="22" height="22" rx="5"/>`
+      return `${tx(770, y + 9, `<tspan class="mo" style="font-weight:700">${g}</tspan>${s ? `<tspan dx="14">${s}</tspan>` : ''}`, '', 'style="font-size:25px"')}<g class="blk" ${T(t)}>${cells}</g>`
+    }).join('')
+    return svg(`
+      ${atk}
+      <rect x="690" y="16" width="14" height="478" rx="7" class="ink shk" ${T(.5)}/>
+      ${rows}
+      ${tx(1700, 488, '34 blocked · 0 breaches', 'h g stp', `${end} style="font-size:40px" ${T(1.1)}`)}`)
+  }
+
+  /* 5 · +17: two 100-cell grids, 31 and 48 correct, the lift in orange */
+  function v5() {
+    const grid = (x0, n1, n2, t0) => {
+      let s = ''
+      for (let i = 0; i < 100; i++) {
+        const x = x0 + (i % 10) * 36, y = 84 + Math.floor(i / 10) * 36, on = i < n2
+        s += `<rect x="${x}" y="${y}" width="30" height="30" rx="6" class="${i < n1 ? 'q1' : on ? 'q2' : 'q0'}${on ? ' p' : ''}"${on ? ' ' + T(t0 + i * .008) : ''}/>`
+      }
+      return s
+    }
+    return svg(`
+      ${tx(120, 58, 'Free documentation only', 'h')}
+      ${grid(120, 31, 31, .1)}
+      ${tx(510, 330, '31', 'huge', cnt(.1))}${tx(516, 380, 'of 100', 's')}
+      ${tx(800, 236, '+ paid notes', 'h', mid)}${tx(800, 312, 'S$2 budget a question', 'xs', mid)}
+      ${arrow(700, 262, 900, 262, 'k', .4, .25)}
+      ${tx(1000, 58, 'With paid notes', 'h')}
+      ${grid(1000, 31, 48, .45)}
+      ${tx(1390, 330, '48', 'huge', cnt(.45))}${tx(1396, 380, 'of 100', 's')}
+      <g class="p" ${T(1)}><rect x="1392" y="404" width="150" height="64" rx="32" class="q2"/>${tx(1467, 448, '+17', 'w h', `${mid} style="font-size:38px"`)}</g>
+      <rect x="120" y="474" width="24" height="24" rx="5" class="q1"/>${tx(156, 495, 'correct answer', 'xs')}
+      <rect x="380" y="474" width="24" height="24" rx="5" class="q2"/>${tx(416, 495, 'the lift from paid notes', 'xs')}`)
+  }
+
+  /* 6 · Architecture: six boxes in a U; the policy box is the only one that can spend */
+  function v6() {
+    const B = [[60, 30, 1, 'Question + budget', 'confirmed once, 5 s plan sheet', 'S$5 a prompt, S$1 a source', 0],
+      [650, 30, 2, 'Planner · DeepSeek', 'clarifies, plans and writes', 'never decides a purchase', .15],
+      [1240, 30, 3, 'Free search', '12,104 doc passages', 'free evidence first', .3],
+      [1240, 330, 4, 'Policy code', 'buys within the budget', 'the model cannot spend', .5, 'pol'],
+      [650, 330, 5, 'XRPL Testnet escrow', 'HTTP 402, escrow-v1 terms', 'locked to sha256(key)', .66],
+      [60, 330, 6, 'Answer + receipts', 'citations checked', 'verify in browser, TS, Python', .82]]
+    const box = ([x, y, n, h, a, b, t, c]) => `<g class="f" ${T(t)}><rect x="${x}" y="${y}" width="420" height="150" rx="22" class="${c || 'sf'}"/>${badge(x + 46, y + 46, n, c ? 'gc' : 'ink', 21)}${tx(x + 80, y + 57, h, 'h', 'style="font-size:31px"')}${tx(x + 30, y + 102, a, 'xs')}${tx(x + 30, y + 134, b, 'xs')}</g>`
+    return svg(`
+      ${flow('M270 105H1450V405H270', .05, 1.1)}
+      ${B.map(box).join('')}
+      ${arrow(490, 105, 640, 105, '', .12)}${arrow(1080, 105, 1230, 105, '', .27)}
+      ${arrow(1450, 190, 1450, 320, '', .42)}<g class="f" ${T(.45)}>${tx(1470, 263, 'gap found', 'xs')}</g>
+      ${arrow(1230, 405, 1080, 405, 'g', .62)}${arrow(640, 405, 490, 405, '', .78)}`)
+  }
+
+  /* 7 · Five hard gates: the purchase path with the gates as checkpoints; gate 5 spans the whole path */
+  function v7() {
+    const N = [[110, 'Question', 'search'], [410, 'Plan', 'agent'], [710, 'Policy', 'wallet'], [1010, 'Pay', 'coin'], [1310, 'Grant', 'key'], [1610, 'Cite', 'doc']]
+    const G = [[560, 2, 'Budget is the', 'only authority'], [860, 3, 'One charge', 'per intent'], [1160, 1, 'No paid bytes', 'before grant'], [1460, 4, 'Only real', 'citations']]
+    const Y = 250, at = x => .1 + (x - 110) / 1500 * .85
+    return svg(`
+      ${draw(`M110 ${Y}H1610`, 'fat', .1, .85)}
+      ${flow(`M110 ${Y}H1610`, .1, .85, true)}
+      ${N.map(([x, h, id]) => `<g class="p" ${T(at(x) - .04)}><circle cx="${x}" cy="${Y}" r="44" class="nd"/>${ic(id, x - 21, Y - 21, 42)}${tx(x, Y + 88, h, 'h', mid)}</g>`).join('')}
+      ${G.map(([x, n, a, b]) => `<g class="p" ${T(at(x))}><rect x="${x - 5}" y="${Y - 54}" width="10" height="108" rx="5" class="gbar"/>${badge(x, 158, n, 'gc', 25)}</g><g class="f" ${T(at(x) + .05)}>${tx(x, 74, a, 'gk', `${mid} style="font-size:27px;font-weight:750"`)}${tx(x, 106, b, 'gk', `${mid} style="font-size:27px;font-weight:750"`)}</g>`).join('')}
+      ${draw('M110 392V412H1610V392', 'g', 1, .3)}
+      <g class="p" ${T(1.15)}><circle cx="860" cy="412" r="25" class="gc"/>${tx(860, 421, '5', 'w', `${mid} style="font-size:26px;font-weight:800"`)}</g>
+      <g class="f" ${T(1.15)}>${tx(860, 484, 'Simulated or substituted is labelled', 'gk', `${mid} style="font-size:29px;font-weight:750"`)}</g>`)
+  }
+
+  /* 8 · Why XRPL and x402: the purchase as a sequence (agent · XRPL escrow · writer) and three reasons */
+  function v8() {
+    const X = { a: 110, e: 660, w: 1110 }
+    const head = (x, id, h, t) => `<g class="f" ${T(t)}><rect x="${x - 34}" y="14" width="68" height="68" rx="18" class="sf"/>${ic(id, x - 20, 28, 40)}${tx(x, 120, h, 'h', mid)}</g>${draw(`M${x} 140V506`, '', t + .1, .3)}`
+    const msg = (n, x1, x2, y, label, c, t) => {
+      const right = x1 > x2 && x1 === X.w, lx = right ? x1 - 22 : X.a + 22, tc = { o: 'o', g: 'gk', b: 'b' }[c] || ''
+      const lab = right
+        ? `${badge(lx - 14, y - 26, n, 'ink', 15)}${tx(lx - 38, y - 17, label, `halo ${tc}`, `${end} style="font-size:26px"`)}`
+        : `${badge(lx + 14, y - 26, n, 'ink', 15)}${tx(lx + 38, y - 17, label, `halo ${tc}`, 'style="font-size:26px"')}`
+      return `${arrow(x1 + (x2 > x1 ? 6 : -6), y, x2 + (x2 > x1 ? -6 : 6), y, c, t, .25)}<g class="f" ${T(t)}>${lab}</g>`
+    }
+    const why = (y, id, h, a, b, t) => `<g class="p" ${T(t)}><rect x="1240" y="${y}" width="460" height="152" rx="22" class="sf"/>${ic(id, 1264, y + 22, 44)}${tx(1322, y + 56, h, 'h', 'style="font-size:30px"')}${tx(1266, y + 102, a, 'xs')}${tx(1266, y + 134, b, 'xs')}</g>`
+    return svg(`
+      ${head(X.a, 'agent', 'Agent', 0)}${head(X.e, 'ledger', 'XRPL escrow', .06)}${head(X.w, 'pen', 'Writer', .12)}
+      ${msg(1, X.a, X.w, 190, 'HTTP request for the article', 'b', .35)}
+      ${msg(2, X.w, X.a, 258, '402 Payment Required · escrow-v1 terms', 'o', .5)}
+      ${msg(3, X.a, X.e, 330, 'EscrowCreate, locked to sha256(key)', 'k', .65)}
+      ${msg(4, X.w, X.e, 398, 'EscrowFinish publishes the key: writer paid', 'g', .8)}
+      ${msg(5, X.e, X.a, 470, 'the key unlocks the article', 'g', .95)}
+      ${why(14, 'lock', 'Native escrow', 'PREIMAGE-SHA-256 condition,', 'no smart contract', .9)}
+      ${why(184, 'coin', '0.000435 XRP', 'network fees a purchase:', '12 drops to lock, 423 to reveal', 1)}
+      ${why(354, 'link', 'A listed x402 network', 'pay by HTTP 402 terms, with', 'no account or API key', 1.1)}`)
+  }
+
+  /* 9 · The writer never delivers: locked at 0 s, no key, CancelAfter (~120 s), EscrowCancel (132 s measured), principal back */
+  function v9() {
+    const x = s => Math.round(170 + s * 9.6), xc = x(120), xk = x(132)
+    const hb = Array.from({ length: 17 }, (_, i) => `<rect x="${1496 + (i % 6) * 32}" y="${362 + Math.floor(i / 6) * 32}" width="26" height="26" rx="5" class="${i < 11 ? 'okc' : 'bad'}"/>`).join('')
+    return svg(`
+      ${draw(`M170 250H${xk}`, 'fat', .05, .85)}
+      ${flow(`M170 250H${xk}`, .05, .85, true)}
+      <g class="p" ${T(0)}><circle cx="170" cy="250" r="44" class="nd o"/>${ic('lock', 149, 229, 42, 'o')}</g>
+      ${tx(170, 150, 'EscrowCreate', 'xs mo', mid)}${tx(170, 186, 'money locked', 'h', `${mid} style="font-size:29px"`)}
+      <g class="f" ${T(.3)}><path d="M470 250C470 150 520 130 600 130" class="ghost"/><rect x="600" y="90" width="420" height="80" rx="20" class="ghost"/>
+        ${tx(810, 140, 'Writer publishes the key', 'mute', `${mid} style="font-size:28px"`)}</g>
+      <g class="p" ${T(.48)}><circle cx="1020" cy="130" r="24" class="bad"/><path d="M1011 121l18 18M1029 121l-18 18" class="ln" style="stroke:#fff;stroke-width:4"/></g>
+      <g class="f" ${T(.5)}>${tx(1060, 140, 'never sent', 'o', 'style="font-size:26px"')}</g>
+      ${draw(`M${xc} 70V330`, 'o', .7, .2)}
+      <g class="f" ${T(.72)}>${tx(xc - 16, 62, 'CancelAfter, about 120 s', 'o', `${end} style="font-size:26px"`)}</g>
+      <g class="p" ${T(.92)}><circle cx="${xk}" cy="250" r="44" class="nd g"/><g transform="translate(${xk - 21} 229) scale(1.75)"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 3.5v4h-4" class="ic g" style="stroke-width:1.6"/></g></g>
+      <g class="f" ${T(.95)}>${tx(xk + 66, 236, 'EscrowCancel', 'xs mo')}${tx(xk + 66, 270, '132 s, measured', 'gk', 'style="font-size:26px"')}</g>
+      ${draw(`M${xk} 296C${xk} 440 170 440 170 300`, 'g fat', .98, .45)}${tip(170, 300, -90, 'g fat', 1.38)}
+      ${flow(`M${xk} 296C${xk} 440 170 440 170 300`, .98, .45)}
+      <g class="f" ${T(1.15)}>${tx((xk + 170) / 2, 470, 'policy cancels; the principal returns to the buyer', 'gk halo', `${mid} style="font-size:28px"`)}</g>
+      <g class="f" ${T(.6)}>${tx(1496, 344, 'Opt-in 20% holdback', 'xs')}${hb}${tx(1496, 482, '11 released', 'gk', 'style="font-size:24px"')}${tx(1496, 512, '6 refunded', 'o', 'style="font-size:24px"')}</g>`)
+  }
+
+  /* 10 · Is this real money: Testnet today → a licensed payments partner → Mainnet (blocked in code); RLUSD escrow off */
+  function v10() {
+    const st = (x, cls, id, icls, h, s, sc, t) => `<g class="p" ${T(t)}><circle cx="${x}" cy="160" r="58" class="nd ${cls}"/>${ic(id, x - 26, 134, 52, icls)}</g><g class="f" ${T(t + .05)}>${tx(x, 270, h, 'h', mid)}${tx(x, 306, s, sc, mid)}</g>`
+    const open = ['MAS PSA/DPT analysis', 'Custody', 'Sanctions screening', 'Travel Rule']
+    const ws = open.map(s => Math.round(s.length * 12.6 + 36)), total = ws.reduce((a, b) => a + b, 0) + 14 * (open.length - 1) + 84
+    let cx = 860 - total / 2
+    let chips = `<g class="f" ${T(.5)}>${tx(cx, 383, 'Open:', 'xs')}</g>`
+    cx += 84
+    open.forEach((s, i) => { chips += `<g class="f" ${T(.55 + i * .05)}><rect x="${cx}" y="350" width="${ws[i]}" height="46" rx="23" class="sf"/>${tx(cx + ws[i] / 2, 382, s, 'xs', mid)}</g>`; cx += ws[i] + 14 })
+    return svg(`<g transform="translate(0 -34)">
+      ${draw('M318 160H802', 'g fat', .15, .3)}
+      <path d="M918 160H1412" class="ln dash fat f" ${T(.5)}/>
+      ${st(260, 'g', 'ledger', 'g', 'XRPL Testnet', 'today: a real ledger, no real value', 'gk', 0)}
+      ${st(860, '', 'bank', '', 'Licensed payments partner', 'the next step', 's', .4)}
+      ${st(1470, 'o', 'lock', 'o', 'Mainnet', 'blocked in code today', 'o', .75)}
+      ${chips}
+      <g class="f" ${T(.9)}><rect x="240" y="438" width="1240" height="58" rx="29" class="badbg"/>${ic('coin', 262, 452, 30, 'o')}
+        ${tx(304, 476, 'RLUSD can’t be used in escrow yet: its issuers have escrow locking off (checked on Testnet and Mainnet).', 'o', 'style="font-size:24px;font-weight:650"')}</g></g>`)
+  }
+
+  /* 11 · Who are the writers: the free corpus by source, team notes, credentialed writers, no outside writer yet */
+  function v11() {
+    const W = 1680, a = Math.round(8756 / 12104 * W)
+    const box = (x, h, s1, s2, t, cls = 'sf', extra = '') => `<g class="f" ${T(t)}><rect x="${x}" y="226" width="540" height="270" rx="24" class="${cls}"/>${extra}${tx(x + 32, 372, h, 'h', 'style="font-size:31px"')}${tx(x + 32, 418, s1, 'xs')}${tx(x + 32, 452, s2, 'xs')}</g>`
+    const tile = (x, id, c = '') => `<rect x="${x + 32}" y="256" width="64" height="64" rx="16" class="bx"/>${ic(id, x + 44, 268, 40, c)}`
+    const people = [0, 1, 2].map(i => `<g class="p" ${T(.85 + i * .08)}><circle cx="${880 + i * 74}" cy="288" r="30" class="nd g"/>${ic('people', 866 + i * 74, 274, 28, 'g')}${ok(902 + i * 74, 266, 12)}</g>`).join('')
+    return svg(`
+      ${tx(20, 46, 'Free: 12,104 public documentation passages', 'h', cnt(.1))}${tx(1700, 46, 'pinned to commit SHAs', 'xs', end)}
+      <rect x="20" y="72" width="${a}" height="96" rx="16" class="q1 gx" ${T(.12)}/>
+      <rect x="${20 + a + 6}" y="72" width="${W - a - 6}" height="96" rx="16" class="q3 gx" ${T(.32)}/>
+      <g class="f" ${T(.4)}>${tx(50, 132, '8,756 · XRPL dev portal', 'w h', 'style="font-size:31px"')}${tx(20 + a + 34, 132, '3,348 · coinbase/x402', 'w h', 'style="font-size:31px"')}</g>
+      ${box(20, 'Team-authored paid notes', 'writers set the price', 'per article', .5, 'sf', tile(20, 'pen'))}
+      ${box(590, '3 accepted writers', 'operator-issued XRPL Credentials', '(Testnet)', .65, 'sf', tile(590, 'key', 'g'))}
+      ${people}
+      ${box(1160, 'Outside writers: none yet', 'anyone can publish from a phone;', 'an operator approves each', .8, 'ghost', tile(1160, 'people', 'mute'))}`)
+  }
+
+  /* Every fact is from the appendix notes, facts.json or the evidence file named on the card. */
+  const CARDS = [
+    { tile: { n: '1,000', c: 'purchases re-checked', i: ico('ledger') }, title: '1,000 Testnet purchases, each re-checked', vis: v1,
+      lines: ['A second, independent script re-read every purchase from a public node. Median 20.3 s a purchase, p90 22.6 s.',
+        'Limit: Testnet, no real value. Scripted repeats of one team note by fresh accounts: it proves the payment path at volume, not demand.'],
+      src: 'docs/evidence/proof/TESTNET-1000.md · testnet-1000-verify.json', url: 'docs/evidence/proof/TESTNET-1000.md' },
+    { tile: { n: '210,480', c: 'payment states', i: I_STATES }, title: '210,480 payment states checked', vis: v2,
+      lines: ['Every reachable state of a small model of the purchase protocol, each checked against the five gates.',
+        'Limit: an abstract model, not Testnet; it does not prove the real code matches the model. The count sums four configurations.'],
+      src: 'docs/evidence/proof/model-summary.json · PROOF-REPORT.md', url: 'docs/evidence/proof/PROOF-REPORT.md' },
+    { tile: { n: '1,000,000', c: 'crashes and retries', i: I_RETRY }, title: '1,000,000 simulated crashes and retries', vis: v3,
+      lines: ['The real purchase code ran a million times against a fake ledger, one injected fault a run: 0 double charges.',
+        'Limit: a synthetic ledger and logical crash points; a seeded, finite fault matrix, not a million unique paths or Testnet transactions.',
+        'It found and fixed one real recovery bug (<code>CLAIM_FAILED</code> after a crash; no gate violation).'],
+      src: 'docs/evidence/proof/sim-summary.json · PROOF-REPORT.md', url: 'docs/evidence/proof/sim-summary.json' },
+    { tile: { n: '34', c: 'attacks', i: I_SHIELD }, title: '34 attacks on our test stack, 0 breaches', vis: v4,
+      lines: ['We attacked the running purchase server like a hostile website, writer or prompt; all 34 were stopped.',
+        'Limit: our local test stack (fixture models, a fake ledger for escrow cases), not the hosted deployment; our own list, not an audit.'],
+      src: 'tests/proof/redteam/stack.test.ts · PROOF-REPORT.md (attack table)', url: 'docs/evidence/proof/PROOF-REPORT.md' },
+    { tile: { n: '+17', c: 'correct answers', i: I_LIFT }, title: '+17 correct answers: 31 → 48 of 100', label: '(simulated payments)', vis: v5,
+      lines: ['100 XRPL and x402 questions, the same in both arms; the paid arm bought on 43 runs, S$20.40 in all.',
+        'Limit: a development set, not held-out (60 questions used in earlier rounds); payments simulated; team-written notes.',
+        'Not claimed: held-out accuracy.'],
+      src: 'docs/evidence/models/EVALUATION.md · r3-real-paired/results.json', url: 'docs/evidence/models/EVALUATION.md' },
+    { tile: { q: 'Architecture', i: I_ARCH }, title: 'Architecture', vis: v6,
+      lines: ['Only policy code starts a purchase, reserving the budget atomically; the model has no purchase tool.',
+        'Limit: hosted buying is fixed rules after one confirmation (labelled “fixture”); a fitted decision model did no better and was removed.',
+        'Limit: <code>escrow-v1</code> is our own scheme, not stock x402 <code>exact</code>; its upstream draft is not filed.'],
+      src: 'docs/key-reveal-escrow.md · server/escrow.ts · docs/COMPLIANCE.md', url: 'docs/key-reveal-escrow.md' },
+    { tile: { q: 'Five hard gates', i: ico('lock') }, title: 'Five hard gates', vis: v7,
+      lines: ['Checked in all 210,480 model states (2), held in 1,000,000 simulated runs (3); each of the 34 attacks aims at one (4).',
+        'Limit: an abstract model, a fake ledger and a local stack, all our own: not a third-party audit.'],
+      src: 'README.md (Hard guarantees) · docs/COMPLIANCE.md (gate table)', url: 'README.md#hard-guarantees' },
+    { tile: { q: 'Why XRPL and x402?', i: ico('wall') }, title: 'Why XRPL and x402?', vis: v8,
+      lines: ['The same escrow ran the 1,000 verified Testnet purchases (1): median 20.3 s each, end to end.',
+        'Limit: the key-reveal escrow (<code>escrow-v1</code>) is our own scheme on x402, documented and drafted for upstream, not yet filed.',
+        'Not claimed: ledger-close times or throughput.'],
+      src: 'docs/key-reveal-escrow.md · docs/x402-xrpl.md · docs/FINAL-PUSH.md (D7) · facts.json (fee_drops)', url: 'docs/key-reveal-escrow.md' },
+    { tile: { q: 'What if the writer never delivers?', i: ico('key') }, title: 'What if the writer never delivers?', vis: v9,
+      lines: ['No key, no payment: collecting the money publishes the key, and the key unlocks the article.',
+        'Limit: the deadline alone moves nothing (buyer policy submits the cancel); the buyer still pays 24 drops of fees.',
+        'Not claimed: refund if the article is bad. A key proves delivery, not quality; only the holdback refunds (its runs used forced failures).'],
+      src: 'docs/key-reveal-escrow.md · docs/evidence/money/HOLDBACK.md', url: 'docs/key-reveal-escrow.md' },
+    { tile: { q: 'Is this real money?', s: 'Mainnet path', i: ico('bank') }, title: 'Is this real money? The Mainnet path', vis: v10,
+      lines: ['No. XRPL Testnet: a real ledger, no real value. Mainnet needs a licensed payments partner; that is the next step.',
+        'Limit: no licence or legal opinion. Research purchases pay from the operator’s own wallet (our interpretation, for counsel).',
+        'Not claimed: real money, Mainnet, regulatory clearance, RLUSD escrow.'],
+      src: 'docs/COMPLIANCE.md', url: 'docs/COMPLIANCE.md' },
+    { tile: { q: 'Who are the writers?', i: ico('people') }, title: 'Who are the writers?', vis: v11,
+      lines: ['Policy code buys within the budget and the S$1 per-source cap.',
+        'Limit: “verified” is identity display, not KYC, quality or payment permission.',
+        'Not claimed: outside writers or customers, validated demand.'],
+      src: 'data/corpus/public-docs/manifest.json · docs/writer-verification.md', url: 'docs/writer-verification.md' },
+    { tile: { q: 'Links', i: ico('link') }, kind: 'links', title: 'Links' },
+  ]
+  const N = CARDS.length
+
+  /* ---------- the index ---------- */
+  grid.innerHTML = CARDS.map((c, i) => {
+    const t = c.tile
+    const body = t.n ? `<div><div class="n">${t.n}</div><div class="c">${t.c}</div></div>` : `<div class="q">${t.q}${t.s ? `<small>${t.s}</small>` : ''}</div>`
+    return `<button type="button" class="t8" data-i="${i}" aria-label="${(t.n ? t.n + ' ' + t.c : t.q)} (key ${CAP[i]})"><div class="hd"><span class="kc">${CAP[i]}</span>${t.i}</div>${body}</button>`
+  }).join('')
+
+  /* ---------- one card page ---------- */
+  const nb = t => t.replace(/(\d) (s|min)\b/g, '$1 $2')   // keep a number with its unit
+  const line = s => { const m = s.match(/^(Limit|Not claimed):\s*/); return m ? `<p class="lim"><b>${m[1]}:</b> ${nb(s.slice(m[0].length))}</p>` : `<p>${nb(s)}</p>` }
+  const src = c => `<dl class="src"><dt>Source</dt><dd>${c.src}</dd><dt></dt><dd class="u">${GH}${c.url}</dd></dl>`
+  function bodyOf(c) {
+    if (c.kind === 'links') {
+      const web = [['Try it', 'the QR code', 'collaboration95.github.io/theFastandtheFungible/try/', 'agent'],
+        ['Live sandbox', 'XRPL Testnet, hosted 13–19 Nov', 'ra-front-651013803640.asia-southeast1.run.app', 'plug'],
+        ['Replay', 'no backend', 'collaboration95.github.io/theFastandtheFungible/demo/', 'doc'],
+        ['Ledger page', '61 Testnet transactions, re-checked in the browser', 'collaboration95.github.io/theFastandtheFungible/ledger/', 'ledger']]
+      const repo = [['Proof report', 'docs/evidence/proof/PROOF-REPORT.md'], ['Testnet run', 'docs/evidence/proof/TESTNET-1000.md'],
+        ['Escrow', 'docs/key-reveal-escrow.md'], ['Compliance', 'docs/COMPLIANCE.md'],
+        ['Evaluation', 'docs/evidence/models/EVALUATION.md']]
+      return `<div class="links-g">
+        <div class="box lk" style="--t:0">${web.map(([b, s, u, id]) => `<div class="r"><span class="tile">${ico(id)}</span><div><b>${b}<small>${s}</small></b><code>${u}</code></div></div>`).join('')}</div>
+        <div class="box qr" style="--t:.12"><img alt="QR code to the ResearchAgent try page"><b>Try it</b></div>
+        <div class="box lk repo" style="--t:.24"><div class="r full"><b>Repo</b><code>github.com/Collaboration95/theFastandtheFungible <span class="rel">· release v1.1.1</span></code></div>${repo.map(([b, u]) => `<div class="r"><b>${b}</b><code>${u}</code></div>`).join('')}</div>
+      </div>`
+    }
+    return `<div class="vis">${c.vis()}</div><div class="lns">${c.lines.map(line).join('')}</div>${src(c)}`
+  }
+  const pageOf = (c, i, print) => `<div class="pg">
+    <div class="pg-top">${print ? `<span class="pg-tag">Appendix</span>` : `<button type="button" class="pg-back" data-close aria-label="Back to the appendix"><span class="ar">←</span><span class="kc">Esc</span></button>`}
+      <h2>${c.title}${c.label ? `<span class="label">${c.label}</span>` : ''}</h2><span class="kc">${CAP[i]}</span></div>
+    <div class="pg-body">${bodyOf(c)}</div></div>`
+
+  /* ---------- motion when a card opens: CSS keyframes under .go, numbers count up, one token flows along each data-flow path ---------- */
+  const NS = 'http://www.w3.org/2000/svg'
+  let gen = 0
+  const easeOut = k => 1 - Math.pow(1 - k, 3), easeInOut = k => k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2
+  function after(t0, dur, fn, g) {   // calls fn(k) each frame from t0 for dur ms with k in 0…1, until a card closes or changes
+    const tick = now => { if (g !== gen) return; const k = Math.min(1, Math.max(0, (now - t0) / dur)); fn(k); if (k < 1) requestAnimationFrame(tick) }
+    requestAnimationFrame(tick)
+  }
+  function animate(root) {
+    const g = ++gen
+    if (Deck.REDUCE || Deck.PRINT) return
+    root.classList.remove('go'); void root.offsetWidth; root.classList.add('go')
+    const now = performance.now()
+    root.querySelectorAll('[data-count]').forEach(el => {
+      const fin = el.textContent, m = fin.match(/\d[\d,]*/)
+      if (!m) return
+      const n = +m[0].replace(/,/g, '')
+      after(now + (+el.dataset.t || 0) * 1000, 600, k => { el.textContent = k >= 1 ? fin : fin.replace(m[0], fmt(n * easeOut(k))) }, g)
+    })
+    root.querySelectorAll('[data-flow]').forEach(p => {
+      const len = p.getTotalLength(), c = document.createElementNS(NS, 'circle'), lin = p.hasAttribute('data-lin')
+      c.setAttribute('r', '10'); c.setAttribute('class', 'tok'); c.style.opacity = '0'
+      p.parentNode.appendChild(c)
+      after(now + (+p.dataset.t || 0) * 1000, (+p.dataset.d || 1) * 1000, k => {
+        const pt = p.getPointAtLength((lin ? k : easeInOut(k)) * len)
+        c.setAttribute('cx', pt.x.toFixed(1)); c.setAttribute('cy', pt.y.toFixed(1))
+        c.style.opacity = String(Math.min(1, k * 10, (1 - k) * 10))
+        if (k >= 1) c.remove()
+      }, g)
+    })
+  }
+
+  /* ---------- state: which card is open, which tile is highlighted ---------- */
+  let open = -1, hi = -1
+  const tiles = [...grid.children]
+  function setHi(i) { hi = i; tiles.forEach((t, k) => t.classList.toggle('hi', k === i)) }
+  // the URL follows the open card: #8.1 … #8.12 (card N is the Nth key: 1 … 9, 0, −, =); #8 when none is open
+  const setHash = h => { try { history.replaceState(null, '', location.search + h) } catch { /* refused on some file:// */ } }
+  const cardOfHash = () => { const m = location.hash.match(/^#8\.(\d+)$/); const i = m ? +m[1] - 1 : -1; return i >= 0 && i < N ? i : -1 }
+  function show(i) { open = i; setHi(i); ov.innerHTML = pageOf(CARDS[i], i, false); ov.hidden = false; fixQr(ov); animate(ov); setHash('#8.' + (i + 1)) }
+  function close() { gen++; if (open < 0) return; open = -1; ov.hidden = true; ov.innerHTML = ''; ov.classList.remove('go'); if (S.classList.contains('active')) setHash('#8') }
+
+  // the build inlines images only in the slide's markup, so the QR lives once in the section (#s8qr, hidden) and the
+  // pages built at runtime take its data URI (their <img> has no src until then, so nothing is ever requested)
+  const QR = document.getElementById('s8qr')?.getAttribute('src')
+  const fixQr = root => QR && root.querySelectorAll('.qr img').forEach(img => img.setAttribute('src', QR))
+
+  /* Keys run in the capture phase, before deck.js, and only while this slide is showing. A card open: every
+     navigation key closes it first, so → / Space never jump past the appendix. */
+  const isKey = k => KEYS.indexOf(k === '_' ? '-' : k === '+' ? '=' : k)
+  addEventListener('keydown', e => {
+    if (!S.classList.contains('active') || e.metaKey || e.ctrlKey || e.altKey) return
+    const k = e.key, n = isKey(k)
+    const eat = () => { e.preventDefault(); e.stopImmediatePropagation() }
+    if (open >= 0) {
+      if (n >= 0) { eat(); show(n) }
+      else if (k === 'ArrowDown') { eat(); show((open + 1) % N) }
+      else if (k === 'ArrowUp') { eat(); show((open + N - 1) % N) }
+      else if (['Escape', 'Backspace', 'ArrowRight', 'ArrowLeft', ' ', 'Enter', 'PageDown', 'PageUp'].includes(k)) { eat(); close() }
+      else if (k === 'Home' || k === 'End') close()
+      return
+    }
+    if (n >= 0) { eat(); show(n) }
+    else if (k === 'ArrowDown') { eat(); setHi(hi < 0 ? 0 : (hi + 1) % N) }
+    else if (k === 'ArrowUp') { eat(); setHi(hi < 0 ? N - 1 : (hi + N - 1) % N) }
+    else if (k === 'Enter' && hi >= 0) { eat(); show(hi) }
+    else if (k === 'Escape' && hi >= 0) { eat(); setHi(-1) }
+  }, true)
+
+  // clicks here are the appendix's own: never the deck's click-to-advance
+  S.addEventListener('click', e => {
+    e.stopPropagation()
+    if (e.button !== 0) return
+    if (e.target.closest('[data-close]')) { close(); return }
+    const t = e.target.closest('.t8')
+    if (t) show(+t.dataset.i)
+  })
+  S.addEventListener('mousedown', e => { if (e.target.closest('button')) e.preventDefault() })   // keep focus off, so Space/Enter stay ours
+
+  /* Print: the index, then one page per card, as extra slides right after this one (s801 … s812), finished diagrams. */
+  const dropPages = () => document.querySelectorAll('section.s8p').forEach(s => s.remove())
+  function printPages() {
+    dropPages()
+    let at = S
+    CARDS.forEach((c, i) => {
+      const s = document.createElement('section')
+      s.className = 'slide s8p'
+      s.id = 's8' + String(i + 1).padStart(2, '0')
+      s.innerHTML = pageOf(c, i, true)
+      fixQr(s)
+      at.after(s); at = s
+    })
+  }
+  if (!Deck.PRINT) addEventListener('afterprint', dropPages)
+
+  addEventListener('hashchange', () => { const i = cardOfHash(); if (S.classList.contains('active') && i >= 0 && i !== open) show(i) })
+
+  Deck.on('s8', {
+    enter() { const i = cardOfHash(); close(); setHi(-1); if (i >= 0) show(i) },
+    leave() { close(); setHi(-1) },
+    final() { close(); setHi(-1); printPages() },
+  })
+}
+</script>
