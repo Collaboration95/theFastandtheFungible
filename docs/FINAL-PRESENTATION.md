@@ -36,6 +36,15 @@ Agents stop at the paywall; experts can't sell to agents. ResearchAgent lets an
 agent buy the one article it needs, within the budget you set, and the writer is
 paid only when the article unlocks.
 
+## Non-negotiables (owner, 18 Nov)
+
+- **Intro logo reveal:** slide 00 opens empty; the first press plays the logo
+  reveal on the same slide (white tile springs in, mark draws, "ResearchAgent"
+  slides out); the next press goes to slide 01. Every pass must keep this.
+- **No in-slide interaction on pitch slides:** each slide reveals itself on
+  arrival; clicks and → only advance. The appendix stays interactive.
+- **Look:** Saturday evening painted palette (final).
+
 ## Run of show (3:00)
 
 | Time | On screen | Point |
@@ -196,8 +205,8 @@ and writers get paid."
 
 **Slide 3 · what we built since SingHacks (1:40–2:05).**
 "At SingHacks this was one web app with sample sources. A person approved every
-purchase, and payments were simulated. Now it's live, and any agent connects by
-URL. It reads twelve thousand real documentation passages plus paid notes. Fixed
+purchase, and payments were simulated. Now it runs live on the web, as a Mac app,
+and inside Claude, Cursor or VS Code over MCP. It reads twelve thousand real documentation passages plus paid notes. Fixed
 rules buy inside your budget. And it pays on XRPL Testnet, with an escrow the
 article's key releases."
 
@@ -225,6 +234,7 @@ agents, and stablecoin settlement. Scan this and check it out. Thank you."
 | So it's wrong half the time? | It's a hard protocol development set; free docs alone got 31 of 100, adding paid notes got 48. The point is the lift from buying the right article. |
 | The demo took 80 s, slide says 20 s? | 20.3 s is the median for the purchase itself across 1,000 runs; the full answer adds research and writing. |
 | Who decides what to buy? | Fixed policy rules inside your budget, after one confirmation. The model writes the answer; it can't spend. |
+| Where can I use it? | The live web sandbox; a Mac app (Apple Silicon and Intel; offline demo on first run, Testnet in Settings); MCP by URL for Claude, Cursor and VS Code, an npm MCP package and a Claude Desktop extension; TypeScript and Python SDKs; one-line `try --testnet`. |
 | Who are the writers? | Today, our own team-authored notes plus 12,104 public documentation passages. Anyone can publish a note from a phone, with an operator approving each one; no outside writer has published yet. |
 | What stops the writer taking the money without delivering? | No key, no payment: collecting the money publishes the key, and the key is what unlocks the article. A key match proves delivery, not quality; for quality there's an opt-in 20% holdback the buyer's policy can take back. |
 | Are the 1,000 purchases 1,000 customers? | No: scripted repeats of one team note by fresh Testnet accounts, to prove the payment path at volume, each re-checked on a public node. |
