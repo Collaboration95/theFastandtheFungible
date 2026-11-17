@@ -6,20 +6,21 @@
 @font-face{font-family:"Geist Mono";src:url("assets/fonts/geist-mono-latin-wght-normal.woff2") format("woff2");font-weight:100 900;font-display:block}
 
 :root{
-  /* fields: the Dusk-to-day ramp. One field per slide, lightness rising with the story:
-     dusk violet → indigo → blue → azure/teal → green → a daylight close back to blue. Each slide file sets
-     #sN{background:var(--light),linear-gradient(150deg in oklch,var(--sN-a),var(--sN-b))}; white text ≥ 4.5:1 on every stop. */
-  --s0-a:#27145C; --s0-b:#2B1A6D;   /* intro: dusk */
-  --s1-a:#2B1A6D; --s1-b:#2F1E76;   /* problem: violet night, warm horizon */
-  --s2-a:#2F1E76; --s2-b:#2A268B;   /* demo */
-  --s3-a:#2A268B; --s3-b:#2532A3;   /* since SingHacks */
-  --s4-a:#2532A3; --s4-b:#213CBB;   /* payment */
-  --s5-a:#2A3AA6; --s5-m:#0A5C95; --s5-b:#037569;   /* reach: sapphire → ocean → sea teal, bridging into the green */
-  --s6-a:#00836D; --s6-b:#0B8762;   /* proof: green */
-  --s7-a:#04764C; --s7-b:#0465AF;   /* day: green back to blue under the QR */
-  --s8-a:#1E1250; --s8-b:#120B36;   /* appendix: the deep end of the ramp, after the close */
-  --light:radial-gradient(1200px 900px at 92% -10%,rgba(255,255,255,.10),transparent 60%);
-  --light-g:radial-gradient(1200px 900px at 92% -10%,rgba(255,255,255,.06),transparent 60%);
+  /* skies: "Saturday evening", golden hour into night. Each slide's sky is a vertical gradient
+     #sN{background:<its glow>,linear-gradient(180deg,var(--sN-z),var(--sN-m) …,var(--sN-l) …,var(--sN-h))}
+     (zenith → mid → low → horizon) under its painted scene (src/scenes/sN.svg, --scene) and the paper grain.
+     The evening deepens one step a slide: each zenith sits near the previous slide's mid sky. 0–1 carry dark ink,
+     2–8 white text; every line on a sky is ≥ 4.5:1 measured on the render. */
+  --s0-z:#EAE0EB; --s0-m:#F8E0CB; --s0-l:#F7CDA7; --s0-h:#F2B893;   /* late afternoon: pale haze, apricot horizon */
+  --s1-z:#D8C3D8; --s1-m:#EBC6BA; --s1-l:#EFB196; --s1-h:#DDA196;   /* golden hour: lilac, apricot, rose */
+  --s2-z:#504383; --s2-m:#5E4C8B; --s2-l:#68518E; --s2-h:#745690;   /* sun just set: mauve, rose low */
+  --s3-z:#4F4586; --s3-m:#544788; --s3-l:#5C4B8A; --s3-h:#6B528E;   /* afterglow over the first rooftops */
+  --s4-z:#463F82; --s4-m:#4C4387; --s4-l:#6A5294; --s4-h:#7C5A94;   /* dusk: lavender band behind the card */
+  --s5-z:#3B3B7E; --s5-m:#404186; --s5-l:#4A4889; --s5-h:#62538E;   /* early blue hour: periwinkle, a rose seam */
+  --s6-z:#2C3270; --s6-m:#2E3B76; --s6-l:#2C4F77; --s6-h:#2F6475;   /* blue hour: a sea-green band, the paid colour's echo */
+  --s7-z:#161A3E; --s7-m:#1B2049; --s7-l:#232859; --s7-h:#33306C;   /* night settles: the close */
+  --s8-z:#0F1230; --s8-m:#151940; --s8-l:#1C1F4C; --s8-h:#1C1F4C;   /* appendix: late night, quiet */
+  --land:#2B2253;  --night-land:#0E1130;  --star:#FFF6DE;  --window:#F6C987;   /* as painted in the scenes */
   --warm-1:#F5622A;                     /* the brand orange: accents only (the appendix highlight) */
   --blue-1:#2244D2;                     /* accent on white cards (pins, tiles, the link dot) */
   --green-1:#0B8762;
@@ -33,8 +34,8 @@
 
   /* on a field */
   --on:#fff;
-  --on-2:rgba(255,255,255,.8);
-  --on-line:rgba(255,255,255,.22);
+  --on-2:rgba(255,255,255,.88);
+  --on-line:rgba(255,255,255,.26);
 
   /* meaning */
   --paid:#0C8F5F;  --paid-bg:#E6F4ED;  --paid-ink:#065B3C;
@@ -48,7 +49,7 @@
 
   /* shape */
   --r-card:28px;  --r-row:20px;  --r-tile:16px;  --r-pill:999px;
-  --sh-card:0 1px 0 rgba(255,255,255,.9) inset,0 1px 2px rgba(8,14,44,.06),0 28px 56px -28px rgba(8,14,44,.42);
+  --sh-card:0 1px 0 rgba(255,255,255,.9) inset,0 1px 2px rgba(40,20,60,.06),0 28px 56px -28px rgba(40,22,70,.5);   /* violet-tinted, as if lit from a low sun */
   --sh-lift:0 10px 24px -10px rgba(8,14,44,.4);
 
   /* spacing: 8 px grid; the slide frame */
@@ -74,11 +75,22 @@ body.idle{cursor:none}
 .nav .pos{min-width:52px;text-align:center;letter-spacing:.02em}
 html.print .nav{display:none}
 
-/* ---------- fields ----------
-   Backgrounds live in each slide file (#sN, from the --sN-a/--sN-b ramp above). Every field is dark enough for white text.
-   .f-book marks the bookends (intro, slide 1, slide 7): their text and tiles use the --bk-* tokens. */
-:root{--bk-ink:#fff;--bk-ink-2:rgba(255,255,255,.82);--bk-line:rgba(255,255,255,.2);--bk-mk:var(--marker);--bk-brand:#fff;
-  --bk-tile:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,.07));--bk-tile-line:rgba(255,255,255,.22);--bk-tile-ink:#fff}
+/* ---------- skies and scenes ----------
+   Each slide file sets its sky (background, from the --sN-* tokens) and --scene (its painted scenes/sN.svg). Three painted layers
+   sit under the content (z-index inside the slide's own stacking context):
+     ::before  the scene: clouds, hills, rooftops, stars (one SVG, rasterised once)            z -3
+     .scene-town  an empty hook for a later parallax town layer (slides 3 and 6), between them  z -2
+     ::after   paper grain + a horizontal brush wash in soft-light                               z -1
+   Cards and text paint above all three. Nothing here moves.
+   .f-book marks the bookends (intro, slide 1, slide 7): their text and tiles use the --bk-* tokens
+   (white by default for the night close; the intro and slide 1 switch them to dark ink on their light sky). */
+.slide{isolation:isolate}
+.slide::before,.slide::after{content:"";position:absolute;inset:0;pointer-events:none}
+.slide::before{z-index:-3;background:var(--scene,none) 0 0/100% 100% no-repeat}
+.slide::after{z-index:-1;background:url("scenes/grain.svg") 0 0/260px 260px,url("scenes/wash.svg") 0 0/100% 100% no-repeat;mix-blend-mode:soft-light;opacity:.5}
+.scene-town{position:absolute;left:0;right:0;bottom:0;height:var(--town-h,320px);z-index:-2;pointer-events:none;overflow:hidden}
+:root{--bk-ink:#fff;--bk-ink-2:rgba(255,255,255,.86);--bk-line:rgba(255,255,255,.2);--bk-mk:var(--marker);--bk-brand:#fff;
+  --bk-tile:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,.07));--bk-tile-line:rgba(255,255,255,.24);--bk-tile-ink:#fff}
 .f-book{isolation:isolate;color:var(--bk-ink)}
 
 /* ---------- type ---------- */

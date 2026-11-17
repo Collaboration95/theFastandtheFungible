@@ -1,4 +1,4 @@
-<!-- 0 · Intro: an empty bookend field (Dusk: the ramp's darkest violet). The first → / Space / PgDn / Enter plays the reveal on this slide.
+<!-- 0 · Intro: an empty bookend sky (late afternoon, dark ink). The first → / Space / PgDn / Enter plays the reveal on this slide.
      The next press goes to slide 1 (↓ and a click count as →). ← from slide 1 shows the finished logo;
      Home or #0 shows the empty field, ready to play. Reduced motion and print show the final lockup.
      The reveal is a straight port of the launch-clip engine's "title" beat (motion/lib/engine.js, brand part only):
@@ -16,7 +16,9 @@
 </section>
 
 <style>
-#s0{background:var(--light),linear-gradient(150deg in oklch,var(--s0-a),var(--s0-b))}
+/* late afternoon: pale haze, a low sun behind the hills; dark ink on the light sky */
+#s0{--scene:url("../scenes/s0.svg");--bk-ink:var(--ink);--bk-ink-2:#2C3150;--bk-line:rgba(60,30,50,.14);--bk-brand:var(--ink);
+  background:radial-gradient(900px 420px at 72% 76%,rgba(255,244,214,.95),rgba(255,236,200,0) 70%),linear-gradient(180deg,var(--s0-z),var(--s0-m) 52%,var(--s0-l) 76%,var(--s0-h))}
 #s0{--fs:170px;--ink0:#24211E;--name0:var(--bk-brand);padding:0}
 /* .tline: one centred row, height 1.3 × font size */
 #s0 .row{position:absolute;left:0;right:0;top:50%;height:calc(var(--fs) * 1.3);margin-top:calc(var(--fs) * -.65);display:flex;justify-content:center;align-items:center;

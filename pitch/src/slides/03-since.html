@@ -38,21 +38,24 @@
     <div class="a" data-i="4" style="grid-row:4"><span class="tile"><svg class="i"><use href="#i-key"/></svg></span><span class="w">XRPL Testnet escrow: the key that unlocks the article pays the writer</span></div>
   </div>
 
+  <div class="scene-town" aria-hidden="true"></div>
 </section>
 
 <style>
-#s3{background:var(--light),linear-gradient(150deg in oklch,var(--s3-a),var(--s3-b))}
+/* afterglow: rose fading behind the "now" card, the first rooftops along the bottom (.scene-town: the hook for a later moving town) */
+#s3{--scene:url("../scenes/s3.svg");
+  background:radial-gradient(1300px 420px at 74% 104%,rgba(238,150,128,.5),rgba(200,110,130,.18) 50%,rgba(200,110,130,0) 75%),linear-gradient(180deg,var(--s3-z),var(--s3-m) 40%,var(--s3-l) 72%,var(--s3-h))}
 #s3 .cmp{position:absolute;left:var(--pad-x);right:var(--pad-x);top:280px;display:grid;grid-template-columns:200px 600px 112px 1fr;grid-template-rows:repeat(4,172px)}
 
 /* the two panels sit behind their rows */
-#s3 .then{grid-column:2;grid-row:1/5;border-radius:var(--r-card);background:rgba(255,255,255,.06)}
+#s3 .then{grid-column:2;grid-row:1/5;border-radius:var(--r-card);background:rgba(24,16,64,.2);box-shadow:0 0 0 1px rgba(255,255,255,.16) inset}
 #s3 .now{grid-column:4;grid-row:1/5}
 
 /* row key: plain words on the field, like slide 1’s "Agents" / "Writers" */
 #s3 .k{grid-column:1;align-self:center;font:750 40px/1 var(--f);letter-spacing:-.035em;color:#fff}
 
 /* then: faded and struck through */
-#s3 .b{grid-column:2;display:flex;align-items:center;padding:0 40px;font:550 34px/1.25 var(--f);letter-spacing:-.02em;color:rgba(255,255,255,.8)}
+#s3 .b{grid-column:2;display:flex;align-items:center;padding:0 40px;font:550 34px/1.25 var(--f);letter-spacing:-.02em;color:rgba(255,255,255,.92)}
 #s3 .x{white-space:nowrap;background:linear-gradient(rgba(255,255,255,.62),rgba(255,255,255,.62)) 0 56%/100% 2px no-repeat;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 
 /* the arrow between the two */

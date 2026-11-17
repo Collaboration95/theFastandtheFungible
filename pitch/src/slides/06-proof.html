@@ -8,7 +8,7 @@
     <div class="card hero">
       <div class="n">1,000</div>
       <div class="what">Testnet purchases,<br>each re-read from a public node</div>
-      <svg class="cells sweep" id="s6cells" style="--t:.2;--d:.7s;--n:25" viewBox="0 0 584 300" aria-hidden="true"></svg>
+      <svg class="cells sweep" id="s6cells" style="--t:.2;--d:.7s;--n:25" viewBox="0 0 584 300" preserveAspectRatio="xMinYMid meet" aria-hidden="true"></svg>
       <div class="med"><svg class="i"><use href="#i-check"/></svg>median 20.3 s each</div>
     </div>
 
@@ -35,18 +35,21 @@
       </div>
     </div>
   </div>
+  <div class="scene-town" aria-hidden="true"></div>
 </section>
 
 <style>
-#s6{background:var(--light-g),linear-gradient(150deg in oklch,var(--s6-a),var(--s6-b) 50%,var(--s7-a))}
+/* blue hour: deep blue, a sea-green band on the horizon below the cards, the first bright star (.scene-town: the later town hook) */
+#s6{--scene:url("../scenes/s6.svg");
+  background:radial-gradient(1400px 300px at 50% 104%,rgba(120,190,170,.3),rgba(120,190,170,0) 70%),linear-gradient(180deg,var(--s6-z),var(--s6-m) 40%,var(--s6-l) 75%,var(--s6-h))}
 #s6{display:flex;flex-direction:column}
-#s6 .g{flex:1;display:grid;grid-template-columns:640px 1fr;gap:28px;margin-top:64px}
+#s6 .g{flex:none;height:650px;display:grid;grid-template-columns:640px 1fr;gap:28px;margin-top:56px}
 
 /* hero: 1,000 purchases, one cell each */
-#s6 .hero{overflow:hidden;padding:44px 48px 40px;display:flex;flex-direction:column}
-#s6 .hero .n{position:relative;font:800 200px/.82 var(--f);letter-spacing:-.06em;font-variant-numeric:tabular-nums;margin-left:-6px}
-#s6 .hero .what{position:relative;font:700 34px/1.2 var(--f);letter-spacing:-.02em;margin-top:30px}
-#s6 .cells{display:block;width:544px;height:280px;margin-top:auto}
+#s6 .hero{overflow:hidden;padding:40px 48px 36px;display:flex;flex-direction:column}
+#s6 .hero .n{position:relative;font:800 184px/.82 var(--f);letter-spacing:-.06em;font-variant-numeric:tabular-nums;margin-left:-6px}
+#s6 .hero .what{position:relative;font:700 34px/1.2 var(--f);letter-spacing:-.02em;margin-top:24px}
+#s6 .cells{display:block;width:544px;height:264px;margin-top:auto}
 #s6 .cells rect{fill:var(--paid)}
 #s6 .med{margin-top:22px;display:flex;align-items:center;gap:12px;font:700 28px/1 var(--f);letter-spacing:-.01em;color:var(--ink-2)}
 #s6 .med svg{font-size:26px;color:var(--paid)}

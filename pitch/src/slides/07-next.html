@@ -1,4 +1,4 @@
-<!-- 7 · What's next + try it, on the bookend field (same text tokens as the intro and slide 1; its field is the ramp's daylight close).
+<!-- 7 · What's next + try it, on a bookend sky (the --bk-* text tokens, white here; its sky is night settling over a street).
      Left: three plans and the sign-off; right: the QR, full frame height. -->
 <section class="slide f-book" id="s7">
   <div class="left">
@@ -18,7 +18,9 @@
 </section>
 
 <style>
-#s7{background:var(--light-g),linear-gradient(150deg in oklch,var(--s7-a),#036E7E 50%,var(--s7-b))}
+/* night settles: stars, a sleeping street with a few lit windows under the sign-off; the bookend tokens stay white */
+#s7{--scene:url("../scenes/s7.svg");
+  background:radial-gradient(1500px 240px at 30% 104%,rgba(150,120,190,.32),rgba(150,120,190,0) 70%),linear-gradient(180deg,var(--s7-z),var(--s7-m) 40%,var(--s7-l) 72%,var(--s7-h))}
 #s7 .left{position:absolute;left:100px;top:88px;bottom:88px;width:840px;display:flex;flex-direction:column;justify-content:space-between}
 #s7 h2{font-size:116px;letter-spacing:-.05em;line-height:1}
 #s7 .plans{display:grid}

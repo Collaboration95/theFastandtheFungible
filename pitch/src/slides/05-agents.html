@@ -52,17 +52,18 @@
 </section>
 
 <style>
-/* sapphire (where slide 4 ends) through ocean to sea teal (where slide 6 begins) */
-#s5{background:var(--light),linear-gradient(150deg in oklch,var(--s5-a) 10%,var(--s5-m) 50%,var(--s5-b))}
+/* early blue hour: periwinkle, a cumulus with a rose underside, the last rose seam on the horizon below the board */
+#s5{--scene:url("../scenes/s5.svg");
+  background:radial-gradient(1600px 260px at 40% 100%,rgba(214,140,150,.42),rgba(214,140,150,0) 70%),linear-gradient(180deg,var(--s5-z),var(--s5-m) 40%,var(--s5-l) 75%,var(--s5-h))}
 #s5{display:flex;flex-direction:column}
 #s5 .board{margin-top:64px;display:grid;grid-template-columns:950px 1fr;padding:0}
-#s5 .half{padding:60px 64px 64px;position:relative;display:flex;flex-direction:column}
+#s5 .half{padding:52px 64px 52px;position:relative;display:flex;flex-direction:column}
 #s5 .half+.half{border-left:1px solid var(--line)}
 #s5 h3{font-size:52px;letter-spacing:-.035em}
 
 /* buy: four clients fan into one URL */
 #s5 .clients,#s5 .flow{height:190px}
-#s5 .clients{margin-top:60px;display:grid;grid-template-columns:repeat(4,1fr)}
+#s5 .clients{margin-top:44px;display:grid;grid-template-columns:repeat(4,1fr)}
 #s5 .cl,#s5 .nd{display:flex;flex-direction:column;align-items:center;text-align:center}
 #s5 .tile{width:96px;height:96px;border-radius:24px;font-size:46px}
 #s5 .tile svg.i{stroke-width:1.75}
@@ -73,17 +74,17 @@
 #s5 .cl b,#s5 .nd b{margin-top:20px;font:750 30px/1.12 var(--f);letter-spacing:-.02em}
 #s5 .cl b{white-space:nowrap}
 #s5 .cl span:last-child{margin-top:6px;font:500 28px/1.15 var(--f);letter-spacing:-.015em;color:var(--ink-2);white-space:nowrap}
-#s5 .fan{display:block;width:100%;height:120px;margin-top:26px;overflow:visible}
+#s5 .fan{display:block;width:100%;height:120px;margin-top:18px;overflow:visible}
 #s5 .fan path{fill:none;stroke:var(--ink-3);stroke-width:2;opacity:.6;--from:calc(var(--len)*-1)}
 #s5 .url{flex:none;height:112px;border-radius:999px;background:linear-gradient(180deg,#1F3A7A,#142A5C);box-shadow:0 18px 36px -18px rgba(8,14,44,.6),0 0 0 1px rgba(255,255,255,.06) inset;
   display:flex;align-items:center;gap:26px;padding:0 44px 0 16px;color:#fff}
-#s5 .url .lk{flex:none;width:80px;height:80px;border-radius:50%;background:linear-gradient(150deg in oklch,var(--s5-m),var(--s5-b));display:grid;place-items:center;font-size:40px}
+#s5 .url .lk{flex:none;width:80px;height:80px;border-radius:50%;background:linear-gradient(150deg in oklch,#4C5BA8,#2F6475);display:grid;place-items:center;font-size:40px}
 #s5 .url .u{font:500 40px/1 var(--m);letter-spacing:-.03em;white-space:nowrap}
 
 /* sell: endpoint + one package → agents can buy */
-#s5 .flow{margin-top:60px;display:grid;grid-template-columns:1fr 64px 1fr 64px 1fr}
+#s5 .flow{margin-top:44px;display:grid;grid-template-columns:1fr 64px 1fr 64px 1fr}
 /* a dashed drop from "Agents can buy" (the flow's third column) to the proof */
-#s5 .drop{height:146px;position:relative}
+#s5 .drop{height:138px;position:relative}
 #s5 .drop::before{content:"";position:absolute;top:16px;bottom:0;left:calc(100% - (100% - 128px) / 6);border-left:2px dashed var(--paid);opacity:.45;transform:translateX(-1px)}
 #s5 .flow .conn{margin-top:47px;min-width:0}
 #s5 .nd b{text-wrap:balance;max-width:200px}

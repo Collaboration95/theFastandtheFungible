@@ -1,4 +1,4 @@
-<!-- 8 · Appendix, for Q&A only (after the pitch's last slide). Quiet deep-violet field, an index of 12 tiles named by what a
+<!-- 8 · Appendix, for Q&A only (after the pitch's last slide). Quiet late-night sky with sparse stars, an index of 12 tiles named by what a
      judge would ask. A key (1–9, 0, −, =) or a click opens that card as a full-slide overlay on this slide; ↓/↑ moves a
      highlight and Enter opens it. In a card: Esc, Backspace, → / ←, Space, Enter or "← Appendix" return to the index
      (they never leave the slide while a card is open); a number or ↓/↑ switches card.
@@ -18,8 +18,9 @@
 </section>
 
 <style>
-/* the field: the deep violet end of the Dusk ramp, quieter than the pitch slides; shared by the print pages (.s8p) */
-#s8,.s8p:not(#s8){background:var(--light-g),linear-gradient(150deg in oklch,var(--s8-a),var(--s8-b));color:#fff}
+/* late night: quiet indigo, sparse stars, quieter than the pitch slides; shared by the card overlay and the print pages (.s8p) */
+#s8,.s8p:not(#s8){--scene:url("../scenes/s8.svg");--sky:radial-gradient(1400px 900px at 92% -10%,rgba(140,150,230,.1),rgba(140,150,230,0) 60%),linear-gradient(180deg,var(--s8-z),var(--s8-m) 60%,var(--s8-h));
+  background:var(--sky);color:#fff}
 #s8{display:flex;flex-direction:column}
 #s8 .top{display:flex;align-items:flex-end;justify-content:space-between}
 #s8 .top h2{font-size:var(--t-h2);letter-spacing:-.045em;line-height:1}
@@ -46,7 +47,7 @@
 #s8 .t8 .q small{display:block;margin-top:8px;font:700 30px/1.1 var(--f);letter-spacing:-.02em;color:var(--ink-2)}
 
 /* the card overlay: covers the index on the same slide, same field */
-#s8 .ov{position:absolute;inset:0;z-index:5;padding:var(--pad-y) var(--pad-x);background:inherit;display:flex}
+#s8 .ov{position:absolute;inset:0;z-index:5;padding:var(--pad-y) var(--pad-x);background:var(--scene) 0 0/100% 100% no-repeat,var(--sky);display:flex}
 #s8 .ov[hidden]{display:none}
 
 /* ---------- a card page: the overlay (#s8 .ov) and each print page (.s8p) ---------- */
