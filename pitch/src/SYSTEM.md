@@ -18,7 +18,7 @@ PNGs are named by slide number: `00.png` is the intro.
 | File | Owns |
 |---|---|
 | `base.css` | tokens, type, components, stage, print |
-| `deck.js` | stage scaling, keys, click-to-advance, the nav pill, in-slide steps, the marker, print/final state |
+| `deck.js` | stage scaling, keys, click-to-advance, the nav pill, timed arrival beats, the marker, print/final state |
 | `icons.svg` | icon sprite (24-unit grid): `<svg class="i"><use href="#i-key"/></svg>` |
 | `slides/NN-name.html` | one slide, with its own `<style>` and `<script>` |
 
@@ -34,33 +34,34 @@ PNGs are named by slide number: `00.png` is the intro.
 - Frame: 1920 × 1080, padding 88 px top/bottom and 100 px left/right (`--pad-y`, `--pad-x`). Content is
   visible on arrival. No slide transitions.
 
-## Keys and steps
+## Keys and clicks
+
+The presenter only ever moves between slides. **No pitch slide (01–07) waits for a key or a click**: each one plays
+its whole reveal by itself on a forward arrival and then rests in its final state.
 
 | Key | Does |
 |---|---|
-| → Space PgDn Enter | next slide, unless the slide's `next()` hook consumes it (only the intro does) |
-| ← PgUp Backspace | previous slide |
-| ↓ / ↑ | next / previous in-slide step (↓ after the last returns to 0; ↑ stops at 0) |
-| 1–9 · 0 / Esc | jump to a step · back to step 0 |
+| → Space PgDn Enter ↓ | next slide (the intro's `next()` hook consumes the first press to play its reveal) |
+| ← PgUp Backspace ↑ | previous slide |
 | Home / End · f | first / last slide · fullscreen |
-| click on a slide | next slide (as →); clicks inside an element marked `data-click` (step rows) are its own |
+| digits, Esc | nothing on a pitch slide (the appendix uses 1–9, 0, −, = and Esc for its cards) |
+| click on a slide | next slide (as →), anywhere on the slide; only the appendix handles its own clicks |
 | nav pill ← / → | previous / next; the pill ("← N / total →") sits in a band under the stage, never on a slide or in print |
 
-A slide with steps registers a hook:
+Don't add in-slide steps, spotlights, replays or click targets to a pitch slide. A hook may still use:
 
 ```js
 Deck.on('s4', {
-  steps: 4,                         // ↓/↑ and 1–4 drive it
-  set(n, { animate }) { … },        // n = 0 is the rest state: arrival, after leaving, print
-  enter(el, { dir, from }) { … },   // optional
-  leave(el) { … },                  // optional
-  next() { return true },           // optional: consume →; only the intro uses this
-  final(el) { … },                  // optional: print state if it differs from step 0
+  enter(el, { dir, from, play }) { … },   // play: true on a forward arrival that animates
+  rest(el) { … },                        // final state: at start, after leaving, before print
+  leave(el) { … },                       // optional
+  final(el) { … },                       // optional: print state if it differs from rest
 })
-Deck.step('s4', 2)                  // from the slide's own click handlers
+Deck.seq('s4', [[200, fn], [600, fn]])   // timed beats after arrival; only leaving cancels them
 ```
 
-`animate` is false under reduced motion and in print: jump straight to the end state.
+The intro alone keeps an internal state (`steps: 1`, `set(n, ctx)`, `next()` → `Deck.step('s0', 1)`): it opens
+empty and the first → / Space / PgDn / Enter / click plays the logo reveal on the same slide; the next press goes on.
 
 ## Tokens
 
@@ -114,6 +115,9 @@ Slides 1–6 play short arrival motion (≤ 1.5 s, no loops) that shows the payw
   `.run` (from `--dist` to the left), `.bump` (knocked back by `--back`/`--tilt`, rests at its own transform),
   `.shake` (`--a`), `.draw` (SVG `path.draw` gets `--len` from deck.js; other elements scaleX 0 → 1),
   `.sweep` (clip reveal in `--n` steps). Easing tokens `--ease` (entrances) and `--spring`.
-- `Deck.seq('s4', [[1, 200], …, [0, 1750]])` auto-runs in-slide steps after arrival (slide 4); leaving, a
-  click or any key cancels it. A step the presenter asks for (↓/↑/digits/click) also ends `.play`.
+- A reveal that changes state over time (slide 4: Locked → Key published → Unlocked → Checked, 0.4 s apart) uses
+  `Deck.seq` from `enter` when `ctx.play`, and settles in `rest()` at about 2 s. Every sequence finishes within
+  about 2.5 s; leaving cancels it and `rest()` puts the slide in its final state.
 - Hook `enter(el, ctx)` gets `ctx.play` (true when the slide is playing its arrival motion).
+- The appendix (slide 08) is the one interactive slide, for Q&A: a key or click opens a card, and each card's
+  diagram draws itself once (0.6–1.2 s: lines draw, numbers settle, one token flows). Print shows them finished.

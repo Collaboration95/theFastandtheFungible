@@ -1,21 +1,20 @@
-/* ResearchAgent finals deck · runtime: stage scaling, navigation, in-slide steps, markers, print.
+/* ResearchAgent finals deck · runtime: stage scaling, navigation, arrival motion, markers, print.
    Slide scripts register hooks with Deck.on('sN', {...}) and the build calls Deck.start() last.
-   Contract (SYSTEM.md):
-     →  Space  PgDn  Enter   next slide (a slide's next() hook may consume the press; only the intro does)
-     ←  PgUp  Backspace      previous slide
-     ↓ / ↑                   next / previous in-slide step (↓ after the last step returns to 0; ↑ stops at 0)
-     1–9                     jump to that step · 0 or Esc: back to the rest state
-     Home / End · #N in URL  first / last slide · deep link by slide number (#0 intro … #7)
-     f                       fullscreen
-     click on the slide      next (as →), except on in-slide controls marked [data-click]
+   Contract (SYSTEM.md): the presenter only ever moves between slides; no pitch slide waits for a key or click.
+     →  Space  PgDn  Enter  ↓   next slide (a slide's next() hook may consume the press; only the intro does)
+     ←  PgUp  Backspace  ↑      previous slide
+     Home / End · #N in URL     first / last slide · deep link by slide number (#0 intro … #8 appendix)
+     f                          fullscreen
+     click on the slide         next (as →); the appendix (#s8) handles its own keys and clicks
      nav pill (below the stage, never on a slide or in print): ← N / total →
-   Hook shape: { steps: N, set(n, ctx), enter(el, ctx), leave(el), next(ctx) → true to consume, final(el) }
+   Hook shape: { enter(el, ctx), leave(el), rest(el), next(ctx) → true to consume, final(el), steps, set(n, ctx) }
    ctx: { animate, reduce, print } and, for enter, { dir: ±1, from: previous slide number or null, play }
-   Step 0 is the rest state: what the slide shows on arrival, after leaving, and in print.
+   rest(el) puts a slide in its final state: at start, after leaving, and (before final) in print.
+   steps/set are internal states driven by the slide itself (Deck.step); only the intro uses them.
    Arrival motion: on a forward arrival (not print, not reduced motion) the slide gets .play, and base.css's
    primitives ([data-enter], .pop, .run, .bump, .shake, .draw, .stamp, .sweep) run their from-only keyframes,
    so the resting CSS is always the final state. Going backwards, print and reduced motion never get .play.
-   Deck.seq(id, [[step, ms], …]) auto-runs in-slide steps after arrival; leaving or any key cancels it. */
+   Deck.seq(id, [[ms, fn], …]) runs timed beats after arrival (slide 4); leaving cancels them and rest() settles. */
 (() => {
   const P = new URLSearchParams(location.search)
   const PRINT = P.has('print') || P.has('capture')
@@ -25,8 +24,6 @@
   let slides = [], cur = -1
   let seqTimers = []
   const stopSeq = () => { seqTimers.forEach(clearTimeout); seqTimers = [] }
-  // a step the presenter asks for ends any arrival motion (its rest state is the final state anyway)
-  const userStep = (id, n) => { stopSeq(); slides[cur]?.classList.remove('play'); setStep(id, n) }
 
   /* ---------- marker: the one hand-drawn loop, fitted around its .mk phrase ---------- */
   const NS = 'http://www.w3.org/2000/svg'
@@ -130,7 +127,11 @@
     stepOf[id] = n
     h.set?.(n, ctx())
   }
-  const rest = id => { if (hooks[id]?.steps) { stepOf[id] = 0; hooks[id].set?.(0, { ...ctx(), animate: false }) } }
+  const rest = id => {
+    const h = hooks[id]
+    if (h?.steps) { stepOf[id] = 0; h.set?.(0, { ...ctx(), animate: false }) }
+    h?.rest?.(document.getElementById(id))
+  }
 
   /* ---------- navigation ---------- */
   const numOf = el => +(el.id.match(/^s(\d+)$/)?.[1] ?? NaN)
@@ -161,20 +162,15 @@
   }
   const forward = () => { const h = hooks[slides[cur].id]; if (h?.next?.(ctx()) !== true) go(cur + 1) }
   let pos = null
+  // keys only ever move between slides: a pitch slide has no in-slide steps for the presenter to drive
   function onKey(e) {
     if (e.metaKey || e.ctrlKey || e.altKey) return
-    const k = e.key, id = slides[cur].id, h = hooks[id]
-    stopSeq()
-    if (['ArrowRight', 'PageDown', ' ', 'Enter'].includes(k)) { e.preventDefault(); forward(); return }
-    if (['ArrowLeft', 'PageUp', 'Backspace'].includes(k)) { e.preventDefault(); go(cur - 1); return }
+    const k = e.key
+    if (['ArrowRight', 'PageDown', ' ', 'Enter', 'ArrowDown'].includes(k)) { e.preventDefault(); forward(); return }
+    if (['ArrowLeft', 'PageUp', 'Backspace', 'ArrowUp'].includes(k)) { e.preventDefault(); go(cur - 1); return }
     if (k === 'Home') { e.preventDefault(); go(0); return }
     if (k === 'End') { e.preventDefault(); go(slides.length - 1); return }
-    if (k === 'f' || k === 'F') { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.(); return }
-    if (!h?.steps) return
-    if (k === 'ArrowDown') { e.preventDefault(); userStep(id, (stepOf[id] || 0) + 1) }
-    else if (k === 'ArrowUp') { e.preventDefault(); userStep(id, Math.max(0, (stepOf[id] || 0) - 1)) }
-    else if (k === 'Escape' || k === '0') userStep(id, 0)
-    else if (/^[1-9]$/.test(k) && +k <= h.steps) userStep(id, +k)
+    if (k === 'f' || k === 'F') { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.() }
   }
 
   /* ---------- final state (print, ?print=1, Cmd+P) ---------- */
@@ -188,13 +184,13 @@
     PRINT, REDUCE,
     /** Register hooks for one slide: Deck.on('s4', { steps: 4, set(n, ctx) {…} }) */
     on(id, hook) { hooks[id] = hook },
-    /** Set a slide's step from its own click handlers: Deck.step('s3', 2) */
-    step(id, n) { userStep(id, n) },
-    /** Auto-run in-slide steps after arrival: Deck.seq('s4', [[1, 200], [2, 500]]); leaving or any key cancels */
+    /** Set a slide's internal state from its own script: Deck.step('s0', 1) (the intro's reveal) */
+    step(id, n) { setStep(id, n) },
+    /** Timed beats after arrival: Deck.seq('s4', [[200, fn], [600, fn]]); only leaving the slide cancels them */
     seq(id, list) {
       stopSeq()
       if (REDUCE || PRINT) return
-      seqTimers = list.map(([n, ms]) => setTimeout(() => { if (slides[cur]?.id === id) setStep(id, n) }, ms))
+      seqTimers = list.map(([ms, fn]) => setTimeout(() => { if (slides[cur]?.id === id) fn() }, ms))
     },
     stepOf: id => stepOf[id] || 0,
     start() {
@@ -228,7 +224,6 @@
       addEventListener('resize', fit); fit()
       stage.addEventListener('click', e => {
         if (e.button !== 0) return
-        stopSeq()
         if (e.target.closest('[data-click],a,button,input,select,textarea,label')) return
         if (getSelection()?.toString()) return
         forward()

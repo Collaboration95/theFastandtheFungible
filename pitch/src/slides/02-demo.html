@@ -1,7 +1,7 @@
 <!-- 2 · The demo's map, shown just before switching to the live app (and the fallback if the network dies).
      Left: the five beats. Right: the golden MAS run rebuilt as the app (values: a recorded golden run).
      Each beat sits on the same row as the part of the app it points at; pins 1–5 read top to bottom.
-     ↓/↑ or 1–5 spotlight one beat and its part of the app (click a beat too); 0 or Esc shows all.
+     No in-slide steps: a click or any key goes to the next slide.
      Arrival (deck.js .play): the three payment states tint grey → paid in order; the Unlocked shackle lifts. -->
 <section class="slide" id="s2">
   <h2>One question, start to finish.</h2>
@@ -64,7 +64,7 @@
 #s2 .map{position:absolute;left:var(--pad-x);right:var(--pad-x);top:236px;display:grid;grid-template-columns:600px 1fr;grid-template-rows:auto repeat(5,auto)}
 
 /* beats: words → hairline → the pin on the app's edge */
-#s2 .beat{grid-column:1;display:flex;align-items:center;gap:26px;padding-right:30px;cursor:pointer;transition:opacity .2s}
+#s2 .beat{grid-column:1;display:flex;align-items:center;gap:26px;padding-right:30px}
 #s2 .beat .t{flex:none;width:450px;font:700 40px/1.12 var(--f);letter-spacing:-.03em;color:#fff;text-wrap:balance}
 #s2 .beat .pill{font-size:28px;padding:8px 16px;vertical-align:4px;margin-left:4px}
 #s2 .lead{flex:1;min-width:40px;height:2px;background:linear-gradient(90deg,rgba(255,255,255,.08),rgba(255,255,255,.4))}
@@ -83,7 +83,6 @@
 #s2 .net .label{color:var(--a-ink);font-weight:550}
 
 #s2 .sec{position:relative;align-self:center;margin:0 44px}
-#s2 .sec>*{transition:opacity .2s}
 #s2 .pin{position:absolute;left:-70px;top:50%;margin-top:-26px;width:52px;height:52px;border-radius:50%;display:grid;place-items:center;
   font:800 26px/1 var(--f);color:#fff;background:var(--blue-1);box-shadow:0 0 0 3px #fff,0 6px 14px rgba(5,10,40,.35);z-index:2}
 
@@ -129,11 +128,6 @@
 #s2.play .st .shk{animation:s2-lift .3s var(--spring) .8s backwards}
 @keyframes s2-tint{from{color:var(--ink-3)}}
 @keyframes s2-lift{from{translate:0 3.5px}}
-
-/* spotlight one beat */
-#s2 .map.focus .beat:not(.on),#s2 .map.focus .sec:not(.on)>:not(.pin){opacity:.28}
-#s2 .map.focus .sec:not(.on) .pin{background:#fff;color:var(--ink-3);box-shadow:0 0 0 3px rgba(255,255,255,.5)}
-#s2 .map.focus .beat.on .lead{background:linear-gradient(90deg,rgba(255,255,255,.2),#fff)}
 </style>
 
 <script>
@@ -148,9 +142,4 @@ const GOLDEN = {
 }
 const s2 = document.getElementById('s2')
 s2.querySelectorAll('[data-g]').forEach(el => { el.textContent = GOLDEN[el.dataset.g] })
-
-const map = s2.querySelector('.map'), parts = [...map.querySelectorAll('.beat,.sec')]
-const spot = n => { parts.forEach(p => p.classList.toggle('on', +p.dataset.i === n)); map.classList.toggle('focus', n > 0) }
-map.querySelectorAll('.beat').forEach(b => (b.dataset.click = '', b).addEventListener('click', () => Deck.step('s2', Deck.stepOf('s2') === +b.dataset.i ? 0 : +b.dataset.i)))
-Deck.on('s2', { steps: 5, set: n => spot(n) })
 </script>

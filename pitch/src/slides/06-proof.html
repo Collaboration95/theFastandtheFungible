@@ -1,6 +1,6 @@
 <!-- 6 · Proof at scale. Arrival: the grid is revealed top to bottom in 25 steps (one per row), then the zeros and +17 stamp in.
       Hero: 1,000 Testnet purchases as a 1,000-cell grid. Right: what we threw at it → the result column.
-     Step (↓): 1 replays the re-check, every cell turning green as its purchase is re-read from the ledger; 0 is the final state. -->
+     No in-slide steps: a click or any key goes to the next slide. -->
 <section class="slide" id="s6">
   <h2>Checked, not claimed.</h2>
 
@@ -77,15 +77,5 @@
     e.setAttribute('width', (pw - 3.4).toFixed(2)); e.setAttribute('height', (ph - 3.4).toFixed(2)); e.setAttribute('rx', 2)
     svg.appendChild(e)
   }
-  /* ↓ replays the re-check: each cell goes from unchecked grey to green in reading order, 0.77 s in all */
-  const cells = [...svg.children]
-  Deck.on('s6', {
-    steps: 1,
-    set(n, { animate }) {
-      cells.forEach(c => c.getAnimations().forEach(a => a.cancel()))
-      if (n !== 1 || !animate) return
-      cells.forEach((c, i) => c.animate([{ fill: '#DDE2EC' }, { fill: '#0C8F5F' }], { duration: 120, delay: i * .65, fill: 'backwards', easing: 'linear' }))
-    },
-  })
 }
 </script>

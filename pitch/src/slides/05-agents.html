@@ -1,5 +1,5 @@
 <!-- 5 · Any agent, by URL. Logos: simple-icons (CC0) 16.38.0 for Claude, Claude Code and Cursor; 10.0.0 for VS Code. Buy side: four clients fan into one URL. Sell side: endpoint + one package → agents can buy.
-     Steps (↓): 1 focuses the buy side, 2 the sell side; 0 shows both.
+     No in-slide steps: both sides show at once; a click or any key goes to the next slide.
      Arrival (deck.js .play): the four branches draw up from the URL and each logo lifts as its line arrives; the
      drop draws down from "Agents can buy" and the check pops. -->
 <section class="slide" id="s5">
@@ -56,7 +56,7 @@
 #s5{background:var(--light),linear-gradient(150deg in oklch,var(--s5-a) 10%,var(--s5-m) 50%,var(--s5-b))}
 #s5{display:flex;flex-direction:column}
 #s5 .board{margin-top:64px;display:grid;grid-template-columns:950px 1fr;padding:0}
-#s5 .half{padding:60px 64px 64px;position:relative;display:flex;flex-direction:column;transition:opacity .3s ease}
+#s5 .half{padding:60px 64px 64px;position:relative;display:flex;flex-direction:column}
 #s5 .half+.half{border-left:1px solid var(--line)}
 #s5 h3{font-size:52px;letter-spacing:-.035em}
 
@@ -101,17 +101,5 @@
 #s5.play .drop::before{animation:s5-down .3s linear .75s backwards}
 @keyframes s5-lift{40%{translate:0 -4px}}
 @keyframes s5-down{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0 0 0 0)}}
-
-/* steps: focus one side */
-#s5[data-focus="buy"] .sell,#s5[data-focus="sell"] .buy{opacity:.28}
 </style>
 
-<script>
-{
-  const el = document.getElementById('s5')
-  Deck.on('s5', {
-    steps: 2,
-    set(n) { if (n) el.dataset.focus = n === 1 ? 'buy' : 'sell'; else delete el.dataset.focus },
-  })
-}
-</script>
