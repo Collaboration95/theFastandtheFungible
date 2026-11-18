@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""The rolling town on slides 3 and 6: python3 pitch/src/scenes/gen_town.py → scenes/town.svg
+"""The rolling town on slide 3: python3 pitch/src/scenes/gen_town.py → scenes/town.svg
 
 Three parallax strips along the bottom 260 px (far hills, rooftops with a warm rim and lit windows, near hedge, trees,
 poles and wires). town.svg is a hidden sprite, inlined once into slide 3 (<img data-inline>): one tile per strip

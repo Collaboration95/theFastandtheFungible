@@ -3,11 +3,11 @@
    Contract (SYSTEM.md): the presenter only ever moves between slides; no pitch slide waits for a key or click.
      →  Space  PgDn  Enter  ↓   next slide (a slide's next() hook may consume the press; only the intro does)
      ←  PgUp  Backspace  ↑      previous slide
-     Home / End · #N in URL     first / last slide · deep link by slide number (#0 intro … #8 appendix, #8.3 a card)
-     1 … 7 · 8 · 0              jump to that slide · the appendix · the intro, empty again (the next press replays the
+     Home / End · #N in URL     first / last slide · deep link by slide number (#0 intro … #7 appendix, #7.3 a card)
+     1 … 6 · 7 · 0              jump to that slide · the appendix · the intro, empty again (the next press replays the
                                 logo reveal); on the appendix the digits, − and = open its cards instead
      f                          fullscreen
-     click on the slide         next (as →); the appendix (#s8) handles its own keys and clicks
+     click on the slide         next (as →); the appendix (#s7) handles its own keys and clicks
      nav pill (below the stage, never on a slide or in print): ← N / total →
    Hook shape: { enter(el, ctx), leave(el), rest(el), next(ctx) → true to consume, final(el), steps, set(n, ctx) }
    ctx: { animate, reduce, print } and, for enter, { dir: ±1, from: previous slide number or null, play }
@@ -158,7 +158,7 @@
     el.classList.add('active')
     syncDrift(el)
     const n = numOf(el)
-    // the hash first, and only if it names another slide, so an enter hook can read and refine it (#8.3: a card)
+    // the hash first, and only if it names another slide, so an enter hook can read and refine it (#7.3: a card)
     if (parseInt(location.hash.slice(1), 10) !== n) try { history.replaceState(null, '', location.search + '#' + (Number.isFinite(n) ? n : cur)) } catch { /* storage unavailable */ }   // some browsers refuse on file://
     if (!REDUCE) replay(el, 'enter')
     // arrival motion only going forward (or on first load); backwards arrives in the final state

@@ -1,20 +1,5 @@
 # Final presentation · SingHacks finals at SFF · 18 Nov 2026
 
-Everything for the 3-minute pitch in one place. Pitch deck: `pitch/index.html`
-(one self-contained file, opened by double-click, no server; PDF alongside). The older 14-slide judge deck
-(`site/deck/`) is for Q&A only.
-
-## The slot
-
-| | |
-|---|---|
-| When | **Wed 18 Nov, 11:30–12:00 SGT**, Tenity SingHacks Awarding. Briefing **11:10** (compulsory). |
-| Where | **Swiss Pavilion, Hall 5, booth 5A25**, Singapore EXPO. Badge: Level 1, Apex Gallery, from 07:00. |
-| Format | **3 minutes** per team, then the judges deliberate and announce on the spot. Screen and HDMI provided; bring our own cable, USB-C adapter and a phone hotspot. |
-| Judges | Already pre-assessed the submitted deck and video. Tenity: skip the problem, go straight to the solution, show what changed since SingHacks. |
-| Ripple track criteria (form wording) | Reachability 25 · Feasibility 25 · Technical depth 25 · Creativity 20 · UX and design 10 |
-
-## Links
 
 | What | Link |
 |---|---|
@@ -36,14 +21,9 @@ Agents stop at the paywall; experts can't sell to agents. ResearchAgent lets an
 agent buy the one article it needs, within the budget you set, and the writer is
 paid only when the article unlocks.
 
-## Non-negotiables (owner, 18 Nov)
 
-- **Intro logo reveal:** slide 00 opens empty; the first press plays the logo
-  reveal on the same slide (white tile springs in, mark draws, "ResearchAgent"
-  slides out); the next press goes to slide 01. Every pass must keep this.
-- **No in-slide interaction on pitch slides:** each slide reveals itself on
-  arrival; clicks and → only advance. The appendix stays interactive.
-- **Look:** Saturday evening painted palette (final).
+
+
 
 ## Run of show (3:00)
 
@@ -52,10 +32,9 @@ paid only when the article unlocks.
 | 0:00–0:05 | Intro · empty → press → logo reveal | "We're The Fast and the Fungible." |
 | 0:05–0:20 | Slide 1 · the paywall | Agents read for us now; paywalls stop them; we fix both sides. |
 | 0:20–1:40 | **Live app**, the prepared run | Ask with a budget → free sources first → buys the one missing article → the key unlocks it and pays the writer → check it yourself. |
-| 1:40–2:05 | Slide 3 · what we built since SingHacks | Before → after: web, Mac app, MCP; real sources; fixed rules; XRPL Testnet escrow. |
+| 1:40–2:05 | Slide 3 · what we built since SingHacks | Before → after: web, Mac app, MCP; real sources; fixed rules; XRPL Testnet escrow. Presented at AI Tinkerers Singapore; top 3 projects on Google Cloud Run. |
 | 2:05–2:20 | Slide 5 · any agent, by URL | Buy from Claude/Cursor/VS Code with one URL; sell with one package. |
-| 2:20–2:45 | Slide 6 · checked, not claimed | 1,000 Testnet purchases re-checked; 0 violations, 0 double charges, 0 breaches. |
-| 2:45–3:00 | Slide 7 · what's next + QR | What's next; scan to check it out. |
+| 2:20–3:00 | Slide 6 · what's next + QR | What's next; scan to check it out. |
 
 Slides 2 and 4 are demo support: slide 2 is the map of what the demo shows (and
 the no-network fallback), slide 4 explains the key-reveal payment if a judge asks.
@@ -91,30 +70,64 @@ Fallbacks, in order: "Check our work" on the live app (no question used) → the
 `/demo/` replay served offline (`node scripts/stage-check.mjs --serve-replay --rebuild`)
 → slide 2's recording.
 
-## Script · 3:00 (short, 172 words)
+## Script · 3:00
 
-You can't memorise 450 words, and you don't need to. Say one short line per beat;
-the slides and the live app carry the rest. Pauses are fine: the demo fills them.
+Plain text copy for notes: read it straight through. Stage directions are in italics.
 
-**Cue card:** Paywall → Ask → Free → Buy → Key → Check → Before/after → One URL → Checked → Next
+### Intro
+*(empty slide, press once for the logo)*
 
-| Beat | On screen | Say (one line) |
-|---|---|---|
-| Intro | Empty slide → press → logo | "We're The Fast and the Fungible." |
-| Paywall | Slide 1 | "Agents do the research now. But the best research is paywalled. Agents settle for what's free; writers can't sell to agents. ResearchAgent fixes both." |
-| Ask | Live app, the finished MAS run | "One question about MAS stablecoin rules, one Singapore dollar. Fixed rules decide what to buy; the AI can't spend." |
-| Free | Sources | "It reads free sources first and finds the gap." |
-| Buy | The bought note, S$0.40 | "Then it buys one article. Forty cents." |
-| Key | Payment steps | "The key that unlocks the article is the key that pays the writer. No delivery, no payment." |
-| Check | Press "Check the key yourself" | "And you can check it yourself, on the public ledger." |
-| Before/after | Slide 3 | "At SingHacks: one web app, sample sources, a person approving every purchase. Now: live on the web, a Mac app, and inside Claude, Cursor and VS Code, paying on XRPL Testnet." |
-| One URL | Slide 5 | "Any agent connects with one URL. Any writer sells with one package." |
-| Checked | Slide 6 | "A thousand Testnet purchases, each re-checked on the ledger. A million simulated crashes, 34 attacks: zero double charges, zero breaches." |
-| Next | Slide 7 | "Next: real money with a licensed partner, and outside writers. Scan to check it out. Thank you." |
+Hi, we're The Fast and the Fungible, and this is ResearchAgent.
 
-Timing guide: paywall by 0:20, demo done by 1:40, before/after by 2:05, close by 3:00.
-If you run long, drop the "Free" line and shorten "Checked" to "A thousand purchases, each re-checked on the ledger."
-Keyboard: before the appendix, 1–7 jump to slides, 8 opens the appendix and 0 returns to the empty intro. On the appendix, digits, − and = open cards (0 opens "Is this real money?"); press Esc to close a card and Home to go back to the start.
+### The problem and what we built
+*(slide 1, done by 0:30)*
+
+More and more research is done by AI agents. But a lot of information sits behind paywalls built for people with subscriptions. So agents hit the wall and settle for whatever is free, and the experts who wrote the good stuff have no way to sell to them.
+
+ResearchAgent is a marketplace for AI agents. Your agent buys the one article it needs, for a few cents, inside a budget you set, and the writer gets paid the moment it's delivered. All on the XRP Ledger, with escrow, pay on delivery and verifiable receipts.
+
+### The demo
+*(switch to the live app, the finished MAS run; done by 1:40)*
+
+Here's a real run on our live app. I asked a question and gave it a budget of one Singapore dollar.
+
+Before it spent anything, it showed me its plan. After that, fixed rules decide what to buy, inside my budget. The AI interprets the answer, but it can never spend.
+
+*(point at "28 sources · 17 read · 1 bought")*
+
+It found 28 sources and read 17, mostly free documentation. That left a gap, so it bought exactly one article, a note on the MAS framework, for forty cents. Sixty cents of my budget is still left.
+
+*(point at "Unlocked" and "Paid by key reveal")*
+
+The money sits locked in an escrow on the XRP Ledger. The writer can only collect it by publishing a key, and that same key is what unlocks the article. So the writer gets paid at the moment the article is delivered. No article, no payment.
+
+*(point at the answer)*
+
+And here's the answer, with the article it bought in its sources.
+
+*(open "Check it yourself", press "Check the key yourself")*
+
+To make this trustworthy and transparent, you can verify it yourself on the public ledger. Your browser checks that the key matches the lock.
+
+### Since SingHacks
+*(slide 3, by 2:05)*
+
+At SingHacks, this was one web app with sample sources, simulated payments, and a person approving every purchase. Today it's live on the web, on the Mac, and inside Claude, Cursor and VS Code. It reads over twelve thousand real documentation passages, and every purchase is a real escrow on XRPL Testnet.
+
+Along the way, we presented it at AI Tinkerers Singapore, and it was one of the top three projects on Google Cloud Run.
+
+### Any agent
+*(slide 5)*
+
+Any agent can use it by pasting one URL. And any writer with a paid endpoint can start selling to agents by adding one package.
+
+### What's next
+*(slide 6, close by 3:00)*
+
+Next: real money with a licensed payments partner, outside writers and publishers selling to agents, and settlement in RLUSD. Scan the code to try it yourself. Thank you.
+
+If you run long: skip "Before it spent anything..." in the demo.
+Keyboard: before the appendix, 1–6 jump to slides, 7 opens the appendix and 0 returns to the empty intro. On the appendix, digits, − and = open cards (0 opens "Is this real money?"); press Esc to close a card and Home to go back to the start.
 
 ### Questions to have one line ready for
 

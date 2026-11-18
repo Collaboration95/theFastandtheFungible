@@ -17,9 +17,8 @@
   --s3-z:#4F4586; --s3-m:#544788; --s3-l:#5C4B8A; --s3-h:#6B528E;   /* afterglow over the first rooftops */
   --s4-z:#463F82; --s4-m:#4C4387; --s4-l:#6A5294; --s4-h:#7C5A94;   /* dusk: lavender band behind the card */
   --s5-z:#3B3B7E; --s5-m:#404186; --s5-l:#4A4889; --s5-h:#62538E;   /* early blue hour: periwinkle, a rose seam */
-  --s6-z:#2C3270; --s6-m:#2E3B76; --s6-l:#2C4F77; --s6-h:#2F6475;   /* blue hour: a sea-green band, the paid colour's echo */
-  --s7-z:#161A3E; --s7-m:#1B2049; --s7-l:#232859; --s7-h:#33306C;   /* night settles: the close */
-  --s8-z:#0F1230; --s8-m:#151940; --s8-l:#1C1F4C; --s8-h:#1C1F4C;   /* appendix: late night, quiet */
+  --s6-z:#161A3E; --s6-m:#1B2049; --s6-l:#232859; --s6-h:#33306C;   /* night settles: the close */
+  --s7-z:#0F1230; --s7-m:#151940; --s7-l:#1C1F4C; --s7-h:#1C1F4C;   /* appendix: late night, quiet */
   --land:#2B2253;  --night-land:#0E1130;  --star:#FFF6DE;  --window:#F6C987;   /* as painted in the scenes */
   --warm-1:#F5622A;                     /* the brand orange: accents only (the appendix highlight) */
   --blue-1:#2244D2;                     /* accent on white cards (pins, tiles, the link dot) */
@@ -81,7 +80,7 @@ html.print .nav{display:none}
    inside the slide's own stacking context):
      .sky      drifting clouds: <i class="sky-cu"> cumulus heaps, <i class="sky-st"> streaks and their thin lit rims    z -4
      ::before  the scene: sun, stars, hills, rooftops (one SVG, rasterised once; static)                   z -3
-     .scene-town  the rolling town (slides 3 and 6): far hills, rooftops with lit windows, poles and trees  z -2
+     .scene-town  the rolling town (slide 3): far hills, rooftops with lit windows, poles and trees  z -2
      ::after   paper grain + a horizontal brush wash in soft-light                                         z -1
    Cards and text paint above all of them and never move.
    Drift: everything moves right to left at a constant speed, transform only (compositor), on ONE clock: deck.js sets
@@ -89,9 +88,9 @@ html.print .nav{display:none}
    slide change never restarts, speeds up or slows it. Speeds (px/s): streaks 2.5 · cumulus 4 · town far 6 · roofs 14 ·
    near 24. Each layer is a seamless tile of width --t, moved by exactly --t per period --d = t / speed.
    Print and reduced motion: no animation, so every layer rests at 0 (the scene as drawn).
-   --sky-haze (scenes/sN-haze.svg, slides 2–6): a static mask that thins the clouds to 10 % behind the white headline, so
+   --sky-haze (scenes/sN-haze.svg, slides 2–5): a static mask that thins the clouds to 10 % behind the white headline, so
    it stays ≥ 4.5:1 whatever cloud drifts behind it.
-   .f-book marks the bookends (intro, slide 1, slide 7): their text and tiles use the --bk-* tokens
+   .f-book marks the bookends (intro, slide 1, slide 6): their text and tiles use the --bk-* tokens
    (white by default for the night close; the intro and slide 1 switch them to dark ink on their light sky). */
 .slide{isolation:isolate}
 .slide::before,.slide::after{content:"";position:absolute;inset:0;pointer-events:none}

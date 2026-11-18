@@ -1,5 +1,5 @@
 // "Saturday evening" scenes: the painted layer of each slide, golden hour into night.
-//   node pitch/src/scenes/gen.mjs   → pitch/src/scenes/s0.svg … s8.svg, sN-cu.svg / sN-st.svg (drifting clouds), grain.svg
+//   node pitch/src/scenes/gen.mjs   → pitch/src/scenes/s0.svg … s7.svg, sN-cu.svg / sN-st.svg (drifting clouds), grain.svg
 // Each sN.svg is one 1920 × 1080 picture (sun, land, rooftops, stars) drawn over the slide's sky gradient
 // (the --zN/--mN/--hN tokens in base.css) and under its cards. The build inlines it as a CSS background image, so it is
 // rasterised once and its filter ids never meet another slide's. Deterministic: the same seeds give the same files.
@@ -211,19 +211,13 @@ scenes.s5 = scene(clouds([
 ], 16), [hill(1010, [[10, 1.2], [5, 3.4]], '#251F4E', { seed: 62, crest: '#46386A' }), hill(1050, [[8, .9], [4, 2.6]], '#1B1840', { seed: 63 })],
 stars(5, 61, 24, 90, { xr: [1100, 1880], avoid: [[1440, 0, 1840, 200]] }))
 
-// s6 · blue hour: deep blue, a sea-green twilight band (the paid colour's echo), the first bright star, low hills
-scenes.s6 = scene(clouds([
-  ['st', { cx: 1500, cy: 168, w: 560, h: 44, top: '#2E3A74', under: '#4E5E8E', rim: '#7A86A8', op: .65, seed: 71, lumps: 6 }],
-], 18), [],   // the land is the rolling town (.scene-town, gen_town.py)
-stars(14, 71, 20, 120, { xr: [1060, 1900] }) + stars(0, 1, 0, 1, { bright: [[1810, 70, 1.4]] }))
-
-// s7 · night settles: stars, a sleeping street, a few lit windows below the sign-off
-scenes.s7 = scene(noClouds, [['', roofs(1066, '#0E1130', { seed: 8, hmin: 18, hmax: 52, lights: [214, 470, 803], light: '#F6C987' })]],
+// s6 · night settles: stars, a sleeping street, a few lit windows below the sign-off
+scenes.s6 = scene(noClouds, [['', roofs(1066, '#0E1130', { seed: 8, hmin: 18, hmax: 52, lights: [214, 470, 803], light: '#F6C987' })]],
   stars(46, 81, 10, 960, { avoid: [[90, 70, 960, 1010], [1060, 70, 1840, 1010]] }) + stars(10, 83, 10, 70, { xr: [100, 960] })
   + stars(0, 1, 0, 1, { bright: [[1010, 130, 1.3]] }))
 
-// s8 · appendix, late night: quiet indigo, sparse stars
-scenes.s8 = scene(noClouds, [], stars(40, 91, 10, 1070, { avoid: [[90, 70, 1830, 1000]] }) + stars(10, 92, 10, 80, { xr: [700, 1300] }))
+// s7 · appendix, late night: quiet indigo, sparse stars
+scenes.s7 = scene(noClouds, [], stars(40, 91, 10, 1070, { avoid: [[90, 70, 1830, 1000]] }) + stars(10, 92, 10, 80, { xr: [700, 1300] }))
 
 // haze: where white headline text sits on the sky, the drifting clouds thin to 10 % as they pass behind it (a static
 // mask on .sky, base.css), so every line keeps ≥ 4.5:1 at any drift phase. Boxes are the headings' ink boxes (x0 y0 x1 y1)
@@ -233,7 +227,6 @@ const HAZE = {
   s3: [[100, 76, 1408, 195]],
   s4: [[100, 77, 1244, 181], [40, 200, 740, 350]],
   s5: [[100, 76, 876, 195]],
-  s6: [[100, 76, 1025, 195]],
 }
 const haze = boxes => svg('<filter id="hb" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="16"/></filter>'
   + `<mask id="m" maskUnits="userSpaceOnUse" x="0" y="0" width="${W}" height="${H}"><rect width="${W}" height="${H}" fill="#fff"/><g fill="#1A1A1A" filter="url(#hb)">`
