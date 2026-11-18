@@ -1,175 +1,175 @@
-<!-- 8 · Appendix, for Q&A only (after the pitch's last slide). Quiet late-night sky with sparse stars, an index of 12 tiles named by what a
+<!-- 7 · Appendix, for Q&A only (after the pitch's last slide). Quiet late-night sky with sparse stars, an index of 12 tiles named by what a
      judge would ask. A key (1–9, 0, −, =) or a click opens that card as a full-slide overlay on this slide; ↓/↑ moves a
      highlight and Enter opens it. In a card: Esc, Backspace, → / ←, Space, Enter or "← Appendix" return to the index
      (they never leave the slide while a card is open); a number or ↓/↑ switches card.
      Each card is a title, one diagram that draws itself when the card opens (0.6–1.2 s: lines draw, numbers settle, one
      token flows once), at most three short lines, and the source. Reduced motion and print show the finished diagram.
-     Print / ?print=1: the index, then one page per card (sections s801…s812 added after this one).
+     Print / ?print=1: the index, then one page per card (sections s701…s712 added after this one).
      Every fact is from the appendix notes (pitch/_kit/APPENDIX.md), docs/submission/facts.json and the evidence files named
      on each card; the per-gate attack counts are PROOF-REPORT.md's attack table. -->
-<section class="slide" id="s8" data-click>
+<section class="slide" id="s7" data-click>
   <div class="top">
     <h2>Appendix</h2>
     <div class="hint"><span class="kc">1</span>–<span class="kc">=</span> open <span class="sep"></span> <span class="kc w">Esc</span> back</div>
   </div>
-  <div class="grid" id="s8grid"></div>
-  <div class="ov" id="s8ov" hidden></div>
-  <img id="s8qr" hidden alt="" src="../assets/qr-try.svg">
+  <div class="grid" id="s7grid"></div>
+  <div class="ov" id="s7ov" hidden></div>
+  <img id="s7qr" hidden alt="" src="../assets/qr-try.svg">
 </section>
 
 <style>
-/* late night: quiet indigo, sparse stars, quieter than the pitch slides; shared by the card overlay and the print pages (.s8p) */
-#s8,.s8p:not(#s8){--scene:url("../scenes/s8.svg");--sky:radial-gradient(1400px 900px at 92% -10%,rgba(140,150,230,.1),rgba(140,150,230,0) 60%),linear-gradient(180deg,var(--s8-z),var(--s8-m) 60%,var(--s8-h));
+/* late night: quiet indigo, sparse stars, quieter than the pitch slides; shared by the card overlay and the print pages (.s7p) */
+#s7,.s7p:not(#s7){--scene:url("../scenes/s7.svg");--sky:radial-gradient(1400px 900px at 92% -10%,rgba(140,150,230,.1),rgba(140,150,230,0) 60%),linear-gradient(180deg,var(--s7-z),var(--s7-m) 60%,var(--s7-h));
   background:var(--sky);color:#fff}
-#s8{display:flex;flex-direction:column}
-#s8 .top{display:flex;align-items:flex-end;justify-content:space-between}
-#s8 .top h2{font-size:var(--t-h2);letter-spacing:-.045em;line-height:1}
-#s8 .hint{display:flex;align-items:center;gap:12px;font:600 28px/1 var(--f);color:rgba(255,255,255,.62);padding-bottom:10px}
-#s8 .hint .sep{width:18px}
+#s7{display:flex;flex-direction:column}
+#s7 .top{display:flex;align-items:flex-end;justify-content:space-between}
+#s7 .top h2{font-size:var(--t-h2);letter-spacing:-.045em;line-height:1}
+#s7 .hint{display:flex;align-items:center;gap:12px;font:600 28px/1 var(--f);color:rgba(255,255,255,.62);padding-bottom:10px}
+#s7 .hint .sep{width:18px}
 
 /* keycap: the key that opens a card */
-#s8 .kc,.s8p:not(#s8) .kc{display:inline-grid;place-items:center;min-width:48px;height:48px;padding:0 10px;border-radius:12px;font:800 28px/1 var(--f);
+#s7 .kc,.s7p:not(#s7) .kc{display:inline-grid;place-items:center;min-width:48px;height:48px;padding:0 10px;border-radius:12px;font:800 28px/1 var(--f);
   font-variant-numeric:tabular-nums;color:var(--ink);background:linear-gradient(180deg,#fff,#EEF0F5);box-shadow:0 0 0 1px #D6DAE5 inset,0 2px 0 #C9CEDB}
-#s8 .hint .kc{min-width:44px;height:44px;font-size:26px;color:#fff;background:rgba(255,255,255,.1);box-shadow:0 0 0 1px rgba(255,255,255,.22) inset,0 2px 0 rgba(255,255,255,.12)}
-#s8 .hint .kc.w{font-size:22px;padding:0 12px}
+#s7 .hint .kc{min-width:44px;height:44px;font-size:26px;color:#fff;background:rgba(255,255,255,.1);box-shadow:0 0 0 1px rgba(255,255,255,.22) inset,0 2px 0 rgba(255,255,255,.12)}
+#s7 .hint .kc.w{font-size:22px;padding:0 12px}
 
 /* the index: 4 × 3 tiles */
-#s8 .grid{flex:1;margin-top:52px;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);gap:24px}
-#s8 .t8{all:unset;box-sizing:border-box;cursor:pointer;position:relative;display:flex;flex-direction:column;justify-content:space-between;padding:28px 32px 30px;
+#s7 .grid{flex:1;margin-top:52px;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);gap:24px}
+#s7 .t8{all:unset;box-sizing:border-box;cursor:pointer;position:relative;display:flex;flex-direction:column;justify-content:space-between;padding:28px 32px 30px;
   border-radius:var(--r-card);background:linear-gradient(180deg,#fff 0%,#FCFCFE 100%);color:var(--ink);box-shadow:var(--sh-card)}
-#s8 .t8:hover{box-shadow:0 0 0 3px rgba(255,255,255,.5),var(--sh-card)}
-#s8 .t8.hi{box-shadow:0 0 0 6px var(--warm-1),var(--sh-card)}
-#s8 .t8 .hd{display:flex;align-items:center;justify-content:space-between}
-#s8 .t8 .hd svg.i{font-size:34px;color:var(--ink-3);stroke-width:1.75}
-#s8 .t8 .n{font:800 68px/.95 var(--f);letter-spacing:-.05em;font-variant-numeric:tabular-nums}
-#s8 .t8 .c{margin-top:8px;font:700 32px/1.12 var(--f);letter-spacing:-.02em;color:var(--ink-2)}
-#s8 .t8 .q{font:800 42px/1.06 var(--f);letter-spacing:-.035em;text-wrap:balance}
-#s8 .t8 .q small{display:block;margin-top:8px;font:700 30px/1.1 var(--f);letter-spacing:-.02em;color:var(--ink-2)}
+#s7 .t8:hover{box-shadow:0 0 0 3px rgba(255,255,255,.5),var(--sh-card)}
+#s7 .t8.hi{box-shadow:0 0 0 6px var(--warm-1),var(--sh-card)}
+#s7 .t8 .hd{display:flex;align-items:center;justify-content:space-between}
+#s7 .t8 .hd svg.i{font-size:34px;color:var(--ink-3);stroke-width:1.75}
+#s7 .t8 .n{font:800 68px/.95 var(--f);letter-spacing:-.05em;font-variant-numeric:tabular-nums}
+#s7 .t8 .c{margin-top:8px;font:700 32px/1.12 var(--f);letter-spacing:-.02em;color:var(--ink-2)}
+#s7 .t8 .q{font:800 42px/1.06 var(--f);letter-spacing:-.035em;text-wrap:balance}
+#s7 .t8 .q small{display:block;margin-top:8px;font:700 30px/1.1 var(--f);letter-spacing:-.02em;color:var(--ink-2)}
 
 /* the card overlay: covers the index on the same slide, same field */
-#s8 .ov{position:absolute;inset:0;z-index:5;padding:var(--pad-y) var(--pad-x);background:var(--scene) 0 0/100% 100% no-repeat,var(--sky);display:flex}
-#s8 .ov[hidden]{display:none}
+#s7 .ov{position:absolute;inset:0;z-index:5;padding:var(--pad-y) var(--pad-x);background:var(--scene) 0 0/100% 100% no-repeat,var(--sky);display:flex}
+#s7 .ov[hidden]{display:none}
 
-/* ---------- a card page: the overlay (#s8 .ov) and each print page (.s8p) ---------- */
-:is(#s8,.s8p:not(#s8)) .pg{flex:1;display:flex;flex-direction:column;min-height:0;height:100%}
-:is(#s8,.s8p:not(#s8)) .pg-top{display:flex;align-items:center;gap:28px}
-:is(#s8,.s8p:not(#s8)) .pg-top h2{flex:1;font:800 68px/1.02 var(--f);letter-spacing:-.045em;text-wrap:balance}
-:is(#s8,.s8p:not(#s8)) .pg-top h2 .label{font-size:26px;font-weight:600;letter-spacing:0;color:rgba(255,255,255,.75);white-space:nowrap;vertical-align:.55em;margin-left:12px}
-:is(#s8,.s8p:not(#s8)) .pg-top .kc{min-width:64px;height:64px;font-size:34px;border-radius:15px}
-:is(#s8,.s8p:not(#s8)) .pg-back{all:unset;cursor:pointer;flex:none;display:flex;align-items:center;gap:14px;height:64px;padding:0 12px 0 22px;border-radius:999px;
+/* ---------- a card page: the overlay (#s7 .ov) and each print page (.s7p) ---------- */
+:is(#s7,.s7p:not(#s7)) .pg{flex:1;display:flex;flex-direction:column;min-height:0;height:100%}
+:is(#s7,.s7p:not(#s7)) .pg-top{display:flex;align-items:center;gap:28px}
+:is(#s7,.s7p:not(#s7)) .pg-top h2{flex:1;font:800 68px/1.02 var(--f);letter-spacing:-.045em;text-wrap:balance}
+:is(#s7,.s7p:not(#s7)) .pg-top h2 .label{font-size:26px;font-weight:600;letter-spacing:0;color:rgba(255,255,255,.75);white-space:nowrap;vertical-align:.55em;margin-left:12px}
+:is(#s7,.s7p:not(#s7)) .pg-top .kc{min-width:64px;height:64px;font-size:34px;border-radius:15px}
+:is(#s7,.s7p:not(#s7)) .pg-back{all:unset;cursor:pointer;flex:none;display:flex;align-items:center;gap:14px;height:64px;padding:0 12px 0 22px;border-radius:999px;
   font:700 28px/1 var(--f);color:#fff;background:rgba(255,255,255,.1);box-shadow:0 0 0 1px rgba(255,255,255,.22) inset}
-:is(#s8,.s8p:not(#s8)) .pg-back .ar{font-size:34px;line-height:1}
-:is(#s8,.s8p:not(#s8)) .pg-back:hover{background:rgba(255,255,255,.16)}
-:is(#s8,.s8p:not(#s8)) .pg-back .kc{min-width:0;height:44px;font-size:22px;padding:0 12px;color:#fff;background:rgba(255,255,255,.12);box-shadow:0 0 0 1px rgba(255,255,255,.22) inset}
-:is(#s8,.s8p:not(#s8)) .pg-tag{flex:none;display:flex;align-items:center;gap:14px;font:700 28px/1 var(--f);color:rgba(255,255,255,.62)}
-:is(#s8,.s8p:not(#s8)) .pg-body{flex:1;min-height:0;margin-top:36px;display:flex;flex-direction:column}
-:is(#s8,.s8p:not(#s8)) code{font:500 .9em/1 var(--m);letter-spacing:-.02em}
+:is(#s7,.s7p:not(#s7)) .pg-back .ar{font-size:34px;line-height:1}
+:is(#s7,.s7p:not(#s7)) .pg-back:hover{background:rgba(255,255,255,.16)}
+:is(#s7,.s7p:not(#s7)) .pg-back .kc{min-width:0;height:44px;font-size:22px;padding:0 12px;color:#fff;background:rgba(255,255,255,.12);box-shadow:0 0 0 1px rgba(255,255,255,.22) inset}
+:is(#s7,.s7p:not(#s7)) .pg-tag{flex:none;display:flex;align-items:center;gap:14px;font:700 28px/1 var(--f);color:rgba(255,255,255,.62)}
+:is(#s7,.s7p:not(#s7)) .pg-body{flex:1;min-height:0;margin-top:36px;display:flex;flex-direction:column}
+:is(#s7,.s7p:not(#s7)) code{font:500 .9em/1 var(--m);letter-spacing:-.02em}
 
 /* the one visual: a white card holding an SVG drawn 1:1 (1720 × 520) */
-:is(#s8,.s8p:not(#s8)) .vis{flex:none;height:520px;position:relative;overflow:hidden;border-radius:var(--r-card);background:linear-gradient(180deg,#fff 0%,#FCFCFE 100%);box-shadow:var(--sh-card)}
-:is(#s8,.s8p:not(#s8)) .vis>svg{display:block;width:100%;height:100%}
-:is(#s8,.s8p:not(#s8)) .vis text{font-family:var(--f);font-size:28px;font-weight:700;letter-spacing:-.02em;fill:var(--ink)}
-:is(#s8,.s8p:not(#s8)) .vis .h{font-size:33px;font-weight:800;letter-spacing:-.03em}
-:is(#s8,.s8p:not(#s8)) .vis .s{font-size:27px;font-weight:550;letter-spacing:-.01em;fill:var(--ink-2)}
-:is(#s8,.s8p:not(#s8)) .vis .xs{font-size:24px;font-weight:600;letter-spacing:-.005em;fill:var(--ink-2)}
-:is(#s8,.s8p:not(#s8)) .vis .mo{font-family:var(--m);font-weight:500;letter-spacing:-.035em}
-:is(#s8,.s8p:not(#s8)) .vis .big{font-size:76px;font-weight:800;letter-spacing:-.05em}
-:is(#s8,.s8p:not(#s8)) .vis .huge{font-size:132px;font-weight:800;letter-spacing:-.06em}
-:is(#s8,.s8p:not(#s8)) .vis .g{fill:var(--paid)}
-:is(#s8,.s8p:not(#s8)) .vis .gk{fill:var(--paid-ink)}
-:is(#s8,.s8p:not(#s8)) .vis .o{fill:var(--wall-ink)}
-:is(#s8,.s8p:not(#s8)) .vis .b{fill:var(--blue-1)}
-:is(#s8,.s8p:not(#s8)) .vis .mute{fill:var(--ink-3)}
-:is(#s8,.s8p:not(#s8)) .vis text.w{fill:#fff}
-:is(#s8,.s8p:not(#s8)) .vis .halo{paint-order:stroke;stroke:#fff;stroke-width:12px;stroke-linejoin:round}
-:is(#s8,.s8p:not(#s8)) .vis .ln{fill:none;stroke:#A9B0C9;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
-:is(#s8,.s8p:not(#s8)) .vis .ln.g{stroke:var(--paid)}
-:is(#s8,.s8p:not(#s8)) .vis .ln.o{stroke:var(--wall)}
-:is(#s8,.s8p:not(#s8)) .vis .ln.b{stroke:var(--blue-1)}
-:is(#s8,.s8p:not(#s8)) .vis .ln.k{stroke:var(--ink)}
-:is(#s8,.s8p:not(#s8)) .vis .ln.fat{stroke-width:5}
-:is(#s8,.s8p:not(#s8)) .vis .dash{stroke-dasharray:10 10}
-:is(#s8,.s8p:not(#s8)) .vis .ic{fill:none;stroke:var(--ink);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-:is(#s8,.s8p:not(#s8)) .vis .ic.w{stroke:#fff;stroke-width:2.6}
-:is(#s8,.s8p:not(#s8)) .vis .ic.g{stroke:var(--paid)}
-:is(#s8,.s8p:not(#s8)) .vis .ic.o{stroke:var(--wall)}
-:is(#s8,.s8p:not(#s8)) .vis .ic.mute{stroke:var(--ink-3)}
-:is(#s8,.s8p:not(#s8)) .vis .bx{fill:#fff;stroke:var(--line);stroke-width:2}
-:is(#s8,.s8p:not(#s8)) .vis .sf{fill:var(--soft);stroke:var(--line);stroke-width:2}
-:is(#s8,.s8p:not(#s8)) .vis .ghost{fill:none;stroke:#B9BFD3;stroke-width:2.5;stroke-dasharray:12 10}
-:is(#s8,.s8p:not(#s8)) .vis .pol{fill:var(--paid-bg);stroke:var(--paid);stroke-width:4}
-:is(#s8,.s8p:not(#s8)) .vis .okc,:is(#s8,.s8p:not(#s8)) .vis .gc,:is(#s8,.s8p:not(#s8)) .vis .gbar,:is(#s8,.s8p:not(#s8)) .vis .node,:is(#s8,.s8p:not(#s8)) .vis .cl,:is(#s8,.s8p:not(#s8)) .vis .blk{fill:var(--paid)}
-:is(#s8,.s8p:not(#s8)) .vis .okbg{fill:var(--paid-bg)}
-:is(#s8,.s8p:not(#s8)) .vis .bad{fill:var(--wall)}
-:is(#s8,.s8p:not(#s8)) .vis .badbg{fill:var(--wall-bg);stroke:rgba(226,83,26,.28);stroke-width:1.5}
-:is(#s8,.s8p:not(#s8)) .vis .ink{fill:var(--ink)}
-:is(#s8,.s8p:not(#s8)) .vis .edge{fill:none;stroke:#CDD2E2;stroke-width:1.6}
-:is(#s8,.s8p:not(#s8)) .vis .q0{fill:#ECEEF4}
-:is(#s8,.s8p:not(#s8)) .vis .q1{fill:var(--blue-1)}
-:is(#s8,.s8p:not(#s8)) .vis .q2{fill:var(--warm-1)}
-:is(#s8,.s8p:not(#s8)) .vis .q3{fill:#7D90E6}
-:is(#s8,.s8p:not(#s8)) .vis .nd{fill:#fff;stroke:#C3C9DB;stroke-width:3}
-:is(#s8,.s8p:not(#s8)) .vis .nd.g{fill:var(--paid-bg);stroke:var(--paid)}
-:is(#s8,.s8p:not(#s8)) .vis .nd.o{fill:var(--wall-bg);stroke:var(--wall)}
-:is(#s8,.s8p:not(#s8)) .vis .fp{fill:none;stroke:none}
-:is(#s8,.s8p:not(#s8)) .vis .tok{fill:var(--warm-1);stroke:#fff;stroke-width:3}
+:is(#s7,.s7p:not(#s7)) .vis{flex:none;height:520px;position:relative;overflow:hidden;border-radius:var(--r-card);background:linear-gradient(180deg,#fff 0%,#FCFCFE 100%);box-shadow:var(--sh-card)}
+:is(#s7,.s7p:not(#s7)) .vis>svg{display:block;width:100%;height:100%}
+:is(#s7,.s7p:not(#s7)) .vis text{font-family:var(--f);font-size:28px;font-weight:700;letter-spacing:-.02em;fill:var(--ink)}
+:is(#s7,.s7p:not(#s7)) .vis .h{font-size:33px;font-weight:800;letter-spacing:-.03em}
+:is(#s7,.s7p:not(#s7)) .vis .s{font-size:27px;font-weight:550;letter-spacing:-.01em;fill:var(--ink-2)}
+:is(#s7,.s7p:not(#s7)) .vis .xs{font-size:24px;font-weight:600;letter-spacing:-.005em;fill:var(--ink-2)}
+:is(#s7,.s7p:not(#s7)) .vis .mo{font-family:var(--m);font-weight:500;letter-spacing:-.035em}
+:is(#s7,.s7p:not(#s7)) .vis .big{font-size:76px;font-weight:800;letter-spacing:-.05em}
+:is(#s7,.s7p:not(#s7)) .vis .huge{font-size:132px;font-weight:800;letter-spacing:-.06em}
+:is(#s7,.s7p:not(#s7)) .vis .g{fill:var(--paid)}
+:is(#s7,.s7p:not(#s7)) .vis .gk{fill:var(--paid-ink)}
+:is(#s7,.s7p:not(#s7)) .vis .o{fill:var(--wall-ink)}
+:is(#s7,.s7p:not(#s7)) .vis .b{fill:var(--blue-1)}
+:is(#s7,.s7p:not(#s7)) .vis .mute{fill:var(--ink-3)}
+:is(#s7,.s7p:not(#s7)) .vis text.w{fill:#fff}
+:is(#s7,.s7p:not(#s7)) .vis .halo{paint-order:stroke;stroke:#fff;stroke-width:12px;stroke-linejoin:round}
+:is(#s7,.s7p:not(#s7)) .vis .ln{fill:none;stroke:#A9B0C9;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+:is(#s7,.s7p:not(#s7)) .vis .ln.g{stroke:var(--paid)}
+:is(#s7,.s7p:not(#s7)) .vis .ln.o{stroke:var(--wall)}
+:is(#s7,.s7p:not(#s7)) .vis .ln.b{stroke:var(--blue-1)}
+:is(#s7,.s7p:not(#s7)) .vis .ln.k{stroke:var(--ink)}
+:is(#s7,.s7p:not(#s7)) .vis .ln.fat{stroke-width:5}
+:is(#s7,.s7p:not(#s7)) .vis .dash{stroke-dasharray:10 10}
+:is(#s7,.s7p:not(#s7)) .vis .ic{fill:none;stroke:var(--ink);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+:is(#s7,.s7p:not(#s7)) .vis .ic.w{stroke:#fff;stroke-width:2.6}
+:is(#s7,.s7p:not(#s7)) .vis .ic.g{stroke:var(--paid)}
+:is(#s7,.s7p:not(#s7)) .vis .ic.o{stroke:var(--wall)}
+:is(#s7,.s7p:not(#s7)) .vis .ic.mute{stroke:var(--ink-3)}
+:is(#s7,.s7p:not(#s7)) .vis .bx{fill:#fff;stroke:var(--line);stroke-width:2}
+:is(#s7,.s7p:not(#s7)) .vis .sf{fill:var(--soft);stroke:var(--line);stroke-width:2}
+:is(#s7,.s7p:not(#s7)) .vis .ghost{fill:none;stroke:#B9BFD3;stroke-width:2.5;stroke-dasharray:12 10}
+:is(#s7,.s7p:not(#s7)) .vis .pol{fill:var(--paid-bg);stroke:var(--paid);stroke-width:4}
+:is(#s7,.s7p:not(#s7)) .vis .okc,:is(#s7,.s7p:not(#s7)) .vis .gc,:is(#s7,.s7p:not(#s7)) .vis .gbar,:is(#s7,.s7p:not(#s7)) .vis .node,:is(#s7,.s7p:not(#s7)) .vis .cl,:is(#s7,.s7p:not(#s7)) .vis .blk{fill:var(--paid)}
+:is(#s7,.s7p:not(#s7)) .vis .okbg{fill:var(--paid-bg)}
+:is(#s7,.s7p:not(#s7)) .vis .bad{fill:var(--wall)}
+:is(#s7,.s7p:not(#s7)) .vis .badbg{fill:var(--wall-bg);stroke:rgba(226,83,26,.28);stroke-width:1.5}
+:is(#s7,.s7p:not(#s7)) .vis .ink{fill:var(--ink)}
+:is(#s7,.s7p:not(#s7)) .vis .edge{fill:none;stroke:#CDD2E2;stroke-width:1.6}
+:is(#s7,.s7p:not(#s7)) .vis .q0{fill:#ECEEF4}
+:is(#s7,.s7p:not(#s7)) .vis .q1{fill:var(--blue-1)}
+:is(#s7,.s7p:not(#s7)) .vis .q2{fill:var(--warm-1)}
+:is(#s7,.s7p:not(#s7)) .vis .q3{fill:#7D90E6}
+:is(#s7,.s7p:not(#s7)) .vis .nd{fill:#fff;stroke:#C3C9DB;stroke-width:3}
+:is(#s7,.s7p:not(#s7)) .vis .nd.g{fill:var(--paid-bg);stroke:var(--paid)}
+:is(#s7,.s7p:not(#s7)) .vis .nd.o{fill:var(--wall-bg);stroke:var(--wall)}
+:is(#s7,.s7p:not(#s7)) .vis .fp{fill:none;stroke:none}
+:is(#s7,.s7p:not(#s7)) .vis .tok{fill:var(--warm-1);stroke:#fff;stroke-width:3}
 
-/* motion, only when a card opens live (#s8 .ov.go): from-only keyframes, so the resting markup is the final state */
-#s8 .ov.go .vis .d{stroke-dasharray:1 1;animation:a8-d var(--d,.35s) var(--ease) calc(var(--t,0)*1s) backwards}
-#s8 .ov.go .vis .f{animation:a8-f .35s var(--ease) calc(var(--t,0)*1s) backwards}
-#s8 .ov.go .vis .p{transform-box:fill-box;transform-origin:50% 50%;animation:a8-p .32s var(--spring) calc(var(--t,0)*1s) backwards}
-#s8 .ov.go .vis .gx{transform-box:fill-box;transform-origin:0 50%;animation:a8-gx .45s var(--ease) calc(var(--t,0)*1s) backwards}
-#s8 .ov.go .vis .run{animation:a8-run .32s var(--ease) calc(var(--t,0)*1s) backwards}
-#s8 .ov.go .vis .shk{animation:a8-shk .22s linear calc(var(--t,0)*1s)}
-#s8 .ov.go .vis .cl{animation:a8-cl .5s linear calc(var(--t,0)*1s) backwards}
-#s8 .ov.go .vis .blk{animation:a8-blk .45s linear calc(var(--t,0)*1s) backwards}
-#s8 .ov.go .vis .stp{transform-box:fill-box;transform-origin:50% 50%;animation:a8-stp .24s var(--ease) calc(var(--t,0)*1s) backwards}
-@keyframes a8-d{from{stroke-dashoffset:1}}
-@keyframes a8-f{from{opacity:0;translate:0 10px}}
-@keyframes a8-p{from{opacity:0;scale:.4}}
-@keyframes a8-gx{from{scale:0 1}}
-@keyframes a8-run{from{opacity:0;translate:-60px 0}}
-@keyframes a8-shk{20%{translate:6px 0}45%{translate:-4px 0}72%{translate:2px 0}}
-@keyframes a8-cl{from{opacity:0;fill:#C9CFE2}45%{opacity:1;fill:#C9CFE2}}
-@keyframes a8-blk{from{opacity:0;fill:var(--wall)}40%{opacity:1;fill:var(--wall)}}
-@keyframes a8-stp{from{opacity:0;scale:1.3}}
+/* motion, only when a card opens live (#s7 .ov.go): from-only keyframes, so the resting markup is the final state */
+#s7 .ov.go .vis .d{stroke-dasharray:1 1;animation:a7-d var(--d,.35s) var(--ease) calc(var(--t,0)*1s) backwards}
+#s7 .ov.go .vis .f{animation:a7-f .35s var(--ease) calc(var(--t,0)*1s) backwards}
+#s7 .ov.go .vis .p{transform-box:fill-box;transform-origin:50% 50%;animation:a7-p .32s var(--spring) calc(var(--t,0)*1s) backwards}
+#s7 .ov.go .vis .gx{transform-box:fill-box;transform-origin:0 50%;animation:a7-gx .45s var(--ease) calc(var(--t,0)*1s) backwards}
+#s7 .ov.go .vis .run{animation:a7-run .32s var(--ease) calc(var(--t,0)*1s) backwards}
+#s7 .ov.go .vis .shk{animation:a7-shk .22s linear calc(var(--t,0)*1s)}
+#s7 .ov.go .vis .cl{animation:a7-cl .5s linear calc(var(--t,0)*1s) backwards}
+#s7 .ov.go .vis .blk{animation:a7-blk .45s linear calc(var(--t,0)*1s) backwards}
+#s7 .ov.go .vis .stp{transform-box:fill-box;transform-origin:50% 50%;animation:a7-stp .24s var(--ease) calc(var(--t,0)*1s) backwards}
+@keyframes a7-d{from{stroke-dashoffset:1}}
+@keyframes a7-f{from{opacity:0;translate:0 10px}}
+@keyframes a7-p{from{opacity:0;scale:.4}}
+@keyframes a7-gx{from{scale:0 1}}
+@keyframes a7-run{from{opacity:0;translate:-60px 0}}
+@keyframes a7-shk{20%{translate:6px 0}45%{translate:-4px 0}72%{translate:2px 0}}
+@keyframes a7-cl{from{opacity:0;fill:#C9CFE2}45%{opacity:1;fill:#C9CFE2}}
+@keyframes a7-blk{from{opacity:0;fill:var(--wall)}40%{opacity:1;fill:var(--wall)}}
+@keyframes a7-stp{from{opacity:0;scale:1.3}}
 
 /* the lines under the visual, on the field: one statement, then limits */
-:is(#s8,.s8p:not(#s8)) .lns{margin-top:26px;display:grid;gap:8px;max-width:1700px}
-:is(#s8,.s8p:not(#s8)) .lns p{font:500 27px/1.3 var(--f);letter-spacing:-.01em;color:rgba(255,255,255,.8);text-wrap:pretty}
-:is(#s8,.s8p:not(#s8)) .lns p:first-child:not(.lim){font:650 32px/1.25 var(--f);letter-spacing:-.02em;color:#fff}
-:is(#s8,.s8p:not(#s8)) .lns b{font-weight:750;color:#FFB592}
+:is(#s7,.s7p:not(#s7)) .lns{margin-top:26px;display:grid;gap:8px;max-width:1700px}
+:is(#s7,.s7p:not(#s7)) .lns p{font:500 27px/1.3 var(--f);letter-spacing:-.01em;color:rgba(255,255,255,.8);text-wrap:pretty}
+:is(#s7,.s7p:not(#s7)) .lns p:first-child:not(.lim){font:650 32px/1.25 var(--f);letter-spacing:-.02em;color:#fff}
+:is(#s7,.s7p:not(#s7)) .lns b{font-weight:750;color:#FFB592}
 
 /* source: small, on the field, pinned to the bottom */
-:is(#s8,.s8p:not(#s8)) .src{margin-top:auto;padding-top:20px;display:grid;grid-template-columns:120px 1fr;column-gap:18px;row-gap:6px;align-items:baseline}
-:is(#s8,.s8p:not(#s8)) .src dt{font:700 24px/1.2 var(--f);color:rgba(255,255,255,.6)}
-:is(#s8,.s8p:not(#s8)) .src dd{margin:0;font:500 24px/1.2 var(--m);letter-spacing:-.025em;color:#fff;overflow-wrap:anywhere}
-:is(#s8,.s8p:not(#s8)) .src dd.u{font-size:20px;color:rgba(255,255,255,.6)}
+:is(#s7,.s7p:not(#s7)) .src{margin-top:auto;padding-top:20px;display:grid;grid-template-columns:120px 1fr;column-gap:18px;row-gap:6px;align-items:baseline}
+:is(#s7,.s7p:not(#s7)) .src dt{font:700 24px/1.2 var(--f);color:rgba(255,255,255,.6)}
+:is(#s7,.s7p:not(#s7)) .src dd{margin:0;font:500 24px/1.2 var(--m);letter-spacing:-.025em;color:#fff;overflow-wrap:anywhere}
+:is(#s7,.s7p:not(#s7)) .src dd.u{font-size:20px;color:rgba(255,255,255,.6)}
 
 /* links */
-:is(#s8,.s8p:not(#s8)) .links-g{flex:1;min-height:0;display:grid;grid-template-columns:1fr 440px;grid-template-rows:auto auto;gap:24px;align-content:start}
-:is(#s8,.s8p:not(#s8)) .box{position:relative;background:linear-gradient(180deg,#fff 0%,#FCFCFE 100%);color:var(--ink);border-radius:var(--r-card);box-shadow:var(--sh-card);overflow:hidden}
-:is(#s8,.s8p:not(#s8)) .lk{padding:8px 40px}
-:is(#s8,.s8p:not(#s8)) .lk .r{display:grid;grid-template-columns:56px 1fr;column-gap:20px;align-items:center;padding:18px 0}
-:is(#s8,.s8p:not(#s8)) .lk .r+.r{border-top:1px solid var(--line)}
-:is(#s8,.s8p:not(#s8)) .lk .r>.tile{width:56px;height:56px;border-radius:14px;font-size:28px;color:var(--blue-1)}
-:is(#s8,.s8p:not(#s8)) .lk b{display:block;font:750 29px/1.2 var(--f);letter-spacing:-.015em}
-:is(#s8,.s8p:not(#s8)) .lk b small{font:500 26px/1.2 var(--f);color:var(--ink-2);margin-left:14px}
-:is(#s8,.s8p:not(#s8)) .lk code{display:block;margin-top:6px;font:500 26px/1.25 var(--m);letter-spacing:-.025em;color:var(--ink)}
-:is(#s8,.s8p:not(#s8)) .lk.repo{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;column-gap:48px;padding:8px 40px}
-:is(#s8,.s8p:not(#s8)) .lk.repo .r{display:grid;grid-template-columns:196px 1fr;column-gap:16px;align-items:baseline;border-top:1px solid var(--line)}
-:is(#s8,.s8p:not(#s8)) .lk.repo .r.full{grid-column:1/-1;border-top:0}
-:is(#s8,.s8p:not(#s8)) .lk.repo code{margin:0}
-:is(#s8,.s8p:not(#s8)) .lk .rel{font:600 26px/1 var(--f);letter-spacing:-.01em;color:var(--ink-2)}
-:is(#s8,.s8p:not(#s8)) .qr{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px}
-:is(#s8,.s8p:not(#s8)) .qr img{display:block;width:300px;height:300px;image-rendering:pixelated}
-:is(#s8,.s8p:not(#s8)) .qr b{margin-top:18px;font:800 40px/1 var(--f);letter-spacing:-.035em}
-#s8 .ov.go .links-g>*{animation:a8-f .35s var(--ease) calc(var(--t,0)*1s) backwards}
+:is(#s7,.s7p:not(#s7)) .links-g{flex:1;min-height:0;display:grid;grid-template-columns:1fr 440px;grid-template-rows:auto auto;gap:24px;align-content:start}
+:is(#s7,.s7p:not(#s7)) .box{position:relative;background:linear-gradient(180deg,#fff 0%,#FCFCFE 100%);color:var(--ink);border-radius:var(--r-card);box-shadow:var(--sh-card);overflow:hidden}
+:is(#s7,.s7p:not(#s7)) .lk{padding:8px 40px}
+:is(#s7,.s7p:not(#s7)) .lk .r{display:grid;grid-template-columns:56px 1fr;column-gap:20px;align-items:center;padding:18px 0}
+:is(#s7,.s7p:not(#s7)) .lk .r+.r{border-top:1px solid var(--line)}
+:is(#s7,.s7p:not(#s7)) .lk .r>.tile{width:56px;height:56px;border-radius:14px;font-size:28px;color:var(--blue-1)}
+:is(#s7,.s7p:not(#s7)) .lk b{display:block;font:750 29px/1.2 var(--f);letter-spacing:-.015em}
+:is(#s7,.s7p:not(#s7)) .lk b small{font:500 26px/1.2 var(--f);color:var(--ink-2);margin-left:14px}
+:is(#s7,.s7p:not(#s7)) .lk code{display:block;margin-top:6px;font:500 26px/1.25 var(--m);letter-spacing:-.025em;color:var(--ink)}
+:is(#s7,.s7p:not(#s7)) .lk.repo{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;column-gap:48px;padding:8px 40px}
+:is(#s7,.s7p:not(#s7)) .lk.repo .r{display:grid;grid-template-columns:196px 1fr;column-gap:16px;align-items:baseline;border-top:1px solid var(--line)}
+:is(#s7,.s7p:not(#s7)) .lk.repo .r.full{grid-column:1/-1;border-top:0}
+:is(#s7,.s7p:not(#s7)) .lk.repo code{margin:0}
+:is(#s7,.s7p:not(#s7)) .lk .rel{font:600 26px/1 var(--f);letter-spacing:-.01em;color:var(--ink-2)}
+:is(#s7,.s7p:not(#s7)) .qr{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px}
+:is(#s7,.s7p:not(#s7)) .qr img{display:block;width:300px;height:300px;image-rendering:pixelated}
+:is(#s7,.s7p:not(#s7)) .qr b{margin-top:18px;font:800 40px/1 var(--f);letter-spacing:-.035em}
+#s7 .ov.go .links-g>*{animation:a7-f .35s var(--ease) calc(var(--t,0)*1s) backwards}
 </style>
 
 <script>
 {
-  const S = document.getElementById('s8'), grid = document.getElementById('s8grid'), ov = document.getElementById('s8ov')
+  const S = document.getElementById('s7'), grid = document.getElementById('s7grid'), ov = document.getElementById('s7ov')
   const GH = 'https://github.com/Collaboration95/theFastandtheFungible/blob/main/'
   const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=']
   const CAP = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '−', '=']
@@ -559,15 +559,15 @@
   let open = -1, hi = -1
   const tiles = [...grid.children]
   function setHi(i) { hi = i; tiles.forEach((t, k) => t.classList.toggle('hi', k === i)) }
-  // the URL follows the open card: #8.1 … #8.12 (card N is the Nth key: 1 … 9, 0, −, =); #8 when none is open
+  // the URL follows the open card: #7.1 … #7.12 (card N is the Nth key: 1 … 9, 0, −, =); #7 when none is open
   const setHash = h => { try { history.replaceState(null, '', location.search + h) } catch { /* refused on some file:// */ } }
-  const cardOfHash = () => { const m = location.hash.match(/^#8\.(\d+)$/); const i = m ? +m[1] - 1 : -1; return i >= 0 && i < N ? i : -1 }
-  function show(i) { open = i; setHi(i); ov.innerHTML = pageOf(CARDS[i], i, false); ov.hidden = false; fixQr(ov); animate(ov); setHash('#8.' + (i + 1)) }
-  function close() { gen++; if (open < 0) return; open = -1; ov.hidden = true; ov.innerHTML = ''; ov.classList.remove('go'); if (S.classList.contains('active')) setHash('#8') }
+  const cardOfHash = () => { const m = location.hash.match(/^#7\.(\d+)$/); const i = m ? +m[1] - 1 : -1; return i >= 0 && i < N ? i : -1 }
+  function show(i) { open = i; setHi(i); ov.innerHTML = pageOf(CARDS[i], i, false); ov.hidden = false; fixQr(ov); animate(ov); setHash('#7.' + (i + 1)) }
+  function close() { gen++; if (open < 0) return; open = -1; ov.hidden = true; ov.innerHTML = ''; ov.classList.remove('go'); if (S.classList.contains('active')) setHash('#7') }
 
-  // the build inlines images only in the slide's markup, so the QR lives once in the section (#s8qr, hidden) and the
+  // the build inlines images only in the slide's markup, so the QR lives once in the section (#s7qr, hidden) and the
   // pages built at runtime take its data URI (their <img> has no src until then, so nothing is ever requested)
-  const QR = document.getElementById('s8qr')?.getAttribute('src')
+  const QR = document.getElementById('s7qr')?.getAttribute('src')
   const fixQr = root => QR && root.querySelectorAll('.qr img').forEach(img => img.setAttribute('src', QR))
 
   /* Keys run in the capture phase, before deck.js, and only while this slide is showing. A card open: every
@@ -602,15 +602,15 @@
   })
   S.addEventListener('mousedown', e => { if (e.target.closest('button')) e.preventDefault() })   // keep focus off, so Space/Enter stay ours
 
-  /* Print: the index, then one page per card, as extra slides right after this one (s801 … s812), finished diagrams. */
-  const dropPages = () => document.querySelectorAll('section.s8p').forEach(s => s.remove())
+  /* Print: the index, then one page per card, as extra slides right after this one (s701 … s712), finished diagrams. */
+  const dropPages = () => document.querySelectorAll('section.s7p').forEach(s => s.remove())
   function printPages() {
     dropPages()
     let at = S
     CARDS.forEach((c, i) => {
       const s = document.createElement('section')
-      s.className = 'slide s8p'
-      s.id = 's8' + String(i + 1).padStart(2, '0')
+      s.className = 'slide s7p'
+      s.id = 's7' + String(i + 1).padStart(2, '0')
       s.innerHTML = pageOf(c, i, true)
       fixQr(s)
       at.after(s); at = s
@@ -620,7 +620,7 @@
 
   addEventListener('hashchange', () => { const i = cardOfHash(); if (S.classList.contains('active') && i >= 0 && i !== open) show(i) })
 
-  Deck.on('s8', {
+  Deck.on('s7', {
     enter() { const i = cardOfHash(); close(); setHi(-1); if (i >= 0) show(i) },
     leave() { close(); setHi(-1) },
     final() { close(); setHi(-1); printPages() },

@@ -34,8 +34,7 @@ paid only when the article unlocks.
 | 0:20–1:40 | **Live app**, the prepared run | Ask with a budget → free sources first → buys the one missing article → the key unlocks it and pays the writer → check it yourself. |
 | 1:40–2:05 | Slide 3 · what we built since SingHacks | Before → after: web, Mac app, MCP; real sources; fixed rules; XRPL Testnet escrow. Presented at AI Tinkerers Singapore; top 3 projects on Google Cloud Run. |
 | 2:05–2:20 | Slide 5 · any agent, by URL | Buy from Claude/Cursor/VS Code with one URL; sell with one package. |
-| 2:20–2:45 | Slide 6 · checked, not claimed | 1,000 Testnet purchases re-checked; 0 violations, 0 double charges, 0 breaches. |
-| 2:45–3:00 | Slide 7 · what's next + QR | What's next; scan to check it out. |
+| 2:20–3:00 | Slide 6 · what's next + QR | What's next; scan to check it out. |
 
 Slides 2 and 4 are demo support: slide 2 is the map of what the demo shows (and
 the no-network fallback), slide 4 explains the key-reveal payment if a judge asks.
@@ -122,18 +121,13 @@ Along the way, we presented it at AI Tinkerers Singapore, and it was one of the 
 
 Any agent can use it by pasting one URL. And any writer with a paid endpoint can start selling to agents by adding one package.
 
-### Checked, not claimed
-*(slide 6, by 2:45)*
-
-We didn't want to just say it works, so we tested it. We made a thousand purchases on Testnet and checked every one on the public ledger. We simulated a million crashes and retries and ran 34 attacks on our system: zero double charges, zero breaches. And buying the right article made the answers better: 48 out of 100 correct, up from 31.
-
 ### What's next
-*(slide 7, close by 3:00)*
+*(slide 6, close by 3:00)*
 
 Next: real money with a licensed payments partner, outside writers and publishers selling to agents, and settlement in RLUSD. Scan the code to try it yourself. Thank you.
 
-If you run long: skip "Before it spent anything..." in the demo, and in Checked, not claimed stop after "zero breaches".
-Keyboard: before the appendix, 1–7 jump to slides, 8 opens the appendix and 0 returns to the empty intro. On the appendix, digits, − and = open cards (0 opens "Is this real money?"); press Esc to close a card and Home to go back to the start.
+If you run long: skip "Before it spent anything..." in the demo.
+Keyboard: before the appendix, 1–6 jump to slides, 7 opens the appendix and 0 returns to the empty intro. On the appendix, digits, − and = open cards (0 opens "Is this real money?"); press Esc to close a card and Home to go back to the start.
 
 ### Questions to have one line ready for
 

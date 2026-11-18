@@ -38,7 +38,7 @@ PNGs are named by slide number: `00.png` is the intro.
 
 ## Keys and clicks
 
-The presenter only ever moves between slides. **No pitch slide (01–07) waits for a key or a click**: each one plays
+The presenter only ever moves between slides. **No pitch slide (01–06) waits for a key or a click**: each one plays
 its whole reveal by itself on a forward arrival and then rests in its final state.
 
 | Key | Does |
@@ -46,10 +46,10 @@ its whole reveal by itself on a forward arrival and then rests in its final stat
 | → Space PgDn Enter ↓ | next slide (the intro's `next()` hook consumes the first press to play its reveal) |
 | ← PgUp Backspace ↑ | previous slide |
 | Home / End · f | first / last slide · fullscreen |
-| 1 … 7 · 8 | jump straight to that slide · the appendix (forward jumps play the arrival, as →) |
+| 1 … 6 · 7 | jump straight to that slide · the appendix (forward jumps play the arrival, as →) |
 | 0 | the intro in its **empty** state, so the next press replays the logo reveal |
 | Esc, −, = | nothing on a pitch slide |
-| on the appendix | 1–9, 0, −, = open cards 1–12 (also while another card is open: the key switches cards); ↑ ↓ step; Esc / ← / → / Space close the card. The URL follows the open card: `#8.1` … `#8.12` deep-links one |
+| on the appendix | 1–9, 0, −, = open cards 1–12 (also while another card is open: the key switches cards); ↑ ↓ step; Esc / ← / → / Space close the card. The URL follows the open card: `#7.1` … `#7.12` deep-links one |
 | click on a slide | next slide (as →), anywhere on the slide; only the appendix handles its own clicks |
 | nav pill ← / → | previous / next; the pill ("← N / total →") sits in a band under the stage, never on a slide or in print |
 
@@ -73,10 +73,10 @@ empty and the first → / Space / PgDn / Enter / click plays the logo reveal on 
 | Role | Tokens |
 |---|---|
 | Skies ("Saturday evening", one per slide) | Golden hour into night. Each slide file sets `#sN{--scene:url("../scenes/sN.svg");background:<glow>,linear-gradient(180deg,var(--sN-z),var(--sN-m) …,var(--sN-l) …,var(--sN-h))}` from the zenith/mid/low/horizon tokens in `base.css`. The evening deepens one step a slide: each zenith sits near the previous slide's mid sky (00 pale haze · 01 golden lilac and apricot · 02 mauve, sun just set · 03 afterglow over rooftops · 04 dusk lavender · 05 early blue hour · 06 blue hour with a sea-green band · 07 night with lit windows · 08 late night). 00–01 carry dark ink, 02–08 white text |
-| Scene layers | `.sky` (slides 0–6, z −4) holds the drifting clouds: `<i class="sky-cu">` cumulus and `<i class="sky-st">` streaks with their thin lit rims, from `--clouds-cu` / `--clouds-st`; `.slide::before` paints the static `--scene` (z −3); `.scene-town` (slides 3 and 6, z −2) is the rolling town, five inline `<svg>` strips coloured by the slide's `--tw-*` tokens; `.slide::after` lays paper grain + a brush wash in soft-light at 0.5 (z −1). Cards and text sit above all of them and never move. Cumulus heaps are cool on top and lit warm from below |
+| Scene layers | `.sky` (slides 0–5, z −4) holds the drifting clouds: `<i class="sky-cu">` cumulus and `<i class="sky-st">` streaks with their thin lit rims, from `--clouds-cu` / `--clouds-st`; `.slide::before` paints the static `--scene` (z −3); `.scene-town` (slide 3, z −2) is the rolling town, five inline `<svg>` strips coloured by the slide's `--tw-*` tokens; `.slide::after` lays paper grain + a brush wash in soft-light at 0.5 (z −1). Cards and text sit above all of them and never move. Cumulus heaps are cool on top and lit warm from below |
 | Drift | Clouds, streaks and the town roll right to left at one constant speed each, transform-only: streaks 2.5 px/s · cumulus 4 · town hills 6 · roofs 14 · near trees and poles 24. Every layer is a seamless tile moved by exactly its width per period, on **one clock**: deck.js pins every `sky-drift` animation's `startTime` to 0 (page load), so a layer is in the same place on whichever slide shows it, and navigation never restarts, eases, speeds up or slows it. No camera pan. Print, `?print=1` and reduced motion: static at 0 (the scene as drawn). Headless fps with a GPU: 60, 0 dropped on 03 and 06 |
-| Contrast | Every line of text on a sky is ≥ 4.5:1 at the 2nd percentile, measured on the render with the content hidden, at every drift phase (lowest: slide 2's beats ≈ 4.8; headings ≥ 5.5 with a cloud behind them). Clouds pass behind the white headlines on 2–6 thinned to 10 % by `--sky-haze` (scenes/sN-haze.svg, boxes in gen.mjs `HAZE`: update them when a heading moves). Recheck when a sky token, a scene or a heading changes |
-| Bookends | `.f-book` marks the intro, slide 1 and slide 7. Their text and tiles use `--bk-ink`, `--bk-ink-2`, `--bk-line`, `--bk-tile`, `--bk-tile-line`, `--bk-brand`, `--bk-mk` (= `--marker`): white by default (slide 7's night); the intro and slide 1 set them to dark ink (`--ink`, `#2C3150`) on their light sky |
+| Contrast | Every line of text on a sky is ≥ 4.5:1 at the 2nd percentile, measured on the render with the content hidden, at every drift phase (lowest: slide 2's beats ≈ 4.8; headings ≥ 5.5 with a cloud behind them). Clouds pass behind the white headlines on 2–5 thinned to 10 % by `--sky-haze` (scenes/sN-haze.svg, boxes in gen.mjs `HAZE`: update them when a heading moves). Recheck when a sky token, a scene or a heading changes |
+| Bookends | `.f-book` marks the intro, slide 1 and slide 6. Their text and tiles use `--bk-ink`, `--bk-ink-2`, `--bk-line`, `--bk-tile`, `--bk-tile-line`, `--bk-brand`, `--bk-mk` (= `--marker`): white by default (slide 6's night); the intro and slide 1 set them to dark ink (`--ink`, `#2C3150`) on their light sky |
 | Accents | `--marker` / `--warm-1` the brand orange `#F5622A` (the loop, the appendix highlight) · `--blue-1` `#2244D2` (accent on white cards) · `--green-1` `#0B8762` |
 | Ink on white | `--ink` text · `--ink-2` secondary · `--ink-3` connectors · `--line` hairline · `--soft` sunken |
 | On a sky | `--on` white · `--on-2` 88 % · `--on-line` 26 % hairline |
@@ -86,7 +86,7 @@ empty and the first → / Space / PgDn / Enter / click plays the logo reveal on 
 | Shadow | `--sh-card` (inner top highlight + hairline + soft violet-tinted drop, as if lit by a low sun), `--sh-lift` |
 | Spacing | 8 px grid; 100 px side margins |
 
-Smallest text that must read from 8 m: 28 px on a card, 30 px on a sky. Slides 1, 3, 5, 6 and 7 have nothing under 28 px
+Smallest text that must read from 8 m: 28 px on a card, 30 px on a sky. Slides 1, 3, 5 and 6 have nothing under 28 px
 except the two labels below ("XRPL Testnet" ≥ 22 px, "(simulated payments)" ≥ 24 px).
 
 ## Components
@@ -107,14 +107,13 @@ except the two labels below ("XRPL Testnet" ≥ 22 px, "(simulated payments)" �
   It draws on in 0.5 s, 0.25 s after the slide appears, and is static in print or under reduced motion.
 - **brand tile**: every ResearchAgent logo is the white rounded square with the black mark (as on the intro), with a
   soft shadow; on the intro its edge is white.
-- **label** `.label`: the only quiet labels in the deck are "XRPL Testnet" (slide 2's app bar) and
-  "(simulated payments)" (beside 31 → 48 on slide 6). Add no others: no eyebrows, no "recorded run", no "no real value".
+- **label** `.label`: the only quiet label in the deck is "XRPL Testnet" (slide 2's app bar). Add no others: no eyebrows, no "recorded run", no "no real value".
 
 ## Motion
 
 Only the intro reveal is transition-like; there are no slide transitions. The marker draws once on arrival. The sky and
 the town drift continuously (see Drift above); that is ambient, not arrival motion, and it ignores navigation.
-Slides 1–6 play short arrival motion (≤ 1.5 s, no loops) that shows the paywall, money or key state:
+Slides 1–5 play short arrival motion (≤ 1.5 s, no loops) that shows the paywall, money or key state:
 
 - deck.js adds `.play` to a slide on a **forward** arrival only. Going backwards, in print and under reduced
   motion there is no `.play`, and the slide is simply in its final state.
@@ -127,5 +126,5 @@ Slides 1–6 play short arrival motion (≤ 1.5 s, no loops) that shows the payw
   `Deck.seq` from `enter` when `ctx.play`, and settles in `rest()` at about 2 s. Every sequence finishes within
   about 2.5 s; leaving cancels it and `rest()` puts the slide in its final state.
 - Hook `enter(el, ctx)` gets `ctx.play` (true when the slide is playing its arrival motion).
-- The appendix (slide 08) is the one interactive slide, for Q&A: a key or click opens a card, and each card's
+- The appendix (slide 7) is the one interactive slide, for Q&A: a key or click opens a card, and each card's
   diagram draws itself once (0.6–1.2 s: lines draw, numbers settle, one token flows). Print shows them finished.

@@ -605,7 +605,7 @@ Significant product, design and process decisions, newest first. One line each: 
 
 ## Changelog
 
-- 18 Nov: Finals pitch deck slide 3 gains the AI Tinkerers Singapore stage photo and "Top 3 projects on Google Cloud Run"; PDF and `pitch/index.html` rebuilt; `docs/FINAL-PRESENTATION.md` gets a plain-text spoken script.
+- 18 Nov: Finals pitch deck slide 3 gains the AI Tinkerers Singapore stage photo and "Top 3 projects on Google Cloud Run"; PDF and `pitch/index.html` rebuilt; `docs/FINAL-PRESENTATION.md` gets a plain-text spoken script. The "Checked, not claimed" slide is cut: slides are now 0 intro, 1 frame, 2 demo, 3 since, 4 payment, 5 agents, 6 next + QR, 7 appendix (appendix cards keep the crash and attack numbers).
 
 - 2026-11-07 — K2 (UX / Reachability): diagnose all ten bought-but-missed dev questions, rank exact delivered technical sentences with passage context, and retain Supports on UC3; v3 answersIt 1/20 → 4/20, v3-dev 2/20 unchanged, negatives 2/10 unchanged, 140/140 online verifications and zero raw audit violations. [#410](https://github.com/Collaboration95/theFastandtheFungible/pull/410); evidence in docs/evidence/k2-lead/.
 
