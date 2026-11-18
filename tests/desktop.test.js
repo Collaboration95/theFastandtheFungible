@@ -15,6 +15,15 @@ describe('desktop boundary', () => {
     expect(env.XRPL_RPC_URL).toBe('wss://s.altnet.rippletest.net:51233')
     expect(env.DOTENV_CONFIG_PATH).toBe('/dev/null')
   })
+  it('offers key-reveal escrow from exactly the Testnet writers whose seeds are configured', () => {
+    const seed = ['secret', 'wallet', 'value'].join('-')
+    const secrets = { 'xrpl-payer': seed, deepseek: seed, XRPL_PUBLISHER_TEAM_XRPL_EXPLAINERS_SEED: seed, XRPL_PUBLISHER_ALPHALEAK_SEED: seed, XRPL_PUBLISHER_LOAD_FACTOR_SEED: undefined }
+    const live = engineEnv({ userData: '/tmp/desktop-test', preferences: { live: true, paused: false, maxMinor: 200, dailyMinor: 500 }, secrets })
+    expect(live.ESCROW_MODE).toBe('key-reveal')
+    expect(live.ESCROW_WRITERS).toBe('team-xrpl-explainers,alphaleak')
+    expect(engineEnv({ userData: '/tmp/desktop-test', preferences: { live: true, paused: false, maxMinor: 200, dailyMinor: 500, ESCROW_MODE: 'payment' }, secrets }).ESCROW_WRITERS).toBe('')
+    expect(engineEnv({ userData: '/tmp/desktop-test', preferences: { live: false, paused: false, maxMinor: 200, dailyMinor: 500 }, secrets }).ESCROW_WRITERS).toBe('')
+  })
   it('rejects rebinding hosts, browser mutations, and untrusted IPC frames', () => {
     expect(localRequest({ headers: { host: '127.0.0.1:12345' } }, 12345)).toBe(true)
     expect(localRequest({ headers: { host: 'evil.example:12345' } }, 12345)).toBe(false)

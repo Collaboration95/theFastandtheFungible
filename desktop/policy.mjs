@@ -101,9 +101,14 @@ export function localRequest(request, port) {
 }
 export function engineEnv({ userData, preferences, secrets = {} }) {
   const live = preferences.live
+  const escrowMode = live ? preferences.ESCROW_MODE || 'key-reveal' : 'payment'
+  // Key-reveal escrow is offered by exactly the writers whose Testnet seeds are configured, as the hosted
+  // startup and scripts/testnet-wallets.ts do; without it the local publisher refuses every escrow quote.
+  const escrowWriters = live && escrowMode === 'key-reveal' ? Object.keys(secrets).filter(key => secrets[key] && /^XRPL_PUBLISHER_[A-Z0-9_]+_SEED$/.test(key))
+    .map(key => key.slice('XRPL_PUBLISHER_'.length, -'_SEED'.length).toLowerCase().replaceAll('_', '-')) : []
   // Allowlist, never inherit .env, NODE_OPTIONS, provider URLs, proxy settings or wallet seeds.
   return {
-    ESCROW_MODE: live ? preferences.ESCROW_MODE || 'key-reveal' : 'payment', ESCROW_ASSET: preferences.ESCROW_ASSET || 'XRP', ANCHOR_RAIL: preferences.ANCHOR_RAIL || 'xrpl-testnet',
+    ESCROW_MODE: escrowMode, ESCROW_WRITERS: escrowWriters.join(','), ESCROW_ASSET: preferences.ESCROW_ASSET || 'XRP', ANCHOR_RAIL: preferences.ANCHOR_RAIL || 'xrpl-testnet',
     HOST: '127.0.0.1', RA_API_TOKEN: secrets['local-api-token'] || '',
     WALLET_DAILY_CAP_MINOR: String(preferences.walletDailyMinor ?? 2000), SPENDING_PAUSED: process.env.SPENDING_PAUSED === '1' ? '1' : '0',
     PATH: '/usr/bin:/bin:/usr/sbin:/sbin', HOME: userData, TMPDIR: process.env.TMPDIR || '/tmp',
