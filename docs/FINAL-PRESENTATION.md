@@ -124,7 +124,7 @@ Any agent can use it by pasting one URL. And any writer with a paid endpoint can
 ### What's next
 *(slide 6, close by 3:00)*
 
-Next: real money with a licensed payments partner, outside writers and publishers selling to agents, and settlement in RLUSD. Scan the code to try it yourself. Thank you.
+Next: licensed publishers selling to agents, and settlement in RLUSD. Scan the code to try it yourself. Thank you.
 
 If you run long: skip "Before it spent anything..." in the demo.
 Keyboard: before the appendix, 1–6 jump to slides, 7 opens the appendix and 0 returns to the empty intro. On the appendix, digits, − and = open cards (0 opens "Is this real money?"); press Esc to close a card and Home to go back to the start.
